@@ -4,7 +4,9 @@
 # @Time    : 2019/11/7 10:55
 # @Author  : Kelvin.Ye
 import click
+from flask.cli import with_appcontext
 
+from server.extensions import db
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -12,11 +14,15 @@ log = get_logger(__name__)
 
 @click.command()
 @click.option(
-    "-d",
-    "--drop",
-    default=True,
-    is_flag=True,
-    help="drop all table, before initdb",
+    '-d',
+    '--drop',
+    default=False,
+    help='drop all table, before initdb'
 )
-def initdb():
-    pass
+@with_appcontext
+def initdb(drop):
+    if drop:
+        db.drop_all()
+        click.echo('删除所有表成功')
+    db.create_all()
+    click.echo('创建所有表成功')
