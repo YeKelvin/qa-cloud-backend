@@ -3,3 +3,4 @@
 .idea
 Pipfile.lock
 *config.ini
+*.db

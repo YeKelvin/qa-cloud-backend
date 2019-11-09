@@ -18,11 +18,11 @@ class TUser(Model):
     __tablename__ = 't_user'
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    username = db.Column(db.String(128))
-    password = db.Column(db.String(128))
+    username = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(128), nullable=False)
     mobile_no = db.Column(db.String(64))
     email = db.Column(db.String(128))
-    status = db.Column(db.String(32))
+    status = db.Column(db.String(32), nullable=False)
     last_login_time = db.Column(db.DateTime)
     last_success_time = db.Column(db.DateTime)
     last_error_time = db.Column(db.DateTime)
@@ -33,7 +33,7 @@ class TUser(Model):
     updated_time = db.Column(db.DateTime, default=datetime.now())
     updated_by = db.Column(db.String(64))
 
-    def generate_password_hash(self, password: str):
+    def generate_password_hash(self, password):
         prefix_md5 = self.username + hashlib.md5(password.encode('utf-8')).hexdigest()
         pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
         return generate_password_hash(pwd_md5)
@@ -45,7 +45,7 @@ class TUser(Model):
 class TRole(Model):
     __tablename__ = 't_role'
     id = db.Column(db.Integer, primary_key=True)
-    role_no = db.Column(db.Integer, index=True, nullable=False)
+    role_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
     permissions = db.Column(db.String(256))
     description = db.Column(db.String(128))
     created_time = db.Column(db.DateTime, default=datetime.now())
@@ -57,7 +57,7 @@ class TRole(Model):
 class TPermission(Model):
     __tablename__ = 't_permission'
     id = db.Column(db.Integer, primary_key=True)
-    permission_no = db.Column(db.Integer, index=True, nullable=False)
+    permission_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
     endpoint = db.Column(db.String(128))
     description = db.Column(db.String(128))
     created_time = db.Column(db.DateTime, default=datetime.now())
@@ -66,8 +66,8 @@ class TPermission(Model):
     updated_by = db.Column(db.String(64))
 
 
-class TUserRoleRelation(Model):
-    __tablename__ = 't_user_role_relation'
+class TUserRoleRel(Model):
+    __tablename__ = 't_user_role_rel'
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, nullable=False)
     role_no = db.Column(db.Integer, index=True, nullable=False)

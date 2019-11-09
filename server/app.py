@@ -65,6 +65,7 @@ def register_commands(app):
     """Register Click commands.
     """
     app.cli.add_command(commands.initdb)
+    app.cli.add_command(commands.initdata)
 
 
 def __generate_db_url() -> str:

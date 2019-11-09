@@ -12,11 +12,11 @@ log = get_logger(__name__)
 
 
 class TActionLog(Model):
+    __tablename__ = 't_action_log'
     id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(64))
     action_detail = db.Column(db.String(128))
     description = db.Column(db.String(128))
-    created_at = db.Column(db.DateTime, default=datetime.now())
+    created_time = db.Column(db.DateTime, default=datetime.now())
     created_by = db.Column(db.String(64))
-    updated_at = db.Column(db.DateTime, default=datetime.now())
+    updated_time = db.Column(db.DateTime, default=datetime.now())
     updated_by = db.Column(db.String(64))
