@@ -1,0 +1,5 @@
+.pycharm
+.venv
+.idea
+Pipfile.lock
+*config.ini
