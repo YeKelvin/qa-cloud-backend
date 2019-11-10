@@ -19,7 +19,7 @@ class TUser(Model):
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
     username = db.Column(db.String(128), nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(512), nullable=False)
     mobile_no = db.Column(db.String(64))
     email = db.Column(db.String(128))
     status = db.Column(db.String(32), nullable=False)
@@ -39,7 +39,9 @@ class TUser(Model):
         return generate_password_hash(pwd_md5)
 
     def check_password_hash(self, password):
-        return check_password_hash(self.password, password)
+        prefix_md5 = self.username + hashlib.md5(password.encode('utf-8')).hexdigest()
+        pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
+        return check_password_hash(self.password, pwd_md5)
 
 
 class TRole(Model):

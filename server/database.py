@@ -14,7 +14,7 @@ from server.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-class CRUDMixin(object):
+class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations.
     """
 
@@ -58,44 +58,3 @@ class Model(CRUDMixin, db.Model):
 
     def __str__(self):
         return str(self.__dict__)
-
-
-# From Mike Bayer's "Building the app" talk
-# https://speakerdeck.com/zzzeek/building-the-app
-class SurrogatePK(object):
-    """A mixin that adds a surrogate integer 'primary key' column named ``id`` to any declarative-mapped class.
-    """
-
-    __table_args__ = {"extend_existing": True}
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    @classmethod
-    def get_by_id(cls, record_id):
-        """Get record by ID."""
-        if any(
-                (
-                        isinstance(record_id, (str, bytes)) and record_id.isdigit(),
-                        isinstance(record_id, (int, float))
-                )
-        ):
-            return cls.query.get(int(record_id))
-        return None
-
-
-def reference_col(tablename, nullable=False, pk_name="id", foreign_key_kwargs=None, column_kwargs=None):
-    """Column that adds primary key foreign key reference.
-
-    Usage: ::
-
-        category_id = reference_col('category')
-        category = relationship('Category', backref='categories')
-    """
-    foreign_key_kwargs = foreign_key_kwargs or {}
-    column_kwargs = column_kwargs or {}
-
-    return db.Column(
-        db.ForeignKey(f"{tablename}.{pk_name}", **foreign_key_kwargs),
-        nullable=nullable,
-        **column_kwargs
-    )

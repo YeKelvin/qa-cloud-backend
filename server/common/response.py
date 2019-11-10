@@ -7,6 +7,7 @@ from enum import Enum
 
 from flask import make_response
 
+from server.common.exception import ErrorCode
 from server.common.status import Status
 from server.utils.json_util import to_json
 
@@ -22,13 +23,20 @@ class BaseResponse:
 class Response(BaseResponse):
     def __init__(self,
                  result: any = None,
-                 success: bool = False,
+                 success: bool = True,
+                 error: ErrorCode = None,
                  errorCode: str = None,
-                 errorMsg: str = None) -> None:
+                 errorMsg: str = None):
         self.result = result
         self.success = success
-        self.errorCode = errorCode
-        self.errorMsg = errorMsg
+        if error is None:
+            self.errorCode = errorCode
+            self.errorMsg = errorMsg
+        else:
+            self.errorCode = error.name
+            self.errorMsg = error.value
+        if error or errorCode or errorMsg:
+            self.success = False
 
     def set_result(self, result: any) -> None:
         self.result = result
@@ -40,8 +48,11 @@ class Response(BaseResponse):
         self.success = False
 
 
-def http_response(response_dto: Response(), status: Enum = Status.CODE_200):
-    response_json = to_json(response_dto)
-    response = make_response(response_json, status.value)
+def http_response(result: any = None,
+                  error: ErrorCode = None,
+                  status: Enum = Status.CODE_200):
+    res = Response(result, error=error)
+    res_json = to_json(res.__dict__)
+    response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
     return response

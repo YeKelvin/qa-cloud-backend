@@ -8,8 +8,9 @@ from flask.cli import with_appcontext
 
 from server.common.sequence import TSequence
 from server.extensions import db
-from server.user.model import TUser
-from server.user.service import generate_user_no
+from server.system.model import TActionLog
+from server.user.model import TUser, TRole, TPermission, TUserRoleRel
+from server.user.service import generate_user_no, generate_role_no, generate_permission_no
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -39,6 +40,16 @@ def initdata():
 
 
 @with_appcontext
+def init_seq():
+    TSequence.create(seq_name='seq_user_no')
+    click.echo('create sequence seq_user_no success')
+    TSequence.create(seq_name='seq_role_no')
+    click.echo('create sequence seq_role_no success')
+    TSequence.create(seq_name='seq_permission_no')
+    click.echo('create sequence seq_permission_no success')
+
+
+@with_appcontext
 def init_user():
     admin = TUser()
     admin.user_no = generate_user_no()
@@ -50,10 +61,21 @@ def init_user():
 
 
 @with_appcontext
-def init_seq():
-    TSequence.create(seq_name='seq_user_no')
-    click.echo('create sequence seq_user_no success')
-    TSequence.create(seq_name='seq_role_no')
-    click.echo('create sequence seq_role_no success')
-    TSequence.create(seq_name='seq_permission_no')
-    click.echo('create sequence seq_permission_no success')
+def init_permission():
+    TPermission.create(permission_no=generate_permission_no(), endpoint='/register', description='用户注册')
+    TPermission.create(permission_no=generate_permission_no(), endpoint='/login', description='用户登录')
+    TPermission.create(permission_no=generate_permission_no(), endpoint='/logout', description='用户登出')
+    TPermission.create(permission_no=generate_permission_no(), endpoint='/info', description='获取用户信息')
+
+
+@with_appcontext
+def init_role():
+    TRole.create(role_no=generate_role_no(), permissions='', description='超级管理员')
+    TRole.create(role_no=generate_role_no(), permissions='', description='系统管理员')
+    TRole.create(role_no=generate_role_no(), permissions='', description='管理员')
+    TRole.create(role_no=generate_role_no(), permissions='', description='帅哥美女')
+
+
+@with_appcontext
+def init_user_role_rel():
+    TUserRoleRel.create(user_no='U00000001', role_no='')

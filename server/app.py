@@ -20,6 +20,7 @@ def create_app() -> Flask:
     config_flask(app)
     register_extensions(app)
     register_blueprints(app)
+    # register_hooks(app)
     register_shellcontext(app)
     register_commands(app)
     return app
