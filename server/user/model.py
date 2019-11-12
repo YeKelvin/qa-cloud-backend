@@ -17,21 +17,22 @@ log = get_logger(__name__)
 class TUser(Model):
     __tablename__ = 't_user'
     id = db.Column(db.Integer, primary_key=True)
-    user_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    username = db.Column(db.String(128), nullable=False)
-    password = db.Column(db.String(512), nullable=False)
-    mobile_no = db.Column(db.String(64))
-    email = db.Column(db.String(128))
-    status = db.Column(db.String(32), nullable=False)
-    last_login_time = db.Column(db.DateTime)
-    last_success_time = db.Column(db.DateTime)
-    last_error_time = db.Column(db.DateTime)
-    error_times = db.Column(db.Integer)
-    description = db.Column(db.String(128))
-    created_time = db.Column(db.DateTime, default=datetime.now())
-    created_by = db.Column(db.String(64))
-    updated_time = db.Column(db.DateTime, default=datetime.now())
-    updated_by = db.Column(db.String(64))
+    user_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='用户编号')
+    username = db.Column(db.String(128), nullable=False, comment='用户名')
+    password = db.Column(db.String(512), nullable=False, comment='密码')
+    mobile_no = db.Column(db.String(64), comment='手机号')
+    email = db.Column(db.String(128), comment='邮箱地址')
+    state = db.Column(db.String(32), nullable=False, comment='用户状态')
+    access_token = db.Column(db.String(512), comment='token')
+    last_login_time = db.Column(db.DateTime, comment='最后登录时间')
+    last_success_time = db.Column(db.DateTime, comment='最后成功登录时间')
+    last_error_time = db.Column(db.DateTime, comment='最后失败登录时间')
+    error_times = db.Column(db.Integer, comment='登录失败次数')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
 
     def generate_password_hash(self, password):
         prefix_md5 = self.username + hashlib.md5(password.encode('utf-8')).hexdigest()
@@ -47,34 +48,78 @@ class TUser(Model):
 class TRole(Model):
     __tablename__ = 't_role'
     id = db.Column(db.Integer, primary_key=True)
-    role_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    permissions = db.Column(db.String(256))
-    description = db.Column(db.String(128))
-    created_time = db.Column(db.DateTime, default=datetime.now())
-    created_by = db.Column(db.String(64))
-    updated_time = db.Column(db.DateTime, default=datetime.now())
-    updated_by = db.Column(db.String(64))
-
-
-class TPermission(Model):
-    __tablename__ = 't_permission'
-    id = db.Column(db.Integer, primary_key=True)
-    permission_no = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    endpoint = db.Column(db.String(128))
-    description = db.Column(db.String(128))
-    created_time = db.Column(db.DateTime, default=datetime.now())
-    created_by = db.Column(db.String(64))
-    updated_time = db.Column(db.DateTime, default=datetime.now())
-    updated_by = db.Column(db.String(64))
+    role_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='角色编号')
+    role_name = db.Column(db.String(128), comment='角色名称')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
 
 
 class TUserRoleRel(Model):
     __tablename__ = 't_user_role_rel'
     id = db.Column(db.Integer, primary_key=True)
-    user_no = db.Column(db.Integer, index=True, nullable=False)
-    role_no = db.Column(db.Integer, index=True, nullable=False)
-    description = db.Column(db.String(128))
-    created_time = db.Column(db.DateTime, default=datetime.now())
-    created_by = db.Column(db.String(64))
-    updated_time = db.Column(db.DateTime, default=datetime.now())
-    updated_by = db.Column(db.String(64))
+    user_no = db.Column(db.Integer, index=True, nullable=False, comment='用户编号')
+    role_no = db.Column(db.Integer, nullable=False, comment='角色编号')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+
+
+class TPermission(Model):
+    __tablename__ = 't_permission'
+    id = db.Column(db.Integer, primary_key=True)
+    permission_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='权限编号')
+    permission_name = db.Column(db.String(128), nullable=False, comment='权限名称')
+    module = db.Column(db.String(128), nullable=False, comment='路由模块')
+    endpoint = db.Column(db.String(128), nullable=False, comment='路由路径')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+
+
+class TRolePermissionRel(Model):
+    __tablename__ = 't_role_permission_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    role_no = db.Column(db.Integer, index=True, nullable=False, comment='角色编号')
+    permission_no = db.Column(db.Integer, nullable=False, comment='权限编号')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+
+
+class TMenu(Model):
+    __tablename__ = 't_menu'
+    id = db.Column(db.Integer, primary_key=True)
+    menu_no = db.Column(db.Integer, index=True, nullable=False, comment='菜单编号')
+    menu_name = db.Column(db.String(128), nullable=False, comment='菜单名称')
+    level = db.Column(db.Integer, nullable=False, comment='菜单层级')
+    order = db.Column(db.Integer, nullable=False, comment='菜单顺序')
+    parent_no = db.Column(db.Integer, nullable=False, comment='父级菜单')
+    href = db.Column(db.String(128), nullable=False, comment='菜单链接')
+    icon = db.Column(db.String(128), nullable=False, comment='菜单图标')
+    state = db.Column(db.String(16), nullable=False, comment='菜单状态')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+
+
+class TRoleMenuRel(Model):
+    __tablename__ = 't_role_menu_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    role_no = db.Column(db.Integer, index=True, nullable=False, comment='角色编号')
+    menu_no = db.Column(db.Integer, nullable=False, comment='菜单编号')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')

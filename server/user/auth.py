@@ -20,7 +20,7 @@ payload:
         - "nbf"(not before):    该jwt的使用时间不能早于该时间（unix时间戳）
         - "iss"(issuer):        发布者的url地址（token签发者）
         - "aud"(audience):      接受者的url地址（token接收者）
-        - "iat"(issued at):     该jwt的发布时间（unix时间戳）
+        - "iat"(issued at):     该jwt的签发时间（unix时间戳）
 
     Public Claims:
     Private Claims:
@@ -41,13 +41,15 @@ from server.utils import config
 
 class Auth:
     SECRET_KEY = config.get('jwt', 'secret.key')
+    EXPIRE_TIME = int(config.get('jwt', 'expire.time'))
 
     @staticmethod
-    def encode_auth_token(user_no):
+    def encode_auth_token(user_no, login_time):
         """生成认证Token
 
-        :param user_no: userNo
-        :return: token
+        :param user_no:     用户编号
+        :param login_time:  登录时间
+        :return:            token
         """
         header = {
             'typ': 'JWT',
@@ -55,11 +57,12 @@ class Auth:
         }
 
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=10),
-            'iat': datetime.datetime.utcnow(),
-            'iss': config.get('jwt', 'issuer'),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, milliseconds=Auth.EXPIRE_TIME),  # 销毁的时间
+            'iat': datetime.datetime.utcnow(),  # 签发时间
+            'iss': config.get('jwt', 'issuer'),  # 签发者
             'data': {
-                'id': user_no
+                'id': user_no,
+                'loginTime': login_time
             }
         }
         token = jwt.encode(payload, Auth.SECRET_KEY, algorithm='HS256', headers=header)
@@ -75,17 +78,8 @@ class Auth:
         """
 
         # 取消过期时间验证
-        payload = jwt.decode(auth_token, Auth.SECRET_KEY, options={'verify_exp': False})
+        payload = jwt.decode(auth_token, Auth.SECRET_KEY, options={'verify_exp': True})
         if 'data' in payload and 'id' in payload['data']:
             return payload
         else:
             raise jwt.InvalidTokenError
-
-
-if __name__ == '__main__':
-    # user_no = '111'
-    # token = Auth.encode_auth_token(user_no)
-    # print(token)
-    t = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NzMyNzE3NzIsImlhdCI6MTU3MzI3MTc2MiwiaXNzIjoia2VuIiwiZGF0YSI6eyJpZCI6IjExMSJ9fQ.pvngyr929XmpeGpzVJmVJ-LurkQwodg-wRNCQPf54M4'
-    payload = Auth.decode_auth_token(t)
-    print(payload)

@@ -28,3 +28,10 @@ def generate_permission_no():
     """
     seq_permission_no = Sequence('seq_permission_no')
     return 'P' + str(seq_permission_no.next_value()).zfill(8)
+
+
+def generate_menu_no():
+    """生成菜单编号
+    """
+    seq_menu_no = Sequence('seq_menu_no')
+    return 'M' + str(seq_menu_no.next_value()).zfill(8)
