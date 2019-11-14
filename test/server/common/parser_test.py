@@ -6,7 +6,14 @@
 from server.common.parser import JsonParser, Argument
 
 
-def test_():
+def test_argument():
+    arg = Argument('ka').parse(True, 'va')
+    print(f'arg={arg}')
+
+
+def test_json_parser():
+    data = {'ka': 'va', 'kb': 'vb'}
     req, error = JsonParser(
-        Argument('')
-    )
+        Argument('ka')
+    ).parse(data)
+    print(req)
