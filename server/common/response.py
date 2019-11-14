@@ -12,15 +12,10 @@ from server.common.status import Status
 from server.utils.json_util import to_json
 
 
-class BaseResponse:
-    def __repr__(self):
-        return str(self.__dict__)
+class ResponseDTO:
+    """请求响应对象
+    """
 
-    def __str__(self):
-        return str(self.__dict__)
-
-
-class Response(BaseResponse):
     def __init__(self,
                  result: any = None,
                  success: bool = True,
@@ -47,11 +42,17 @@ class Response(BaseResponse):
         self.errorMsg = error_code.value
         self.success = False
 
+    def __repr__(self):
+        return str(self.__dict__)
+
+    def __str__(self):
+        return str(self.__dict__)
+
 
 def http_response(result: any = None,
                   error: ErrorCode = None,
                   status: Enum = Status.CODE_200):
-    res = Response(result, error=error)
+    res = ResponseDTO(result, error=error)
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'

@@ -33,6 +33,7 @@ def config_flask(app):
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False  # 是否打印SQL语句
+        # UPLOAD_FOLDER=config.get('file', 'upload.folder')
     )
 
 

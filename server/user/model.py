@@ -76,6 +76,7 @@ class TPermission(Model):
     permission_name = db.Column(db.String(128), nullable=False, comment='权限名称')
     module = db.Column(db.String(128), nullable=False, comment='路由模块')
     endpoint = db.Column(db.String(128), nullable=False, comment='路由路径')
+    methods = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
     remark = db.Column(db.String(128), comment='备注')
     created_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
     created_by = db.Column(db.String(64), comment='创建人')

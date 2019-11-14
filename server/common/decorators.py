@@ -10,7 +10,7 @@ from flask import request
 
 from main import app
 from server.common.exception import ServiceError, ErrorCode
-from server.common.response import http_response, Response
+from server.common.response import http_response, ResponseDTO
 from server.utils.log_util import get_logger
 from server.utils.time_util import current_time_as_ms
 
@@ -32,13 +32,13 @@ def http_service(func):
             # 函数调用
             res = func(*args, **kwargs)
         except ServiceError as err:
-            res = Response()
+            res = ResponseDTO()
             res.errorCode = err.code
             res.errorMsg = err.message
             res.success = False
         except Exception:
             traceback.print_exc()
-            res = Response()
+            res = ResponseDTO()
             res.errorCode = ErrorCode.ERROR_CODE_500000.name
             res.errorMsg = ErrorCode.ERROR_CODE_500000.value
             res.success = False

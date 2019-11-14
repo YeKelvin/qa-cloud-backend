@@ -1,6 +1,7 @@
 .pycharm
-.venv
 .idea
+.venv
+__pycache__
 Pipfile.lock
 *config.ini
 *.db

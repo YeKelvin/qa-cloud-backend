@@ -16,6 +16,9 @@ jsonpath = "*"
 pyjwt = "*"
 pytest = "*"
 pytest-html = "*"
+gunicorn = "*"
+gevent = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"

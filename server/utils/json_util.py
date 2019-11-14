@@ -3,9 +3,9 @@
 # @File    : json_util.py
 # @Time    : 2019/11/7 10:04
 # @Author  : Kelvin.Ye
-import orjson
 from typing import Union
 
+import orjson
 from jsonpath import jsonpath
 
 

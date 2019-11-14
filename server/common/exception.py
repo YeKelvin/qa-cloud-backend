@@ -10,16 +10,18 @@ class ServiceError(Exception):
     """业务异常类
     """
 
-    def __init__(self, error_code: Enum = None, msg=None) -> None:
+    def __init__(self, error_code: Enum = None, msg=None):
         super().__init__(self)
         self.code = error_code.name or None
         self.message = msg or error_code.value or None
 
-    def __repr__(self):
-        return str(self.__dict__)
 
-    def __str__(self):
-        return str(self.__dict__)
+class ParseError(Exception):
+    """请求参数解析异常类
+    """
+
+    def __init__(self, msg=None):
+        self.message = msg
 
 
 @unique

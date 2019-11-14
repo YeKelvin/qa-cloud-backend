@@ -45,6 +45,11 @@ def logout():
     pass
 
 
-@blueprint.route('/info', methods=['get'])
+@blueprint.route('/info', methods=['POST'])
 def info():
+    pass
+
+
+@blueprint.route('/menus', methods=['POST'])
+def menus():
     pass
