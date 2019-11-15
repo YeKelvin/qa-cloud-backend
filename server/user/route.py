@@ -5,9 +5,8 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint, request
 
-from server.common.response import http_response
-from server.user.auth import Auth
-from server.user.model import TUser
+from server.common.parser import JsonParser, Argument
+from server.user import service
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -23,21 +22,11 @@ def register():
 
 @blueprint.route('/login', methods=['POST'])
 def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    if not username or not password:
-        return http_response('账号或密码不能为空')
-    user = TUser.query.filter_by(username=username).first()
-    log.debug(f'user={user}')
-    if not user:
-        return http_response('账号或密码不能为空')
-    if user.check_password_hash(password):
-        log.debug('密码校验通过')
-        token = Auth.encode_auth_token(user.user_no)
-        return http_response({'token': token})
-    else:
-        log.debug('密码校验失败')
-        return http_response('账号或密码不能为空')
+    req, error = JsonParser(
+        Argument('username', required=True, nullable=False, help='账号或密码不能为空'),
+        Argument('password', required=True, nullable=False, help='账号或密码不能为空')
+    ).parse()
+    return service.login(req, error)
 
 
 @blueprint.route('/logout', methods=['POST'])
