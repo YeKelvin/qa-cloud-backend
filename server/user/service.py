@@ -6,32 +6,37 @@
 import datetime
 
 from server.common.decorators import http_service
-from server.common.response import http_response
+from server.common.request import RequestDTO
 from server.common.sequence import Sequence
 from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils.log_util import get_logger
+from server.utils.time_util import STRFTIME_FORMAT
 
 log = get_logger(__name__)
 
 
 @http_service
-def login(req):
-    user = TUser.query.filter_by(username=req.username).first()
-    log.debug(f'user={user}')
+def register(req: RequestDTO):
+    pass
+
+
+@http_service
+def login(req: RequestDTO):
+    user = TUser.query.filter_by(username=req.attr.username).first()
     if not user:
-        return http_response('账号或密码不正确')
-    if user.check_password_hash(req.password):
+        return '账号或密码不正确'
+    if user.check_password_hash(req.attr.password):
         log.debug('密码校验通过')
         login_time = datetime.datetime.utcnow()
-        token = Auth.encode_auth_token(user.user_no, login_time)
+        token = Auth.encode_auth_token(user.user_no, login_time.strftime(STRFTIME_FORMAT))
         user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
-        return http_response({'accessToken': token})
+        return {'accessToken': token}
     else:
         log.debug('密码校验失败')
         if user.error_times < 3:
             user.update(error_times=user.error_times + 1)
-        return http_response('账号或密码不正确')
+        return '账号或密码不正确'
 
 
 def generate_user_no():

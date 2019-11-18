@@ -12,6 +12,7 @@ from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils import randoms
 from server.utils.log_util import get_logger
+# from server.app import get_app_instance
 
 log = get_logger(__name__)
 
@@ -39,9 +40,10 @@ def set_user():
 
 
 def set_logid():
-    g.logid = (f'{threading.current_thread().ident}_'
-               f'{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}_'
-               f'{randoms.get_number(4)}')
+        # g.logid = (f'{threading.current_thread().ident}_'
+        #            f'{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}_'
+        #            f'{randoms.get_number(4)}')
+    log.info('set_logid')
 
 
 def after_request():

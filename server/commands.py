@@ -59,6 +59,8 @@ def init_seq():
     click.echo('create sequence seq_role_no success')
     TSequence.create(seq_name='seq_permission_no')
     click.echo('create sequence seq_permission_no success')
+    TSequence.create(seq_name='seq_menu_no')
+    click.echo('create sequence seq_menu_no success')
 
 
 @with_appcontext
@@ -69,7 +71,7 @@ def init_user():
     admin.user_no = generate_user_no()  # U00000001
     admin.username = 'admin'
     admin.password = admin.generate_password_hash('admin')
-    admin.status = 'NORMAL'
+    admin.state = 'NORMAL'
     admin.save()
     click.echo('create user admin success')
 
@@ -82,6 +84,7 @@ def init_role():
     TRole.create(role_no=generate_role_no(), role_name='系统管理员')  # R00000002
     TRole.create(role_no=generate_role_no(), role_name='管理员')  # R00000003
     TRole.create(role_no=generate_role_no(), role_name='帅哥美女')  # R00000004
+    click.echo('create role success')
 
 
 @with_appcontext
@@ -89,13 +92,14 @@ def init_permission():
     """初始化权限
     """
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', module='/user',
-                       endpoint='/register')  # P00000001
+                       endpoint='/register', methods='POST')  # P00000001
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', module='/user',
-                       endpoint='/login')  # P00000002
+                       endpoint='/login', methods='POST')  # P00000002
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', module='/user',
-                       endpoint='/logout')  # P00000003
+                       endpoint='/logout', methods='POST')  # P00000003
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', module='/user',
-                       endpoint='/info')  # P00000004
+                       endpoint='/info', methods='POST')  # P00000004
+    click.echo('create permisson success')
 
 
 @with_appcontext
@@ -103,6 +107,7 @@ def init_user_role_rel():
     """初始化用户角色关联关系
     """
     TUserRoleRel.create(user_no='U00000001', role_no='R00000001')
+    click.echo('create user role relation success')
 
 
 @with_appcontext
@@ -113,6 +118,7 @@ def init_role_permission_rel():
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000002')
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000003')
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000004')
+    click.echo('create role permisson relation success')
 
 
 @with_appcontext
@@ -121,6 +127,7 @@ def init_menu():
     """
     TMenu.create(menu_no=generate_menu_no(), menu_name='用户管理', level='1', order='1', parent_no='', href='', icon='',
                  state='NORMAL')  # M00000001
+    click.echo('create menu success')
 
 
 @with_appcontext
@@ -128,3 +135,4 @@ def init_role_menu_rel():
     """初始化角色菜单关联关系
     """
     TRoleMenuRel.create(role_no='R00000001', menu_no='M00000001')
+    click.echo('create role menu relation success')

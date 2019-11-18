@@ -6,6 +6,8 @@
 import time
 from datetime import datetime
 
+STRFTIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 
 def current_strftime(format: str = '%Y-%m-%d %H:%M:%S') -> str:
     """获取当前时间并格式化为时间字符串
@@ -16,19 +18,19 @@ def current_strftime(format: str = '%Y-%m-%d %H:%M:%S') -> str:
     return datetime.now().strftime(format)
 
 
-def timestamp_as_s() -> int:
+def current_timestamp_as_s() -> int:
     """获取秒级时间戳
     """
     return int(time.time())
 
 
-def timestamp_as_ms() -> int:
+def current_timestamp_as_ms() -> int:
     """获取毫秒级时间戳
     """
     return int(time.time() * 1000)
 
 
-def timestamp_as_micro_s() -> int:
+def current_timestamp_as_micro_s() -> int:
     """获取微秒级时间戳
     """
     return int(round(time.time() * 1000000))

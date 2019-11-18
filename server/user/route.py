@@ -3,7 +3,7 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from flask import Blueprint, request
+from flask import Blueprint
 
 from server.common.parser import JsonParser, Argument
 from server.user import service
@@ -16,8 +16,11 @@ blueprint = Blueprint('user', __name__, url_prefix='/user')
 
 @blueprint.route('/register', methods=['POST'])
 def register():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    req = JsonParser(
+        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('password', required=True, nullable=False, help='用户密码不能为空')
+    ).parse()
+    return service.register(req)
 
 
 @blueprint.route('/login', methods=['POST'])

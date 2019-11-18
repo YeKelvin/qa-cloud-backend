@@ -14,16 +14,25 @@ from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
+__app__ = None
+
 
 def create_app() -> Flask:
     app = Flask(__name__)
     config_flask(app)
     register_extensions(app)
     register_blueprints(app)
-    # register_hooks(app)
+    register_hooks(app)
     register_shellcontext(app)
     register_commands(app)
     return app
+
+
+def get_app_instance() -> Flask:
+    global __app__
+    if __app__ is None:
+        __app__ = create_app()
+    return __app__
 
 
 def config_flask(app):
@@ -51,10 +60,11 @@ def register_blueprints(app):
 
 
 def register_hooks(app):
-    app.before_request(hooks.set_user())
-    app.before_request(hooks.set_logid())
-    app.after_request(hooks.after_request)
-    app.register_error_handler(404, hooks.error_handler)
+    # app.before_request(hooks.set_user())
+    # app.before_request(hooks.set_logid())
+    # app.after_request(hooks.after_request)
+    # app.register_error_handler(404, hooks.error_handler)
+    pass
 
 
 def register_shellcontext(app):
