@@ -80,15 +80,15 @@ class BaseParser:
     def _init(self, data):
         raise NotImplementedError
 
-    def parse(self, data=None) -> (RequestDTO or None, str or None):
+    def parse(self, data=None) -> RequestDTO:
         request_dto = RequestDTO()
         try:
             self._init(data)
             for arg in self.args:
-                request_dto[arg.name] = arg.parse(*self._get(arg.name))
+                request_dto.attr[arg.name] = arg.parse(*self._get(arg.name))
         except ParseError as err:
-            return None, err.message
-        return request_dto, None
+            request_dto.error = err.message
+        return request_dto
 
 
 class JsonParser(BaseParser):

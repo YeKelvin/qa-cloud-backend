@@ -5,10 +5,16 @@
 # @Author  : Kelvin.Ye
 
 
-class RequestDTO(dict):
+class RequestDTO:
     """请求对象
     """
 
+    def __init__(self):
+        self.attr = AttrDict()
+        self.error = None
+
+
+class AttrDict(dict):
     def __setattr__(self, key, value):
         self.__setitem__(key, value)
 

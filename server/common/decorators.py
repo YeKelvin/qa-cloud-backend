@@ -6,48 +6,47 @@
 import traceback
 from functools import wraps
 
-from flask import request
+from flask import request, g
 
-from main import app
 from server.common.exception import ServiceError, ErrorCode
+from server.common.request import RequestDTO
 from server.common.response import http_response, ResponseDTO
 from server.utils.log_util import get_logger
-from server.utils.time_util import current_time_as_ms
+from server.utils.time_util import timestamp_as_ms
 
 log = get_logger(__name__)
 
 
 def http_service(func):
-    """service层函数装饰器
+    """service层装饰器，主要用户日志记录和捕获异常
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(req: RequestDTO):
         # 记录开始时间
-        starttime = current_time_as_ms()
+        starttime = timestamp_as_ms()
         log.info(
-            rf'logId:[ logId ] method:[{request.method}] path:[{request.path}] request:[ request ]')
+            f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] request:[ {req.attr} ]'
+        )
         res = None
         try:
-            # 函数调用
-            res = func(*args, **kwargs)
+            if req.error is None:
+                # 函数调用
+                res = func(req)
+            else:
+                res = req.error
         except ServiceError as err:
-            res = ResponseDTO()
-            res.errorCode = err.code
-            res.errorMsg = err.message
-            res.success = False
+            res = ResponseDTO(errorCode=err.code, errorMsg=err.message)
         except Exception:
             traceback.print_exc()
-            res = ResponseDTO()
-            res.errorCode = ErrorCode.ERROR_CODE_500000.name
-            res.errorMsg = ErrorCode.ERROR_CODE_500000.value
-            res.success = False
+            res = ResponseDTO(error=ErrorCode.E500000)
         finally:
             # 计算耗时ms
-            elapsed_time = current_time_as_ms() - starttime
+            elapsed_time = timestamp_as_ms() - starttime
             log.info(
-                rf'logId:[ logId ] method:[{request.method}] path:[{request.path}] '
-                rf'response:[ {res} ] elapsed:[{elapsed_time}ms]')
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'response:[ {res} ] elapsed:[ {elapsed_time}ms ]'
+            )
             return http_response(res)
 
     return wrapper
@@ -59,12 +58,3 @@ def require_login():
 
 def require_permission():
     pass
-
-
-def with_app_context(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        with app.app_context():
-            return func(*args, **kwargs)
-
-    return wrapper

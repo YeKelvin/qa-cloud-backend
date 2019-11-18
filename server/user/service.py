@@ -16,7 +16,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def login(req, error):
+def login(req):
     user = TUser.query.filter_by(username=req.username).first()
     log.debug(f'user={user}')
     if not user:

@@ -51,7 +51,8 @@ def register_blueprints(app):
 
 
 def register_hooks(app):
-    app.before_request(hooks.before_request)
+    app.before_request(hooks.set_user())
+    app.before_request(hooks.set_logid())
     app.after_request(hooks.after_request)
     app.register_error_handler(404, hooks.error_handler)
 

@@ -22,11 +22,11 @@ def register():
 
 @blueprint.route('/login', methods=['POST'])
 def login():
-    req, error = JsonParser(
+    req = JsonParser(
         Argument('username', required=True, nullable=False, help='账号或密码不能为空'),
         Argument('password', required=True, nullable=False, help='账号或密码不能为空')
     ).parse()
-    return service.login(req, error)
+    return service.login(req)
 
 
 @blueprint.route('/logout', methods=['POST'])
