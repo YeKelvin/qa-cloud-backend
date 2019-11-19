@@ -7,8 +7,8 @@ from enum import Enum
 
 from flask import make_response
 
-from server.common.exception import ErrorCode
-from server.common.status import Status
+from server.libs.exception import ErrorCode
+from server.libs.status import Status
 from server.utils.json_util import to_json
 
 

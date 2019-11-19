@@ -3,6 +3,7 @@
 # @File    : app.py
 # @Time    : 2019/11/7 11:02
 # @Author  : Kelvin.Ye
+import logging
 import os
 
 from flask import Flask
@@ -10,7 +11,7 @@ from flask import Flask
 from server import user, system, commands, hooks
 from server.extensions import db
 from server.utils import config
-from server.utils.log_util import get_logger
+from server.utils.log_util import get_logger, CONSOLE_HANDLER, LEVEL
 
 log = get_logger(__name__)
 
@@ -19,7 +20,8 @@ __app__ = None
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    config_flask(app)
+    configure_flask(app)
+    configure_logger()
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
@@ -35,7 +37,7 @@ def get_app_instance() -> Flask:
     return __app__
 
 
-def config_flask(app):
+def configure_flask(app):
     app.config.from_mapping(
         DEBUG=True,
         SQLALCHEMY_DATABASE_URI=__generate_db_url(),
@@ -44,6 +46,12 @@ def config_flask(app):
         SQLALCHEMY_ECHO=False  # 是否打印SQL语句
         # UPLOAD_FOLDER=config.get('file', 'upload.folder')
     )
+
+
+def configure_logger():
+    logger = logging.getLogger()
+    logger.addHandler(CONSOLE_HANDLER)
+    logger.setLevel(LEVEL)
 
 
 def register_extensions(app):
@@ -60,11 +68,10 @@ def register_blueprints(app):
 
 
 def register_hooks(app):
-    # app.before_request(hooks.set_user())
-    # app.before_request(hooks.set_logid())
+    app.before_request(hooks.set_user)
+    app.before_request(hooks.set_logid)
     # app.after_request(hooks.after_request)
     # app.register_error_handler(404, hooks.error_handler)
-    pass
 
 
 def register_shellcontext(app):

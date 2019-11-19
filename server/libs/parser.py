@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 from flask import request
 
-from server.common.exception import ParseError
-from server.common.request import RequestDTO
+from server.libs.exception import ParseError
+from server.libs.request import RequestDTO
 from server.utils.json_util import from_json
 from server.utils.log_util import get_logger
 

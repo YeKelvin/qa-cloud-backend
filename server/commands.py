@@ -6,7 +6,7 @@
 import click
 from flask.cli import with_appcontext
 
-from server.common.sequence import TSequence
+from server.libs.sequence import TSequence
 from server.extensions import db
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TMenu, TRoleMenuRel

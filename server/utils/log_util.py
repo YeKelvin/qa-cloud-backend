@@ -51,22 +51,23 @@ import logging
 
 from server.utils import config
 
+# 日志输出格式
+FORMATTER = logging.Formatter('[%(asctime)s][%(levelname)s][%(name)s.%(funcName)s] %(message)s')
+
+# 输出到控制台
+CONSOLE_HANDLER = logging.StreamHandler()
+CONSOLE_HANDLER.setFormatter(FORMATTER)
+
+# 写入日志文件
+FILE_HANDLER = logging.FileHandler(config.get('log', 'name'))
+
+# 日志级别
+LEVEL = config.get('log', 'level')
+
 
 def get_logger(name):
     logger = logging.getLogger(name)
     logger.propagate = False
-    logger.setLevel(config.get('log', 'level'))
-
-    # fh = logging.FileHandler(config.get('log').get('name'))  # 用于写入日志文件
-    ch = logging.StreamHandler()  # 用于输出到控制台
-
-    # 定义handler的输出格式
-    formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(name)s.%(funcName)s] %(message)s')
-    # fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-
-    # 给logger添加handler
-    # logger.addHandler(fh)
-    logger.addHandler(ch)
-
+    logger.setLevel(LEVEL)
+    logger.addHandler(CONSOLE_HANDLER)
     return logger

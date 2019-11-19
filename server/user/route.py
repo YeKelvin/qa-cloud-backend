@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
-from server.common.parser import JsonParser, Argument
+from server.libs.parser import JsonParser, Argument
 from server.user import service
 from server.utils.log_util import get_logger
 

@@ -5,9 +5,9 @@
 # @Author  : Kelvin.Ye
 import datetime
 
-from server.common.decorators import http_service
-from server.common.request import RequestDTO
-from server.common.sequence import Sequence
+from server.libs.decorators import http_service
+from server.libs.request import RequestDTO
+from server.libs.sequence import Sequence
 from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils.log_util import get_logger

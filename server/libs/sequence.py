@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from server.common.exception import ServiceError, ErrorCode
+from server.libs.exception import ServiceError, ErrorCode
 from server.database import Model, db
 from server.utils import config
 from server.utils.log_util import get_logger
