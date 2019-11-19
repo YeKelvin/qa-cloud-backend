@@ -3,7 +3,7 @@
 # @File    : test_parser.py
 # @Time    : 2019/11/14 15:22
 # @Author  : Kelvin.Ye
-from server.libs.parser import JsonParser, Argument
+from server.librarys.parser import JsonParser, Argument
 
 
 def test_argument():

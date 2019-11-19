@@ -8,9 +8,9 @@ from functools import wraps
 
 from flask import request, g
 
-from server.libs.exception import ServiceError, ErrorCode
-from server.libs.request import RequestDTO
-from server.libs.response import http_response, ResponseDTO
+from server.librarys.exception import ServiceError, ErrorCode
+from server.librarys.request import RequestDTO
+from server.librarys.response import http_response, ResponseDTO
 from server.utils.log_util import get_logger
 from server.utils.time_util import current_timestamp_as_ms
 
@@ -32,13 +32,20 @@ def http_service(func):
         try:
             if req.error is None:
                 # 函数调用
-                res = func(req)
+                result = func(req)
+                res = ResponseDTO(result)
+                log.info(
+                    f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] result:[ {result} ]'
+                )
             else:
-                res = req.error
+                res = ResponseDTO(errorMsg=req.error)
         except ServiceError as err:
-            res = ResponseDTO(errorCode=err.code, errorMsg=err.message)
+            res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
         except Exception:
-            traceback.print_exc()
+            log.error(
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'traceback: [ {traceback.format_exc()} ]'
+            )
             res = ResponseDTO(error=ErrorCode.E500000)
         finally:
             # 计算耗时ms

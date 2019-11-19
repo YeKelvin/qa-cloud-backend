@@ -6,7 +6,7 @@
 import click
 from flask.cli import with_appcontext
 
-from server.libs.sequence import TSequence
+from server.librarys.sequence import TSequence
 from server.extensions import db
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TMenu, TRoleMenuRel
@@ -70,7 +70,7 @@ def init_user():
     admin = TUser()
     admin.user_no = generate_user_no()  # U00000001
     admin.username = 'admin'
-    admin.password = admin.generate_password_hash('admin')
+    admin.password = 'admin'
     admin.state = 'NORMAL'
     admin.save()
     click.echo('create user admin success')

@@ -10,10 +10,14 @@ class ServiceError(Exception):
     """业务异常类
     """
 
-    def __init__(self, error_code: Enum = None, msg=None):
+    def __init__(self, msg=None, code=None, error: Enum = None):
         super().__init__(self)
-        self.code = error_code.name or None
-        self.message = msg or error_code.value or None
+        if error is None:
+            self.message = msg
+            self.code = code
+        else:
+            self.message = error.value
+            self.code = code.name
 
 
 class ParseError(Exception):

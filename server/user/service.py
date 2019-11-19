@@ -5,9 +5,10 @@
 # @Author  : Kelvin.Ye
 import datetime
 
-from server.libs.decorators import http_service
-from server.libs.request import RequestDTO
-from server.libs.sequence import Sequence
+from server.librarys.decorators import http_service
+from server.librarys.exception import ServiceError
+from server.librarys.request import RequestDTO
+from server.librarys.sequence import Sequence
 from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils.log_util import get_logger
@@ -25,7 +26,7 @@ def register(req: RequestDTO):
 def login(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
     if not user:
-        return '账号或密码不正确'
+        raise ServiceError('账号或密码不正确')
     if user.check_password_hash(req.attr.password):
         log.debug('密码校验通过')
         login_time = datetime.datetime.utcnow()
@@ -36,7 +37,7 @@ def login(req: RequestDTO):
         log.debug('密码校验失败')
         if user.error_times < 3:
             user.update(error_times=user.error_times + 1)
-        return '账号或密码不正确'
+        raise ServiceError('账号或密码不正确')
 
 
 def generate_user_no():

@@ -19,7 +19,7 @@ class TUser(Model):
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='用户编号')
     username = db.Column(db.String(128), nullable=False, comment='用户名')
-    password = db.Column(db.String(512), nullable=False, comment='密码')
+    password_hash = db.Column(db.String(512), nullable=False, comment='密码')
     mobile_no = db.Column(db.String(64), comment='手机号')
     email = db.Column(db.String(128), comment='邮箱地址')
     state = db.Column(db.String(32), nullable=False, comment='用户状态')
@@ -34,7 +34,15 @@ class TUser(Model):
     updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
     updated_by = db.Column(db.String(64), comment='更新人')
 
-    def generate_password_hash(self, password):
+    @property
+    def password(self):
+        return self.password_hash
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = self.__generate_password_hash(password)
+
+    def __generate_password_hash(self, password):
         prefix_md5 = self.username + hashlib.md5(password.encode('utf-8')).hexdigest()
         pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
         return generate_password_hash(pwd_md5)

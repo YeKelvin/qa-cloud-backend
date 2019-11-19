@@ -12,11 +12,14 @@ from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils import randoms
 from server.utils.log_util import get_logger
+
 log = get_logger(__name__)
 
 
 def set_user():
     """before_request
+
+    设置单次请求的全局 user信息
     """
     if 'Authorization' in request.headers:
         auth_header = request.headers.get('Authorization')
@@ -38,8 +41,12 @@ def set_user():
 
 
 def set_logid():
-    g.logid = (f'{threading.current_thread().ident}-'
-               f'{datetime.now().strftime("%Y%m%d-%H%M%S-%f")}-'
+    """before_request
+
+    设置单次请求的全局 logid
+    """
+    g.logid = (f'{threading.current_thread().ident}_'
+               f'{datetime.now().strftime("%Y%m%d%H%M%S%f")}_'
                f'{randoms.get_number(4)}')
 
 

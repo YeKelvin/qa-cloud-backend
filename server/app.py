@@ -21,7 +21,7 @@ __app__ = None
 def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
-    configure_logger()
+    # configure_logger()
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)

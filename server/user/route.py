@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
-from server.libs.parser import JsonParser, Argument
+from server.librarys.parser import JsonParser, Argument
 from server.user import service
 from server.utils.log_util import get_logger
 
@@ -18,7 +18,9 @@ blueprint = Blueprint('user', __name__, url_prefix='/user')
 def register():
     req = JsonParser(
         Argument('username', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('password', required=True, nullable=False, help='用户密码不能为空')
+        Argument('password', required=True, nullable=False, help='用户密码不能为空'),
+        Argument('mobileNo'),
+        Argument('email')
     ).parse()
     return service.register(req)
 

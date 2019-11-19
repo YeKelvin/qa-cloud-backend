@@ -7,8 +7,8 @@ from enum import Enum
 
 from flask import make_response
 
-from server.libs.exception import ErrorCode
-from server.libs.status import Status
+from server.librarys.exception import ErrorCode
+from server.librarys.status import Status
 from server.utils.json_util import to_json
 
 
@@ -37,9 +37,9 @@ class ResponseDTO:
         self.result = result
         self.success = True
 
-    def set_error(self, error_code: Enum) -> None:
-        self.errorCode = error_code.name
-        self.errorMsg = error_code.value
+    def set_error(self, error: Enum) -> None:
+        self.errorCode = error.name
+        self.errorMsg = error.value
         self.success = False
 
     def __repr__(self):
@@ -49,11 +49,8 @@ class ResponseDTO:
         return str(self.__dict__)
 
 
-def http_response(result: any = None,
-                  error: ErrorCode = None,
-                  status: Enum = Status.CODE_200,
-                  res: ResponseDTO = None):
-    res = res or ResponseDTO(result, error=error)
+def http_response(res: ResponseDTO = None,
+                  status: Enum = Status.CODE_200):
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'

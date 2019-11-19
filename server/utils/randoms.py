@@ -17,4 +17,4 @@ def get_number(length: int, prefix: str = '', suffix: str = '') -> str:
     number = []
     for x in range(length):
         number.append(str(randint(0, 9)))
-    return prefix.join(number).join(suffix)
+    return prefix + ''.join(number) + suffix
