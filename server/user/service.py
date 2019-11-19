@@ -27,17 +27,20 @@ def login(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
     if not user:
         raise ServiceError('账号或密码不正确')
+
     if user.check_password_hash(req.attr.password):
         log.debug('密码校验通过')
         login_time = datetime.datetime.utcnow()
         token = Auth.encode_auth_token(user.user_no, login_time.strftime(STRFTIME_FORMAT))
         user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
         return {'accessToken': token}
-    else:
-        log.debug('密码校验失败')
-        if user.error_times < 3:
-            user.update(error_times=user.error_times + 1)
-        raise ServiceError('账号或密码不正确')
+
+    log.debug('密码校验失败')
+    user.last_error_time = datetime.datetime.utcnow()
+    if user.error_times < 3:
+        user.error_times += 1
+    user.save()
+    raise ServiceError('账号或密码不正确')
 
 
 def generate_user_no():

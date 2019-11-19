@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 
 def http_service(func):
-    """service层装饰器，主要用户日志记录和捕获异常
+    """service层装饰器，主要用于记录日志和捕获异常
     """
 
     @wraps(func)
@@ -30,6 +30,7 @@ def http_service(func):
         )
         res = None
         try:
+            # 判断 request参数解析是否有异常
             if req.error is None:
                 # 函数调用
                 result = func(req)
@@ -40,15 +41,16 @@ def http_service(func):
             else:
                 res = ResponseDTO(errorMsg=req.error)
         except ServiceError as err:
+            # 捕获 service层的业务异常
             res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
         except Exception:
             log.error(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'traceback: [ {traceback.format_exc()} ]'
+                f'traceback:[ {traceback.format_exc()} ]'
             )
             res = ResponseDTO(error=ErrorCode.E500000)
         finally:
-            # 计算耗时ms
+            # 计算耗时，单位毫秒
             elapsed_time = current_timestamp_as_ms() - starttime
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
