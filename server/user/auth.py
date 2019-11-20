@@ -57,7 +57,7 @@ class Auth:
         }
 
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, milliseconds=Auth.EXPIRE_TIME),  # 销毁的时间
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=Auth.EXPIRE_TIME),  # 销毁的时间
             'iat': datetime.datetime.utcnow(),  # 签发时间
             'iss': config.get('jwt', 'issuer'),  # 签发者
             'data': {

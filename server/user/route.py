@@ -3,8 +3,9 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from flask import Blueprint
+from flask import Blueprint, g
 
+from server.librarys.decorators import require_login, require_permission
 from server.librarys.parser import JsonParser, Argument
 from server.user import service
 from server.utils.log_util import get_logger
@@ -35,15 +36,28 @@ def login():
 
 
 @blueprint.route('/logout', methods=['POST'])
+@require_login
 def logout():
-    pass
+    return service.logout()
 
 
 @blueprint.route('/info', methods=['POST'])
+@require_login
 def info():
-    pass
+    return service.info()
 
 
 @blueprint.route('/menus', methods=['POST'])
 def menus():
-    pass
+    return service.menus()
+
+
+@blueprint.route('/test/token', methods=['POST'])
+@require_login
+def token():
+    return 'test require_login'
+
+# @blueprint.route('/test/permission', methods=['POST'])
+# @require_permission
+# def permission():
+#     return 'test require_permission'

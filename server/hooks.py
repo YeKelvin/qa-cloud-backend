@@ -4,8 +4,10 @@
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
 import threading
+import traceback
 from datetime import datetime
 
+import jwt
 from flask import request, g
 
 from server.user.auth import Auth
@@ -23,21 +25,26 @@ def set_user():
     """
     if 'Authorization' in request.headers:
         auth_header = request.headers.get('Authorization')
-        auth_token_arr = auth_header.split(' ')
-        if not auth_token_arr or auth_token_arr[0] != 'JWT' or len(auth_token_arr) != 2:
-            g.user = None
-        else:
-            auth_token = auth_token_arr[1]
+        auth_array = auth_header.split(' ')
+        if not auth_array or len(auth_array) != 2:
+            log.debug('解析 Authorization HTTP Header有误')
+            return
+        auth_schema = auth_array[0]
+        auth_token = auth_array[1]
+        if auth_schema != 'JWT':
+            log.debug('Authorization中的 schema属性请使用 JWT')
+            return
+        try:
             payload = Auth.decode_auth_token(auth_token)
-            auth_token = auth_token_arr[1]
-            try:
-                payload = Auth.decode_auth_token(auth_token)
-            except Exception:
-                g.user = None
             g.user = TUser.query.filter_by(user_no=payload['data']['id']).first()
-            g.payload = payload
-    else:
-        g.user = None
+            g.auth_token = auth_token
+            g.auth_login_time = payload['data']['loginTime']
+        except jwt.ExpiredSignatureError:
+            log.debug('token 已失效')
+        except jwt.InvalidTokenError:
+            log.debug('无效的token')
+        except Exception:
+            log.error(traceback.format_exc())
 
 
 def set_logid():

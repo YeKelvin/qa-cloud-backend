@@ -12,7 +12,6 @@ from server.librarys.sequence import Sequence
 from server.user.auth import Auth
 from server.user.model import TUser
 from server.utils.log_util import get_logger
-from server.utils.time_util import STRFTIME_FORMAT
 
 log = get_logger(__name__)
 
@@ -31,7 +30,7 @@ def login(req: RequestDTO):
     if user.check_password_hash(req.attr.password):
         log.debug('密码校验通过')
         login_time = datetime.datetime.utcnow()
-        token = Auth.encode_auth_token(user.user_no, login_time.strftime(STRFTIME_FORMAT))
+        token = Auth.encode_auth_token(user.user_no, login_time.timestamp())
         user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
         return {'accessToken': token}
 
@@ -41,6 +40,21 @@ def login(req: RequestDTO):
         user.error_times += 1
     user.save()
     raise ServiceError('账号或密码不正确')
+
+
+@http_service
+def logout():
+    pass
+
+
+@http_service
+def info():
+    pass
+
+
+@http_service
+def menus():
+    pass
 
 
 def generate_user_no():
