@@ -15,6 +15,7 @@ class TActionLog(Model):
     __tablename__ = 't_action_log'
     id = db.Column(db.Integer, primary_key=True)
     action_detail = db.Column(db.String(128), comment='操作描述')
+    action_path = db.Column(db.String(128), comment='操作路径')
     remark = db.Column(db.String(128), comment='备注')
     created_time = db.Column(db.DateTime, comment='创建时间')
     created_by = db.Column(db.String(64), comment='创建人')

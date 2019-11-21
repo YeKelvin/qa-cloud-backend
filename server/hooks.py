@@ -10,8 +10,9 @@ from datetime import datetime
 import jwt
 from flask import request, g
 
+from server.system.model import TActionLog
 from server.user.auth import Auth
-from server.user.model import TUser
+from server.user.model import TUser, TPermission
 from server.utils import randoms
 from server.utils.log_util import get_logger
 
@@ -57,14 +58,20 @@ def set_logid():
                f'{randoms.get_number(4)}')
 
 
-def after_request():
-    log.info('after_request')
+def record_action():
+    """after_request
 
-
-def teardown_request():
-    log.info('teardown_request')
-
-
-def error_handler():
-    log.info('error_handler')
-    return '404'
+    记录请求日志，只记录成功的请求
+    """
+    success = getattr(g, 'success', None)
+    if success:
+        middle_index = request.path.index('/', 1)
+        module = request.path[:middle_index]
+        endpoint = request.path[middle_index:]
+        permission = TPermission.query.filter_by(module=module, endpoint=endpoint).first()
+        TActionLog.create(
+            action_detail=permission.permission_name if permission else None,
+            action_path=f'{request.method} {request.path}',
+            created_time=datetime.now(),
+            created_by=getattr(g, 'operator', None),
+        )

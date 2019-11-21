@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from enum import Enum
 
-from flask import make_response
+from flask import make_response, g
 
 from server.librarys.exception import ErrorCode
 from server.librarys.status import Status
@@ -54,4 +54,5 @@ def http_response(res: ResponseDTO = None,
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
+    g.success = res.success
     return response

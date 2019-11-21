@@ -70,8 +70,7 @@ def register_blueprints(app):
 def register_hooks(app):
     app.before_request(hooks.set_logid)
     app.before_request(hooks.set_user)
-    # app.after_request(hooks.after_request)
-    # app.register_error_handler(404, hooks.error_handler)
+    app.after_request(hooks.record_action)
 
 
 def register_shellcontext(app):
