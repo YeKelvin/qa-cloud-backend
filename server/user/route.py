@@ -3,7 +3,7 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from flask import Blueprint, g
+from flask import Blueprint
 
 from server.librarys.decorators import require_login, require_permission
 from server.librarys.parser import JsonParser, Argument
@@ -17,6 +17,8 @@ blueprint = Blueprint('user', __name__, url_prefix='/user')
 
 @blueprint.route('/register', methods=['POST'])
 def register():
+    """用户注册
+    """
     req = JsonParser(
         Argument('username', required=True, nullable=False, help='用户名称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
@@ -28,6 +30,8 @@ def register():
 
 @blueprint.route('/login', methods=['POST'])
 def login():
+    """用户登录
+    """
     req = JsonParser(
         Argument('username', required=True, nullable=False, help='账号或密码不能为空'),
         Argument('password', required=True, nullable=False, help='账号或密码不能为空')
@@ -38,17 +42,24 @@ def login():
 @blueprint.route('/logout', methods=['POST'])
 @require_login
 def logout():
+    """用户登出
+    """
     return service.logout()
 
 
 @blueprint.route('/info', methods=['POST'])
 @require_login
 def info():
+    """查询个人用户信息
+    """
     return service.info()
 
 
 @blueprint.route('/menus', methods=['POST'])
+@require_login
 def menus():
+    """查询用户菜单
+    """
     return service.menus()
 
 
@@ -57,7 +68,9 @@ def menus():
 def token():
     return 'test require_login'
 
-# @blueprint.route('/test/permission', methods=['POST'])
-# @require_permission
-# def permission():
-#     return 'test require_permission'
+
+@blueprint.route('/test/permission', methods=['POST'])
+@require_login
+@require_permission
+def permission():
+    return 'test require_permission'

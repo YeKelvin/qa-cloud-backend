@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : object_util.py.py
+# @File    : object_util.py
 # @Time    : 2019/11/7 15:56
 # @Author  : Kelvin.Ye
 

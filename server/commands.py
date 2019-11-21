@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : commands.py.py
+# @File    : commands.py
 # @Time    : 2019/11/7 10:55
 # @Author  : Kelvin.Ye
 import click

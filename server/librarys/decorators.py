@@ -3,8 +3,8 @@
 # @File    : decorators.py
 # @Time    : 2019/11/7 15:41
 # @Author  : Kelvin.Ye
-import datetime
 import traceback
+from datetime import datetime
 from functools import wraps
 
 from flask import request, g
@@ -12,6 +12,7 @@ from flask import request, g
 from server.librarys.exception import ServiceError, ErrorCode
 from server.librarys.request import RequestDTO
 from server.librarys.response import http_response, ResponseDTO
+from server.user.model import TUserRoleRel, TRolePermissionRel, TPermission
 from server.utils.log_util import get_logger
 from server.utils.time_util import current_timestamp_as_ms
 
@@ -24,7 +25,7 @@ def http_service(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        req: RequestDTO = args[0] or kwargs.get('req', RequestDTO())
+        req: RequestDTO = (args[0] if args else None) or kwargs.get('req', RequestDTO())
         # 记录开始时间
         starttime = current_timestamp_as_ms()
         log.info(
@@ -78,50 +79,110 @@ def require_login(func):
         user = getattr(g, 'user', None)
         # JWT解析 payload失败
         if not auth_token or not auth_login_time:
-            log.debug('JWT解析 payload失败')
-            return http_response(ResponseDTO(errorMsg='用户未登录'))
+            log.debug(f'logId:[ {g.logid} ] JWT解析 payload失败')
+            return __auth_fail_response('用户未登录')
 
         # 查询 user失败或 user不存在
         if not user:
-            log.debug('查询 user失败或 user不存在')
-            return http_response(ResponseDTO(errorMsg='用户未登录'))
+            log.debug(f'logId:[ {g.logid} ] 查询 user失败或 user不存在')
+            return __auth_fail_response('用户未登录')
 
         # user已主动登出系统，需要重新登录
         if not user.access_token:
-            log.debug('user已主动登出系统，需要重新登录')
-            return http_response(ResponseDTO(errorMsg='用户未登录'))
+            log.debug(f'logId:[ {g.logid} ] user已主动登出系统，需要重新登录')
+            return __auth_fail_response('用户未登录')
 
         # user状态异常
         if user.state != 'NORMAL':
-            log.debug(f'user状态异常 user.state:[ {user.state} ]')
-            return http_response(ResponseDTO(errorMsg='用户状态异常，请联系管理员'))
+            log.debug(f'logId:[ {g.logid} ] user.state:[ {user.state} ] user状态异常')
+            return __auth_fail_response('用户未登录')
 
         # user的 access_token已更变，不能使用旧 token认证
         if auth_token != user.access_token:
-            log.debug('user的 access_token已更变，不能使用旧 token认证')
-            return http_response(ResponseDTO(errorMsg='用户未登录'))
+            log.debug(f'logId:[ {g.logid} ] user的 access_token已更变，不能使用旧 token认证')
+            return __auth_fail_response('用户未登录')
 
         # user 中的最后成功登录时间和 token中的登录时间不一致
-        auth_login_time = datetime.datetime.fromtimestamp(auth_login_time)
-        if auth_login_time != user.last_success_time:
-            log.debug(f'user 中的最后成功登录时间和 token中的登录时间不一致 '
-                      f'user.last_success_time:[ {user.last_success_time} ] '
-                      f'auth_login_time:[ {auth_login_time} ]'
-                      )
-            return http_response(ResponseDTO(errorMsg='用户未登录'))
+        if datetime.fromtimestamp(auth_login_time) != user.last_success_time:
+            log.debug(
+                f'logId:[ {g.logid} ] '
+                f'auth_login_time:[ {datetime.fromtimestamp(auth_login_time)} ]'
+                f'user.last_success_time:[ {user.last_success_time} ] '
+                f'user中的最后成功登录时间和 token中的登录时间不一致 '
+            )
+            return __auth_fail_response('用户未登录')
 
+        g.operator = user.username
         return func(*args, **kwargs)
 
     return wrapper
 
 
-@require_login
 def require_permission(func):
     """权限校验装饰器
     """
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
+        user = getattr(g, 'user', None)
+        if not user:
+            log.debug(
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'获取 flask.g.user失败'
+            )
+            return __auth_fail_response('用户无权限')
+
+        user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
+        if not user_role:
+            log.debug(
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'username:[ {user.username} ] 查询用户角色失败'
+            )
+            return __auth_fail_response('用户无权限')
+
+        role_permission_list = TRolePermissionRel.query.filter_by(role_no=user_role.role_no).all()
+        if not role_permission_list:
+            log.debug(
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'username:[ {user.username} ] 查询角色权限失败'
+            )
+            return __auth_fail_response('用户无权限')
+
+        for rp in role_permission_list:
+            permission = TPermission.query.filter_by(permission_no=rp.permission_no).first()
+            if not permission:
+                log.debug(
+                    f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                    f'查询权限信息失败'
+                )
+                return __auth_fail_response('用户无权限')
+
+            # 校验 用户是否有该请求方法和请求路径的权限
+            if (
+                    request.method in permission.methods
+                    and
+                    request.path in permission.module + permission.endpoint
+            ):
+                return func(*args, **kwargs)
+
+        # 权限校验失败
+        log.debug(f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] 用户无该请求的方法或路径的权限')
+        return __auth_fail_response('用户无权限')
 
     return wrapper
+
+
+def __auth_fail_response(errorMsg: str):
+    user = getattr(g, 'user', None)
+    log.info(
+        f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+        f'header:[ {dict(request.headers.to_list("utf-8"))} ] '
+        f'username:[ {user.username if user else None} ] user.state:[ {user.state if user else None} ]'
+    )
+    res = ResponseDTO(errorMsg=errorMsg)
+    http_res = http_response(res)
+    log.info(
+        f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+        f'header:[ {dict(http_res.headers.to_list("utf-8"))}] response:[ {res} ]'
+    )
+    return http_res

@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from server.librarys.exception import ServiceError, ErrorCode
 from server.database import Model, db
+from server.librarys.exception import ServiceError
 from server.utils import config
 from server.utils.log_util import get_logger
 
@@ -16,18 +16,18 @@ log = get_logger(__name__)
 class TSequence(Model):
     __tablename__ = 't_sequence'
     id = db.Column(db.Integer, primary_key=True)
-    seq_name = db.Column(db.String(128), index=True, unique=True, nullable=False)
-    current_val = db.Column(db.Integer, nullable=False, default=0)
-    min_val = db.Column(db.Integer, nullable=False, default=0)
-    max_val = db.Column(db.Integer, nullable=False, default=999999999)
-    increment = db.Column(db.Integer, nullable=False, default=1)
-    loop = db.Column(db.Boolean, nullable=False, default=False)
-    loop_count = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.String(128))
-    created_time = db.Column(db.DateTime, default=datetime.now())
-    created_by = db.Column(db.String(64))
-    updated_time = db.Column(db.DateTime, default=datetime.now())
-    updated_by = db.Column(db.String(64))
+    seq_name = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
+    current_val = db.Column(db.Integer, nullable=False, default=0, comment='当前序列值')
+    min_val = db.Column(db.Integer, nullable=False, default=0, comment='序列最小值')
+    max_val = db.Column(db.Integer, nullable=False, default=999999999, comment='序列最大值')
+    increment = db.Column(db.Integer, nullable=False, default=1, comment='序列步长')
+    loop = db.Column(db.Boolean, nullable=False, default=False, comment='序列是否循环')
+    loop_count = db.Column(db.Integer, nullable=False, default=0, comment='序列允许循环次数')
+    remark = db.Column(db.String(128), comment='备注')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    created_by = db.Column(db.String(64), comment='创建人')
+    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
 
     @staticmethod
     def next_val(seq_name):
@@ -44,7 +44,7 @@ class TSequence(Model):
                 next_value = sequence.min_val
                 sequence.loop_count = sequence.loop_count + 1
             else:
-                raise ServiceError(ErrorCode.ERROR_CODE_500002, msg=f'{seq_name}序列已达最大值')
+                raise ServiceError(f'{seq_name}序列已达最大值')
         else:
             # 序列未达最大值，按步长增长
             next_value = sequence.current_val + sequence.increment

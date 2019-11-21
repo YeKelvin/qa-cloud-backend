@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : status.py.py
+# @File    : status.py
 # @Time    : 2019/11/7 11:54
 # @Author  : Kelvin.Ye
 

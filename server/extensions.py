@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : extensions.py.py
+# @File    : extensions.py
 # @Time    : 2019/11/7 10:56
 # @Author  : Kelvin.Ye
 from flask_sqlalchemy import SQLAlchemy

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : database.py.py
+# @File    : database.py
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
 
