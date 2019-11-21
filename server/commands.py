@@ -48,6 +48,7 @@ def initdata():
     init_role_permission_rel()
     init_menu()
     init_role_menu_rel()
+    init_action_log()
     click.echo('初始化数据成功')
 
 
