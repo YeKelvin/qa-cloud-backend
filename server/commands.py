@@ -150,3 +150,14 @@ def init_role_menu_rel():
     """
     TRoleMenuRel.create(role_no='R00000001', menu_no='M00000001', created_time=datetime.now(), created_by='system')
     click.echo('创建角色菜单关联关系成功')
+
+
+@with_appcontext
+def init_action_log():
+    TActionLog.create(
+        action_detail='init',
+        action_path=None,
+        created_time=datetime.now(),
+        created_by='system',
+    )
+    click.echo('初始化动作日志数据成功')
