@@ -24,7 +24,13 @@ def set_user():
 
     设置单次请求的全局 user信息
     """
+    # 排除指定的请求
+    if '/user/login' in request.path and 'POST' in request.method:
+        return
+
+    # 判断请求头部是否含有 Authorization属性
     if 'Authorization' in request.headers:
+        # 解析 JWT token并判断是否符合规范
         auth_header = request.headers.get('Authorization')
         auth_array = auth_header.split(' ')
         if not auth_array or len(auth_array) != 2:
@@ -33,10 +39,12 @@ def set_user():
         auth_schema = auth_array[0]
         auth_token = auth_array[1]
         if auth_schema != 'JWT':
-            log.debug('Authorization中的 schema属性请使用 JWT')
+            log.debug('Authorization中的 schema请使用 JWT开头')
             return
         try:
+            # 解密 token获取 payload
             payload = Auth.decode_auth_token(auth_token)
+            # 设置全局属性
             g.user = TUser.query.filter_by(user_no=payload['data']['id']).first()
             g.auth_token = auth_token
             g.auth_login_time = payload['data']['loginTime']
