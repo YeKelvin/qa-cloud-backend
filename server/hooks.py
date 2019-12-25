@@ -66,7 +66,7 @@ def set_logid():
                f'{randoms.get_number(4)}')
 
 
-def record_action():
+def record_action(response):
     """after_request
 
     记录请求日志，只记录成功的请求
@@ -83,3 +83,4 @@ def record_action():
             created_time=datetime.now(),
             created_by=getattr(g, 'operator', None),
         )
+    return response

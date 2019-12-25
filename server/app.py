@@ -7,6 +7,7 @@ import logging
 import os
 
 from flask import Flask
+from flask_cors import CORS
 
 from server import user, system, commands, hooks
 from server.extensions import db
@@ -22,6 +23,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
     # configure_logger()
+    register_cors(app)
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
@@ -52,6 +54,10 @@ def configure_logger():
     logger = logging.getLogger()
     logger.addHandler(CONSOLE_HANDLER)
     logger.setLevel(LEVEL)
+
+
+def register_cors(app):
+    CORS(app, supports_credentials=True)
 
 
 def register_extensions(app):

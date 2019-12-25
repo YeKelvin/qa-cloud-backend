@@ -23,7 +23,7 @@ def register():
         Argument('username', required=True, nullable=False, help='用户名称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
-        Argument('email')
+        Argument('email'),
     ).parse()
     return service.register(req)
 
@@ -34,7 +34,7 @@ def login():
     """
     req = JsonParser(
         Argument('username', required=True, nullable=False, help='账号或密码不能为空'),
-        Argument('password', required=True, nullable=False, help='账号或密码不能为空')
+        Argument('password', required=True, nullable=False, help='账号或密码不能为空'),
     ).parse()
     return service.login(req)
 
@@ -47,7 +47,7 @@ def logout():
     return service.logout()
 
 
-@blueprint.route('/info', methods=['POST'])
+@blueprint.route('/info', methods=['GET'])
 @require_login
 def info():
     """查询个人用户信息

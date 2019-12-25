@@ -8,11 +8,13 @@ verify_ssl = true
 
 [packages]
 flask = "*"
+flask-cors = "*"
 flask-socketio = "*"
 flask-sqlalchemy = "*"
 click = "*"
 orjson = "*"
 jsonpath = "*"
+pylint = "*"
 pyjwt = "*"
 pytest = "*"
 pytest-html = "*"
