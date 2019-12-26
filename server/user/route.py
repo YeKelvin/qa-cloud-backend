@@ -21,6 +21,7 @@ def register():
     """
     req = JsonParser(
         Argument('username', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('nickname', required=True, nullable=False, help='昵称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
         Argument('email'),

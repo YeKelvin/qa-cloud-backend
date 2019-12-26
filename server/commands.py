@@ -73,6 +73,7 @@ def init_user():
     admin = TUser()
     admin.user_no = generate_user_no()  # U00000001
     admin.username = 'admin'
+    admin.nickname = '超级管理员'
     admin.password = 'admin'
     admin.state = 'NORMAL'
     admin.created_time = datetime.now()
@@ -109,7 +110,7 @@ def init_permission():
                        endpoint='/logout', method='POST', created_time=datetime.now(),
                        created_by='system')  # P00000003
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', module='/user',
-                       endpoint='/info', method='POST', created_time=datetime.now(), created_by='system')  # P00000004
+                       endpoint='/info', method='GET', created_time=datetime.now(), created_by='system')  # P00000004
     click.echo('创建权限成功')
 
 

@@ -42,6 +42,7 @@ def get_app_instance() -> Flask:
 def configure_flask(app):
     app.config.from_mapping(
         DEBUG=True,
+        # SERVER_NAME='0.0.0.0:5000',
         SQLALCHEMY_DATABASE_URI=__generate_db_url(),
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,

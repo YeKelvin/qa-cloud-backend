@@ -11,7 +11,7 @@ class Verify:
     """
 
     @staticmethod
-    def empty(obj: any, errorMsg: str = 'verify error') -> None:
+    def on_empty(obj: any, errorMsg: str = 'verify error') -> None:
         """验证 obj对象为空，不为空则抛异常
 
         :param obj:         对象
@@ -23,7 +23,7 @@ class Verify:
             raise ServiceError(errorMsg)
 
     @staticmethod
-    def not_empty(obj: any, errorMsg: str = 'verify error') -> None:
+    def on_not_empty(obj: any, errorMsg: str = 'verify error') -> None:
         """验证 obj对象非空，为空则抛异常
 
         :param obj:         对象

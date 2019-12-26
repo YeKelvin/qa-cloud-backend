@@ -22,11 +22,12 @@ log = get_logger(__name__)
 @http_service
 def register(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
-    Verify.empty(user, '该用户名称已存在')
+    Verify.on_empty(user, '该用户名称已存在')
 
     TUser.create(
         user_no=generate_user_no(),
         username=req.attr.username,
+        nickname=req.attr.nickname,
         password=req.attr.password,
         mobile_no=req.attr.mobileNo,
         email=req.attr.email,
@@ -40,7 +41,7 @@ def register(req: RequestDTO):
 @http_service
 def login(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
-    Verify.not_empty(user, '账号或密码不正确')
+    Verify.on_not_empty(user, '账号或密码不正确')
 
     if user.check_password_hash(req.attr.password):
         log.debug('密码校验通过')
@@ -62,7 +63,7 @@ def logout():
     user = getattr(g, 'user', None)
     user.access_token = ''
     user.updated_by = user.username
-    return ''
+    return None
 
 
 @http_service
@@ -73,6 +74,7 @@ def info():
     return {
         'userNo': user.user_no,
         'userName': user.username,
+        'nickName': user.nickname,
         'mobileNo': user.mobile_no,
         'email': user.email,
         'roleName': role.role_name or None
@@ -83,9 +85,9 @@ def info():
 def menus():
     user = getattr(g, 'user', None)
     user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
-    Verify.not_empty(user_role, '查询用户菜单失败')
+    Verify.on_not_empty(user_role, '查询用户菜单失败')
     role_menu_list = TRoleMenuRel.query.filter_by(role_no=user_role.role_no).all()
-    Verify.not_empty(role_menu_list, '查询用户菜单失败')
+    Verify.on_not_empty(role_menu_list, '查询用户菜单失败')
     menus = []
     for rm in role_menu_list:
         menu = TMenu.query.filter_by(menu_no=rm.menu_no).first()

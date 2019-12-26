@@ -19,6 +19,7 @@ class TUser(Model):
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='用户编号')
     username = db.Column(db.String(128), nullable=False, comment='用户名')
+    nickname = db.Column(db.String(256), nullable=False, comment='昵称')
     password_hash = db.Column(db.String(512), nullable=False, comment='密码')
     mobile_no = db.Column(db.String(64), comment='手机号')
     email = db.Column(db.String(128), comment='邮箱地址')
