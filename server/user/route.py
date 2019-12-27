@@ -3,6 +3,8 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
+import traceback
+
 from flask import Blueprint
 
 from server.librarys.decorators import require_login, require_permission
@@ -64,20 +66,28 @@ def menus():
     return service.menus()
 
 
-@blueprint.route('/users-by-page', methods=['GET'])
+@blueprint.route('/info/list', methods=['GET'])
 @require_login
-def users_by_page():
-    req = JsonParser(
-        Argument('userNo'),
-        Argument('username'),
-        Argument('nickName'),
-        Argument('mobileNo'),
-        Argument('email'),
-        Argument('roleName'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
-    ).parse()
-    return service.users_by_page(req)
+def info_list():
+    """分页查询用户列表
+    """
+    log.info('进来了吗')
+    req=None
+    try:
+        req = JsonParser(
+            Argument('userNo'),
+            Argument('username'),
+            Argument('nickName'),
+            Argument('mobileNo'),
+            Argument('email'),
+            Argument('roleName'),
+            Argument('page', required=True, nullable=False, help='页数不能为空'),
+            Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
+        ).parse()
+    except Exception:
+        log.error(traceback.format_exc())
+    log.info(req)
+    return service.info_list(req)
 
 
 @blueprint.route('/test/token', methods=['POST'])

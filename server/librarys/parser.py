@@ -17,7 +17,7 @@ class Argument:
     def __init__(self, name: str,
                  type: type = str,
                  default: any = None,
-                 required: bool = True,
+                 required: bool = False,
                  nullable: bool = False,
                  help: str = None):
         self.name = name  # 参数名称

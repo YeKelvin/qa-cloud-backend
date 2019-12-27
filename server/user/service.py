@@ -108,7 +108,7 @@ def menus():
 
 
 @http_service
-def users_by_page(req: RequestDTO):
+def info_list(req: RequestDTO):
     # 查询总数
     total_size = TUser.query.count()
     offset = (int(req.attr.page) - 1) * int(req.attr.pageCount)
