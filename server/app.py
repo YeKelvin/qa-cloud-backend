@@ -6,11 +6,12 @@
 import logging
 import os
 
+from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
 
 from server import user, system, commands, hooks
-from server.extensions import db
+from server.extensions import db, swagger
 from server.utils import config
 from server.utils.log_util import get_logger, CONSOLE_HANDLER, LEVEL
 
@@ -92,6 +93,19 @@ def register_commands(app):
     """
     app.cli.add_command(commands.initdb)
     app.cli.add_command(commands.initdata)
+
+
+def register_swagger(app):
+    swagger.config = Swagger.DEFAULT_CONFIG.copy().update({
+        'title': '测试平台 RESTful API',  # 配置大标题
+        'description': 'Test Platform Server RESTful API',  # 配置公共描述内容
+        'host': '0.0.0.0',  # 请求域名
+        'swagger_ui_bundle_js': '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js',
+        'swagger_ui_standalone_preset_js': '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js',
+        'jquery_js': '//unpkg.com/jquery@2.2.4/dist/jquery.min.js',
+        'swagger_ui_css': '//unpkg.com/swagger-ui-dist@3/swagger-ui.css',
+    })
+    swagger.init_app(app)
 
 
 def __generate_db_url() -> str:

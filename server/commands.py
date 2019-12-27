@@ -101,16 +101,14 @@ def init_role():
 def init_permission():
     """初始化权限
     """
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', module='/user',
-                       endpoint='/register', method='POST', created_time=datetime.now(),
-                       created_by='system')  # P00000001
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', module='/user',
-                       endpoint='/login', method='POST', created_time=datetime.now(), created_by='system')  # P00000002
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', module='/user',
-                       endpoint='/logout', method='POST', created_time=datetime.now(),
-                       created_by='system')  # P00000003
-    TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', module='/user',
-                       endpoint='/info', method='GET', created_time=datetime.now(), created_by='system')  # P00000004
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', endpoint='/user/register',
+                       method='POST', created_time=datetime.now(), created_by='system')  # P00000001
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', endpoint='/user/login',
+                       method='POST', created_time=datetime.now(), created_by='system')  # P00000002
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', endpoint='/user/logout',
+                       method='POST', created_time=datetime.now(), created_by='system')  # P00000003
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
+                       method='GET', created_time=datetime.now(), created_by='system')  # P00000004
     click.echo('创建权限成功')
 
 

@@ -22,7 +22,7 @@ log = get_logger(__name__)
 @http_service
 def register(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
-    Verify.on_empty(user, '该用户名称已存在')
+    Verify.is_empty(user, '该用户名称已存在')
 
     TUser.create(
         user_no=generate_user_no(),
@@ -41,21 +41,23 @@ def register(req: RequestDTO):
 @http_service
 def login(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
-    Verify.on_not_empty(user, '账号或密码不正确')
+    Verify.is_not_empty(user, '账号或密码不正确')
 
-    if user.check_password_hash(req.attr.password):
-        log.debug('密码校验通过')
-        login_time = datetime.utcnow()
-        token = Auth.encode_auth_token(user.user_no, login_time.timestamp())
-        user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
-        return {'accessToken': token}
+    # 密码校验失败
+    if not user.check_password_hash(req.attr.password):
+        user.last_error_time = datetime.utcnow()
+        if user.error_times < 3:
+            user.error_times += 1
+        user.save()
+        raise ServiceError('账号或密码不正确')
 
-    log.debug('密码校验失败')
-    user.last_error_time = datetime.utcnow()
-    if user.error_times < 3:
-        user.error_times += 1
-    user.save()
-    raise ServiceError('账号或密码不正确')
+    # 密码校验通过
+    login_time = datetime.utcnow()
+    token = Auth.encode_auth_token(user.user_no, login_time.timestamp())
+    user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
+    # 记录操作员，用于记录操作日志表
+    g.operator = user.username
+    return {'accessToken': token}
 
 
 @http_service
@@ -77,6 +79,7 @@ def info():
         'nickName': user.nickname,
         'mobileNo': user.mobile_no,
         'email': user.email,
+        'avatar': user.avatar,
         'roleName': role.role_name or None
     }
 
@@ -85,9 +88,9 @@ def info():
 def menus():
     user = getattr(g, 'user', None)
     user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
-    Verify.on_not_empty(user_role, '查询用户菜单失败')
+    Verify.is_not_empty(user_role, '查询用户菜单失败')
     role_menu_list = TRoleMenuRel.query.filter_by(role_no=user_role.role_no).all()
-    Verify.on_not_empty(role_menu_list, '查询用户菜单失败')
+    Verify.is_not_empty(role_menu_list, '查询用户菜单失败')
     menus = []
     for rm in role_menu_list:
         menu = TMenu.query.filter_by(menu_no=rm.menu_no).first()
@@ -102,6 +105,36 @@ def menus():
             'icon': menu.icon
         })
     return menus
+
+
+@http_service
+def users_by_page(req: RequestDTO):
+    # 查询总数
+    total_size = TUser.query.count()
+    offset = (int(req.attr.page) - 1) * int(req.attr.pageCount)
+    limit = int(req.attr.pageCount)
+    users = TUser.query.filter_by(
+        user_no=req.attr.userNo,
+        username=req.attr.userName,
+        nickname=req.attr.nickName,
+        mobile_no=req.attr.mobileNo,
+        email=req.attr.email,
+        state=req.attr.state,
+    ).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
+    data_set = []
+    for user in users:
+        user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
+        role = TRole.query.filter_by(role_no=user_role.role_no).first()
+        data_set.append({
+            'userNo': user.user_no,
+            'userName': user.username,
+            'nickName': user.nickname,
+            'mobileNo': user.mobile_no,
+            'email': user.email,
+            'state': user.state,
+            'roleName': role.role_name or None
+        })
+    return {'dataSet': data_set, 'totalSize': total_size}
 
 
 def generate_user_no():

@@ -10,7 +10,7 @@ class ServiceError(Exception):
     """业务异常类
     """
 
-    def __init__(self, msg=None, code=None, error: Enum = None):
+    def __init__(self, msg=None, code=None, error: 'ErrorCode' = None):
         super().__init__(self)
         if error is None:
             self.message = msg

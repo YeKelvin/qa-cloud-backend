@@ -56,12 +56,28 @@ def info():
     return service.info()
 
 
-@blueprint.route('/menus', methods=['POST'])
+@blueprint.route('/menus', methods=['GET'])
 @require_login
 def menus():
     """查询用户菜单
     """
     return service.menus()
+
+
+@blueprint.route('/users-by-page', methods=['GET'])
+@require_login
+def users_by_page():
+    req = JsonParser(
+        Argument('userNo'),
+        Argument('username'),
+        Argument('nickName'),
+        Argument('mobileNo'),
+        Argument('email'),
+        Argument('roleName'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
+    return service.users_by_page(req)
 
 
 @blueprint.route('/test/token', methods=['POST'])

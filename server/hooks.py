@@ -19,6 +19,16 @@ from server.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
+def set_logid():
+    """before_request
+
+    设置单次请求的全局 logid
+    """
+    g.logid = (f'{threading.current_thread().ident}_'
+               f'{datetime.now().strftime("%Y%m%d%H%M%S%f")}_'
+               f'{randoms.get_number(4)}')
+
+
 def set_user():
     """before_request
 
@@ -34,12 +44,12 @@ def set_user():
         auth_header = request.headers.get('Authorization')
         auth_array = auth_header.split(' ')
         if not auth_array or len(auth_array) != 2:
-            log.debug('解析 Authorization HTTP Header有误')
+            log.info(f'logId:[ {g.logid} ] 解析 Authorization HTTP Header有误')
             return
         auth_schema = auth_array[0]
         auth_token = auth_array[1]
         if auth_schema != 'JWT':
-            log.debug('Authorization中的 schema请使用 JWT开头')
+            log.info(f'logId:[ {g.logid} ] Authorization中的 schema请使用 JWT开头')
             return
         try:
             # 解密 token获取 payload
@@ -49,21 +59,11 @@ def set_user():
             g.auth_token = auth_token
             g.auth_login_time = payload['data']['loginTime']
         except jwt.ExpiredSignatureError:
-            log.debug('token 已失效')
+            log.info(f'logId:[ {g.logid} ] token 已失效')
         except jwt.InvalidTokenError:
-            log.debug('无效的token')
+            log.info(f'logId:[ {g.logid} ] 无效的token')
         except Exception:
             log.error(traceback.format_exc())
-
-
-def set_logid():
-    """before_request
-
-    设置单次请求的全局 logid
-    """
-    g.logid = (f'{threading.current_thread().ident}_'
-               f'{datetime.now().strftime("%Y%m%d%H%M%S%f")}_'
-               f'{randoms.get_number(4)}')
 
 
 def record_action(response):
@@ -73,10 +73,7 @@ def record_action(response):
     """
     success = getattr(g, 'success', None)
     if success:
-        middle_index = request.path.index('/', 1)
-        module = request.path[:middle_index]
-        endpoint = request.path[middle_index:]
-        permission = TPermission.query.filter_by(module=module, endpoint=endpoint).first()
+        permission = TPermission.query.filter_by(endpoint=request.path).first()
         TActionLog.create(
             action_detail=permission.permission_name if permission else None,
             action_path=f'{request.method} {request.path}',
