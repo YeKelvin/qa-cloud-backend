@@ -3,7 +3,6 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-import traceback
 
 from flask import Blueprint
 
@@ -71,22 +70,17 @@ def menus():
 def info_list():
     """分页查询用户列表
     """
-    log.info('进来了吗')
-    req=None
-    try:
-        req = JsonParser(
-            Argument('userNo'),
-            Argument('username'),
-            Argument('nickName'),
-            Argument('mobileNo'),
-            Argument('email'),
-            Argument('roleName'),
-            Argument('page', required=True, nullable=False, help='页数不能为空'),
-            Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
-        ).parse()
-    except Exception:
-        log.error(traceback.format_exc())
-    log.info(req)
+    req = JsonParser(
+        Argument('userNo'),
+        Argument('userName'),
+        Argument('nickName'),
+        Argument('mobileNo'),
+        Argument('email'),
+        Argument('state'),
+        Argument('roleName'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
     return service.info_list(req)
 
 

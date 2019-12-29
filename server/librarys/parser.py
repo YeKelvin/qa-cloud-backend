@@ -101,7 +101,7 @@ class JsonParser(BaseParser):
 
     def _init(self, data):
         if not data:
-            if request.is_json:
+            if request.method == 'POST' and request.is_json:
                 self.__data = request.json
             else:
                 self.__data = request.values.to_dict()
