@@ -3,7 +3,6 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-
 from flask import Blueprint
 
 from server.librarys.decorators import require_login, require_permission
@@ -57,14 +56,6 @@ def info():
     return service.info()
 
 
-@blueprint.route('/menus', methods=['GET'])
-@require_login
-def menus():
-    """查询用户菜单
-    """
-    return service.menus()
-
-
 @blueprint.route('/info/list', methods=['GET'])
 @require_login
 def info_list():
@@ -82,12 +73,6 @@ def info_list():
         Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.info_list(req)
-
-
-@blueprint.route('/test/token', methods=['POST'])
-@require_login
-def token():
-    return 'test require_login'
 
 
 @blueprint.route('/test/permission', methods=['POST'])

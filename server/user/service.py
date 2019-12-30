@@ -113,14 +113,20 @@ def info_list(req: RequestDTO):
     total_size = TUser.query.count()
     offset = (int(req.attr.page) - 1) * int(req.attr.pageCount)
     limit = int(req.attr.pageCount)
-    users = TUser.query.filter_by(
-        user_no=req.attr.userNo,
-        username=req.attr.userName,
-        nickname=req.attr.nickName,
-        mobile_no=req.attr.mobileNo,
-        email=req.attr.email,
-        state=req.attr.state,
-    ).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
+    conditions = []
+    if req.attr.userNo:
+        conditions.append(TUser.user_no == req.attr.userNo)
+    if req.attr.userName:
+        conditions.append(TUser.username == req.attr.userName)
+    if req.attr.nickName:
+        conditions.append(TUser.nickname == req.attr.nickName)
+    if req.attr.mobileNo:
+        conditions.append(TUser.mobile_no == req.attr.mobileNo)
+    if req.attr.email:
+        conditions.append(TUser.email == req.attr.email)
+    if req.attr.state:
+        conditions.append(TUser.state == req.attr.state)
+    users = TUser.query.filter(*conditions).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
     data_set = []
     for user in users:
         user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
@@ -156,10 +162,3 @@ def generate_permission_no():
     """
     seq_permission_no = Sequence('seq_permission_no')
     return 'P' + str(seq_permission_no.next_value()).zfill(8)
-
-
-def generate_menu_no():
-    """生成菜单编号
-    """
-    seq_menu_no = Sequence('seq_menu_no')
-    return 'M' + str(seq_menu_no.next_value()).zfill(8)

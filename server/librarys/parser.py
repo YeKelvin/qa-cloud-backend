@@ -3,6 +3,8 @@
 # @File    : parser.py
 # @Time    : 2019/11/7 15:30
 # @Author  : Kelvin.Ye
+import traceback
+
 from flask import request
 
 from server.librarys.exception import ParseError
@@ -30,6 +32,15 @@ class Argument:
             raise TypeError('Argument name must be string')
 
     def parse(self, has_key, value):
+        """解析 HTTP参数
+
+        Args:
+            has_key:    key是否存在
+            value:      keyValue
+
+        Returns:        HTTP参数值
+
+        """
         # 请求中不存在该参数
         if not has_key:
             if self.required and self.default is None:
@@ -75,12 +86,24 @@ class BaseParser:
             self.args.append(arg)
 
     def _get(self, key):
+        """通过 keyName获取 key是否存在和 keyValue的 tuple
+
+        Args:
+            key:    键名
+
+        Returns:    (bool, obj)
+
+        """
         raise NotImplementedError
 
     def _init(self, data):
+        """把 HTTP请求参数转换为 Json对象
+        """
         raise NotImplementedError
 
     def parse(self, data=None) -> RequestDTO:
+        """解析 HTTP请求参数
+        """
         request_dto = RequestDTO()
         try:
             self._init(data)
@@ -88,6 +111,9 @@ class BaseParser:
                 request_dto.attr[arg.name] = arg.parse(*self._get(arg.name))
         except ParseError as err:
             request_dto.error = err.message
+        except Exception as ex:
+            request_dto.error = ex
+            log.error(traceback.format_exc())
         return request_dto
 
 
@@ -101,7 +127,7 @@ class JsonParser(BaseParser):
 
     def _init(self, data):
         if not data:
-            if request.method == 'POST' and request.is_json:
+            if request.is_json:
                 self.__data = request.json
             else:
                 self.__data = request.values.to_dict()

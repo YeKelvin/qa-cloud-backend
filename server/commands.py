@@ -11,8 +11,8 @@ from flask.cli import with_appcontext
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.system.model import TActionLog
-from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TMenu, TRoleMenuRel
-from server.user.service import generate_user_no, generate_role_no, generate_permission_no, generate_menu_no
+from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
+from server.user.service import generate_user_no, generate_role_no, generate_permission_no
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -46,8 +46,6 @@ def initdata():
     init_permission()
     init_user_role_rel()
     init_role_permission_rel()
-    init_menu()
-    init_role_menu_rel()
     init_action_log()
     click.echo('初始化数据成功')
 
@@ -86,13 +84,13 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    TRole.create(role_no=generate_role_no(), role_name='超级管理员', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='superAdmin', remark='超级管理员', created_time=datetime.now(),
                  created_by='system')  # R00000001
-    TRole.create(role_no=generate_role_no(), role_name='系统管理员', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='admin', remark='管理员', created_time=datetime.now(),
                  created_by='system')  # R00000002
-    TRole.create(role_no=generate_role_no(), role_name='管理员', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='leader', remark='组长', created_time=datetime.now(),
                  created_by='system')  # R00000003
-    TRole.create(role_no=generate_role_no(), role_name='帅哥美女', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='editor', remark='用户', created_time=datetime.now(),
                  created_by='system')  # R00000004
     click.echo('创建角色成功')
 
@@ -133,23 +131,6 @@ def init_role_permission_rel():
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000004', created_time=datetime.now(),
                               created_by='system')
     click.echo('创建角色权限关联关系成功')
-
-
-@with_appcontext
-def init_menu():
-    """初始化菜单
-    """
-    TMenu.create(menu_no=generate_menu_no(), menu_name='用户管理', level='1', order='1', parent_no='', href='', icon='',
-                 state='NORMAL', created_time=datetime.now(), created_by='system')  # M00000001
-    click.echo('创建菜单成功')
-
-
-@with_appcontext
-def init_role_menu_rel():
-    """初始化角色菜单关联关系
-    """
-    TRoleMenuRel.create(role_no='R00000001', menu_no='M00000001', created_time=datetime.now(), created_by='system')
-    click.echo('创建角色菜单关联关系成功')
 
 
 @with_appcontext
