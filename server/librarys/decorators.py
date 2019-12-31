@@ -158,11 +158,7 @@ def require_permission(func):
                 return __auth_fail_response('用户无权限')
 
             # 校验 用户是否有该请求方法和请求路径的权限
-            if (
-                    request.method in permission.methods
-                    and
-                    request.path in permission.module + permission.endpoint
-            ):
+            if request.method == permission.method and request.path == permission.endpoint:
                 return func(*args, **kwargs)
 
         # 权限校验失败

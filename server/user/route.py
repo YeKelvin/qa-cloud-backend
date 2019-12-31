@@ -70,7 +70,7 @@ def info_list():
         Argument('email'),
         Argument('state'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.info_list(req)
 

@@ -91,8 +91,8 @@ def info():
 def info_list(req: RequestDTO):
     # 查询总数
     total_size = TUser.query.count()
-    offset = (int(req.attr.page) - 1) * int(req.attr.pageCount)
-    limit = int(req.attr.pageCount)
+    offset = (int(req.attr.page) - 1) * int(req.attr.pageSize)
+    limit = int(req.attr.pageSize)
     conditions = []
     if req.attr.userNo:
         conditions.append(TUser.user_no == req.attr.userNo)
@@ -109,7 +109,7 @@ def info_list(req: RequestDTO):
     users = TUser.query.filter(*conditions).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
     data_set = []
     for user in users:
-        user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
+        user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
         roles = []
         for user_role in user_roles:
             role = TRole.query.filter_by(role_no=user_role.role_no).first()
