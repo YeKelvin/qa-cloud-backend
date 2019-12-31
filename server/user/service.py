@@ -13,7 +13,7 @@ from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.auth import Auth
-from server.user.model import TUser, TUserRoleRel, TRole, TRoleMenuRel, TMenu
+from server.user.model import TUser, TUserRoleRel, TRole
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -71,8 +71,11 @@ def logout():
 @http_service
 def info():
     user = getattr(g, 'user', None)
-    user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
-    role = TRole.query.filter_by(role_no=user_role.role_no).first()
+    user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
+    roles = []
+    for user_role in user_roles:
+        role = TRole.query.filter_by(role_no=user_role.role_no).first()
+        roles.append(role.role_name)
     return {
         'userNo': user.user_no,
         'userName': user.username,
@@ -80,31 +83,8 @@ def info():
         'mobileNo': user.mobile_no,
         'email': user.email,
         'avatar': user.avatar,
-        'roleName': role.role_name or None
+        'roles': roles
     }
-
-
-@http_service
-def menus():
-    user = getattr(g, 'user', None)
-    user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
-    Verify.is_not_empty(user_role, '查询用户菜单失败')
-    role_menu_list = TRoleMenuRel.query.filter_by(role_no=user_role.role_no).all()
-    Verify.is_not_empty(role_menu_list, '查询用户菜单失败')
-    menus = []
-    for rm in role_menu_list:
-        menu = TMenu.query.filter_by(menu_no=rm.menu_no).first()
-        if not menu or menu.state != 'NORMAL':
-            continue
-        menus.append({
-            'menu_name': menu.menu_name,
-            'level': menu.level,
-            'order': menu.order,
-            'parentNo': menu.parent_no,
-            'href': menu.href,
-            'icon': menu.icon
-        })
-    return menus
 
 
 @http_service
@@ -129,8 +109,11 @@ def info_list(req: RequestDTO):
     users = TUser.query.filter(*conditions).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
     data_set = []
     for user in users:
-        user_role = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
-        role = TRole.query.filter_by(role_no=user_role.role_no).first()
+        user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).first()
+        roles = []
+        for user_role in user_roles:
+            role = TRole.query.filter_by(role_no=user_role.role_no).first()
+            roles.append(role.role_name)
         data_set.append({
             'userNo': user.user_no,
             'userName': user.username,
@@ -138,7 +121,7 @@ def info_list(req: RequestDTO):
             'mobileNo': user.mobile_no,
             'email': user.email,
             'state': user.state,
-            'roleName': role.role_name or None
+            'roles': roles
         })
     return {'dataSet': data_set, 'totalSize': total_size}
 

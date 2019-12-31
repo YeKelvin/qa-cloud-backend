@@ -90,7 +90,7 @@ def init_role():
                  created_by='system')  # R00000002
     TRole.create(role_no=generate_role_no(), role_name='leader', remark='组长', created_time=datetime.now(),
                  created_by='system')  # R00000003
-    TRole.create(role_no=generate_role_no(), role_name='editor', remark='用户', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='general', remark='用户', created_time=datetime.now(),
                  created_by='system')  # R00000004
     click.echo('创建角色成功')
 
@@ -107,6 +107,8 @@ def init_permission():
                        method='POST', created_time=datetime.now(), created_by='system')  # P00000003
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
                        method='GET', created_time=datetime.now(), created_by='system')  # P00000004
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/info/list',
+                       method='GET', created_time=datetime.now(), created_by='system')  # P00000005
     click.echo('创建权限成功')
 
 
@@ -130,6 +132,8 @@ def init_role_permission_rel():
                               created_by='system')
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000004', created_time=datetime.now(),
                               created_by='system')
+    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000005', created_time=datetime.now(),
+                              created_by='system')
     click.echo('创建角色权限关联关系成功')
 
 
@@ -141,4 +145,4 @@ def init_action_log():
         created_time=datetime.now(),
         created_by='system',
     )
-    click.echo('初始化动作日志数据成功')
+    click.echo('初始化操作日志数据成功')

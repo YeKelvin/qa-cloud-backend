@@ -103,33 +103,3 @@ class TRolePermissionRel(Model):
     created_by = db.Column(db.String(64), comment='创建人')
     updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
     updated_by = db.Column(db.String(64), comment='更新人')
-
-
-class TMenu(Model):
-    __tablename__ = 't_menu'
-    id = db.Column(db.Integer, primary_key=True)
-    menu_no = db.Column(db.Integer, index=True, nullable=False, comment='菜单编号')
-    menu_name = db.Column(db.String(128), nullable=False, comment='菜单名称')
-    level = db.Column(db.Integer, nullable=False, comment='菜单层级')
-    order = db.Column(db.Integer, nullable=False, comment='菜单顺序')
-    parent_no = db.Column(db.Integer, nullable=False, comment='父级菜单')
-    href = db.Column(db.String(128), nullable=False, comment='菜单链接')
-    icon = db.Column(db.String(128), nullable=False, comment='菜单图标')
-    state = db.Column(db.String(16), nullable=False, comment='菜单状态')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
-    created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
-    updated_by = db.Column(db.String(64), comment='更新人')
-
-
-class TRoleMenuRel(Model):
-    __tablename__ = 't_role_menu_rel'
-    id = db.Column(db.Integer, primary_key=True)
-    role_no = db.Column(db.Integer, index=True, nullable=False, comment='角色编号')
-    menu_no = db.Column(db.Integer, nullable=False, comment='菜单编号')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
-    created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
-    updated_by = db.Column(db.String(64), comment='更新人')

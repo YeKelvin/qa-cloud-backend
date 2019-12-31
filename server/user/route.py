@@ -58,6 +58,7 @@ def info():
 
 @blueprint.route('/info/list', methods=['GET'])
 @require_login
+@require_permission
 def info_list():
     """分页查询用户列表
     """
@@ -68,7 +69,6 @@ def info_list():
         Argument('mobileNo'),
         Argument('email'),
         Argument('state'),
-        Argument('roleName'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageCount', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
