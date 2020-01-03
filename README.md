@@ -29,3 +29,5 @@ flask initdata
 或
 运行 main.py
 
+## 服务端部署
+Nginx, Gunicorn, Supervisor
