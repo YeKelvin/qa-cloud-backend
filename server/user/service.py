@@ -96,10 +96,10 @@ def info_list(req: RequestDTO):
     conditions = []
     if req.attr.userNo:
         conditions.append(TUser.user_no == req.attr.userNo)
-    if req.attr.userName:
-        conditions.append(TUser.username == req.attr.userName)
-    if req.attr.nickName:
-        conditions.append(TUser.nickname == req.attr.nickName)
+    if req.attr.username:
+        conditions.append(TUser.username == req.attr.username)
+    if req.attr.nickname:
+        conditions.append(TUser.nickname == req.attr.nickname)
     if req.attr.mobileNo:
         conditions.append(TUser.mobile_no == req.attr.mobileNo)
     if req.attr.email:
@@ -116,14 +116,19 @@ def info_list(req: RequestDTO):
             roles.append(role.role_name)
         data_set.append({
             'userNo': user.user_no,
-            'userName': user.username,
-            'nickName': user.nickname,
+            'username': user.username,
+            'nickname': user.nickname,
             'mobileNo': user.mobile_no,
             'email': user.email,
             'state': user.state,
             'roles': roles
         })
     return {'dataSet': data_set, 'totalSize': total_size}
+
+
+@http_service
+def permission_list(req: RequestDTO):
+    return {'dataSet': [], 'totalSize': 0}
 
 
 def generate_user_no():

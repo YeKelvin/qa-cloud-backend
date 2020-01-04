@@ -84,13 +84,17 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    TRole.create(role_no=generate_role_no(), role_name='superAdmin', remark='超级管理员', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='superAdmin', state='NORMAL', remark='超级管理员',
+                 created_time=datetime.now(),
                  created_by='system')  # R00000001
-    TRole.create(role_no=generate_role_no(), role_name='admin', remark='管理员', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='admin', state='NORMAL', remark='管理员',
+                 created_time=datetime.now(),
                  created_by='system')  # R00000002
-    TRole.create(role_no=generate_role_no(), role_name='leader', remark='组长', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='leader', state='NORMAL', remark='组长',
+                 created_time=datetime.now(),
                  created_by='system')  # R00000003
-    TRole.create(role_no=generate_role_no(), role_name='general', remark='用户', created_time=datetime.now(),
+    TRole.create(role_no=generate_role_no(), role_name='general', state='NORMAL', remark='用户',
+                 created_time=datetime.now(),
                  created_by='system')  # R00000004
     click.echo('创建角色成功')
 
@@ -100,15 +104,18 @@ def init_permission():
     """初始化权限
     """
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', endpoint='/user/register',
-                       method='POST', created_time=datetime.now(), created_by='system')  # P00000001
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000001
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', endpoint='/user/login',
-                       method='POST', created_time=datetime.now(), created_by='system')  # P00000002
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000002
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', endpoint='/user/logout',
-                       method='POST', created_time=datetime.now(), created_by='system')  # P00000003
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000003
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
-                       method='GET', created_time=datetime.now(), created_by='system')  # P00000004
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000004
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/info/list',
-                       method='GET', created_time=datetime.now(), created_by='system')  # P00000005
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000005
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取权限列表',
+                       endpoint='/user/permission/list',
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000006
     click.echo('创建权限成功')
 
 
@@ -133,6 +140,8 @@ def init_role_permission_rel():
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000004', created_time=datetime.now(),
                               created_by='system')
     TRolePermissionRel.create(role_no='R00000001', permission_no='P00000005', created_time=datetime.now(),
+                              created_by='system')
+    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000006', created_time=datetime.now(),
                               created_by='system')
     click.echo('创建角色权限关联关系成功')
 

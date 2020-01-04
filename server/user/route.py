@@ -15,20 +15,6 @@ log = get_logger(__name__)
 blueprint = Blueprint('user', __name__, url_prefix='/user')
 
 
-@blueprint.route('/register', methods=['POST'])
-def register():
-    """用户注册
-    """
-    req = JsonParser(
-        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('nickname', required=True, nullable=False, help='昵称不能为空'),
-        Argument('password', required=True, nullable=False, help='用户密码不能为空'),
-        Argument('mobileNo'),
-        Argument('email'),
-    ).parse()
-    return service.register(req)
-
-
 @blueprint.route('/login', methods=['POST'])
 def login():
     """用户登录
@@ -38,6 +24,22 @@ def login():
         Argument('password', required=True, nullable=False, help='账号或密码不能为空'),
     ).parse()
     return service.login(req)
+
+
+@blueprint.route('/register', methods=['POST'])
+@require_login
+@require_permission
+def register():
+    """用户注册
+    """
+    req = JsonParser(
+        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('nickname', required=True, nullable=False, help='用户昵称不能为空'),
+        Argument('password', required=True, nullable=False, help='用户密码不能为空'),
+        Argument('mobileNo'),
+        Argument('email'),
+    ).parse()
+    return service.register(req)
 
 
 @blueprint.route('/logout', methods=['POST'])
@@ -64,8 +66,8 @@ def info_list():
     """
     req = JsonParser(
         Argument('userNo'),
-        Argument('userName'),
-        Argument('nickName'),
+        Argument('username'),
+        Argument('nickname'),
         Argument('mobileNo'),
         Argument('email'),
         Argument('state'),
@@ -75,8 +77,17 @@ def info_list():
     return service.info_list(req)
 
 
-@blueprint.route('/test/permission', methods=['POST'])
+@blueprint.route('/permission/list', methods=['GET'])
 @require_login
 @require_permission
-def permission():
-    return 'test require_permission'
+def permission_list():
+    req = JsonParser(
+        Argument('roleName'),
+        Argument('permissionName'),
+        Argument('endpoint'),
+        Argument('method'),
+        Argument('state'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
+    return service.permission_list(req)
