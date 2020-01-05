@@ -91,3 +91,37 @@ def permission_list():
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.permission_list(req)
+
+
+@blueprint.route('/permission', methods=['POST'])
+@require_login
+@require_permission
+def create_permission():
+    req = JsonParser(
+        Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
+        Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
+        Argument('methods', required=True, nullable=False, help='请求方法不能为空'),
+        Argument('remark'),
+    ).parse()
+    return service.create_permission(req)
+
+
+@blueprint.route('/role/list', methods=['GET'])
+@require_login
+@require_permission
+def role_list():
+    req = JsonParser(
+        Argument('roleName'),
+    ).parse()
+    return service.role_list(req)
+
+
+@blueprint.route('/role', methods=['POST'])
+@require_login
+@require_permission
+def create_role():
+    req = JsonParser(
+        Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
+        Argument('remark', required=True, nullable=False, help='角色描述不能为空'),
+    ).parse()
+    return service.create_role(req)

@@ -13,7 +13,7 @@ from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.auth import Auth
-from server.user.model import TUser, TUserRoleRel, TRole
+from server.user.model import TUser, TUserRoleRel, TRole, TPermission
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -128,7 +128,37 @@ def info_list(req: RequestDTO):
 
 @http_service
 def permission_list(req: RequestDTO):
+    role_conditions = []
+    if req.attr.roleName:
+        role_conditions.append(TRole.role_name == req.attr.roleName)
+    role_list = TRole.query.filter(*role_conditions).all()
+
+    permission_conditions = []
+    if req.attr.permissionName:
+        permission_conditions.append(TPermission.permission_name == req.attr.permissionName)
+    if req.attr.endpoint:
+        permission_conditions.append(TPermission.endpoint == req.attr.endpoint)
+    if req.attr.method:
+        permission_conditions.append(TPermission.method == req.attr.method)
+    if req.attr.state:
+        permission_conditions.append(TPermission.state == req.attr.state)
+    permission_list = TPermission.query.filter(*role_conditions).all()
     return {'dataSet': [], 'totalSize': 0}
+
+
+@http_service
+def create_permission(req: RequestDTO):
+    return ''
+
+
+@http_service
+def role_list(req: RequestDTO):
+    return ''
+
+
+@http_service
+def create_role(req: RequestDTO):
+    return ''
 
 
 def generate_user_no():
