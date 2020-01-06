@@ -42,6 +42,26 @@ def register():
     return service.register(req)
 
 
+@blueprint.route('/user', methods=['PUT'])
+def modify_user():
+    """更新用户信息
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.modify_user(req)
+
+
+@blueprint.route('/user', methods=['DELETE'])
+def delete_user():
+    """删除用户
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.delete_user(req)
+
+
 @blueprint.route('/logout', methods=['POST'])
 @require_login
 def logout():
@@ -81,6 +101,8 @@ def info_list():
 @require_login
 @require_permission
 def permission_list():
+    """分页查询权限列表
+    """
     req = JsonParser(
         Argument('roleName'),
         Argument('permissionName'),
@@ -97,6 +119,8 @@ def permission_list():
 @require_login
 @require_permission
 def create_permission():
+    """新增权限
+    """
     req = JsonParser(
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
@@ -106,10 +130,32 @@ def create_permission():
     return service.create_permission(req)
 
 
+@blueprint.route('/permission', methods=['PUT'])
+def modify_permission():
+    """更新权限信息
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.modify_permission(req)
+
+
+@blueprint.route('/permission', methods=['DELETE'])
+def delete_permission():
+    """删除权限
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.delete_permission(req)
+
+
 @blueprint.route('/role/list', methods=['GET'])
 @require_login
 @require_permission
 def role_list():
+    """分页查询角色列表
+    """
     req = JsonParser(
         Argument('roleName'),
     ).parse()
@@ -120,8 +166,30 @@ def role_list():
 @require_login
 @require_permission
 def create_role():
+    """新增角色
+    """
     req = JsonParser(
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
         Argument('remark', required=True, nullable=False, help='角色描述不能为空'),
     ).parse()
     return service.create_role(req)
+
+
+@blueprint.route('/role', methods=['PUT'])
+def modify_role():
+    """更新角色信息
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.modify_role(req)
+
+
+@blueprint.route('/role', methods=['DELETE'])
+def delete_role():
+    """删除角色
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.delete_role(req)

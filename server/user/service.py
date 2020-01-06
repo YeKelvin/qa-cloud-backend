@@ -13,7 +13,7 @@ from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.auth import Auth
-from server.user.model import TUser, TUserRoleRel, TRole, TPermission
+from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -36,6 +36,17 @@ def register(req: RequestDTO):
         created_by=getattr(g, 'operator', None),
         updated_by=getattr(g, 'operator', None)
     )
+    return None
+
+
+@http_service
+def modify_user(req: RequestDTO):
+    return None
+
+
+@http_service
+def delete_user(req: RequestDTO):
+    return None
 
 
 @http_service
@@ -89,10 +100,11 @@ def info():
 
 @http_service
 def info_list(req: RequestDTO):
-    # 查询总数
-    total_size = TUser.query.count()
+    # 分页
     offset = (int(req.attr.page) - 1) * int(req.attr.pageSize)
     limit = int(req.attr.pageSize)
+
+    # 查询条件
     conditions = []
     if req.attr.userNo:
         conditions.append(TUser.user_no == req.attr.userNo)
@@ -106,7 +118,10 @@ def info_list(req: RequestDTO):
         conditions.append(TUser.email == req.attr.email)
     if req.attr.state:
         conditions.append(TUser.state == req.attr.state)
+
     users = TUser.query.filter(*conditions).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
+
+    # 组装响应数据
     data_set = []
     for user in users:
         user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
@@ -123,16 +138,27 @@ def info_list(req: RequestDTO):
             'state': user.state,
             'roles': roles
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': len(users)}
 
 
 @http_service
 def permission_list(req: RequestDTO):
+    # 分页
+    offset = (int(req.attr.page) - 1) * int(req.attr.pageSize)
+    limit = int(req.attr.pageSize)
+
+    # TRole 查询条件
     role_conditions = []
     if req.attr.roleName:
         role_conditions.append(TRole.role_name == req.attr.roleName)
-    role_list = TRole.query.filter(*role_conditions).all()
+    roles = TRole.query.filter(*role_conditions).all()
 
+    # in 查询条件
+    role_no_list = []
+    for role in roles:
+        role_no_list.append(role.role_no)
+
+    # TPermission 查询条件
     permission_conditions = []
     if req.attr.permissionName:
         permission_conditions.append(TPermission.permission_name == req.attr.permissionName)
@@ -142,23 +168,115 @@ def permission_list(req: RequestDTO):
         permission_conditions.append(TPermission.method == req.attr.method)
     if req.attr.state:
         permission_conditions.append(TPermission.state == req.attr.state)
-    permission_list = TPermission.query.filter(*role_conditions).all()
-    return {'dataSet': [], 'totalSize': 0}
+
+    role_permissions = (
+        TRolePermissionRel.join(
+            TPermission, TRolePermissionRel.permission_no == TPermission.permission_no
+        ).filter(
+            TRolePermissionRel.role_no.in_(role_no_list)
+        ).filter(
+            *permission_conditions
+        ).order_by(
+            TRolePermissionRel.created_time.desc()
+        ).offset(offset).limit(limit).all()
+    )
+
+    # 组装响应数据
+    data_set = []
+    for role_permission in role_permissions:
+        role_name = ''
+        for role in role_list:
+            if role_permission.role_no == role.role_no:
+                role_name = role.role_name
+        data_set.append({
+            'roleName': role_name,
+            'permissionName': role_permission.permission_name,
+            'endpoint': role_permission.endpoint,
+            'method': role_permission.method,
+            'state': role_permission.state
+        })
+
+    return {'dataSet': data_set, 'totalSize': len(role_permissions)}
 
 
 @http_service
 def create_permission(req: RequestDTO):
-    return ''
+    permission = TPermission.query.filter_by(permission_name=req.attr.permissionName).first()
+    Verify.is_not_empty(permission, '权限已存在')
+
+    TPermission.create(
+        permission_no=generate_permission_no(),
+        permission_name=req.attr.permissionName,
+        endpoint=req.attr.endpoint,
+        methods=req.attr.methods,
+        state='NORMAL',
+        remark=req.attr.remark,
+        created_time=datetime.now(),
+        created_by=getattr(g, 'operator', None),
+        updated_time=datetime.now(),
+        updated_by=getattr(g, 'operator', None)
+    )
+    return None
+
+
+@http_service
+def modify_permission(req: RequestDTO):
+    return None
+
+
+@http_service
+def delete_permission(req: RequestDTO):
+    return None
 
 
 @http_service
 def role_list(req: RequestDTO):
-    return ''
+    # 分页
+    offset = (int(req.attr.page) - 1) * int(req.attr.pageSize)
+    limit = int(req.attr.pageSize)
+
+    # 查询条件
+    conditions = []
+    if req.attr.roleName:
+        conditions.append(TRole.role_name == req.attr.roleName)
+    roles = TRole.query.filter(*conditions).offset(offset).limit(limit).all()
+
+    # 组装响应数据
+    data_set = []
+    for role in roles:
+        data_set.append({
+            'roleName': role.role_name,
+            'remark': role.remark
+        })
+    return {'dataSet': data_set, 'totalSize': len(roles)}
 
 
 @http_service
 def create_role(req: RequestDTO):
-    return ''
+    role = TRole.query.filter_by(role_name=req.attr.roleName).first()
+    Verify.is_not_empty(role, '角色已存在')
+
+    TRole.create(
+        role_no=generate_role_no(),
+        role_name=req.attr.roleName,
+        state='NORMAL',
+        remark=req.attr.remark,
+        created_time=datetime.now(),
+        created_by=getattr(g, 'operator', None),
+        updated_time=datetime.now(),
+        updated_by=getattr(g, 'operator', None)
+    )
+    return None
+
+
+@http_service
+def modify_role(req: RequestDTO):
+    return None
+
+
+@http_service
+def delete_role(req: RequestDTO):
+    return None
 
 
 def generate_user_no():
