@@ -104,18 +104,49 @@ def init_permission():
     """初始化权限
     """
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', endpoint='/user/register',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000001
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', endpoint='/user/login',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000002
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', endpoint='/user/logout',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000003
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000004
-    TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/info/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000005
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户信息', endpoint='/user/info',
+                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户', endpoint='/user',
+                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/list',
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取权限列表',
                        endpoint='/user/permission/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')  # P00000006
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增权限', endpoint='/user/permission',
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限信息', endpoint='/user/permission',
+                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除权限', endpoint='/user/permission',
+                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取角色列表',
+                       endpoint='/user/role/list',
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增角色', endpoint='/user/role',
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色信息', endpoint='/user/role',
+                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色', endpoint='/user/role',
+                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='获取角色权限关联列表',
+                       endpoint='/user/role/permission/rel/list',
+                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增角色权限关联',
+                       endpoint='/user/role/permission/rel',
+                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色权限关联信息',
+                       endpoint='/user/role/permission/rel',
+                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色权限关联',
+                       endpoint='/user/role/permission/rel',
+                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
     click.echo('创建权限成功')
 
 
@@ -131,18 +162,9 @@ def init_user_role_rel():
 def init_role_permission_rel():
     """初始化角色权限关联关系
     """
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000001', created_time=datetime.now(),
-                              created_by='system')
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000002', created_time=datetime.now(),
-                              created_by='system')
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000003', created_time=datetime.now(),
-                              created_by='system')
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000004', created_time=datetime.now(),
-                              created_by='system')
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000005', created_time=datetime.now(),
-                              created_by='system')
-    TRolePermissionRel.create(role_no='R00000001', permission_no='P00000006', created_time=datetime.now(),
-                              created_by='system')
+    for i in range(1, 20):
+        TRolePermissionRel.create(role_no='R00000001', permission_no=f'P0000000{i}', created_time=datetime.now(),
+                                  created_by='system')
     click.echo('创建角色权限关联关系成功')
 
 

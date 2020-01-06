@@ -26,6 +26,14 @@ def login():
     return service.login(req)
 
 
+@blueprint.route('/logout', methods=['POST'])
+@require_login
+def logout():
+    """用户登出
+    """
+    return service.logout()
+
+
 @blueprint.route('/register', methods=['POST'])
 @require_login
 @require_permission
@@ -42,46 +50,10 @@ def register():
     return service.register(req)
 
 
-@blueprint.route('/user', methods=['PUT'])
-def modify_user():
-    """更新用户信息
-    """
-    req = JsonParser(
-
-    ).parse()
-    return service.modify_user(req)
-
-
-@blueprint.route('/user', methods=['DELETE'])
-def delete_user():
-    """删除用户
-    """
-    req = JsonParser(
-
-    ).parse()
-    return service.delete_user(req)
-
-
-@blueprint.route('/logout', methods=['POST'])
-@require_login
-def logout():
-    """用户登出
-    """
-    return service.logout()
-
-
-@blueprint.route('/info', methods=['GET'])
-@require_login
-def info():
-    """查询个人用户信息
-    """
-    return service.info()
-
-
-@blueprint.route('/info/list', methods=['GET'])
+@blueprint.route('/list', methods=['GET'])
 @require_login
 @require_permission
-def info_list():
+def user_list():
     """分页查询用户列表
     """
     req = JsonParser(
@@ -94,17 +66,61 @@ def info_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.info_list(req)
+    return service.user_list(req)
+
+
+@blueprint.route('/info', methods=['GET'])
+@require_login
+def user_info():
+    """查询个人用户信息
+    """
+    return service.user_info()
+
+
+@blueprint.route('/user', methods=['PUT'])
+def modify_user():
+    """更新用户信息
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.modify_user(req)
+
+
+@blueprint.route('', methods=['DELETE'])
+def delete_user():
+    """删除用户
+    """
+    req = JsonParser(
+
+    ).parse()
+    return service.delete_user(req)
+
+
+@blueprint.route('/role/permission/rel/list', methods=['GET'])
+@require_login
+@require_permission
+def role_permission_rel_list():
+    """分页查询权限列表
+    """
+    req = JsonParser(
+        Argument('roleName'),
+        Argument('permissionName'),
+        Argument('endpoint'),
+        Argument('method'),
+        Argument('state'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
+    return service.role_permission_rel_list(req)
 
 
 @blueprint.route('/permission/list', methods=['GET'])
 @require_login
 @require_permission
 def permission_list():
-    """分页查询权限列表
-    """
     req = JsonParser(
-        Argument('roleName'),
+        Argument('permissionNo'),
         Argument('permissionName'),
         Argument('endpoint'),
         Argument('method'),
@@ -124,7 +140,7 @@ def create_permission():
     req = JsonParser(
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
-        Argument('methods', required=True, nullable=False, help='请求方法不能为空'),
+        Argument('method', required=True, nullable=False, help='请求方法不能为空'),
         Argument('remark'),
     ).parse()
     return service.create_permission(req)
@@ -135,7 +151,10 @@ def modify_permission():
     """更新权限信息
     """
     req = JsonParser(
-
+        Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
+        Argument('permissionName'),
+        Argument('endpoint'),
+        Argument('method'),
     ).parse()
     return service.modify_permission(req)
 
@@ -145,7 +164,7 @@ def delete_permission():
     """删除权限
     """
     req = JsonParser(
-
+        Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
     ).parse()
     return service.delete_permission(req)
 
@@ -180,7 +199,9 @@ def modify_role():
     """更新角色信息
     """
     req = JsonParser(
-
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
+        Argument('roleName'),
+        Argument('remark'),
     ).parse()
     return service.modify_role(req)
 
@@ -190,6 +211,6 @@ def delete_role():
     """删除角色
     """
     req = JsonParser(
-
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空')
     ).parse()
     return service.delete_role(req)
