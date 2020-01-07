@@ -11,7 +11,7 @@ from server.librarys.decorators import http_service
 from server.librarys.exception import ServiceError
 from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
-from server.librarys.sqlalchemy_helper import get_page_number_info
+from server.librarys.sqlalchemy_helper import pagination
 from server.librarys.verify import Verify
 from server.user.auth import Auth
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
@@ -106,7 +106,7 @@ def user_info():
 @http_service
 def user_list(req: RequestDTO):
     # 分页
-    offset, limit = get_page_number_info(req)
+    offset, limit = pagination(req)
 
     # 查询条件
     conditions = []
@@ -149,7 +149,7 @@ def user_list(req: RequestDTO):
 @http_service
 def role_permission_rel_list(req: RequestDTO):
     # 分页
-    offset, limit = get_page_number_info(req)
+    offset, limit = pagination(req)
 
     # TRole 查询条件
     role_conditions = []
@@ -249,7 +249,7 @@ def delete_role_permission_rel(req: RequestDTO):
 @http_service
 def permission_list(req: RequestDTO):
     # 分页
-    offset, limit = get_page_number_info(req)
+    offset, limit = pagination(req)
 
     # 查询条件
     conditions = []
@@ -334,7 +334,7 @@ def delete_permission(req: RequestDTO):
 @http_service
 def role_list(req: RequestDTO):
     # 分页
-    offset, limit = get_page_number_info(req)
+    offset, limit = pagination(req)
 
     # 查询条件
     conditions = []
