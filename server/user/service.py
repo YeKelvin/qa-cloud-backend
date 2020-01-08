@@ -42,15 +42,36 @@ def register(req: RequestDTO):
 
 @http_service
 def modify_user(req: RequestDTO):
-    user = TUser.query.filter_by(username=req.attr.username).first()
+    user = TUser.query.filter_by(user_no=req.attr.userNo).first()
     Verify.is_not_empty(user, '用户不存在')
+
+    if req.attr.username:
+        user.username = req.attr.username
+    if req.attr.nickname:
+        user.nickname = req.attr.nickname
+    if req.attr.mobileNo:
+        user.mobile_no = req.attr.mobileNo
+    if req.attr.email:
+        user.email = req.attr.email
+    user.save()
+    return None
+
+
+@http_service
+def modify_user_state(req: RequestDTO):
+    user = TUser.query.filter_by(user_no=req.attr.userNo).first()
+    Verify.is_not_empty(user, '用户不存在')
+
+    user.update(state=req.attr.state)
     return None
 
 
 @http_service
 def delete_user(req: RequestDTO):
-    user = TUser.query.filter_by(username=req.attr.username).first()
+    user = TUser.query.filter_by(user_no=req.attr.userNo).first()
     Verify.is_not_empty(user, '用户不存在')
+
+    user.delete()
     return None
 
 
@@ -81,6 +102,7 @@ def logout():
     user = getattr(g, 'user', None)
     user.access_token = ''
     user.updated_by = user.username
+    user.save()
     return None
 
 
@@ -123,7 +145,9 @@ def user_list(req: RequestDTO):
     if req.attr.state:
         conditions.append(TUser.state.like(f'%{req.attr.state}%'))
 
+    # 列表总数
     total_size = TUser.query.filter(*conditions).count()
+    # 列表数据
     users = TUser.query.filter(*conditions).order_by(TUser.created_time.desc()).offset(offset).limit(limit).all()
 
     # 组装响应数据
@@ -173,6 +197,7 @@ def role_permission_rel_list(req: RequestDTO):
     if req.attr.state:
         permission_conditions.append(TPermission.state.like(f'%{req.attr.state}%'))
 
+    # 列表总数
     total_size = TRolePermissionRel.join(
         TPermission, TRolePermissionRel.permission_no == TPermission.permission_no
     ).filter(
@@ -181,6 +206,7 @@ def role_permission_rel_list(req: RequestDTO):
         *permission_conditions
     ).count()
 
+    # 列表数据
     role_permissions = TRolePermissionRel.join(
         TPermission, TRolePermissionRel.permission_no == TPermission.permission_no
     ).filter(
@@ -218,7 +244,7 @@ def create_role_permission_rel(req: RequestDTO):
         permission_no=req.attr.permissionNo
     ).first()
     Verify.is_empty(role_permission_rel, '角色权限关系已存在')
-
+    # todo 角色权限关系的新增实现
     return None
 
 
@@ -230,6 +256,7 @@ def modify_role_permission_rel(req: RequestDTO):
     ).first()
     Verify.is_not_empty(role_permission_rel, '角色权限关系不存在')
 
+    # todo 角色权限关系的更新实现
     role_permission_rel.save()
     return None
 
@@ -264,7 +291,9 @@ def permission_list(req: RequestDTO):
     if req.attr.state:
         conditions.append(TPermission.state.like(f'%{req.attr.state}%'))
 
+    # 列表总数
     total_size = TPermission.query.filter(*conditions).count()
+    # 列表数据
     permissions = TPermission.query.filter(
         *conditions
     ).order_by(
@@ -287,7 +316,7 @@ def permission_list(req: RequestDTO):
 
 @http_service
 def create_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(endpoint=req.attr.endpoint).first()
+    permission = TPermission.query.filter_by(endpoint=req.attr.endpoint, method=req.attr.method).first()
     Verify.is_empty(permission, '权限已存在')
 
     TPermission.create(
@@ -341,7 +370,9 @@ def role_list(req: RequestDTO):
     if req.attr.roleName:
         conditions.append(TRole.role_name.like(f'%{req.attr.roleName}%'))
 
+    # 列表总数
     total_size = TRole.query.filter(*conditions).count()
+    # 列表数据
     roles = TRole.query.filter(*conditions).offset(offset).limit(limit).all()
 
     # 组装响应数据

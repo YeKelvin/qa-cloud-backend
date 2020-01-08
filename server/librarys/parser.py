@@ -106,6 +106,8 @@ class BaseParser:
         """
         request_dto = RequestDTO()
         try:
+            if not self.args:
+                raise ParseError('Arguments不允许为空')
             self._init(data)
             for arg in self.args:
                 request_dto.attr[arg.name] = arg.parse(*self._get(arg.name))

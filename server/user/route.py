@@ -77,22 +77,43 @@ def user_info():
     return service.user_info()
 
 
-@blueprint.route('/user', methods=['PUT'])
+@blueprint.route('/info', methods=['PUT'])
+@require_login
+@require_permission
 def modify_user():
     """更新用户信息
     """
     req = JsonParser(
-
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('nickname', required=True, nullable=False, help='用户昵称不能为空'),
+        Argument('mobileNo'),
+        Argument('email'),
     ).parse()
     return service.modify_user(req)
 
 
+@blueprint.route('/info/state', methods=['PATCH'])
+@require_login
+@require_permission
+def modify_user_state():
+    """更新用户信息
+    """
+    req = JsonParser(
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('state', required=True, nullable=False, help='用户状态不能为空'),
+    ).parse()
+    return service.modify_user_state(req)
+
+
 @blueprint.route('', methods=['DELETE'])
+@require_login
+@require_permission
 def delete_user():
     """删除用户
     """
     req = JsonParser(
-
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
     ).parse()
     return service.delete_user(req)
 
@@ -152,9 +173,9 @@ def modify_permission():
     """
     req = JsonParser(
         Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
-        Argument('permissionName'),
-        Argument('endpoint'),
-        Argument('method'),
+        Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
+        Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
+        Argument('method', required=True, nullable=False, help='请求方法不能为空'),
     ).parse()
     return service.modify_permission(req)
 
@@ -200,7 +221,7 @@ def modify_role():
     """
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
-        Argument('roleName'),
+        Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
         Argument('remark'),
     ).parse()
     return service.modify_role(req)
