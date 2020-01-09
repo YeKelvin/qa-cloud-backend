@@ -55,13 +55,9 @@ def init_seq():
     """初始化序列（SQLite专用）
     """
     TSequence.create(seq_name='seq_user_no', created_time=datetime.now(), created_by='system')
-    click.echo('创建序列 seq_user_no成功')
     TSequence.create(seq_name='seq_role_no', created_time=datetime.now(), created_by='system')
-    click.echo('创建序列 seq_role_no成功')
     TSequence.create(seq_name='seq_permission_no', created_time=datetime.now(), created_by='system')
-    click.echo('创建序列 seq_permission_no成功')
-    TSequence.create(seq_name='seq_menu_no', created_time=datetime.now(), created_by='system')
-    click.echo('创建序列 seq_menu_no成功')
+    click.echo('创建序列成功')
 
 
 @with_appcontext
@@ -85,17 +81,13 @@ def init_role():
     """初始化角色
     """
     TRole.create(role_no=generate_role_no(), role_name='superAdmin', state='NORMAL', remark='超级管理员',
-                 created_time=datetime.now(),
-                 created_by='system')  # R00000001
+                 created_time=datetime.now(), created_by='system')  # R00000001
     TRole.create(role_no=generate_role_no(), role_name='admin', state='NORMAL', remark='管理员',
-                 created_time=datetime.now(),
-                 created_by='system')  # R00000002
+                 created_time=datetime.now(), created_by='system')  # R00000002
     TRole.create(role_no=generate_role_no(), role_name='leader', state='NORMAL', remark='组长',
-                 created_time=datetime.now(),
-                 created_by='system')  # R00000003
+                 created_time=datetime.now(), created_by='system')  # R00000003
     TRole.create(role_no=generate_role_no(), role_name='general', state='NORMAL', remark='用户',
-                 created_time=datetime.now(),
-                 created_by='system')  # R00000004
+                 created_time=datetime.now(), created_by='system')  # R00000004
     click.echo('创建角色成功')
 
 
@@ -111,12 +103,14 @@ def init_permission():
                        method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
                        method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户信息', endpoint='/user/info',
-                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户', endpoint='/user',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/list',
                        method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户信息', endpoint='/user/info',
+                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户状态', endpoint='/user/info/state',
+                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户', endpoint='/user',
+                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取权限列表',
                        endpoint='/user/permission/list',
                        method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
@@ -124,6 +118,9 @@ def init_permission():
                        method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限信息', endpoint='/user/permission',
                        method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限状态',
+                       endpoint='/user/permission/state',
+                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='删除权限', endpoint='/user/permission',
                        method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取角色列表',
@@ -133,6 +130,8 @@ def init_permission():
                        method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色信息', endpoint='/user/role',
                        method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色状态', endpoint='/user/role/state',
+                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色', endpoint='/user/role',
                        method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取角色权限关联列表',
@@ -162,7 +161,7 @@ def init_user_role_rel():
 def init_role_permission_rel():
     """初始化角色权限关联关系
     """
-    for i in range(1, 20):
+    for i in range(1, 23):
         TRolePermissionRel.create(role_no='R00000001', permission_no=f'P0000000{i}', created_time=datetime.now(),
                                   created_by='system')
     click.echo('创建角色权限关联关系成功')

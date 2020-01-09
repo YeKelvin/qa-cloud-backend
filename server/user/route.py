@@ -97,7 +97,7 @@ def modify_user():
 @require_login
 @require_permission
 def modify_user_state():
-    """更新用户信息
+    """更新用户状态
     """
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
@@ -122,7 +122,7 @@ def delete_user():
 @require_login
 @require_permission
 def role_permission_rel_list():
-    """分页查询权限列表
+    """分页查询角色权限关联关系列表
     """
     req = JsonParser(
         Argument('roleName'),
@@ -140,6 +140,8 @@ def role_permission_rel_list():
 @require_login
 @require_permission
 def permission_list():
+    """分页查询权限列表
+    """
     req = JsonParser(
         Argument('permissionNo'),
         Argument('permissionName'),
@@ -168,6 +170,8 @@ def create_permission():
 
 
 @blueprint.route('/permission', methods=['PUT'])
+@require_login
+@require_permission
 def modify_permission():
     """更新权限信息
     """
@@ -180,7 +184,22 @@ def modify_permission():
     return service.modify_permission(req)
 
 
+@blueprint.route('/permission/state', methods=['PATCH'])
+@require_login
+@require_permission
+def modify_permission_state():
+    """更新权限状态
+    """
+    req = JsonParser(
+        Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
+        Argument('state', required=True, nullable=False, help='权限状态不能为空'),
+    ).parse()
+    return service.modify_permission_state(req)
+
+
 @blueprint.route('/permission', methods=['DELETE'])
+@require_login
+@require_permission
 def delete_permission():
     """删除权限
     """
@@ -216,6 +235,8 @@ def create_role():
 
 
 @blueprint.route('/role', methods=['PUT'])
+@require_login
+@require_permission
 def modify_role():
     """更新角色信息
     """
@@ -227,7 +248,22 @@ def modify_role():
     return service.modify_role(req)
 
 
+@blueprint.route('/role/state', methods=['PATCH'])
+@require_login
+@require_permission
+def modify_role_state():
+    """更新角色状态
+    """
+    req = JsonParser(
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
+        Argument('state', required=True, nullable=False, help='角色状态不能为空'),
+    ).parse()
+    return service.modify_role_state(req)
+
+
 @blueprint.route('/role', methods=['DELETE'])
+@require_login
+@require_permission
 def delete_role():
     """删除角色
     """

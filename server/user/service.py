@@ -352,6 +352,15 @@ def modify_permission(req: RequestDTO):
 
 
 @http_service
+def modify_permission_state(req: RequestDTO):
+    permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
+    Verify.is_not_empty(permission, '权限不存在')
+
+    permission.update(state=req.attr.state)
+    return None
+
+
+@http_service
 def delete_permission(req: RequestDTO):
     permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
     Verify.is_not_empty(permission, '权限不存在')
@@ -414,6 +423,15 @@ def modify_role(req: RequestDTO):
     if req.attr.remark:
         role.remark = req.attr.remark
     role.save()
+    return None
+
+
+@http_service
+def modify_role_state(req: RequestDTO):
+    role = TRole.query.filter_by(role_no=req.attr.roleNo).first()
+    Verify.is_not_empty(role, '角色不存在')
+
+    role.update(state=req.attr.state)
     return None
 
 
