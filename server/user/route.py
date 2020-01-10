@@ -50,6 +50,18 @@ def register():
     return service.register(req)
 
 
+@blueprint.route('/password/reset', methods=['POST'])
+@require_login
+@require_permission
+def reset_password():
+    """重置密码
+    """
+    req = JsonParser(
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+    ).parse()
+    return service.reset_password(req)
+
+
 @blueprint.route('/list', methods=['GET'])
 @require_login
 @require_permission

@@ -41,6 +41,16 @@ def register(req: RequestDTO):
 
 
 @http_service
+def reset_password(req: RequestDTO):
+    user = TUser.query.filter_by(user_no=req.attr.userNo).first()
+    Verify.is_not_empty(user, '用户不存在')
+
+    user.password = '123456'
+    user.save()
+    return None
+
+
+@http_service
 def modify_user(req: RequestDTO):
     user = TUser.query.filter_by(user_no=req.attr.userNo).first()
     Verify.is_not_empty(user, '用户不存在')
