@@ -102,7 +102,7 @@ def init_permission():
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', endpoint='/user/register',
                        method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='重置密码', endpoint='/user/password/reset',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息', endpoint='/user/info',
                        method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='获取用户信息列表', endpoint='/user/list',

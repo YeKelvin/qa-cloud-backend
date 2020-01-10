@@ -79,27 +79,27 @@ def require_login(func):
         user = getattr(g, 'user', None)
         # JWT解析 payload失败
         if not auth_token or not auth_login_time:
-            log.debug(f'logId:[ {g.logid} ] JWT解析 payload失败')
+            log.debug(f'logId:[ {g.logid} ] msg:[ JWT解析 payload失败 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # 查询 user失败或 user不存在
         if not user:
-            log.debug(f'logId:[ {g.logid} ] 查询 user失败或 user不存在')
+            log.debug(f'logId:[ {g.logid} ] msg:[ 查询 user失败或 user不存在 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user已主动登出系统，需要重新登录
         if not user.access_token:
-            log.debug(f'logId:[ {g.logid} ] user已主动登出系统，需要重新登录')
+            log.debug(f'logId:[ {g.logid} ] msg:[ user已主动登出系统，需要重新登录 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user状态异常
         if user.state != 'NORMAL':
-            log.debug(f'logId:[ {g.logid} ] user.state:[ {user.state} ] user状态异常')
+            log.debug(f'logId:[ {g.logid} ] user.state:[ {user.state} ] msg:[ user状态异常 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user的 access_token已更变，不能使用旧 token认证
         if auth_token != user.access_token:
-            log.debug(f'logId:[ {g.logid} ] user的 access_token已更变，不能使用旧 token认证')
+            log.debug(f'logId:[ {g.logid} ] msg:[ user的 access_token已更变，不能使用旧 token认证 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user 中的最后成功登录时间和 token中的登录时间不一致
@@ -108,7 +108,7 @@ def require_login(func):
                 f'logId:[ {g.logid} ] '
                 f'auth_login_time:[ {datetime.fromtimestamp(auth_login_time)} ]'
                 f'user.last_success_time:[ {user.last_success_time} ] '
-                f'user中的最后成功登录时间和 token中的登录时间不一致 '
+                f'msg:[ user中的最后成功登录时间和 token中的登录时间不一致 ]'
             )
             return __auth_fail_response(ErrorCode.E401001)
 
@@ -128,7 +128,7 @@ def require_permission(func):
         if not user:
             log.debug(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'获取 flask.g.user失败'
+                f'msg:[ 获取 flask.g.user失败 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
@@ -136,7 +136,7 @@ def require_permission(func):
         if not user_role:
             log.debug(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'username:[ {user.username} ] 查询用户角色失败'
+                f'username:[ {user.username} ] msg:[ 查询用户角色失败 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
@@ -144,7 +144,7 @@ def require_permission(func):
         if not role_permission_rels:
             log.debug(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'username:[ {user.username} ] 查询角色权限失败'
+                f'roleNo:[ {user_role.role_no} ] username:[ {user.username} ] msg:[ 查询角色权限关联关系失败 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
@@ -153,7 +153,7 @@ def require_permission(func):
             if not permission:
                 log.debug(
                     f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                    f'查询权限信息失败'
+                    f'permissionNo:[ {role_permission_rel.permission_no} ] msg:[ 查询权限信息失败 ]'
                 )
                 return __auth_fail_response(ErrorCode.E401002)
 
@@ -162,7 +162,7 @@ def require_permission(func):
                 return func(*args, **kwargs)
 
         # 权限校验失败
-        log.debug(f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] 用户无该请求的方法或路径的权限')
+        log.debug(f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] msg:[ 用户无当前请求的权限 ]')
         return __auth_fail_response(ErrorCode.E401002)
 
     return wrapper

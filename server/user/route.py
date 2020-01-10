@@ -50,7 +50,7 @@ def register():
     return service.register(req)
 
 
-@blueprint.route('/password/reset', methods=['POST'])
+@blueprint.route('/password/reset', methods=['PATCH'])
 @require_login
 @require_permission
 def reset_password():
