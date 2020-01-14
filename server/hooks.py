@@ -10,8 +10,9 @@ from datetime import datetime
 import jwt
 from flask import request, g
 
+from server.librarys.helpers.global_helper import Global
 from server.system.model import TActionLog
-from server.user.auth import Auth
+from server.user.utils.auth import Auth
 from server.user.model import TUser, TPermission
 from server.utils import randoms
 from server.utils.log_util import get_logger
@@ -55,9 +56,9 @@ def set_user():
             # 解密 token获取 payload
             payload = Auth.decode_auth_token(auth_token)
             # 设置全局属性
-            g.user = TUser.query.filter_by(user_no=payload['data']['id']).first()
-            g.auth_token = auth_token
-            g.auth_login_time = payload['data']['loginTime']
+            Global.set('user', TUser.query.filter_by(user_no=payload['data']['id']).first())
+            Global.set('auth_token', auth_token)
+            Global.set('auth_login_time', payload['data']['loginTime'])
         except jwt.ExpiredSignatureError:
             log.info(f'logId:[ {g.logid} ] token 已失效')
         except jwt.InvalidTokenError:
@@ -71,13 +72,13 @@ def record_action(response):
 
     记录请求日志，只记录成功的请求
     """
-    success = getattr(g, 'success', None)
+    success = Global.success
     if success:
         permission = TPermission.query.filter_by(endpoint=request.path).first()
         TActionLog.create(
             action_detail=permission.permission_name if permission else None,
             action_path=f'{request.method} {request.path}',
             created_time=datetime.now(),
-            created_by=getattr(g, 'operator', None),
+            created_by=Global.operator,
         )
     return response

@@ -5,9 +5,10 @@
 # @Author  : Kelvin.Ye
 from enum import Enum
 
-from flask import make_response, g
+from flask import make_response
 
 from server.librarys.exception import ErrorCode
+from server.librarys.helpers.global_helper import Global
 from server.librarys.status import Status
 from server.utils.json_util import to_json
 
@@ -54,5 +55,5 @@ def http_response(res: ResponseDTO = None,
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    g.success = res.success
+    Global.set('success', res.success)
     return response

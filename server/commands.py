@@ -80,13 +80,13 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    TRole.create(role_no=generate_role_no(), role_name='superAdmin', state='NORMAL', remark='超级管理员',
+    TRole.create(role_no=generate_role_no(), role_name='SuperAdmin', state='NORMAL', remark='超级管理员',
                  created_time=datetime.now(), created_by='system')  # R00000001
-    TRole.create(role_no=generate_role_no(), role_name='admin', state='NORMAL', remark='管理员',
+    TRole.create(role_no=generate_role_no(), role_name='Admin', state='NORMAL', remark='管理员',
                  created_time=datetime.now(), created_by='system')  # R00000002
-    TRole.create(role_no=generate_role_no(), role_name='leader', state='NORMAL', remark='组长',
+    TRole.create(role_no=generate_role_no(), role_name='Leader', state='NORMAL', remark='组长',
                  created_time=datetime.now(), created_by='system')  # R00000003
-    TRole.create(role_no=generate_role_no(), role_name='general', state='NORMAL', remark='用户',
+    TRole.create(role_no=generate_role_no(), role_name='General', state='NORMAL', remark='用户',
                  created_time=datetime.now(), created_by='system')  # R00000004
     click.echo('创建角色成功')
 
@@ -163,9 +163,10 @@ def init_user_role_rel():
 def init_role_permission_rel():
     """初始化角色权限关联关系
     """
-    for i in range(1, 23):
-        TRolePermissionRel.create(role_no='R00000001', permission_no=f'P0000000{i}', created_time=datetime.now(),
-                                  created_by='system')
+    permissions = TPermission.query.all()
+    for permission in permissions:
+        TRolePermissionRel.create(role_no='R00000001', permission_no=permission.permission_no,
+                                  created_time=datetime.now(), created_by='system')
     click.echo('创建角色权限关联关系成功')
 
 

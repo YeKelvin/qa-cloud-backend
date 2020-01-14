@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
-from server.librarys.decorators import require_login, require_permission
+from server.librarys.decorators.require import require_login, require_permission
 from server.librarys.parser import JsonParser, Argument
 from server.user import service
 from server.utils.log_util import get_logger
@@ -228,7 +228,12 @@ def role_list():
     """分页查询角色列表
     """
     req = JsonParser(
+        Argument('roleNo'),
         Argument('roleName'),
+        Argument('state'),
+        Argument('remark'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.role_list(req)
 

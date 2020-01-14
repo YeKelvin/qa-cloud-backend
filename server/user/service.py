@@ -7,13 +7,14 @@ from datetime import datetime
 
 from flask import g
 
-from server.librarys.decorators import http_service
+from server.librarys.decorators.service import http_service
 from server.librarys.exception import ServiceError
+from server.librarys.helpers.global_helper import Global
 from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
-from server.librarys.sqlalchemy_helper import pagination
+from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.verify import Verify
-from server.user.auth import Auth
+from server.user.utils.auth import Auth
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
 from server.utils.log_util import get_logger
 
@@ -34,8 +35,8 @@ def register(req: RequestDTO):
         email=req.attr.email,
         state='NORMAL',
         created_time=datetime.now(),
-        created_by=getattr(g, 'operator', None),
-        updated_by=getattr(g, 'operator', None)
+        created_by=Global.operator,
+        updated_by=Global.operator
     )
     return None
 
@@ -80,7 +81,7 @@ def modify_user_state(req: RequestDTO):
 def delete_user(req: RequestDTO):
     user = TUser.query.filter_by(user_no=req.attr.userNo).first()
     Verify.is_not_empty(user, '用户不存在')
-
+    # todo 删除关联关系
     user.delete()
     return None
 
@@ -103,7 +104,7 @@ def login(req: RequestDTO):
     token = Auth.encode_auth_token(user.user_no, login_time.timestamp())
     user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
     # 记录操作员，用于记录操作日志表
-    g.operator = user.username
+    Global.set('operator', user.username)
     return {'accessToken': token}
 
 
@@ -386,8 +387,14 @@ def role_list(req: RequestDTO):
 
     # 查询条件
     conditions = []
+    if req.attr.roleNo:
+        conditions.append(TRole.role_no.like(f'%{req.attr.roleNo}%'))
     if req.attr.roleName:
         conditions.append(TRole.role_name.like(f'%{req.attr.roleName}%'))
+    if req.attr.state:
+        conditions.append(TRole.state == req.attr.state)
+    if req.attr.remark:
+        conditions.append(TRole.remark.like(f'%{req.attr.remark}%'))
 
     # 列表总数
     total_size = TRole.query.filter(*conditions).count()
@@ -400,6 +407,7 @@ def role_list(req: RequestDTO):
         data_set.append({
             'roleNo': role.role_no,
             'roleName': role.role_name,
+            'state': role.state,
             'remark': role.remark
         })
     return {'dataSet': data_set, 'totalSize': total_size}
@@ -449,7 +457,9 @@ def modify_role_state(req: RequestDTO):
 def delete_role(req: RequestDTO):
     role = TRole.query.filter_by(role_no=req.attr.roleNo).first()
     Verify.is_not_empty(role, '角色不存在')
-
+    user_roles = TUserRoleRel.query.filter_by(role_no=req.attr.roleNo).all()
+    role_permissions = TRolePermissionRel.query.filter_by(role_no=req.attr.roleNo).all()
+    # todo 判断 role是否还有关联关系，有则不允许删除
     role.delete()
     return None
 

@@ -47,9 +47,12 @@ class Auth:
     def encode_auth_token(user_no, login_time):
         """生成认证Token
 
-        :param user_no:     用户编号
-        :param login_time:  登录时间
-        :return:            token
+        Args:
+            user_no:    用户编号
+            login_time: 登录时间
+
+        Returns:
+            token
         """
         header = {
             'typ': 'JWT',
@@ -69,12 +72,17 @@ class Auth:
         return str(token, encoding='utf-8')
 
     @staticmethod
-    def decode_auth_token(auth_token):
+    def decode_auth_token(auth_token) -> dict:
         """验证Token
 
-        :param auth_token:
-        :return: int | str
-        :except: jwt.ExpiredSignatureError（token过期） | jwt.InvalidTokenError（无效token）
+        Args:
+            auth_token:
+
+        Returns:
+
+        Raises:
+            jwt.ExpiredSignatureError（token过期）
+            jwt.InvalidTokenError（无效token）
         """
 
         # 取消过期时间验证

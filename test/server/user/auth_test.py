@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 import datetime
 
-from server.user.auth import Auth
+from server.user.utils.auth import Auth
 
 
 def test_auth_token():
