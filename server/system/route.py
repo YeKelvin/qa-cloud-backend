@@ -24,9 +24,9 @@ def action_log_list():
     req = JsonParser(
         Argument('actionDetail'),
         Argument('actionPath'),
+        Argument('createdBy'),
         Argument('startTime'),
         Argument('endTime'),
-        Argument('createdBy'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
