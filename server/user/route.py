@@ -130,24 +130,6 @@ def delete_user():
     return service.delete_user(req)
 
 
-@blueprint.route('/role/permission/rel/list', methods=['GET'])
-@require_login
-@require_permission
-def role_permission_rel_list():
-    """分页查询角色权限关联关系列表
-    """
-    req = JsonParser(
-        Argument('roleName'),
-        Argument('permissionName'),
-        Argument('endpoint'),
-        Argument('method'),
-        Argument('state'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
-    ).parse()
-    return service.role_permission_rel_list(req)
-
-
 @blueprint.route('/permission/list', methods=['GET'])
 @require_login
 @require_permission
@@ -288,3 +270,60 @@ def delete_role():
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空')
     ).parse()
     return service.delete_role(req)
+
+
+@blueprint.route('/role/permission/rel/list', methods=['GET'])
+@require_login
+@require_permission
+def role_permission_rel_list():
+    """分页查询角色权限关联关系列表
+    """
+    req = JsonParser(
+        Argument('roleName'),
+        Argument('permissionName'),
+        Argument('endpoint'),
+        Argument('method'),
+        Argument('state'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
+    return service.role_permission_rel_list(req)
+
+
+@blueprint.route('/role/permission/rel', methods=['POST'])
+@require_login
+@require_permission
+def create_role_permission_rel():
+    """分页查询角色权限关联关系列表
+    """
+    req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionNo'),
+    ).parse()
+    return service.create_role_permission_rel(req)
+
+
+@blueprint.route('/role/permission/rel', methods=['PUT'])
+@require_login
+@require_permission
+def modify_role_permission_rel():
+    """分页查询角色权限关联关系列表
+    """
+    req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionNo'),
+    ).parse()
+    return service.modify_role_permission_rel(req)
+
+
+@blueprint.route('/role/permission/rel', methods=['DELETE'])
+@require_login
+@require_permission
+def delete_role_permission_rel():
+    """分页查询角色权限关联关系列表
+    """
+    req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionNo'),
+    ).parse()
+    return service.delete_role_permission_rel(req)
