@@ -148,6 +148,15 @@ def permission_list():
     return service.permission_list(req)
 
 
+@blueprint.route('/permission/all', methods=['GET'])
+@require_login
+@require_permission
+def permission_all():
+    """查询所有权限
+    """
+    return service.permission_all()
+
+
 @blueprint.route('/permission', methods=['POST'])
 @require_login
 @require_permission
@@ -220,6 +229,15 @@ def role_list():
     return service.role_list(req)
 
 
+@blueprint.route('/role/all', methods=['GET'])
+@require_login
+@require_permission
+def role_all():
+    """查询所有角色
+    """
+    return service.role_all()
+
+
 @blueprint.route('/role', methods=['POST'])
 @require_login
 @require_permission
@@ -279,11 +297,12 @@ def role_permission_rel_list():
     """分页查询角色权限关联关系列表
     """
     req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionNo'),
         Argument('roleName'),
         Argument('permissionName'),
         Argument('endpoint'),
         Argument('method'),
-        Argument('state'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -301,19 +320,6 @@ def create_role_permission_rel():
         Argument('permissionNo'),
     ).parse()
     return service.create_role_permission_rel(req)
-
-
-@blueprint.route('/role/permission/rel', methods=['PUT'])
-@require_login
-@require_permission
-def modify_role_permission_rel():
-    """分页查询角色权限关联关系列表
-    """
-    req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNo'),
-    ).parse()
-    return service.modify_role_permission_rel(req)
 
 
 @blueprint.route('/role/permission/rel', methods=['DELETE'])
