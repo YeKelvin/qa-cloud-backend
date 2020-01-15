@@ -5,8 +5,29 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
+from server.librarys.decorators.require import require_login, require_permission
+from server.librarys.parser import JsonParser, Argument
+from server.system import service
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
 blueprint = Blueprint('system', __name__, url_prefix='/system')
+
+
+@blueprint.route('/action/log/list', methods=['GET'])
+@require_login
+@require_permission
+def action_log_list():
+    """分页查询操作日志列表
+    """
+    req = JsonParser(
+        Argument('actionDetail'),
+        Argument('actionPath'),
+        Argument('startTime'),
+        Argument('endTime'),
+        Argument('createdBy'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+    ).parse()
+    return service.action_log_list(req)

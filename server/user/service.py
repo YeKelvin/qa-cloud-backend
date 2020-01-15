@@ -5,17 +5,15 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from flask import g
-
 from server.librarys.decorators.service import http_service
 from server.librarys.exception import ServiceError
 from server.librarys.helpers.global_helper import Global
+from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.sequence import Sequence
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.verify import Verify
-from server.user.utils.auth import Auth
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
+from server.user.utils.auth import Auth
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -37,7 +35,12 @@ def login(req: RequestDTO):
     # 密码校验通过
     login_time = datetime.utcnow()
     token = Auth.encode_auth_token(user.user_no, login_time.timestamp())
-    user.update(access_token=token, last_login_time=login_time, last_success_time=login_time, error_times=0)
+    user.update(
+        access_token=token,
+        last_login_time=login_time,
+        last_success_time=login_time,
+        error_times=0
+    )
     # 记录操作员，用于记录操作日志表
     Global.set('operator', user.username)
     return {'accessToken': token}
@@ -45,7 +48,7 @@ def login(req: RequestDTO):
 
 @http_service
 def logout():
-    user = getattr(g, 'user', None)
+    user = Global.user
     user.access_token = ''
     user.updated_by = user.username
     user.save()
@@ -57,8 +60,10 @@ def register(req: RequestDTO):
     user = TUser.query.filter_by(username=req.attr.username).first()
     Verify.empty(user, '该用户名称已存在')
 
+    # 创建用户
+    user_no = generate_user_no()
     TUser.create(
-        user_no=generate_user_no(),
+        user_no=user_no,
         username=req.attr.username,
         nickname=req.attr.nickname,
         password=req.attr.password,
@@ -67,6 +72,7 @@ def register(req: RequestDTO):
         state='NORMAL',
         created_time=datetime.now(),
         created_by=Global.operator,
+        updated_time=datetime.now(),
         updated_by=Global.operator
     )
     return None
@@ -128,8 +134,20 @@ def user_list(req: RequestDTO):
 
 
 @http_service
+def user_all():
+    users = TUser.query.order_by(TUser.created_time.desc()).all()
+    result = []
+    for user in users:
+        result.append({
+            'userNo': user.user_no,
+            'username': user.username
+        })
+    return result
+
+
+@http_service
 def user_info():
-    user = getattr(g, 'user', None)
+    user = Global.user
     user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
     roles = []
     for user_role in user_roles:
@@ -256,9 +274,9 @@ def create_permission(req: RequestDTO):
         state='NORMAL',
         remark=req.attr.remark,
         created_time=datetime.now(),
-        created_by=getattr(g, 'operator', None),
+        created_by=Global.operator,
         updated_time=datetime.now(),
-        updated_by=getattr(g, 'operator', None)
+        updated_by=Global.operator
     )
     return None
 
@@ -317,7 +335,7 @@ def role_list(req: RequestDTO):
     # 列表总数
     total_size = TRole.query.filter(*conditions).count()
     # 列表数据
-    roles = TRole.query.filter(*conditions).offset(offset).limit(limit).all()
+    roles = TRole.query.filter(*conditions).order_by(TRole.created_time.desc()).offset(offset).limit(limit).all()
 
     # 组装响应数据
     data_set = []
@@ -356,9 +374,9 @@ def create_role(req: RequestDTO):
         state='NORMAL',
         remark=req.attr.remark,
         created_time=datetime.now(),
-        created_by=getattr(g, 'operator', None),
+        created_by=Global.operator,
         updated_time=datetime.now(),
-        updated_by=getattr(g, 'operator', None)
+        updated_by=Global.operator
     )
     return None
 
@@ -404,6 +422,95 @@ def delete_role(req: RequestDTO):
 
 
 @http_service
+def user_role_rel_list(req: RequestDTO):
+    # 分页
+    offset, limit = pagination(req)
+
+    # 查询条件
+    conditions = []
+    # TUserRoleRel查询条件
+    if req.attr.userNo:
+        conditions.append(TUserRoleRel.user_no.like(f'%{req.attr.userNo}%'))
+    if req.attr.roleNo:
+        conditions.append(TUserRoleRel.role_no.like(f'%{req.attr.roleNo}%'))
+    # TRole查询条件
+    if req.attr.roleName:
+        conditions.append(TRole.role_name.like(f'%{req.attr.roleName}%'))
+    # TUser查询条件
+    if req.attr.username:
+        conditions.append(TUser.username.like(f'%{req.attr.username}%'))
+
+    # 列表总数
+    total_size = TUserRoleRel.query.join(
+        TRole, TUserRoleRel.role_no == TRole.role_no
+    ).join(
+        TUser, TUserRoleRel.user_no == TUser.user_no
+    ).filter(
+        *conditions
+    ).count()
+
+    # 列表数据
+    querys = TUserRoleRel.query.with_entities(
+        TUserRoleRel.user_no,
+        TUserRoleRel.role_no,
+        TRole.role_name,
+        TUser.username,
+        TUserRoleRel.created_time
+    ).join(
+        TRole, TUserRoleRel.role_no == TRole.role_no
+    ).join(
+        TUser, TUserRoleRel.user_no == TUser.user_no
+    ).filter(
+        *conditions
+    ).order_by(
+        TUserRoleRel.created_time.desc()
+    ).offset(offset).limit(limit).all()
+
+    # 组装响应数据
+    data_set = []
+    for query in querys:
+        data_set.append({
+            'userNo': query.user_no,
+            'roleNo': query.role_no,
+            'username': query.username,
+            'roleName': query.role_name,
+        })
+
+    return {'dataSet': data_set, 'totalSize': total_size}
+
+
+@http_service
+def create_user_role_rel(req: RequestDTO):
+    user_role = TUserRoleRel.query.filter_by(
+        user_no=req.attr.userNo,
+        role_no=req.attr.roleNo
+    ).first()
+    Verify.empty(user_role, '用户角色关联关系已存在')
+
+    TUserRoleRel.create(
+        user_no=req.attr.userNo,
+        role_no=req.attr.roleNo,
+        created_time=datetime.now(),
+        created_by=Global.operator,
+        updated_time=datetime.now(),
+        updated_by=Global.operator
+    )
+    return None
+
+
+@http_service
+def delete_user_role_rel(req: RequestDTO):
+    user_role = TUserRoleRel.query.filter_by(
+        user_no=req.attr.userNo,
+        role_no=req.attr.roleNo
+    ).first()
+    Verify.not_empty(user_role, '用户角色关联关系不存在')
+
+    user_role.delete()
+    return None
+
+
+@http_service
 def role_permission_rel_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
@@ -437,9 +544,12 @@ def role_permission_rel_list(req: RequestDTO):
 
     # 列表数据
     querys = TRolePermissionRel.query.with_entities(
-        TRolePermissionRel.role_no, TRolePermissionRel.permission_no,
+        TRolePermissionRel.role_no,
+        TRolePermissionRel.permission_no,
         TRole.role_name,
-        TPermission.permission_name, TPermission.endpoint, TPermission.method,
+        TPermission.permission_name,
+        TPermission.endpoint,
+        TPermission.method,
         TRolePermissionRel.created_time
     ).join(
         TRole, TRolePermissionRel.role_no == TRole.role_no
@@ -468,24 +578,32 @@ def role_permission_rel_list(req: RequestDTO):
 
 @http_service
 def create_role_permission_rel(req: RequestDTO):
-    role_permission_rel = TRolePermissionRel.query.filter_by(
+    role_permission = TRolePermissionRel.query.filter_by(
         role_no=req.attr.roleNo,
         permission_no=req.attr.permissionNo
     ).first()
-    Verify.empty(role_permission_rel, '角色权限关联关系已存在')
-    # todo 角色权限关系的新增实现
+    Verify.empty(role_permission, '角色权限关联关系已存在')
+
+    TRolePermissionRel.create(
+        role_no=req.attr.roleNo,
+        permission_no=req.attr.permissionNo,
+        created_time=datetime.now(),
+        created_by=Global.operator,
+        updated_time=datetime.now(),
+        updated_by=Global.operator
+    )
     return None
 
 
 @http_service
 def delete_role_permission_rel(req: RequestDTO):
-    role_permission_rel = TRolePermissionRel.query.filter_by(
+    role_permission = TRolePermissionRel.query.filter_by(
         role_no=req.attr.roleNo,
         permission_no=req.attr.permissionNo
     ).first()
-    Verify.not_empty(role_permission_rel, '角色权限关联关系不存在')
+    Verify.not_empty(role_permission, '角色权限关联关系不存在')
 
-    role_permission_rel.delete()
+    role_permission.delete()
     return None
 
 

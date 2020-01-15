@@ -26,7 +26,7 @@ class TSequence(Model):
     remark = db.Column(db.String(128), comment='备注')
     created_time = db.Column(db.DateTime, comment='创建时间')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, default=datetime.now(), comment='更新时间')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
     updated_by = db.Column(db.String(64), comment='更新人')
 
     @staticmethod
