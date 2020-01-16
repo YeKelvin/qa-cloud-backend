@@ -95,6 +95,7 @@ def init_role():
 def init_permission():
     """初始化权限
     """
+    # user模块路由
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', endpoint='/user/login',
                        method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', endpoint='/user/logout',
@@ -163,6 +164,7 @@ def init_permission():
                        endpoint='/user/role/permission/rel',
                        method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
 
+    # system模块路由
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询操作日志列表',
                        endpoint='/system/action/log/list',
                        method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')

@@ -70,15 +70,17 @@ def set_user():
 def record_action(response):
     """after_request
 
-    记录请求日志，只记录成功的请求
+    记录请求日志，只记录成功的非 GET请求
     """
     success = Global.success
-    if success:
+    if success and 'GET' not in request.method:
         permission = TPermission.query.filter_by(endpoint=request.path).first()
         TActionLog.create(
             action_detail=permission.permission_name if permission else None,
             action_path=f'{request.method} {request.path}',
             created_time=datetime.now(),
             created_by=Global.operator,
+            updated_time=datetime.now(),
+            updated_by=Global.operator
         )
     return response

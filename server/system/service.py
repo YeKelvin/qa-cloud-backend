@@ -8,6 +8,7 @@ from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.system.model import TActionLog
 from server.utils.log_util import get_logger
+from server.utils.time_util import STRFTIME_FORMAT
 
 log = get_logger(__name__)
 
@@ -46,7 +47,7 @@ def action_log_list(req: RequestDTO):
             'actionDetail': action_log.action_detail,
             'actionPath': action_log.action_path,
             'remark': action_log.remark,
-            'createdTime': action_log.created_time,
+            'createdTime': action_log.created_time.strftime(STRFTIME_FORMAT),
             'createdBy': action_log.created_by,
         })
 
