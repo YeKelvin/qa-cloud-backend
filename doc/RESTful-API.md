@@ -45,12 +45,12 @@ DELETE      DELETE      从服务器删除资源
 
 #### 路由路径命名规范
 ```
-GET         /users                  列出所有用户
-GET         /user/id                获取某个指定用户的信息
-POST        /user                   新增一个用户
-PUT         /user/id                更新某个指定用户的信息（提供该用户的全部信息）
-PATCH       /user/id/attribute      更新某个指定用户的信息（提供该用户的单个属性）
-DELETE      /user/id                删除某个用户
+GET         /user/list              分页查询用户列表
+GET         /user/all               查询所有用户
+POST        /user                   新增用户
+PUT         /user                   修改用户信息
+PATCH       /user/attribute         修改用户的名称
+DELETE      /user                   删除用户
 ```
 
 #### Python路由方法命名规范
