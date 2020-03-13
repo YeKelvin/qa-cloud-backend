@@ -23,7 +23,7 @@ class TSequence(Model):
     increment = db.Column(db.Integer, nullable=False, default=1, comment='序列步长')
     loop = db.Column(db.Boolean, nullable=False, default=False, comment='序列是否循环')
     loop_count = db.Column(db.Integer, nullable=False, default=0, comment='序列允许循环次数')
-    remark = db.Column(db.String(128), comment='备注')
+    description = db.Column(db.String(128), comment='备注')
     created_time = db.Column(db.DateTime, comment='创建时间')
     created_by = db.Column(db.String(64), comment='创建人')
     updated_time = db.Column(db.DateTime, comment='更新时间')

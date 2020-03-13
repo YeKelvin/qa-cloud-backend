@@ -272,7 +272,7 @@ def create_permission(req: RequestDTO):
         endpoint=req.attr.endpoint,
         method=req.attr.method,
         state='NORMAL',
-        remark=req.attr.remark,
+        description=req.attr.description,
         created_time=datetime.now(),
         created_by=Global.operator,
         updated_time=datetime.now(),
@@ -329,8 +329,8 @@ def role_list(req: RequestDTO):
         conditions.append(TRole.role_name.like(f'%{req.attr.roleName}%'))
     if req.attr.state:
         conditions.append(TRole.state == req.attr.state)
-    if req.attr.remark:
-        conditions.append(TRole.remark.like(f'%{req.attr.remark}%'))
+    if req.attr.description:
+        conditions.append(TRole.description.like(f'%{req.attr.description}%'))
 
     # 列表总数
     total_size = TRole.query.filter(*conditions).count()
@@ -344,7 +344,7 @@ def role_list(req: RequestDTO):
             'roleNo': role.role_no,
             'roleName': role.role_name,
             'state': role.state,
-            'remark': role.remark
+            'description': role.description
         })
     return {'dataSet': data_set, 'totalSize': total_size}
 
@@ -358,7 +358,7 @@ def role_all():
             'roleNo': role.role_no,
             'roleName': role.role_name,
             'state': role.state,
-            'remark': role.remark
+            'description': role.description
         })
     return result
 
@@ -372,7 +372,7 @@ def create_role(req: RequestDTO):
         role_no=generate_role_no(),
         role_name=req.attr.roleName,
         state='NORMAL',
-        remark=req.attr.remark,
+        description=req.attr.description,
         created_time=datetime.now(),
         created_by=Global.operator,
         updated_time=datetime.now(),
@@ -388,8 +388,8 @@ def modify_role(req: RequestDTO):
 
     if req.attr.roleName:
         role.role_name = req.attr.roleName
-    if req.attr.remark:
-        role.remark = req.attr.remark
+    if req.attr.description:
+        role.description = req.attr.description
     role.save()
     return None
 

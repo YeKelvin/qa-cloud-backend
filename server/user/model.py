@@ -29,11 +29,11 @@ class TUser(Model):
     last_success_time = db.Column(db.DateTime, comment='最后成功登录时间')
     last_error_time = db.Column(db.DateTime, comment='最后失败登录时间')
     error_times = db.Column(db.Integer, comment='登录失败次数')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
+    description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
+    created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
 
     @property
     def password(self):
@@ -60,11 +60,11 @@ class TRole(Model):
     role_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='角色编号')
     role_name = db.Column(db.String(128), comment='角色名称')
     state = db.Column(db.String(32), nullable=False, comment='用户状态')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
+    description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
+    created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
 class TUserRoleRel(Model):
@@ -72,11 +72,11 @@ class TUserRoleRel(Model):
     id = db.Column(db.Integer, primary_key=True)
     user_no = db.Column(db.Integer, index=True, nullable=False, comment='用户编号')
     role_no = db.Column(db.Integer, nullable=False, comment='角色编号')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
+    description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
+    created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
 class TPermission(Model):
@@ -87,11 +87,11 @@ class TPermission(Model):
     endpoint = db.Column(db.String(128), nullable=False, comment='路由路径')
     method = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
     state = db.Column(db.String(32), nullable=False, comment='用户状态')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
+    description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
+    created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
 class TRolePermissionRel(Model):
@@ -99,8 +99,8 @@ class TRolePermissionRel(Model):
     id = db.Column(db.Integer, primary_key=True)
     role_no = db.Column(db.Integer, index=True, nullable=False, comment='角色编号')
     permission_no = db.Column(db.Integer, nullable=False, comment='权限编号')
-    remark = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
+    description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
+    created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')

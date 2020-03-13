@@ -46,7 +46,7 @@ def action_log_list(req: RequestDTO):
         data_set.append({
             'actionDetail': action_log.action_detail,
             'actionPath': action_log.action_path,
-            'remark': action_log.remark,
+            'description': action_log.description,
             'createdTime': action_log.created_time.strftime(STRFTIME_FORMAT),
             'createdBy': action_log.created_by,
         })

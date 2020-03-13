@@ -80,13 +80,13 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    TRole.create(role_no=generate_role_no(), role_name='SuperAdmin', state='NORMAL', remark='超级管理员',
+    TRole.create(role_no=generate_role_no(), role_name='SuperAdmin', state='NORMAL', description='超级管理员',
                  created_time=datetime.now(), created_by='system')  # R00000001
-    TRole.create(role_no=generate_role_no(), role_name='Admin', state='NORMAL', remark='管理员',
+    TRole.create(role_no=generate_role_no(), role_name='Admin', state='NORMAL', description='管理员',
                  created_time=datetime.now(), created_by='system')  # R00000002
-    TRole.create(role_no=generate_role_no(), role_name='Leader', state='NORMAL', remark='组长',
+    TRole.create(role_no=generate_role_no(), role_name='Leader', state='NORMAL', description='组长',
                  created_time=datetime.now(), created_by='system')  # R00000003
-    TRole.create(role_no=generate_role_no(), role_name='General', state='NORMAL', remark='用户',
+    TRole.create(role_no=generate_role_no(), role_name='General', state='NORMAL', description='用户',
                  created_time=datetime.now(), created_by='system')  # R00000004
     click.echo('创建角色成功')
 

@@ -176,7 +176,7 @@ def create_permission():
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
         Argument('method', required=True, nullable=False, help='请求方法不能为空'),
-        Argument('remark'),
+        Argument('description'),
     ).parse()
     return service.create_permission(req)
 
@@ -231,7 +231,7 @@ def role_list():
         Argument('roleNo'),
         Argument('roleName'),
         Argument('state'),
-        Argument('remark'),
+        Argument('description'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -255,7 +255,7 @@ def create_role():
     """
     req = JsonParser(
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('remark', required=True, nullable=False, help='角色描述不能为空'),
+        Argument('description', required=True, nullable=False, help='角色描述不能为空'),
     ).parse()
     return service.create_role(req)
 
@@ -269,7 +269,7 @@ def modify_role():
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('remark'),
+        Argument('description'),
     ).parse()
     return service.modify_role(req)
 
