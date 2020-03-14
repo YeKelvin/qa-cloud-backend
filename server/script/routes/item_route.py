@@ -19,7 +19,9 @@ def item_list():
     """分页查询测试项目列表
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('itemNo'),
+        Argument('itemName'),
+        Argument('itemDescription'),
     ).parse()
     return service.item_list(req)
 
@@ -30,10 +32,7 @@ def item_list():
 def item_all():
     """查询所有测试项目
     """
-    req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
-    ).parse()
-    return service.item_all(req)
+    return service.item_all()
 
 
 @blueprint.route('/item', methods=['POST'])
@@ -43,7 +42,8 @@ def create_item():
     """新增测试项目
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('itemName', required=True, nullable=False, help='项目名称不能为空'),
+        Argument('itemDescription'),
     ).parse()
     return service.create_item(req)
 
@@ -55,7 +55,9 @@ def modify_item():
     """修改测试项目
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
+        Argument('itemName', required=True, nullable=False, help='项目名称不能为空'),
+        Argument('itemDescription'),
     ).parse()
     return service.modify_item(req)
 
@@ -67,6 +69,6 @@ def delete_item():
     """删除测试项目
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
     ).parse()
     return service.delete_item(req)
