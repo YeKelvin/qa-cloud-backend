@@ -169,13 +169,13 @@ def modify_user(req: RequestDTO):
     user = TUser.query.filter_by(user_no=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
-    if req.attr.username:
+    if req.attr.username is not None:
         user.username = req.attr.username
-    if req.attr.nickname:
+    if req.attr.nickname is not None:
         user.nickname = req.attr.nickname
-    if req.attr.mobileNo:
+    if req.attr.mobileNo is not None:
         user.mobile_no = req.attr.mobileNo
-    if req.attr.email:
+    if req.attr.email is not None:
         user.email = req.attr.email
     user.save()
     return None
@@ -286,13 +286,13 @@ def modify_permission(req: RequestDTO):
     permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
-    if req.attr.permissionNo:
+    if req.attr.permissionNo is not None:
         permission.permission_no = req.attr.permissionNo
-    if req.attr.permissionName:
+    if req.attr.permissionName is not None:
         permission.permission_name = req.attr.permissionName
-    if req.attr.endpoint:
+    if req.attr.endpoint is not None:
         permission.endpoint = req.attr.endpoint
-    if req.attr.method:
+    if req.attr.method is not None:
         permission.method = req.attr.method
     permission.save()
     return None
@@ -386,9 +386,9 @@ def modify_role(req: RequestDTO):
     role = TRole.query.filter_by(role_no=req.attr.roleNo).first()
     Verify.not_empty(role, '角色不存在')
 
-    if req.attr.roleName:
+    if req.attr.roleName is not None:
         role.role_name = req.attr.roleName
-    if req.attr.description:
+    if req.attr.description is not None:
         role.description = req.attr.description
     role.save()
     return None

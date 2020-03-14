@@ -95,9 +95,9 @@ def modify_topic(req: RequestDTO):
     topic = TTestTopic.query.filter_by(topic_no=req.attr.topicNo).first()
     Verify.not_empty(topic, '测试主题不存在')
 
-    if req.attr.topicName:
+    if req.attr.topicName is not None:
         topic.topic_name = req.attr.topicName
-    if req.attr.topicDescription:
+    if req.attr.topicDescription is not None:
         topic.topic_description = req.attr.topicDescription
 
     topic.save()

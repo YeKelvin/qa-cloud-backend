@@ -95,9 +95,9 @@ def modify_item(req: RequestDTO):
     item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
     Verify.not_empty(item, '测试项目不存在')
 
-    if req.attr.itemName:
+    if req.attr.itemName is not None:
         item.item_name = req.attr.itemName
-    if req.attr.itemDescription:
+    if req.attr.itemDescription is not None:
         item.item_description = req.attr.itemDescription
 
     item.save()
