@@ -234,3 +234,20 @@ class TPackageElementRel(Model):
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
     updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TScriptActionLog(Model):
+    """封装元素关联表
+    """
+    __tablename__ = 't_script_action_log'
+    id = db.Column(db.Integer, primary_key=True)
+    item_no = db.Column(db.String(32), nullable=False, comment='项目编号')
+    topic_no = db.Column(db.String(32), nullable=False, comment='主题编号')
+    collection_no = db.Column(db.String(32), nullable=False, comment='主题编号')
+    group_no = db.Column(db.String(32), nullable=False, comment='案例编号')
+    action_type = db.Column(db.String(32), nullable=False, comment='动作类型')
+    action_description = db.Column(db.String(256), nullable=False, comment='动作描述')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')

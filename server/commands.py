@@ -78,7 +78,7 @@ def init_user():
     """初始化用户
     """
     admin = TUser()
-    admin.user_no = generate_user_no()  # U00000001
+    admin.user_no = generate_user_no()  # U0000000001
     admin.username = 'admin'
     admin.nickname = '超级管理员'
     admin.password = 'admin'
@@ -94,13 +94,13 @@ def init_role():
     """初始化角色
     """
     TRole.create(role_no=generate_role_no(), role_name='SuperAdmin', state='NORMAL', description='超级管理员',
-                 created_time=datetime.now(), created_by='system')  # R00000001
+                 created_time=datetime.now(), created_by='system')  # R0000000001
     TRole.create(role_no=generate_role_no(), role_name='Admin', state='NORMAL', description='管理员',
-                 created_time=datetime.now(), created_by='system')  # R00000002
+                 created_time=datetime.now(), created_by='system')  # R0000000002
     TRole.create(role_no=generate_role_no(), role_name='Leader', state='NORMAL', description='组长',
-                 created_time=datetime.now(), created_by='system')  # R00000003
+                 created_time=datetime.now(), created_by='system')  # R0000000003
     TRole.create(role_no=generate_role_no(), role_name='General', state='NORMAL', description='用户',
-                 created_time=datetime.now(), created_by='system')  # R00000004
+                 created_time=datetime.now(), created_by='system')  # R0000000004
     click.echo('创建角色成功')
 
 
@@ -199,6 +199,8 @@ def init_permission():
                        method='GET', endpoint='/system/action/log/list',
                        state='NORMAL', created_time=datetime.now(), created_by='system')
 
+    # script模块路由
+
     click.echo('创建权限成功')
 
 
@@ -206,7 +208,7 @@ def init_permission():
 def init_user_role_rel():
     """初始化用户角色关联关系
     """
-    TUserRoleRel.create(user_no='U00000001', role_no='R00000001', created_time=datetime.now(), created_by='system')
+    TUserRoleRel.create(user_no='U0000000001', role_no='R0000000001', created_time=datetime.now(), created_by='system')
     click.echo('创建用户角色关联关系成功')
 
 
@@ -216,7 +218,7 @@ def init_role_permission_rel():
     """
     permissions = TPermission.query.all()
     for permission in permissions:
-        TRolePermissionRel.create(role_no='R00000001', permission_no=permission.permission_no,
+        TRolePermissionRel.create(role_no='R0000000001', permission_no=permission.permission_no,
                                   created_time=datetime.now(), created_by='system')
     click.echo('创建角色权限关联关系成功')
 
