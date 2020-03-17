@@ -16,10 +16,10 @@ log = get_logger(__name__)
 class TUser(Model):
     __tablename__ = 't_user'
     id = db.Column(db.Integer, primary_key=True)
-    user_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='用户编号')
-    username = db.Column(db.String(128), nullable=False, comment='用户名')
-    nickname = db.Column(db.String(256), nullable=False, comment='昵称')
-    password_hash = db.Column(db.String(512), nullable=False, comment='密码')
+    user_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
+    username = db.Column(db.String(128), nullable=False, comment='用户名称')
+    nickname = db.Column(db.String(256), nullable=False, comment='用户昵称')
+    password_hash = db.Column(db.String(512), nullable=False, comment='用户密码')
     mobile_no = db.Column(db.String(64), comment='手机号')
     email = db.Column(db.String(128), comment='邮箱地址')
     avatar = db.Column(db.String(512), comment='头像地址')
@@ -57,9 +57,9 @@ class TUser(Model):
 class TRole(Model):
     __tablename__ = 't_role'
     id = db.Column(db.Integer, primary_key=True)
-    role_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='角色编号')
+    role_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
     role_name = db.Column(db.String(128), comment='角色名称')
-    state = db.Column(db.String(32), nullable=False, comment='用户状态')
+    state = db.Column(db.String(32), nullable=False, comment='角色状态')
     description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
@@ -70,9 +70,8 @@ class TRole(Model):
 class TUserRoleRel(Model):
     __tablename__ = 't_user_role_rel'
     id = db.Column(db.Integer, primary_key=True)
-    user_no = db.Column(db.Integer, index=True, nullable=False, comment='用户编号')
-    role_no = db.Column(db.Integer, nullable=False, comment='角色编号')
-    description = db.Column(db.String(128), comment='备注')
+    user_no = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
+    role_no = db.Column(db.String(32), nullable=False, comment='角色编号')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
@@ -82,11 +81,11 @@ class TUserRoleRel(Model):
 class TPermission(Model):
     __tablename__ = 't_permission'
     id = db.Column(db.Integer, primary_key=True)
-    permission_no = db.Column(db.Integer, index=True, unique=True, nullable=False, comment='权限编号')
+    permission_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='权限编号')
     permission_name = db.Column(db.String(128), nullable=False, comment='权限名称')
     endpoint = db.Column(db.String(128), nullable=False, comment='路由路径')
     method = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
-    state = db.Column(db.String(32), nullable=False, comment='用户状态')
+    state = db.Column(db.String(32), nullable=False, comment='权限状态')
     description = db.Column(db.String(128), comment='备注')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
@@ -97,9 +96,8 @@ class TPermission(Model):
 class TRolePermissionRel(Model):
     __tablename__ = 't_role_permission_rel'
     id = db.Column(db.Integer, primary_key=True)
-    role_no = db.Column(db.Integer, index=True, nullable=False, comment='角色编号')
-    permission_no = db.Column(db.Integer, nullable=False, comment='权限编号')
-    description = db.Column(db.String(128), comment='备注')
+    role_no = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
+    permission_no = db.Column(db.String(32), nullable=False, comment='权限编号')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')

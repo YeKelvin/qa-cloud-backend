@@ -36,6 +36,19 @@ class TItemTopicRel(Model):
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
+class TItemUserRel(Model):
+    """项目用户关联表
+    """
+    __tablename__ = 't_item_user_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    item_no = db.Column(db.String(32), nullable=False, comment='项目编号')
+    user_no = db.Column(db.String(32), nullable=False, comment='用户编号')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
 class TTestTopic(Model):
     """测试主题表
     """
@@ -129,13 +142,14 @@ class TEnvironmentVariable(Model):
     env_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境变量编号')
     env_key = db.Column(db.String(256), nullable=False, comment='环境变量名称')
     env_value = db.Column(db.String(512), nullable=False, comment='环境变量值')
+    env_description = db.Column(db.String(256), comment='环境变量描述')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
-class THttpHeaderCollection:
+class THTTPHeaderCollection:
     """HTTP头部集合表
     """
     __tablename__ = 't_http_header_collection'
@@ -149,7 +163,7 @@ class THttpHeaderCollection:
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
-class THttpHeaderCollectionRel:
+class THTTPHeaderCollectionRel:
     """HTTP头部集合关联表
     """
     __tablename__ = 't_http_header_collection_rel'
@@ -162,7 +176,7 @@ class THttpHeaderCollectionRel:
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
-class THttpHeader(Model):
+class THTTPHeader(Model):
     """HTTP头部表
     """
     __tablename__ = 't_http_header'
@@ -200,8 +214,22 @@ class TActionPackage(Model):
     """
     __tablename__ = 't_action_package'
     id = db.Column(db.Integer, primary_key=True)
-    action_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='动作封装编号')
-    collection_no = db.Column(db.String(32), nullable=False, comment='测试集合编号')
+    package_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
+    package_description = db.Column(db.String(256), nullable=False, comment='封装描述')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TPackageElementRel(Model):
+    """封装元素关联表
+    """
+    __tablename__ = 't_package_element_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    package_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
+    element_no = db.Column(db.String(256), nullable=False, comment='元素编号')
+    element_order = db.Column(db.Integer, nullable=False, comment='元素序号')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
