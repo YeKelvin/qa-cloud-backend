@@ -9,7 +9,7 @@ from datetime import datetime
 STRFTIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
-def current_strftime(format: str = STRFTIME_FORMAT) -> str:
+def strftime(format: str = STRFTIME_FORMAT) -> str:
     """获取当前时间并格式化为时间字符串
 
     :param format:  时间格式
@@ -18,25 +18,25 @@ def current_strftime(format: str = STRFTIME_FORMAT) -> str:
     return datetime.now().strftime(format)
 
 
-def current_timestamp_as_s() -> int:
+def timestamp_as_s() -> int:
     """获取秒级时间戳
     """
     return int(time.time())
 
 
-def current_timestamp_as_ms() -> int:
+def timestamp_as_ms() -> int:
     """获取毫秒级时间戳
     """
     return int(time.time() * 1000)
 
 
-def current_timestamp_as_micro_s() -> int:
+def timestamp_as_micro_s() -> int:
     """获取微秒级时间戳
     """
     return int(round(time.time() * 1000000))
 
 
-def timestamp_convert_to_strftime(format: str = STRFTIME_FORMAT, timestamp: float = 0):
+def timestamp_to_strftime(format: str = STRFTIME_FORMAT, timestamp: float = 0):
     """时间戳转时间字符串
 
     :param format:      时间格式
@@ -46,7 +46,7 @@ def timestamp_convert_to_strftime(format: str = STRFTIME_FORMAT, timestamp: floa
     return time.strftime(format, time.localtime(timestamp))
 
 
-def strftime_convert_to_timestamp_as_ms(strftime: str, format: str = STRFTIME_FORMAT):
+def strftime_to_timestamp_as_ms(strftime: str, format: str = STRFTIME_FORMAT):
     """时间字符串转毫秒级时间戳
 
     :param strftime:    时间字符串
@@ -67,7 +67,7 @@ def change_strftime_format(strftime: str, old_format: str, new_format: str = STR
     return datetime.strptime(strftime, old_format).strftime(new_format)
 
 
-def seconds_convert_to_h_m_s(seconds: int) -> str:
+def seconds_to_h_m_s(seconds: int) -> str:
     """秒数转换为时分秒
     """
     m, s = divmod(seconds, 60)

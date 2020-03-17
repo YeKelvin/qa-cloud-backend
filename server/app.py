@@ -10,7 +10,7 @@ from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
 
-from server import user, system, commands, hooks
+from server import user, system, commands, hooks, script
 from server.extensions import db, swagger
 from server.utils import config
 from server.utils.log_util import get_logger, CONSOLE_HANDLER, LEVEL
@@ -72,6 +72,7 @@ def register_blueprints(app):
     """
     app.register_blueprint(user.route.blueprint)
     app.register_blueprint(system.route.blueprint)
+    app.register_blueprint(script.routes.blueprint)
 
 
 def register_hooks(app):

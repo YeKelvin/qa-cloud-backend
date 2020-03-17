@@ -2150,17 +2150,17 @@
               "notNull": true
             },
             {
-              "name": "endpoint",
-              "type": "DefaultString",
-              "remark": "",
-              "chnname": "路由路径",
-              "notNull": true
-            },
-            {
               "name": "method",
               "type": "DefaultString",
               "remark": "",
               "chnname": "HTTP请求方法",
+              "notNull": true
+            },
+            {
+              "name": "endpoint",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "路由路径",
               "notNull": true
             },
             {

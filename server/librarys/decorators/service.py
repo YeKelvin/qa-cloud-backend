@@ -12,7 +12,7 @@ from server.librarys.exception import ServiceError, ErrorCode
 from server.librarys.request import RequestDTO
 from server.librarys.response import http_response, ResponseDTO
 from server.utils.log_util import get_logger
-from server.utils.time_util import current_timestamp_as_ms
+from server.utils.time_util import timestamp_as_ms
 
 log = get_logger(__name__)
 
@@ -25,7 +25,7 @@ def http_service(func):
     def wrapper(*args, **kwargs):
         req: RequestDTO = (args[0] if args else None) or kwargs.get('req', RequestDTO())
         # 记录开始时间
-        starttime = current_timestamp_as_ms()
+        starttime = timestamp_as_ms()
         log.info(
             f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
             f'header:[ {dict(request.headers.to_list("utf-8"))} ] request:[ {req.attr} ]'
@@ -54,7 +54,7 @@ def http_service(func):
             res = ResponseDTO(error=ErrorCode.E500000)
         finally:
             # 计算耗时，单位毫秒
-            elapsed_time = current_timestamp_as_ms() - starttime
+            elapsed_time = timestamp_as_ms() - starttime
             http_res = http_response(res)
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '

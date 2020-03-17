@@ -10,6 +10,11 @@ from flask.cli import with_appcontext
 
 from server.extensions import db
 from server.librarys.sequence import TSequence
+from server.script.model import (
+    TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
+    TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel, TEnvironmentVariable,
+    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TActionPackage, TPackageElementRel
+)
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
 from server.user.service import generate_user_no, generate_role_no, generate_permission_no
@@ -96,78 +101,96 @@ def init_permission():
     """初始化权限
     """
     # user模块路由
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录', endpoint='/user/login',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出', endpoint='/user/logout',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册', endpoint='/user/register',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='重置密码', endpoint='/user/password/reset',
-                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='查询用户信息', endpoint='/user/info',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询用户列表', endpoint='/user/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='查询所有用户', endpoint='/user/all',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户信息', endpoint='/user/info',
-                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户状态', endpoint='/user/info/state',
-                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户', endpoint='/user',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登录',
+                       method='POST', endpoint='/user/login',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户登出',
+                       method='POST', endpoint='/user/logout',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='用户注册',
+                       method='POST', endpoint='/user/register',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='重置密码',
+                       method='PATCH', endpoint='/user/password/reset',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='查询用户信息',
+                       method='GET', endpoint='/user/info',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询用户列表',
+                       method='GET', endpoint='/user/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='查询所有用户',
+                       method='GET', endpoint='/user/all',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户信息',
+                       method='PUT', endpoint='/user/info',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新用户状态',
+                       method='PATCH', endpoint='/user/info/state',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户',
+                       method='DELETE', endpoint='/user',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询权限列表',
-                       endpoint='/user/permission/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/permission/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='查询所有权限',
-                       endpoint='/user/permission/all',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='新增权限', endpoint='/user/permission',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限信息', endpoint='/user/permission',
-                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/permission/all',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增权限',
+                       method='POST', endpoint='/user/permission',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限信息',
+                       method='PUT', endpoint='/user/permission',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='更新权限状态',
-                       endpoint='/user/permission/state',
-                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='删除权限', endpoint='/user/permission',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='PATCH', endpoint='/user/permission/state',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除权限',
+                       method='DELETE', endpoint='/user/permission',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询角色列表',
-                       endpoint='/user/role/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/role/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='查询所有角色',
-                       endpoint='/user/role/all',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='新增角色', endpoint='/user/role',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色信息', endpoint='/user/role',
-                       method='PUT', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色状态', endpoint='/user/role/state',
-                       method='PATCH', state='NORMAL', created_time=datetime.now(), created_by='system')
-    TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色', endpoint='/user/role',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/role/all',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增角色',
+                       method='POST', endpoint='/user/role',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色信息',
+                       method='PUT', endpoint='/user/role',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='更新角色状态',
+                       method='PATCH', endpoint='/user/role/state',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色',
+                       method='DELETE', endpoint='/user/role',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询用户角色关联关系列表',
-                       endpoint='/user/role/rel/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/role/rel/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='新增用户角色关联关系',
-                       endpoint='/user/role/rel',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='POST', endpoint='/user/role/rel',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='删除用户角色关联关系',
-                       endpoint='/user/role/rel',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='DELETE', endpoint='/user/role/rel',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询角色权限关联关系列表',
-                       endpoint='/user/role/permission/rel/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/user/role/permission/rel/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='新增角色权限关联关系',
-                       endpoint='/user/role/permission/rel',
-                       method='POST', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='POST', endpoint='/user/role/permission/rel',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
     TPermission.create(permission_no=generate_permission_no(), permission_name='删除角色权限关联关系',
-                       endpoint='/user/role/permission/rel',
-                       method='DELETE', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='DELETE', endpoint='/user/role/permission/rel',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
 
     # system模块路由
     TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询操作日志列表',
-                       endpoint='/system/action/log/list',
-                       method='GET', state='NORMAL', created_time=datetime.now(), created_by='system')
+                       method='GET', endpoint='/system/action/log/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+
     click.echo('创建权限成功')
 
 
