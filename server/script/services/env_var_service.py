@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
+from server.librarys.sequence import Sequence
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -43,3 +44,8 @@ def delete_environment_variable(req: RequestDTO):
     """删除环境变量
     """
     pass
+
+
+def generate_env_no():
+    seq_item_no = Sequence('seq_env_var_no')
+    return 'ENV' + str(seq_item_no.next_value()).zfill(10)

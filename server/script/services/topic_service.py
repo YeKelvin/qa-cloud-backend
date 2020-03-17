@@ -117,4 +117,4 @@ def delete_topic(req: RequestDTO):
 
 def generate_topic_no():
     seq_topic_no = Sequence('seq_topic_no')
-    return 'topic' + str(seq_topic_no.next_value()).zfill(8)
+    return 'T' + str(seq_topic_no.next_value()).zfill(10)

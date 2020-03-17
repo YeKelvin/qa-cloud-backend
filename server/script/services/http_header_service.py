@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
+from server.librarys.sequence import Sequence
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -43,3 +44,8 @@ def delete_http_header(req: RequestDTO):
     """删除 HTTP头部
     """
     pass
+
+
+def generate_header_no():
+    seq_topic_no = Sequence('seq_http_header_no')
+    return 'H' + str(seq_topic_no.next_value()).zfill(10)

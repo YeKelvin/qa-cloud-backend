@@ -13,11 +13,13 @@ from server.librarys.sequence import TSequence
 from server.script.model import (
     TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
     TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel, TEnvironmentVariable,
-    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TActionPackage, TPackageElementRel
+    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TElementPackage, TPackageElementRel
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
-from server.user.service import generate_user_no, generate_role_no, generate_permission_no
+from server.user.services.permission_service import generate_permission_no
+from server.user.services.role_service import generate_role_no
+from server.user.services.user_service import generate_user_no
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -62,6 +64,12 @@ def init_seq():
     TSequence.create(seq_name='seq_user_no', created_time=datetime.now(), created_by='system')
     TSequence.create(seq_name='seq_role_no', created_time=datetime.now(), created_by='system')
     TSequence.create(seq_name='seq_permission_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_item_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_topic_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_element_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_http_header_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_env_var_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(seq_name='seq_package_no', created_time=datetime.now(), created_by='system')
     click.echo('创建序列成功')
 
 

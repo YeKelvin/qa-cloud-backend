@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
+from server.librarys.sequence import Sequence
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -43,3 +44,8 @@ def delete_element(req: RequestDTO):
     """删除测试元素
     """
     pass
+
+
+def generate_element_no():
+    seq_item_no = Sequence('seq_element_no')
+    return 'EL' + str(seq_item_no.next_value()).zfill(10)

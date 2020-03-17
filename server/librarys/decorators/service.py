@@ -28,7 +28,7 @@ def http_service(func):
         starttime = timestamp_as_ms()
         log.info(
             f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-            f'header:[ {dict(request.headers.to_list("utf-8"))} ] request:[ {req.attr} ]'
+            f'header:[ {dict(request.headers)} ] request:[ {req.attr} ]'
         )
         res = None
         try:
@@ -58,7 +58,7 @@ def http_service(func):
             http_res = http_response(res)
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'header:[ {dict(http_res.headers.to_list("utf-8"))}] response:[ {res} ] '
+                f'header:[ {dict(http_res.headers)}] response:[ {res} ] '
                 f'elapsed:[ {elapsed_time}ms ]'
             )
             return http_res

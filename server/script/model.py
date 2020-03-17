@@ -209,10 +209,10 @@ class TSQLConfiguration(Model):
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
-class TActionPackage(Model):
-    """动作封装表
+class TElementPackage(Model):
+    """元素封装表
     """
-    __tablename__ = 't_action_package'
+    __tablename__ = 't_element_package'
     id = db.Column(db.Integer, primary_key=True)
     package_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
     package_description = db.Column(db.String(256), nullable=False, comment='封装描述')

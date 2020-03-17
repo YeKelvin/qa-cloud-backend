@@ -70,7 +70,7 @@ def register_extensions(app):
 def register_blueprints(app):
     """Register Flask blueprints.
     """
-    app.register_blueprint(user.route.blueprint)
+    app.register_blueprint(user.routes.blueprint)
     app.register_blueprint(system.route.blueprint)
     app.register_blueprint(script.routes.blueprint)
 

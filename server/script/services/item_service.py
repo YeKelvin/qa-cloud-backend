@@ -117,4 +117,4 @@ def delete_item(req: RequestDTO):
 
 def generate_item_no():
     seq_item_no = Sequence('seq_item_no')
-    return 'ITEM' + str(seq_item_no.next_value()).zfill(8)
+    return 'I' + str(seq_item_no.next_value()).zfill(10)

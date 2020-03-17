@@ -7,6 +7,7 @@ from flask import Blueprint
 
 blueprint = Blueprint('script', __name__, url_prefix='/script')
 
+from . import element_package_route
 from . import element_route
 from . import env_var_route
 from . import http_header_route
