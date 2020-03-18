@@ -22,6 +22,8 @@ def query_item_list():
         Argument('itemNo'),
         Argument('itemName'),
         Argument('itemDescription'),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_item_list(req)
 

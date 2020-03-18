@@ -20,6 +20,8 @@ def query_element_package_list():
     """
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
+        Argument('page', required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_element_package_list(req)
 
