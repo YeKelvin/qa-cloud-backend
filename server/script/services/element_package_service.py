@@ -12,16 +12,12 @@ log = get_logger(__name__)
 
 
 @http_service
-def element_package_list(req: RequestDTO):
-    """分页查询元素封装列表
-    """
+def query_element_package_list(req: RequestDTO):
     pass
 
 
 @http_service
-def element_package_all(req: RequestDTO):
-    """查询所有元素封装
-    """
+def query_element_package_all(req: RequestDTO):
     pass
 
 

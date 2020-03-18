@@ -15,25 +15,25 @@ log = get_logger(__name__)
 @blueprint.route('/topic/list', methods=['GET'])
 @require_login
 @require_permission
-def topic_list():
+def query_topic_list():
     """分页查询测试主题列表
     """
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
     ).parse()
-    return service.topic_list(req)
+    return service.query_topic_list(req)
 
 
 @blueprint.route('/topic/all', methods=['GET'])
 @require_login
 @require_permission
-def topic_all():
+def query_topic_all():
     """查询所有测试主题
     """
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
     ).parse()
-    return service.topic_all(req)
+    return service.query_topic_all(req)
 
 
 @blueprint.route('/topic', methods=['POST'])

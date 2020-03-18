@@ -18,9 +18,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def topic_list(req: RequestDTO):
-    """分页查询测试主题列表
-    """
+def query_topic_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -55,9 +53,7 @@ def topic_list(req: RequestDTO):
 
 
 @http_service
-def topic_all(req: RequestDTO):
-    """查询所有测试主题
-    """
+def query_topic_all(req: RequestDTO):
     topics = TTestTopic.query.order_by(TTestTopic.created_time.desc()).all()
     result = []
     for topic in topics:
@@ -71,8 +67,6 @@ def topic_all(req: RequestDTO):
 
 @http_service
 def create_topic(req: RequestDTO):
-    """新增测试主题
-    """
     topic = TTestTopic.query.filter_by(topic_name=req.attr.topicName).first()
     Verify.empty(topic, '测试主题已存在')
 
@@ -90,8 +84,6 @@ def create_topic(req: RequestDTO):
 
 @http_service
 def modify_topic(req: RequestDTO):
-    """修改测试主题
-    """
     topic = TTestTopic.query.filter_by(topic_no=req.attr.topicNo).first()
     Verify.not_empty(topic, '测试主题不存在')
 
@@ -106,8 +98,6 @@ def modify_topic(req: RequestDTO):
 
 @http_service
 def delete_topic(req: RequestDTO):
-    """删除测试主题
-    """
     topic = TTestTopic.query.filter_by(topic_no=req.attr.topicNo).first()
     Verify.not_empty(topic, '测试主题不存在')
 

@@ -16,7 +16,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def role_list():
-    """分页查询角色列表
+    """分页查询角色列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('roleNo'),
@@ -33,7 +33,7 @@ def role_list():
 @require_login
 @require_permission
 def role_all():
-    """查询所有角色
+    """查询所有角色 todo 改名字 query_
     """
     return service.role_all()
 
@@ -94,7 +94,7 @@ def delete_role():
 @require_login
 @require_permission
 def user_role_rel_list():
-    """分页查询用户角色关联关系列表
+    """分页查询用户角色关联关系列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('userNo'),
@@ -137,7 +137,7 @@ def delete_user_role_rel():
 @require_login
 @require_permission
 def role_permission_rel_list():
-    """分页查询角色权限关联关系列表
+    """分页查询角色权限关联关系列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('roleNo'),

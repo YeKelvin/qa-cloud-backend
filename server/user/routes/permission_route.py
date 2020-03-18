@@ -16,7 +16,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def permission_list():
-    """分页查询权限列表
+    """分页查询权限列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('permissionNo'),
@@ -34,7 +34,7 @@ def permission_list():
 @require_login
 @require_permission
 def permission_all():
-    """查询所有权限
+    """查询所有权限 todo 改名字 query_
     """
     return service.permission_all()
 

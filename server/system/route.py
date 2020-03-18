@@ -19,7 +19,7 @@ blueprint = Blueprint('system', __name__, url_prefix='/system')
 @require_login
 @require_permission
 def action_log_list():
-    """分页查询操作日志列表
+    """分页查询操作日志列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('actionDetail'),

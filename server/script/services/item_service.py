@@ -18,9 +18,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def item_list(req: RequestDTO):
-    """分页查询测试项目列表
-    """
+def query_item_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -55,9 +53,7 @@ def item_list(req: RequestDTO):
 
 
 @http_service
-def item_all():
-    """查询所有测试项目
-    """
+def query_item_all():
     items = TTestItem.query.order_by(TTestItem.created_time.desc()).all()
     result = []
     for item in items:
@@ -71,8 +67,6 @@ def item_all():
 
 @http_service
 def create_item(req: RequestDTO):
-    """新增测试项目
-    """
     item = TTestItem.query.filter_by(item_name=req.attr.itemName).first()
     Verify.empty(item, '测试项目已存在')
 
@@ -90,8 +84,6 @@ def create_item(req: RequestDTO):
 
 @http_service
 def modify_item(req: RequestDTO):
-    """修改测试项目
-    """
     item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
     Verify.not_empty(item, '测试项目不存在')
 
@@ -106,13 +98,26 @@ def modify_item(req: RequestDTO):
 
 @http_service
 def delete_item(req: RequestDTO):
-    """删除测试项目
-    """
     item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
     Verify.not_empty(item, '测试项目不存在')
 
     item.delete()
     return None
+
+
+@http_service
+def add_item_user(req: RequestDTO):
+    pass
+
+
+@http_service
+def modify_item_user(req: RequestDTO):
+    pass
+
+
+@http_service
+def delete_item_user(req: RequestDTO):
+    pass
 
 
 def generate_item_no():

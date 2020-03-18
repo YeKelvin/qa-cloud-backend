@@ -10,6 +10,8 @@ log = get_logger(__name__)
 
 
 class TActionLog(Model):
+    """系统操作日志表 todo 重构表结构
+    """
     __tablename__ = 't_action_log'
     id = db.Column(db.Integer, primary_key=True)
     action_detail = db.Column(db.String(128), comment='操作描述')

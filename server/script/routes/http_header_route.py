@@ -15,25 +15,25 @@ log = get_logger(__name__)
 @blueprint.route('/http/header/list', methods=['GET'])
 @require_login
 @require_permission
-def http_header_list():
+def query_http_header_list():
     """分页查询 HTTP头部列表
     """
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
     ).parse()
-    return service.http_header_list(req)
+    return service.query_http_header_list(req)
 
 
 @blueprint.route('/http/header/all', methods=['GET'])
 @require_login
 @require_permission
-def http_header_all():
+def query_http_header_all():
     """查询所有 HTTP头部
     """
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
     ).parse()
-    return service.http_header_all(req)
+    return service.query_http_header_all(req)
 
 
 @blueprint.route('/http/header', methods=['POST'])

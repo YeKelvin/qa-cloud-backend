@@ -63,7 +63,7 @@ def reset_password():
 @require_login
 @require_permission
 def user_list():
-    """分页查询用户列表
+    """分页查询用户列表 todo 改名字 query_
     """
     req = JsonParser(
         Argument('userNo'),
@@ -82,7 +82,7 @@ def user_list():
 @require_login
 @require_permission
 def user_all():
-    """查询所有用户
+    """查询所有用户 todo 改名字 query_
     """
     return service.user_all()
 
@@ -90,7 +90,7 @@ def user_all():
 @blueprint.route('/info', methods=['GET'])
 @require_login
 def user_info():
-    """查询个人用户信息
+    """查询个人用户信息 todo 改名字 query_
     """
     return service.user_info()
 

@@ -12,37 +12,27 @@ log = get_logger(__name__)
 
 
 @http_service
-def element_list(req: RequestDTO):
-    """分页查询测试元素列表
-    """
+def query_element_list(req: RequestDTO):
     pass
 
 
 @http_service
-def element_all(req: RequestDTO):
-    """查询所有测试元素
-    """
+def query_element_all(req: RequestDTO):
     pass
 
 
 @http_service
 def create_element(req: RequestDTO):
-    """新增测试元素
-    """
     pass
 
 
 @http_service
 def modify_element(req: RequestDTO):
-    """修改测试元素
-    """
     pass
 
 
 @http_service
 def delete_element(req: RequestDTO):
-    """删除测试元素
-    """
     pass
 
 

@@ -15,7 +15,7 @@ log = get_logger(__name__)
 @blueprint.route('/item/list', methods=['GET'])
 @require_login
 @require_permission
-def item_list():
+def query_item_list():
     """分页查询测试项目列表
     """
     req = JsonParser(
@@ -23,16 +23,16 @@ def item_list():
         Argument('itemName'),
         Argument('itemDescription'),
     ).parse()
-    return service.item_list(req)
+    return service.query_item_list(req)
 
 
 @blueprint.route('/item/all', methods=['GET'])
 @require_login
 @require_permission
-def item_all():
+def query_item_all():
     """查询所有测试项目
     """
-    return service.item_all()
+    return service.query_item_all()
 
 
 @blueprint.route('/item', methods=['POST'])
@@ -72,3 +72,42 @@ def delete_item():
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
     ).parse()
     return service.delete_item(req)
+
+
+@blueprint.route('/item/user', methods=['POST'])
+@require_login
+@require_permission
+def add_item_user():
+    """添加项目成员
+    """
+    req = JsonParser(
+        Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
+        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+    ).parse()
+    return service.add_item_user(req)
+
+
+@blueprint.route('/item/user', methods=['PUT'])
+@require_login
+@require_permission
+def modify_item_user():
+    """修改项目成员
+    """
+    req = JsonParser(
+        Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
+        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+    ).parse()
+    return service.modify_item_user(req)
+
+
+@blueprint.route('/item/user', methods=['DELETE'])
+@require_login
+@require_permission
+def delete_item_user():
+    """删除项目成员
+    """
+    req = JsonParser(
+        Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
+        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+    ).parse()
+    return service.delete_item_user(req)
