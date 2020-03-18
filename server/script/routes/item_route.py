@@ -78,7 +78,7 @@ def delete_item():
 @require_login
 @require_permission
 def add_item_user():
-    """添加项目成员
+    """添加测试项目成员
     """
     req = JsonParser(
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
@@ -91,7 +91,7 @@ def add_item_user():
 @require_login
 @require_permission
 def modify_item_user():
-    """修改项目成员
+    """修改测试项目成员
     """
     req = JsonParser(
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
@@ -104,7 +104,7 @@ def modify_item_user():
 @require_login
 @require_permission
 def delete_item_user():
-    """删除项目成员
+    """删除测试项目成员
     """
     req = JsonParser(
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),

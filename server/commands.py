@@ -13,7 +13,8 @@ from server.librarys.sequence import TSequence
 from server.script.model import (
     TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
     TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel, TEnvironmentVariable,
-    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TElementPackage, TPackageElementRel
+    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TElementPackage,
+    TPackageElementRel, TScriptActivityLog
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
@@ -200,6 +201,36 @@ def init_permission():
                        state='NORMAL', created_time=datetime.now(), created_by='system')
 
     # script模块路由
+    # item
+    TPermission.create(permission_no=generate_permission_no(), permission_name='分页查询测试项目列表',
+                       method='GET', endpoint='/script/item/list',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='查询所有测试项目',
+                       method='GET', endpoint='/script/item/all',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='新增测试项目',
+                       method='POST', endpoint='/script/item',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='修改测试项目',
+                       method='PUT', endpoint='/script/item',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除测试项目',
+                       method='DELETE', endpoint='/script/item',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='添加测试项目成员',
+                       method='POST', endpoint='/script/item/user',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='修改测试项目成员',
+                       method='PUT', endpoint='/script/item/user',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(permission_no=generate_permission_no(), permission_name='删除测试项目成员',
+                       method='DELETE', endpoint='/script/item/user',
+                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    # topic
+
+    # element
+
+    # environment variable
 
     click.echo('创建权限成功')
 
