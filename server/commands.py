@@ -158,6 +158,9 @@ def init_permission():
     __create_permission(name='新增测试主题', method='POST', endpoint='/script/topic')
     __create_permission(name='修改测试主题', method='PUT', endpoint='/script/topic')
     __create_permission(name='删除测试主题', method='DELETE', endpoint='/script/topic')
+    __create_permission(name='添加测试主题下的集合', method='POST', endpoint='/script/topic/collection')
+    __create_permission(name='修改测试主题下的集合', method='PUT', endpoint='/script/topic/collection')
+    __create_permission(name='删除测试主题下的集合', method='DELETE', endpoint='/script/topic/collection')
 
     # element
 

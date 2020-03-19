@@ -74,3 +74,42 @@ def delete_topic():
         Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
     ).parse()
     return service.delete_topic(req)
+
+
+@blueprint.route('/topic/collection', methods=['POST'])
+@require_login
+@require_permission
+def add_topic_collection():
+    """添加测试主题下的集合
+    """
+    req = JsonParser(
+        Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
+        Argument('collectionNoList', required=True, nullable=False, help='集合编号列表不能为空'),
+    ).parse()
+    return service.add_topic_collection(req)
+
+
+@blueprint.route('/topic/collection', methods=['PUT'])
+@require_login
+@require_permission
+def modify_topic_collection():
+    """修改测试主题下的集合
+    """
+    req = JsonParser(
+        Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
+        Argument('collectionNoList', required=True, nullable=False, help='集合编号列表不能为空'),
+    ).parse()
+    return service.modify_topic_collection(req)
+
+
+@blueprint.route('/topic/collection', methods=['DELETE'])
+@require_login
+@require_permission
+def delete_topic_collection():
+    """删除测试主题下的集合
+    """
+    req = JsonParser(
+        Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
+        Argument('collectionNoList', required=True, nullable=False, help='集合编号列表不能为空'),
+    ).parse()
+    return service.delete_topic_collection(req)

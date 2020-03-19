@@ -86,7 +86,33 @@ class TTestElement(Model):
     element_comments = db.Column(db.String(512), nullable=False, comment='元素描述')
     element_type = db.Column(db.String(64), nullable=False, comment='元素类型')
     enabled = db.Column(db.Boolean, nullable=False, comment='是否启用')
-    property = db.Column(db.JSON, nullable=False, comment='元素属性')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TElementProperty(Model):
+    """测试元素属性表
+    """
+    __tablename__ = 't_element_property'
+    id = db.Column(db.Integer, primary_key=True)
+    property_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='属性编号')
+    property_name = db.Column(db.String(256), nullable=False, comment='属性名称')
+    property_value = db.Column(db.Text, nullable=False, comment='属性值')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TElementPropertyRel(Model):
+    """测试元素属性关联表
+    """
+    __tablename__ = 't_element_property_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    element_no = db.Column(db.String(32), nullable=False, comment='元素编号')
+    property_no = db.Column(db.String(32), nullable=False, comment='属性编号')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')

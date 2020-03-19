@@ -19,7 +19,12 @@ def query_element_list():
     """分页查询测试元素列表
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('elementNo'),
+        Argument('elementName'),
+        Argument('elementComments'),
+        Argument('elementType'),
+        Argument('enabled'),
+        Argument('property'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -32,10 +37,7 @@ def query_element_list():
 def query_element_all():
     """查询所有测试元素
     """
-    req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
-    ).parse()
-    return service.query_element_all(req)
+    return service.query_element_all()
 
 
 @blueprint.route('/element', methods=['POST'])
@@ -45,7 +47,10 @@ def create_element():
     """新增测试元素
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
+        Argument('elementComments'),
+        Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
+        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
     ).parse()
     return service.create_element(req)
 
@@ -72,4 +77,3 @@ def delete_element():
         Argument('No', required=True, nullable=False, help=''),
     ).parse()
     return service.delete_element(req)
-

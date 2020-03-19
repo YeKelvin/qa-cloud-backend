@@ -105,6 +105,21 @@ def delete_topic(req: RequestDTO):
     return None
 
 
+@http_service
+def add_topic_collection(req: RequestDTO):
+    pass
+
+
+@http_service
+def modify_topic_collection(req: RequestDTO):
+    pass
+
+
+@http_service
+def delete_topic_collection(req: RequestDTO):
+    pass
+
+
 def generate_topic_no():
     seq_topic_no = Sequence('seq_topic_no')
     return 'T' + str(seq_topic_no.next_value()).zfill(10)
