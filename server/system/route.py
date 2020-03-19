@@ -18,16 +18,17 @@ blueprint = Blueprint('system', __name__, url_prefix='/system')
 @blueprint.route('/action/log/list', methods=['GET'])
 @require_login
 @require_permission
-def action_log_list():
-    """分页查询操作日志列表 todo 改名字 query_
+def query_action_log_list():
+    """分页查询操作日志列表
     """
     req = JsonParser(
         Argument('actionDetail'),
-        Argument('actionPath'),
+        Argument('actionMethod'),
+        Argument('actionEndpoint'),
         Argument('createdBy'),
         Argument('startTime'),
         Argument('endTime'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.action_log_list(req)
+    return service.query_action_log_list(req)

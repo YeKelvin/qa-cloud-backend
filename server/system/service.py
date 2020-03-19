@@ -14,7 +14,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def action_log_list(req: RequestDTO):
+def query_action_log_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -22,8 +22,10 @@ def action_log_list(req: RequestDTO):
     conditions = []
     if req.attr.actionDetail:
         conditions.append(TActionLog.action_detail.like(f'%{req.attr.actionDetail}%'))
-    if req.attr.actionPath:
-        conditions.append(TActionLog.action_path.like(f'%{req.attr.actionPath}%'))
+    if req.attr.actionMethod:
+        conditions.append(TActionLog.action_method.like(f'%{req.attr.actionMethod}%'))
+    if req.attr.actionEndpoint:
+        conditions.append(TActionLog.action_endpoint.like(f'%{req.attr.actionEndpoint}%'))
     if req.attr.startTime:
         conditions.append(TActionLog.created_time >= req.attr.startTime)
     if req.attr.endTime:
@@ -45,8 +47,10 @@ def action_log_list(req: RequestDTO):
     for action_log in action_logs:
         data_set.append({
             'actionDetail': action_log.action_detail,
-            'actionPath': action_log.action_path,
-            'description': action_log.description,
+            'actionMethod': action_log.action_method,
+            'actionEndpoint': action_log.action_endpoint,
+            'oldValue': action_log.old_value,
+            'newValue': action_log.new_value,
             'createdTime': action_log.created_time.strftime(STRFTIME_FORMAT),
             'createdBy': action_log.created_by,
         })

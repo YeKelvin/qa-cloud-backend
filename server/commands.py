@@ -193,8 +193,7 @@ def init_role_permission_rel():
 @with_appcontext
 def init_action_log():
     TActionLog.create(
-        action_detail='init',
-        action_path=None,
+        action_detail='init database data',
         created_time=datetime.now(),
         created_by='system',
     )

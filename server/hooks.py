@@ -77,7 +77,8 @@ def record_action(response):
         permission = TPermission.query.filter_by(endpoint=request.path).first()
         TActionLog.create(
             action_detail=permission.permission_name if permission else None,
-            action_path=f'{request.method} {request.path}',
+            action_method=request.method,
+            action_endpoint=request.path,
             created_time=datetime.now(),
             created_by=Global.operator,
             updated_time=datetime.now(),
