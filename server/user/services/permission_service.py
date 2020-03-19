@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def permission_list(req: RequestDTO):
+def query_permission_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -59,7 +59,7 @@ def permission_list(req: RequestDTO):
 
 
 @http_service
-def permission_all():
+def query_permission_all():
     permissions = TPermission.query.order_by(TPermission.created_time.desc()).all()
     result = []
     for permission in permissions:

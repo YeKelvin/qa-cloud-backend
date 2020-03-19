@@ -15,8 +15,8 @@ log = get_logger(__name__)
 @blueprint.route('/role/list', methods=['GET'])
 @require_login
 @require_permission
-def role_list():
-    """分页查询角色列表 todo 改名字 query_
+def query_role_list():
+    """分页查询角色列表
     """
     req = JsonParser(
         Argument('roleNo'),
@@ -26,16 +26,16 @@ def role_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.role_list(req)
+    return service.query_role_list(req)
 
 
 @blueprint.route('/role/all', methods=['GET'])
 @require_login
 @require_permission
-def role_all():
-    """查询所有角色 todo 改名字 query_
+def query_role_all():
+    """查询所有角色
     """
-    return service.role_all()
+    return service.query_role_all()
 
 
 @blueprint.route('/role', methods=['POST'])
@@ -93,8 +93,8 @@ def delete_role():
 @blueprint.route('/role/rel/list', methods=['GET'])
 @require_login
 @require_permission
-def user_role_rel_list():
-    """分页查询用户角色关联关系列表 todo 改名字 query_
+def query_user_role_rel_list():
+    """分页查询用户角色关联关系列表
     """
     req = JsonParser(
         Argument('userNo'),
@@ -104,7 +104,7 @@ def user_role_rel_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.user_role_rel_list(req)
+    return service.query_user_role_rel_list(req)
 
 
 @blueprint.route('/role/rel', methods=['POST'])
@@ -136,8 +136,8 @@ def delete_user_role_rel():
 @blueprint.route('/role/permission/rel/list', methods=['GET'])
 @require_login
 @require_permission
-def role_permission_rel_list():
-    """分页查询角色权限关联关系列表 todo 改名字 query_
+def query_role_permission_rel_list():
+    """分页查询角色权限关联关系列表
     """
     req = JsonParser(
         Argument('roleNo'),
@@ -149,7 +149,7 @@ def role_permission_rel_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.role_permission_rel_list(req)
+    return service.query_role_permission_rel_list(req)
 
 
 @blueprint.route('/role/permission/rel', methods=['POST'])

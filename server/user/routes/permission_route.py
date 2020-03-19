@@ -15,8 +15,8 @@ log = get_logger(__name__)
 @blueprint.route('/permission/list', methods=['GET'])
 @require_login
 @require_permission
-def permission_list():
-    """分页查询权限列表 todo 改名字 query_
+def query_permission_list():
+    """分页查询权限列表
     """
     req = JsonParser(
         Argument('permissionNo'),
@@ -27,16 +27,16 @@ def permission_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.permission_list(req)
+    return service.query_permission_list(req)
 
 
 @blueprint.route('/permission/all', methods=['GET'])
 @require_login
 @require_permission
-def permission_all():
-    """查询所有权限 todo 改名字 query_
+def query_permission_all():
+    """查询所有权限
     """
-    return service.permission_all()
+    return service.query_permission_all()
 
 
 @blueprint.route('/permission', methods=['POST'])

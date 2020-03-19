@@ -62,8 +62,8 @@ def reset_password():
 @blueprint.route('/list', methods=['GET'])
 @require_login
 @require_permission
-def user_list():
-    """分页查询用户列表 todo 改名字 query_
+def query_user_list():
+    """分页查询用户列表
     """
     req = JsonParser(
         Argument('userNo'),
@@ -75,24 +75,24 @@ def user_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.user_list(req)
+    return service.query_user_list(req)
 
 
 @blueprint.route('/all', methods=['GET'])
 @require_login
 @require_permission
-def user_all():
-    """查询所有用户 todo 改名字 query_
+def query_user_all():
+    """查询所有用户
     """
-    return service.user_all()
+    return service.query_user_all()
 
 
 @blueprint.route('/info', methods=['GET'])
 @require_login
-def user_info():
-    """查询个人用户信息 todo 改名字 query_
+def query_user_info():
+    """查询个人用户信息
     """
-    return service.user_info()
+    return service.query_user_info()
 
 
 @blueprint.route('/info', methods=['PUT'])

@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def role_list(req: RequestDTO):
+def query_role_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -51,7 +51,7 @@ def role_list(req: RequestDTO):
 
 
 @http_service
-def role_all():
+def query_role_all():
     roles = TRole.query.order_by(TRole.created_time.desc()).all()
     result = []
     for role in roles:
@@ -123,7 +123,7 @@ def delete_role(req: RequestDTO):
 
 
 @http_service
-def user_role_rel_list(req: RequestDTO):
+def query_user_role_rel_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -212,7 +212,7 @@ def delete_user_role_rel(req: RequestDTO):
 
 
 @http_service
-def role_permission_rel_list(req: RequestDTO):
+def query_role_permission_rel_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 

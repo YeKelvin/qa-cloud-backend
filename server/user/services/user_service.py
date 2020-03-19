@@ -89,7 +89,7 @@ def reset_password(req: RequestDTO):
 
 
 @http_service
-def user_list(req: RequestDTO):
+def query_user_list(req: RequestDTO):
     # 分页
     offset, limit = pagination(req)
 
@@ -134,7 +134,7 @@ def user_list(req: RequestDTO):
 
 
 @http_service
-def user_all():
+def query_user_all():
     users = TUser.query.order_by(TUser.created_time.desc()).all()
     result = []
     for user in users:
@@ -146,7 +146,7 @@ def user_all():
 
 
 @http_service
-def user_info():
+def query_user_info():
     user = Global.user
     user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
     roles = []
