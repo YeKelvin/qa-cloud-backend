@@ -151,13 +151,13 @@ def __auth_fail_response(error: ErrorCode):
     user = Global.user
     log.info(
         f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-        f'header:[ {dict(request.headers.to_list("utf-8"))} ] '
+        f'header:[ {dict(request.headers)} ] '
         f'username:[ {user.username if user else None} ] user.state:[ {user.state if user else None} ]'
     )
     res = ResponseDTO(error=error)
     http_res = http_response(res)
     log.info(
         f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-        f'header:[ {dict(http_res.headers.to_list("utf-8"))}] response:[ {res} ]'
+        f'header:[ {dict(http_res.headers)}] response:[ {res} ]'
     )
     return http_res

@@ -19,7 +19,9 @@ def query_topic_list():
     """分页查询测试主题列表
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('topicNo'),
+        Argument('topicName'),
+        Argument('topicDescription'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -32,10 +34,7 @@ def query_topic_list():
 def query_topic_all():
     """查询所有测试主题
     """
-    req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
-    ).parse()
-    return service.query_topic_all(req)
+    return service.query_topic_all()
 
 
 @blueprint.route('/topic', methods=['POST'])
@@ -45,7 +44,8 @@ def create_topic():
     """新增测试主题
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('topicName', required=True, nullable=False, help='主题名称不能为空'),
+        Argument('topicDescription'),
     ).parse()
     return service.create_topic(req)
 
@@ -57,7 +57,9 @@ def modify_topic():
     """修改测试主题
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
+        Argument('topicName', required=True, nullable=False, help='主题名称不能为空'),
+        Argument('topicDescription'),
     ).parse()
     return service.modify_topic(req)
 
@@ -69,6 +71,6 @@ def delete_topic():
     """删除测试主题
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
     ).parse()
     return service.delete_topic(req)

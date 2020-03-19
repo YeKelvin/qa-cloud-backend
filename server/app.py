@@ -28,7 +28,7 @@ def create_app() -> Flask:
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
-    register_shellcontext(app)
+    register_shell_context(app)
     register_commands(app)
     return app
 
@@ -81,10 +81,13 @@ def register_hooks(app):
     app.after_request(hooks.record_action)
 
 
-def register_shellcontext(app):
+def register_shell_context(app):
     """Register shell context objects.
     """
-    shell_context = {"db": db}
+
+    def shell_context():
+        return {"db": db}
+
     app.shell_context_processor(shell_context)
 
 
@@ -93,6 +96,7 @@ def register_commands(app):
     """
     app.cli.add_command(commands.initdb)
     app.cli.add_command(commands.initdata)
+    app.cli.add_command(commands.add_permission)
 
 
 def register_swagger(app):

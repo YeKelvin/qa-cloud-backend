@@ -53,7 +53,7 @@ def query_topic_list(req: RequestDTO):
 
 
 @http_service
-def query_topic_all(req: RequestDTO):
+def query_topic_all():
     topics = TTestTopic.query.order_by(TTestTopic.created_time.desc()).all()
     result = []
     for topic in topics:
