@@ -11,7 +11,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from server import user, system, commands, hooks, script
-from server.extensions import db, swagger
+from server.extensions import db, swagger, migrate
 from server.utils import config
 from server.utils.log_util import get_logger, CONSOLE_HANDLER, LEVEL
 
@@ -65,6 +65,7 @@ def register_extensions(app):
     """Register Flask extensions.
     """
     db.init_app(app)
+    migrate.init_app(app, db)
 
 
 def register_blueprints(app):

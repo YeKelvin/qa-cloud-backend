@@ -23,6 +23,7 @@ gunicorn = "==20.0.4"
 gevent = "==1.4.0"
 requests = "==2.22.0"
 elasticsearch = "*"
+flask-migrate = "*"
 
 [requires]
 python_version = "3.7"
