@@ -105,11 +105,11 @@ def modify_item_user():
 @blueprint.route('/item/user', methods=['DELETE'])
 @require_login
 @require_permission
-def delete_item_user():
-    """删除测试项目成员
+def remove_item_user():
+    """移除测试项目成员
     """
     req = JsonParser(
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
         Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
     ).parse()
-    return service.delete_item_user(req)
+    return service.remove_item_user(req)

@@ -24,7 +24,7 @@ def query_element_list():
         Argument('elementComments'),
         Argument('elementType'),
         Argument('enabled'),
-        Argument('property'),
+        Argument('propertys'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -50,7 +50,8 @@ def create_element():
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementComments'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('childList'),
     ).parse()
     return service.create_element(req)
 
@@ -62,7 +63,13 @@ def modify_element():
     """修改测试元素
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('elementName'),
+        Argument('elementComments'),
+        Argument('elementType'),
+        Argument('enabled'),
+        Argument('propertys'),
+        Argument('childList'),
     ).parse()
     return service.modify_element(req)
 
@@ -74,6 +81,78 @@ def delete_element():
     """删除测试元素
     """
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
     ).parse()
     return service.delete_element(req)
+
+
+@blueprint.route('/element/property', methods=['POST'])
+@require_login
+@require_permission
+def add_element_property():
+    """添加元素属性
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.add_element_property(req)
+
+
+@blueprint.route('/element/property', methods=['PUT'])
+@require_login
+@require_permission
+def modify_element_property():
+    """修改元素属性
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.modify_element_property(req)
+
+
+@blueprint.route('/element/property', methods=['DELETE'])
+@require_login
+@require_permission
+def remove_element_property():
+    """移除元素属性
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.remove_element_property(req)
+
+
+@blueprint.route('/element/child', methods=['POST'])
+@require_login
+@require_permission
+def add_element_child():
+    """添加元素子代
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.add_element_child(req)
+
+
+@blueprint.route('/element/child', methods=['PUT'])
+@require_login
+@require_permission
+def modify_element_child():
+    """修改元素子代
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.modify_element_child(req)
+
+
+@blueprint.route('/element/child', methods=['DELETE'])
+@require_login
+@require_permission
+def remove_element_child():
+    """移除元素子代
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.remove_element_child(req)

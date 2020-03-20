@@ -105,11 +105,11 @@ def modify_topic_collection():
 @blueprint.route('/topic/collection', methods=['DELETE'])
 @require_login
 @require_permission
-def delete_topic_collection():
-    """删除测试主题下的集合
+def remove_topic_collection():
+    """移除测试主题下的集合
     """
     req = JsonParser(
         Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
         Argument('collectionNoList', required=True, nullable=False, help='集合编号列表不能为空'),
     ).parse()
-    return service.delete_topic_collection(req)
+    return service.remove_topic_collection(req)

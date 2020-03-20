@@ -21,6 +21,8 @@ def query_element_package_all(req: RequestDTO):
     pass
 
 
+__seq_package_no__ = Sequence('seq_package_no')
+
+
 def generate_package_no():
-    seq_item_no = Sequence('seq_package_no')
-    return 'EP' + str(seq_item_no.next_value()).zfill(10)
+    return 'EP' + str(__seq_package_no__.next_value()).zfill(10)

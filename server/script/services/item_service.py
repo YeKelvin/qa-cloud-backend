@@ -116,10 +116,12 @@ def modify_item_user(req: RequestDTO):
 
 
 @http_service
-def delete_item_user(req: RequestDTO):
+def remove_item_user(req: RequestDTO):
     pass
 
 
+__seq_item_no__ = Sequence('seq_item_no')
+
+
 def generate_item_no():
-    seq_item_no = Sequence('seq_item_no')
-    return 'I' + str(seq_item_no.next_value()).zfill(10)
+    return 'ITEM' + str(__seq_item_no__.next_value()).zfill(10)

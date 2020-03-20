@@ -36,6 +36,8 @@ def delete_environment_variable(req: RequestDTO):
     pass
 
 
+__seq_env_var_no__ = Sequence('seq_env_var_no')
+
+
 def generate_env_no():
-    seq_item_no = Sequence('seq_env_var_no')
-    return 'ENV' + str(seq_item_no.next_value()).zfill(10)
+    return 'ENV' + str(__seq_env_var_no__.next_value()).zfill(10)

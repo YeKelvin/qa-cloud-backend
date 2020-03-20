@@ -116,10 +116,12 @@ def modify_topic_collection(req: RequestDTO):
 
 
 @http_service
-def delete_topic_collection(req: RequestDTO):
+def remove_topic_collection(req: RequestDTO):
     pass
 
 
+__seq_topic_no__ = Sequence('seq_topic_no')
+
+
 def generate_topic_no():
-    seq_topic_no = Sequence('seq_topic_no')
-    return 'T' + str(seq_topic_no.next_value()).zfill(10)
+    return 'TOPIC' + str(__seq_topic_no__.next_value()).zfill(10)

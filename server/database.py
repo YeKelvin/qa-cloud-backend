@@ -19,11 +19,11 @@ class CRUDMixin:
     """
 
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, commit=True, **kwargs):
         """Create a new record and save it the database.
         """
         instance = cls(**kwargs)
-        return instance.save()
+        return instance.save(commit)
 
     def update(self, commit=True, **kwargs):
         """Update specific fields of a record.

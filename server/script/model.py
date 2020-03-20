@@ -99,7 +99,7 @@ class TElementProperty(Model):
     id = db.Column(db.Integer, primary_key=True)
     property_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='属性编号')
     property_name = db.Column(db.String(256), nullable=False, comment='属性名称')
-    property_value = db.Column(db.Text, nullable=False, comment='属性值')
+    property_value = db.Column(db.String(4096), nullable=False, comment='属性值')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')

@@ -11,9 +11,10 @@ from flask.cli import with_appcontext
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
-    TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement, TElementChildRel,
-    TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel, TEnvironmentVariable, THTTPHeaderCollection,
-    THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TElementPackage, TPackageElementRel, TScriptActivityLog
+    TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement, TElementProperty,
+    TElementPropertyRel, TElementChildRel,TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
+    TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
+    TElementPackage, TPackageElementRel, TScriptActivityLog
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
