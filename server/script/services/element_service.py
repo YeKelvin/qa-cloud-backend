@@ -86,8 +86,8 @@ def create_element(req: RequestDTO):
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
-        element_propertys=req.attr.propertys,
-        element_child_list=req.attr.childList
+        propertys=req.attr.propertys,
+        child_list=req.attr.childList
     )
     return {'element_no': element_no}
 
@@ -145,8 +145,7 @@ def remove_element_child():
     pass
 
 
-def create_element_no_commit(element_name, element_comments, element_type, element_propertys: dict,
-                             element_child_list: [dict]):
+def create_element_no_commit(element_name, element_comments, element_type, propertys: dict, child_list: [dict]):
     element_no = generate_element_no()
 
     TTestElement.create(
@@ -163,16 +162,16 @@ def create_element_no_commit(element_name, element_comments, element_type, eleme
     )
     db.session.flush()
 
-    if element_propertys:
-        add_element_property_no_commit(element_no, element_propertys)
-    if element_child_list:
-        add_element_child_no_commit(element_no, element_child_list)
+    if propertys:
+        add_element_property_no_commit(element_no, propertys)
+    if child_list:
+        add_element_child_no_commit(element_no, child_list)
 
     return element_no
 
 
-def add_element_property_no_commit(element_no, element_property: dict):
-    for prop_name, prop_value in element_property.items():
+def add_element_property_no_commit(element_no, propertys: dict):
+    for prop_name, prop_value in propertys.items():
         property_no = generate_property_no()
         TElementProperty.create(
             commit=False,
@@ -198,11 +197,17 @@ def add_element_property_no_commit(element_no, element_property: dict):
 
 def add_element_child_no_commit(element_no, child_list: [dict]):
     for child in child_list:
-        child_no = create_element_no_commit(**child)
+        child_no = create_element_no_commit(
+            element_name=child.get('elementName'),
+            element_comments=child.get('elementComments'),
+            element_type=child.get('elementType'),
+            propertys=child.get('propertys'),
+            child_list=child.get('childList')
+        )
         TElementChildRel.create(
             commit=False,
             element_no=element_no,
-            child_order='',
+            child_order=child.get('order'),
             child_no=child_no,
             created_by=Global.operator,
             created_time=datetime.now(),
