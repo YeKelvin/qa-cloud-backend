@@ -5,11 +5,11 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from server.common.number_generator import generate_permission_no
 from server.librarys.decorators.service import http_service
 from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
-from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.model import TPermission
 from server.utils.log_util import get_logger
@@ -126,10 +126,3 @@ def delete_permission(req: RequestDTO):
 
     permission.delete()
     return None
-
-
-def generate_permission_no():
-    """生成权限编号
-    """
-    seq_permission_no = Sequence('seq_permission_no')
-    return 'P' + str(seq_permission_no.next_value()).zfill(10)

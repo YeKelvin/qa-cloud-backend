@@ -8,6 +8,7 @@ from datetime import datetime
 import click
 from flask.cli import with_appcontext
 
+from server.common.number_generator import generate_user_no, generate_role_no, generate_permission_no
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
@@ -18,9 +19,7 @@ from server.script.model import (
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
-from server.user.services.permission_service import generate_permission_no
-from server.user.services.role_service import generate_role_no
-from server.user.services.user_service import generate_user_no
+
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)

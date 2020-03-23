@@ -5,12 +5,12 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from server.common.number_generator import generate_user_no
 from server.librarys.decorators.service import http_service
 from server.librarys.exception import ServiceError
 from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
-from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.model import TUser, TUserRoleRel, TRole
 from server.user.utils.auth import Auth
@@ -203,10 +203,3 @@ def delete_user(req: RequestDTO):
     # 删除用户
     user.delete()
     return None
-
-
-def generate_user_no():
-    """生成用户编号
-    """
-    seq_user_no = Sequence('seq_user_no')
-    return 'U' + str(seq_user_no.next_value()).zfill(10)

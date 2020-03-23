@@ -5,11 +5,11 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from server.common.number_generator import generate_topic_no
 from server.librarys.decorators.service import http_service
 from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
-from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.script.model import TTestTopic
 from server.utils.log_util import get_logger
@@ -118,10 +118,3 @@ def modify_topic_collection(req: RequestDTO):
 @http_service
 def remove_topic_collection(req: RequestDTO):
     pass
-
-
-__seq_topic_no__ = Sequence('seq_topic_no')
-
-
-def generate_topic_no():
-    return 'TOPIC' + str(__seq_topic_no__.next_value()).zfill(10)

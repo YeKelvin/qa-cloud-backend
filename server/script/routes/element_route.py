@@ -44,7 +44,7 @@ def query_element_all():
 @require_login
 @require_permission
 def create_element():
-    """新增测试元素（支持新增子代）
+    """新增测试元素（支持新增子代，子代还必须包含 order属性）
     """
     req = JsonParser(
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
@@ -56,24 +56,11 @@ def create_element():
     return service.create_element(req)
 
 
-@blueprint.route('/element/child', methods=['POST'])
-@require_login
-@require_permission
-def create_element_child():
-    """根据父元素编号新增元素子代
-    """
-    req = JsonParser(
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('childList', required=True, nullable=False, help='子代列表不能为空'),
-    ).parse()
-    return service.create_element_child(req)
-
-
 @blueprint.route('/element', methods=['PUT'])
 @require_login
 @require_permission
 def modify_element():
-    """修改测试元素（支持修改子代）
+    """修改测试元素（支持修改子代，子代还必须包含 elementNo属性和 order属性）
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
@@ -85,19 +72,6 @@ def modify_element():
         Argument('childList'),
     ).parse()
     return service.modify_element(req)
-
-
-@blueprint.route('/element/child', methods=['PUT'])
-@require_login
-@require_permission
-def modify_element_child():
-    """根据父元素编号修改元素子代（每个子代必须包含 elementNo）
-    """
-    req = JsonParser(
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('childList', required=True, nullable=False, help='子代列表不能为空'),
-    ).parse()
-    return service.modify_element_child(req)
 
 
 @blueprint.route('/element', methods=['DELETE'])
@@ -112,6 +86,30 @@ def delete_element():
     return service.delete_element(req)
 
 
+@blueprint.route('/element/enable', methods=['PATCH'])
+@require_login
+@require_permission
+def enable_element():
+    """启用元素
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.enable_element(req)
+
+
+@blueprint.route('/element/disable', methods=['PATCH'])
+@require_login
+@require_permission
+def disable_element():
+    """禁用元素
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.disable_element(req)
+
+
 @blueprint.route('/element/property', methods=['POST'])
 @require_login
 @require_permission
@@ -120,6 +118,8 @@ def add_element_property():
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
+        Argument('propertyValue', required=True, nullable=False, help='属性值不能为空'),
     ).parse()
     return service.add_element_property(req)
 
@@ -132,6 +132,8 @@ def modify_element_property():
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
+        Argument('propertyValue', required=True, nullable=False, help='属性值不能为空'),
     ).parse()
     return service.modify_element_property(req)
 
@@ -144,6 +146,7 @@ def remove_element_property():
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
     ).parse()
     return service.remove_element_property(req)
 
@@ -152,10 +155,11 @@ def remove_element_property():
 @require_login
 @require_permission
 def add_element_child():
-    """添加元素子代
+    """根据父元素编号新增元素子代（子代还必须包含 order属性）
     """
     req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('childList', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
     return service.add_element_child(req)
 
@@ -164,21 +168,24 @@ def add_element_child():
 @require_login
 @require_permission
 def modify_element_child():
-    """修改元素子代
+    """根据父元素编号修改元素子代（子代还必须包含 elementNo属性和 order属性）
     """
     req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('childList', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
     return service.modify_element_child(req)
 
 
-@blueprint.route('/element/child', methods=['DELETE'])
+@blueprint.route('/element/child/order', methods=['PUT'])
 @require_login
 @require_permission
-def remove_element_child():
-    """移除元素子代
+def modify_element_child_order():
+    """修改元素子代序号
     """
     req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空'),
+        Argument('childOrder', required=True, nullable=False, help='子元素序号不能为空'),
     ).parse()
-    return service.remove_element_child(req)
+    return service.modify_element_child_order(req)

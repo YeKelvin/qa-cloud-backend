@@ -5,11 +5,11 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from server.common.number_generator import generate_role_no
 from server.librarys.decorators.service import http_service
 from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
-from server.librarys.sequence import Sequence
 from server.librarys.verify import Verify
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
 from server.utils.log_util import get_logger
@@ -306,10 +306,3 @@ def delete_role_permission_rel(req: RequestDTO):
 
     role_permission.delete()
     return None
-
-
-def generate_role_no():
-    """生成角色编号
-    """
-    seq_role_no = Sequence('seq_role_no')
-    return 'R' + str(seq_role_no.next_value()).zfill(10)

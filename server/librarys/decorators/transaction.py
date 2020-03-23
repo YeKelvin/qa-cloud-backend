@@ -29,5 +29,6 @@ def db_transaction(func):
                 f'traceback:[ {traceback.format_exc()} ]'
             )
             db.session.rollback()
+            raise  # 重新抛出给 @http_service
 
     return wrapper

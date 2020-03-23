@@ -98,7 +98,6 @@ class TElementProperty(Model):
     __tablename__ = 't_element_property'
     id = db.Column(db.Integer, primary_key=True)
     element_no = db.Column(db.String(32), nullable=False, comment='元素编号')
-    property_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='属性编号')
     property_name = db.Column(db.String(256), nullable=False, comment='属性名称')
     property_value = db.Column(db.String(4096), nullable=False, comment='属性值')
     created_by = db.Column(db.String(64), comment='创建人')
@@ -112,9 +111,9 @@ class TElementChildRel(Model):
     """
     __tablename__ = 't_element_child_rel'
     id = db.Column(db.Integer, primary_key=True)
-    element_no = db.Column(db.String(32), nullable=False, comment='元素编号')
-    child_order = db.Column(db.Integer, nullable=False, comment='子代序号')
-    child_no = db.Column(db.String(32), index=True, nullable=False, comment='子代编号')
+    parent_no = db.Column(db.String(32), nullable=False, comment='父元素编号')
+    child_no = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
+    child_order = db.Column(db.Integer, nullable=False, comment='子元素序号')
     created_by = db.Column(db.String(64), comment='创建人')
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
