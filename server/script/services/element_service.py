@@ -13,7 +13,7 @@ from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
-from server.script.model import TTestElement, TElementProperty, TElementPropertyRel, TElementChildRel
+from server.script.model import TTestElement, TElementProperty, TElementChildRel
 from server.script.services.element_helper import ElementStatus
 from server.utils.log_util import get_logger
 
@@ -89,10 +89,18 @@ def create_element(req: RequestDTO):
         propertys=req.attr.propertys,
         child_list=req.attr.childList
     )
-    return {'element_no': element_no}
+    return {'elementNo': element_no}
 
 
 @http_service
+@db_transaction
+def create_element_child(req: RequestDTO):
+    add_element_child_no_commit(req.attr.parentNo, req.attr.childList)
+    return None
+
+
+@http_service
+@db_transaction
 def modify_element(req: RequestDTO):
     element = TTestElement.query.filter_by(element_no=req.attr.elementNo).first()
     Verify.not_empty(element, '测试元素不存在')
@@ -101,9 +109,21 @@ def modify_element(req: RequestDTO):
         element.element_name = req.attr.elementName
     if req.attr.elementComments is not None:
         element.element_comments = req.attr.elementComments
+    if req.attr.elementType is not None:
+        element.element_type = req.attr.elementType
+    if req.attr.propertys is not None:
+        modify_element_property_no_commit(req.attr.elementNo, req.attr.propertys)
+    if req.attr.childList is not None:
+        modify_element_child_no_commit(req.attr.childList)
 
-    element.save()
+    element.save(commit=False)
+    db.session.flush()
     return None
+
+
+@http_service
+def modify_element_child(req: RequestDTO):
+    pass
 
 
 @http_service
@@ -113,6 +133,16 @@ def delete_element(req: RequestDTO):
 
     element.delete()
     return None
+
+
+@http_service
+def enable_element():
+    pass
+
+
+@http_service
+def disable_element():
+    pass
 
 
 @http_service
@@ -145,7 +175,9 @@ def remove_element_child():
     pass
 
 
-def create_element_no_commit(element_name, element_comments, element_type, propertys: dict, child_list: [dict]):
+def create_element_no_commit(element_name, element_comments, element_type,
+                             propertys: dict = None,
+                             child_list: [dict] = None):
     element_no = generate_element_no()
 
     TTestElement.create(
@@ -175,6 +207,7 @@ def add_element_property_no_commit(element_no, propertys: dict):
         property_no = generate_property_no()
         TElementProperty.create(
             commit=False,
+            element_no=element_no,
             property_no=property_no,
             property_name=prop_name,
             property_value=prop_value,
@@ -183,15 +216,7 @@ def add_element_property_no_commit(element_no, propertys: dict):
             updated_by=Global.operator,
             updated_time=datetime.now()
         )
-        TElementPropertyRel.create(
-            commit=False,
-            element_no=element_no,
-            property_no=property_no,
-            created_by=Global.operator,
-            created_time=datetime.now(),
-            updated_by=Global.operator,
-            updated_time=datetime.now()
-        )
+
     db.session.flush()
 
 
@@ -214,4 +239,18 @@ def add_element_child_no_commit(element_no, child_list: [dict]):
             updated_by=Global.operator,
             updated_time=datetime.now()
         )
+
     db.session.flush()
+
+
+def modify_element_property_no_commit(element_no, propertys: dict):
+    for prop_name, prop_value in propertys:
+        el_prop = TElementProperty.query.filter_by(element_no=element_no, property_name=prop_name).first()
+        el_prop.property_value = prop_value
+        el_prop.save(commit=False)
+
+    db.session.flush()
+
+
+def modify_element_child_no_commit(child_list: [dict]):
+    pass
