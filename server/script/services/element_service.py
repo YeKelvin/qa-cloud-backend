@@ -14,7 +14,7 @@ from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
-from server.script.model import TTestElement, TElementProperty, TElementChildRel
+from server.script.model import TTestElement, TElementProperty, TElementChildRel, TItemCollectionRel, TTestItem
 from server.script.services.element_helper import ElementStatus
 from server.utils.log_util import get_logger
 
@@ -28,6 +28,10 @@ def query_element_list(req: RequestDTO):
 
     # 查询条件
     conditions = []
+    if req.attr.itemNo:
+        conditions.append(TItemCollectionRel.item_no == req.attr.itemNo)
+    if req.attr.itemName:
+        conditions.append(TTestItem.item_name.like(f'%{req.attr.itemName}%'))
     if req.attr.elementNo:
         conditions.append(TTestElement.element_no == req.attr.elementNo)
     if req.attr.elementName:
@@ -38,17 +42,14 @@ def query_element_list(req: RequestDTO):
         conditions.append(TTestElement.element_type == req.attr.elementType)
     if req.attr.enabled:
         conditions.append(TTestElement.enabled == req.attr.enabled)
-    # todo 还有 propertys的条件
 
-    # 列表总数
-    total_size = TTestElement.query.filter(*conditions).count()
-
-    # 列表数据
-    elements = TTestElement.query.filter(
-        *conditions
-    ).order_by(
-        TTestElement.created_time.desc()
-    ).offset(offset).limit(limit).all()
+    # 列表总数，列表数据
+    if req.attr.itemName:
+        total_size, elements = select_item_and_collection_rel_and_element(conditions, offset, limit)
+    elif req.attr.itemNo:
+        total_size, elements = select_item_collection_rel_and_element(conditions, offset, limit)
+    else:
+        total_size, elements = select_element(conditions, offset, limit)
 
     # 组装响应数据
     data_set = []
@@ -58,9 +59,7 @@ def query_element_list(req: RequestDTO):
             'elementName': element.element_name,
             'elementComments': element.element_comments,
             'elementType': element.element_type,
-            'enabled': element.enabled,
-            # 'propertys' todo
-            # 'childList' todo
+            'enabled': element.enabled
         })
     return {'dataSet': data_set, 'totalSize': total_size}
 
@@ -81,6 +80,11 @@ def query_element_all():
 
 
 @http_service
+def query_element_child(req: RequestDTO):
+    pass
+
+
+@http_service
 @db_transaction
 def create_element(req: RequestDTO):
     element_no = create_element_no_commit(
@@ -90,6 +94,17 @@ def create_element(req: RequestDTO):
         propertys=req.attr.propertys,
         child_list=req.attr.childList
     )
+
+    if req.attr.itemNo:
+        item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
+        Verify.not_empty(item, '测试项目不存在')
+
+        TItemCollectionRel.create(
+            commit=False,
+            item_no=item.item_no,
+            collection_no=element_no
+        )
+
     return {'elementNo': element_no}
 
 
@@ -208,6 +223,66 @@ def modify_element_child_order(req: RequestDTO):
     el_child.child_order = req.attr.childOrder
     el_child.save()
     return None
+
+
+def select_element(conditions: list, offset, limit) -> (int, list):
+    """查询 TTestElement表
+    """
+    # 列表总数
+    total_size = TTestElement.query.filter(*conditions).count()
+
+    # 列表数据
+    elements = TTestElement.query.filter(
+        *conditions
+    ).order_by(
+        TTestElement.created_time.desc()
+    ).offset(offset).limit(limit).all()
+
+    return total_size, elements
+
+
+def select_item_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+    """TItemCollectionRel，TTestElement连表查询
+    """
+    # 列表总数
+    total_size = TTestElement.query.join(
+        TItemCollectionRel, TItemCollectionRel.collection_no == TTestElement.element_no
+    ).filter(*conditions).count()
+
+    # 列表数据
+    elements = TTestElement.query.join(
+        TItemCollectionRel, TItemCollectionRel.collection_no == TTestElement.element_no
+    ).filter(
+        *conditions
+    ).order_by(
+        TTestElement.created_time.desc()
+    ).offset(offset).limit(limit).all()
+
+    return total_size, elements
+
+
+def select_item_and_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+    """TTestItem，TItemCollectionRel，TTestElement连表查询
+    """
+    # 列表总数
+    total_size = TTestElement.query.join(
+        TItemCollectionRel, TItemCollectionRel.collection_no == TTestElement.element_no
+    ).join(
+        TTestItem, TTestItem.item_no == TItemCollectionRel.item_no
+    ).filter(*conditions).count()
+
+    # 列表数据
+    elements = TTestElement.query.join(
+        TItemCollectionRel, TItemCollectionRel.collection_no == TTestElement.element_no
+    ).join(
+        TTestItem, TTestItem.item_no == TItemCollectionRel.item_no
+    ).filter(
+        *conditions
+    ).order_by(
+        TTestElement.created_time.desc()
+    ).offset(offset).limit(limit).all()
+
+    return total_size, elements
 
 
 def create_element_no_commit(element_name, element_comments, element_type,

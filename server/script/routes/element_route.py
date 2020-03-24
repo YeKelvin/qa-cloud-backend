@@ -24,7 +24,8 @@ def query_element_list():
         Argument('elementComments'),
         Argument('elementType'),
         Argument('enabled'),
-        Argument('propertys'),
+        Argument('itemNo'),
+        Argument('itemName'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -40,6 +41,18 @@ def query_element_all():
     return service.query_element_all()
 
 
+@blueprint.route('/element/child', methods=['GET'])
+@require_login
+@require_permission
+def query_element_child():
+    """查询测试元素子代
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.query_element_child(req)
+
+
 @blueprint.route('/element', methods=['POST'])
 @require_login
 @require_permission
@@ -52,6 +65,7 @@ def create_element():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
         Argument('childList'),
+        Argument('itemNo'),
     ).parse()
     return service.create_element(req)
 
@@ -177,7 +191,7 @@ def modify_element_child():
     return service.modify_element_child(req)
 
 
-@blueprint.route('/element/child/order', methods=['PUT'])
+@blueprint.route('/element/child/order', methods=['PATCH'])
 @require_login
 @require_permission
 def modify_element_child_order():

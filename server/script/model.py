@@ -36,6 +36,19 @@ class TItemTopicRel(Model):
     updated_time = db.Column(db.DateTime, comment='更新时间')
 
 
+class TItemCollectionRel(Model):
+    """项目集合关联表
+    """
+    __tablename__ = 't_item_collection_rel'
+    id = db.Column(db.Integer, primary_key=True)
+    item_no = db.Column(db.String(32), nullable=False, comment='主题编号')
+    collection_no = db.Column(db.String(32), nullable=False, comment='测试集合编号')
+    created_by = db.Column(db.String(64), comment='创建人')
+    created_time = db.Column(db.DateTime, comment='创建时间')
+    updated_by = db.Column(db.String(64), comment='更新人')
+    updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
 class TItemUserRel(Model):
     """项目用户关联表
     """

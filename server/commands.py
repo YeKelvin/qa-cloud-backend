@@ -12,10 +12,10 @@ from server.common.number_generator import generate_user_no, generate_role_no, g
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
-    TTestItem, TItemTopicRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement, TElementProperty,
-    TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel, TEnvironmentVariable,
-    THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration, TElementPackage,
-    TPackageElementRel, TScriptActivityLog
+    TTestItem, TItemTopicRel, TItemCollectionRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
+    TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
+    TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
+    TElementPackage, TPackageElementRel, TScriptActivityLog
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
@@ -93,14 +93,11 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    TRole.create(role_no=generate_role_no(), role_name='SuperAdmin', state='NORMAL', description='超级管理员',
-                 created_time=datetime.now(), created_by='system')  # R0000000001
-    TRole.create(role_no=generate_role_no(), role_name='Admin', state='NORMAL', description='管理员',
-                 created_time=datetime.now(), created_by='system')  # R0000000002
-    TRole.create(role_no=generate_role_no(), role_name='Leader', state='NORMAL', description='组长',
-                 created_time=datetime.now(), created_by='system')  # R0000000003
-    TRole.create(role_no=generate_role_no(), role_name='General', state='NORMAL', description='用户',
-                 created_time=datetime.now(), created_by='system')  # R0000000004
+    __create_role(name='SuperAdmin', description='超级管理员')  # R0000000001
+    __create_role(name='Admin', description='管理员')  # R0000000002
+    __create_role(name='Leader', description='组长')  # R0000000003
+    __create_role(name='General', description='用户')  # R0000000004
+
     click.echo('创建角色成功')
 
 
@@ -163,6 +160,20 @@ def init_permission():
     __create_permission(name='删除测试主题下的集合', method='DELETE', endpoint='/script/topic/collection')
 
     # element
+    __create_permission(name='分页查询测试元素列表', method='GET', endpoint='/script/element/list')
+    __create_permission(name='查询所有测试元素', method='GET', endpoint='/script/element/all')
+    __create_permission(name='查询测试元素子代', method='GET', endpoint='/script/element/child')
+    __create_permission(name='新增测试元素', method='POST', endpoint='/script/element')
+    __create_permission(name='修改测试元素', method='PUT', endpoint='/script/element')
+    __create_permission(name='删除测试元素', method='DELETE', endpoint='/script/element')
+    __create_permission(name='启用元素', method='PATCH', endpoint='/script/element/enable')
+    __create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
+    __create_permission(name='添加元素属性', method='POST', endpoint='/script/element/property')
+    __create_permission(name='修改元素属性', method='PUT', endpoint='/script/element/property')
+    __create_permission(name='移除元素属性', method='DELETE', endpoint='/script/element/property')
+    __create_permission(name='根据父元素编号新增元素子代', method='POST', endpoint='/script/element/child')
+    __create_permission(name='根据父元素编号修改元素子代', method='PUT', endpoint='/script/element/child')
+    __create_permission(name='修改元素子代序号', method='PATCH', endpoint='/script/element/child/order')
 
     # environment variable
 
@@ -188,8 +199,12 @@ def init_role_permission_rel():
     """
     permissions = TPermission.query.all()
     for permission in permissions:
-        TRolePermissionRel.create(role_no='R0000000001', permission_no=permission.permission_no,
-                                  created_time=datetime.now(), created_by='system')
+        TRolePermissionRel.create(
+            role_no='R0000000001',
+            permission_no=permission.permission_no,
+            created_time=datetime.now(),
+            created_by='system'
+        )
     click.echo('创建角色权限关联关系成功')
 
 
@@ -216,6 +231,11 @@ def add_permission(name, method, endpoint):
     """
     __create_permission(name, method, endpoint)
     click.echo(f'添加权限成功，name={name}，method={method}，endpoint={endpoint}')
+
+
+def __create_role(name, description):
+    TRole.create(role_no=generate_role_no(), role_name=name, state='NORMAL', description=description,
+                 created_time=datetime.now(), created_by='system')
 
 
 def __create_permission(name, method, endpoint):
