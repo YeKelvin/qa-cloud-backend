@@ -65,8 +65,24 @@ def query_element_list(req: RequestDTO):
 
 
 @http_service
-def query_element_all():
-    elements = TTestElement.query.order_by(TTestElement.created_time.desc()).all()
+def query_element_all(req: RequestDTO):
+    # 查询条件
+    conditions = []
+
+    if req.attr.itemNo:
+        conditions.append(TItemCollectionRel.item_no == req.attr.itemNo)
+    if req.attr.elementType:
+        conditions.append(TTestElement.element_type == req.attr.elementType)
+    if req.attr.enabled:
+        conditions.append(TTestElement.enabled == req.attr.enabled)
+
+    elements = TTestElement.query.join(
+        TItemCollectionRel, TItemCollectionRel.collection_no == TTestElement.element_no
+    ).filter(
+        *conditions
+    ).order_by(
+        TTestElement.created_time.desc()
+    ).all()
     result = []
     for element in elements:
         result.append({
@@ -81,7 +97,24 @@ def query_element_all():
 
 @http_service
 def query_element_child(req: RequestDTO):
-    pass
+    childs = TElementChildRel.query.filter_by(parent_no=req.attr.elementNo).all()
+    # 根据 child_order排序
+    childs.sort(key=lambda k: (k.get('child_order', 0)))
+    result = []
+    for child in childs:
+        conditions = [TTestElement.element_no == child.child_no]
+        if req.attr.elementType:
+            conditions.append(TTestElement.element_type == req.attr.elementType)
+        element = TTestElement.query.filter(*conditions).first()
+        result.append({
+            'elementNo': element.element_no,
+            'elementName': element.element_name,
+            'elementComments': element.element_comments,
+            'elementType': element.element_type,
+            'enabled': element.enabled,
+            'order': child.child_order
+        })
+    return result
 
 
 @http_service

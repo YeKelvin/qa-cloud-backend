@@ -9,10 +9,10 @@ from enum import unique, Enum
 @unique
 class ElementStatus(Enum):
     # 启用
-    ENABLE = 'ENABLE'
+    ENABLE = True
 
     # 禁用
-    DISABLE = 'DISABLE'
+    DISABLE = False
 
 
 @unique

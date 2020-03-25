@@ -38,7 +38,12 @@ def query_element_list():
 def query_element_all():
     """查询所有测试元素
     """
-    return service.query_element_all()
+    req = JsonParser(
+        Argument('elementType'),
+        Argument('enabled'),
+        Argument('itemNo'),
+    ).parse()
+    return service.query_element_all(req)
 
 
 @blueprint.route('/element/child', methods=['GET'])
@@ -49,6 +54,7 @@ def query_element_child():
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('elementType'),
     ).parse()
     return service.query_element_child(req)
 
