@@ -46,6 +46,18 @@ def query_element_all():
     return service.query_element_all(req)
 
 
+@blueprint.route('/element/info', methods=['GET'])
+@require_login
+@require_permission
+def query_element_info():
+    """查询测试元素信息
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.query_element_info(req)
+
+
 @blueprint.route('/element/child', methods=['GET'])
 @require_login
 @require_permission

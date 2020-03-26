@@ -70,6 +70,7 @@ def register(req: RequestDTO):
         mobile_no=req.attr.mobileNo,
         email=req.attr.email,
         state='NORMAL',
+        error_times=0,
         created_time=datetime.now(),
         created_by=Global.operator,
         updated_time=datetime.now(),

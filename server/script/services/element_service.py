@@ -96,6 +96,26 @@ def query_element_all(req: RequestDTO):
 
 
 @http_service
+def query_element_info(req: RequestDTO):
+    element = TTestElement.query.filter_by(element_no=req.attr.elementNo).first()
+    Verify.not_empty(element, '测试元素不存在')
+
+    el_propertys = TElementProperty.query.filter_by(element_no=req.attr.elementNo).all()
+    propertys = {}
+    for prop in el_propertys:
+        propertys[prop.property_name] = prop.property_value
+
+    return {
+        'elementNo': element.element_no,
+        'elementName': element.element_name,
+        'elementComments': element.element_comments,
+        'elementType': element.element_type,
+        'enabled': element.enabled,
+        'propertys': propertys
+    }
+
+
+@http_service
 def query_element_child(req: RequestDTO):
     childs = TElementChildRel.query.filter_by(parent_no=req.attr.elementNo).all()
     # 根据 child_order排序
@@ -405,7 +425,7 @@ def modify_element_no_commit(element_no, element_name, element_comments, element
 
 
 def modify_element_property_no_commit(element_no, propertys: dict):
-    for prop_name, prop_value in propertys:
+    for prop_name, prop_value in propertys.items():
         el_prop = TElementProperty.query.filter_by(element_no=element_no, property_name=prop_name).first()
         el_prop.property_value = prop_value
         el_prop.save(commit=False)

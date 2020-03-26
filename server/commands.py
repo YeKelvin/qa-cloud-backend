@@ -162,6 +162,7 @@ def init_permission():
     # element
     __create_permission(name='分页查询测试元素列表', method='GET', endpoint='/script/element/list')
     __create_permission(name='查询所有测试元素', method='GET', endpoint='/script/element/all')
+    __create_permission(name='查询测试元素信息', method='GET', endpoint='/script/element/info')
     __create_permission(name='查询测试元素子代', method='GET', endpoint='/script/element/child')
     __create_permission(name='新增测试元素', method='POST', endpoint='/script/element')
     __create_permission(name='修改测试元素', method='PUT', endpoint='/script/element')
