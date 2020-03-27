@@ -96,7 +96,7 @@ class TTestElement(Model):
     id = db.Column(db.Integer, primary_key=True)
     element_no = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     element_name = db.Column(db.String(256), nullable=False, comment='元素名称')
-    element_comments = db.Column(db.String(512), nullable=False, comment='元素描述')
+    element_comments = db.Column(db.String(512), comment='元素描述')
     element_type = db.Column(db.String(64), nullable=False, comment='元素类型')
     enabled = db.Column(db.Boolean, nullable=False, comment='是否启用')
     created_by = db.Column(db.String(64), comment='创建人')
