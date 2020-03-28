@@ -119,7 +119,7 @@ def query_element_info(req: RequestDTO):
 def query_element_child(req: RequestDTO):
     childs = TElementChildRel.query.filter_by(parent_no=req.attr.elementNo).all()
     # 根据 child_order排序
-    childs.sort(key=lambda k: (k.get('child_order', 0)))
+    childs.sort(key=lambda k: k.child_order)
     result = []
     for child in childs:
         conditions = [TTestElement.element_no == child.child_no]
@@ -132,7 +132,7 @@ def query_element_child(req: RequestDTO):
             'elementComments': element.element_comments,
             'elementType': element.element_type,
             'enabled': element.enabled,
-            'order': child.child_order
+            'childOrder': child.child_order
         })
     return result
 
@@ -259,22 +259,60 @@ def add_element_child(req: RequestDTO):
 @http_service
 @db_transaction
 def modify_element_child(req: RequestDTO):
-    modify_element_child_no_commit(
-        parent_no=req.attr.parentNo,
-        child_list=req.attr.childList
-    )
+    modify_element_child_no_commit(child_list=req.attr.childList)
 
 
 @http_service
-def modify_element_child_order(req: RequestDTO):
-    el_child = TElementChildRel.query.filter_by(
+def move_up_element_child_order(req: RequestDTO):
+    child = TElementChildRel.query.filter_by(
         parent_no=req.attr.parentNo,
         child_no=req.attr.childNo
     ).first()
-    Verify.not_empty(el_child, '子元素不存在')
+    Verify.not_empty(child, '子元素不存在')
 
-    el_child.child_order = req.attr.childOrder
-    el_child.save()
+    childs_length = TElementChildRel.query.filter_by(parent_no=req.attr.parentNo).count()
+    child_current_order = child.child_order
+    if childs_length == 1 or child_current_order == 1:
+        return None
+
+    upper_child = TElementChildRel.query.filter_by(
+        parent_no=req.attr.parentNo,
+        child_order=child_current_order - 1
+    ).first()
+    upper_child.child_order += 1
+    child.child_order -= 1
+
+    child.save()
+    return None
+
+
+@http_service
+def move_down_element_child_order(req: RequestDTO):
+    child = TElementChildRel.query.filter_by(
+        parent_no=req.attr.parentNo,
+        child_no=req.attr.childNo
+    ).first()
+    Verify.not_empty(child, '子元素不存在')
+
+    child = TElementChildRel.query.filter_by(
+        parent_no=req.attr.parentNo,
+        child_no=req.attr.childNo
+    ).first()
+    Verify.not_empty(child, '子元素不存在')
+
+    childs_length = TElementChildRel.query.filter_by(parent_no=req.attr.parentNo).count()
+    child_current_order = child.child_order
+    if childs_length == child_current_order:
+        return None
+
+    lower_child = TElementChildRel.query.filter_by(
+        parent_no=req.attr.parentNo,
+        child_order=child_current_order + 1
+    ).first()
+    lower_child.child_order -= 1
+    child.child_order += 1
+
+    child.save()
     return None
 
 
@@ -394,7 +432,7 @@ def add_element_child_no_commit(parent_no, child_list: [dict]):
             commit=False,
             parent_no=parent_no,
             child_no=child_no,
-            child_order=child.get('order'),
+            child_order=next_child_order(parent_no),
             created_by=Global.operator,
             created_time=datetime.now(),
             updated_by=Global.operator,
@@ -421,7 +459,7 @@ def modify_element_no_commit(element_no, element_name, element_comments, element
     if propertys is not None:
         modify_element_property_no_commit(element_no, propertys)
     if child_list is not None:
-        modify_element_child_no_commit(element_no, child_list)
+        modify_element_child_no_commit(child_list)
 
 
 def modify_element_property_no_commit(element_no, propertys: dict):
@@ -433,7 +471,7 @@ def modify_element_property_no_commit(element_no, propertys: dict):
     db.session.flush()
 
 
-def modify_element_child_no_commit(parent_no, child_list: [dict]):
+def modify_element_child_no_commit(child_list: [dict]):
     for child in child_list:
         if 'elementNo' not in child:
             raise ServiceError('子代元素编号不能为空')
@@ -447,21 +485,6 @@ def modify_element_child_no_commit(parent_no, child_list: [dict]):
             child_list=child.get('childList')
         )
 
-        modify_element_child_order_no_commit(
-            parent_no=parent_no,
-            child_no=child.get('elementNo'),
-            child_order=child.get('order')
-        )
-
-
-def modify_element_child_order_no_commit(parent_no, child_no, child_order):
-    if child_order is not None:
-        element = TElementChildRel.query.filter_by(parent_no=parent_no, child_no=child_no).first()
-        element.child_order = child_order
-
-        element.save(commit=False)
-        db.session.flush()
-
 
 def delete_element_no_commit(element_no):
     element = TTestElement.query.filter_by(element_no=element_no).first()
@@ -474,3 +497,7 @@ def delete_element_no_commit(element_no):
     element.delete(commit=False)
 
     db.session.flush()
+
+
+def next_child_order(parent_no):
+    return TElementChildRel.query.filter_by(parent_no=parent_no).count() + 1

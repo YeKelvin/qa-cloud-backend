@@ -174,7 +174,8 @@ def init_permission():
     __create_permission(name='移除元素属性', method='DELETE', endpoint='/script/element/property')
     __create_permission(name='根据父元素编号新增元素子代', method='POST', endpoint='/script/element/child')
     __create_permission(name='根据父元素编号修改元素子代', method='PUT', endpoint='/script/element/child')
-    __create_permission(name='修改元素子代序号', method='PATCH', endpoint='/script/element/child/order')
+    __create_permission(name='根据父元素编号和子元素编号上移序号', method='PATCH', endpoint='/script/element/child/order/up')
+    __create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
 
     # environment variable
 
@@ -217,21 +218,6 @@ def init_action_log():
         created_by='system',
     )
     click.echo('初始化操作日志数据成功')
-
-
-@click.command('add-permission')
-@click.option('-n', '--name', help='权限名称')
-@click.option('-m', '--method', help='请求方法')
-@click.option('-e', '--endpoint', help='请求路由')
-@with_appcontext
-def add_permission(name, method, endpoint):
-    """
-    flask cli中添加权限
-    
-    e.g. flask add-permission -n name -m method -e endpoint
-    """
-    __create_permission(name, method, endpoint)
-    click.echo(f'添加权限成功，name={name}，method={method}，endpoint={endpoint}')
 
 
 def __create_role(name, description):

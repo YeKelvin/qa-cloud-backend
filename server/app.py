@@ -97,7 +97,6 @@ def register_commands(app):
     """
     app.cli.add_command(commands.initdb)
     app.cli.add_command(commands.initdata)
-    app.cli.add_command(commands.add_permission)
 
 
 def register_swagger(app):

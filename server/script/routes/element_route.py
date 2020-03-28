@@ -187,7 +187,7 @@ def remove_element_property():
 @require_login
 @require_permission
 def add_element_child():
-    """根据父元素编号新增元素子代（子代还必须包含 order属性）
+    """根据父元素编号新增元素子代
     """
     req = JsonParser(
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
@@ -209,15 +209,27 @@ def modify_element_child():
     return service.modify_element_child(req)
 
 
-@blueprint.route('/element/child/order', methods=['PATCH'])
+@blueprint.route('/element/child/order/up', methods=['PATCH'])
 @require_login
 @require_permission
-def modify_element_child_order():
-    """修改元素子代序号
+def move_up_element_child_order():
+    """根据父元素编号和子元素编号上移序号
     """
     req = JsonParser(
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空'),
-        Argument('childOrder', required=True, nullable=False, help='子元素序号不能为空'),
+        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.modify_element_child_order(req)
+    return service.move_up_element_child_order(req)
+
+
+@blueprint.route('/element/child/order/down', methods=['PATCH'])
+@require_login
+@require_permission
+def move_down_element_child_order():
+    """根据父元素编号和子元素编号下移序号
+    """
+    req = JsonParser(
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
+    ).parse()
+    return service.move_down_element_child_order(req)
