@@ -113,7 +113,7 @@ def delete_element():
     """删除测试元素
     """
     req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
     return service.delete_element(req)
 
@@ -170,19 +170,6 @@ def modify_element_property():
     return service.modify_element_property(req)
 
 
-@blueprint.route('/element/property', methods=['DELETE'])
-@require_login
-@require_permission
-def remove_element_property():
-    """移除元素属性
-    """
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
-    ).parse()
-    return service.remove_element_property(req)
-
-
 @blueprint.route('/element/child', methods=['POST'])
 @require_login
 @require_permission
@@ -233,3 +220,15 @@ def move_down_element_child_order():
         Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
     return service.move_down_element_child_order(req)
+
+
+@blueprint.route('/element/duplicate', methods=['POST'])
+@require_login
+@require_permission
+def duplicate_element():
+    """复制测试元素及其子代
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+    ).parse()
+    return service.duplicate_element(req)

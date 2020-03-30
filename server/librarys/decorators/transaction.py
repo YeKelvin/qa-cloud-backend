@@ -20,8 +20,9 @@ def db_transaction(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        result = None
         try:
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
             db.session.commit()
         except Exception:
             log.error(
@@ -30,5 +31,7 @@ def db_transaction(func):
             )
             db.session.rollback()
             raise  # 重新抛出给 @http_service
+        finally:
+            return result
 
     return wrapper

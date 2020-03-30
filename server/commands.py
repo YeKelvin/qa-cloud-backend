@@ -171,11 +171,11 @@ def init_permission():
     __create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
     __create_permission(name='添加元素属性', method='POST', endpoint='/script/element/property')
     __create_permission(name='修改元素属性', method='PUT', endpoint='/script/element/property')
-    __create_permission(name='移除元素属性', method='DELETE', endpoint='/script/element/property')
     __create_permission(name='根据父元素编号新增元素子代', method='POST', endpoint='/script/element/child')
     __create_permission(name='根据父元素编号修改元素子代', method='PUT', endpoint='/script/element/child')
     __create_permission(name='根据父元素编号和子元素编号上移序号', method='PATCH', endpoint='/script/element/child/order/up')
     __create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
+    __create_permission(name='复制测试元素及其子代', method='POST', endpoint='/script/element/duplicate')
 
     # environment variable
 

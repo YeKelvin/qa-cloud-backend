@@ -100,9 +100,9 @@ def query_element_info(req: RequestDTO):
     element = TTestElement.query.filter_by(element_no=req.attr.elementNo).first()
     Verify.not_empty(element, '测试元素不存在')
 
-    el_propertys = TElementProperty.query.filter_by(element_no=req.attr.elementNo).all()
+    el_props = TElementProperty.query.filter_by(element_no=req.attr.elementNo).all()
     propertys = {}
-    for prop in el_propertys:
+    for prop in el_props:
         propertys[prop.property_name] = prop.property_value
 
     return {
@@ -117,23 +117,24 @@ def query_element_info(req: RequestDTO):
 
 @http_service
 def query_element_child(req: RequestDTO):
-    childs = TElementChildRel.query.filter_by(parent_no=req.attr.elementNo).all()
+    child_rels = TElementChildRel.query.filter_by(parent_no=req.attr.elementNo).all()
     # 根据 child_order排序
-    childs.sort(key=lambda k: k.child_order)
+    child_rels.sort(key=lambda k: k.child_order)
     result = []
-    for child in childs:
-        conditions = [TTestElement.element_no == child.child_no]
+    for child_rel in child_rels:
+        conditions = [TTestElement.element_no == child_rel.child_no]
         if req.attr.elementType:
             conditions.append(TTestElement.element_type == req.attr.elementType)
         element = TTestElement.query.filter(*conditions).first()
-        result.append({
-            'elementNo': element.element_no,
-            'elementName': element.element_name,
-            'elementComments': element.element_comments,
-            'elementType': element.element_type,
-            'enabled': element.enabled,
-            'childOrder': child.child_order
-        })
+        if element:
+            result.append({
+                'elementNo': element.element_no,
+                'elementName': element.element_name,
+                'elementComments': element.element_comments,
+                'elementType': element.element_type,
+                'enabled': element.enabled,
+                'childOrder': child_rel.child_order
+            })
     return result
 
 
@@ -178,8 +179,7 @@ def modify_element(req: RequestDTO):
 @http_service
 @db_transaction
 def delete_element(req: RequestDTO):
-    delete_element_no_commit(element_no=req.attr.elementNo)
-    return None
+    return delete_element_no_commit(element_no=req.attr.elementNo)
 
 
 @http_service
@@ -236,17 +236,6 @@ def modify_element_property(req: RequestDTO):
 
 
 @http_service
-def remove_element_property(req: RequestDTO):
-    el_prop = TElementProperty.query.filter_by(
-        element_no=req.attr.elementNo,
-        property_name=req.attr.propertyName
-    ).first()
-    Verify.not_empty(el_prop, '元素属性不存在')
-    el_prop.delete()
-    return None
-
-
-@http_service
 @db_transaction
 def add_element_child(req: RequestDTO):
     add_element_child_no_commit(
@@ -264,55 +253,60 @@ def modify_element_child(req: RequestDTO):
 
 @http_service
 def move_up_element_child_order(req: RequestDTO):
-    child = TElementChildRel.query.filter_by(
+    child_rel = TElementChildRel.query.filter_by(
         parent_no=req.attr.parentNo,
         child_no=req.attr.childNo
     ).first()
-    Verify.not_empty(child, '子元素不存在')
+    Verify.not_empty(child_rel, '子元素不存在')
 
     childs_length = TElementChildRel.query.filter_by(parent_no=req.attr.parentNo).count()
-    child_current_order = child.child_order
+    child_current_order = child_rel.child_order
     if childs_length == 1 or child_current_order == 1:
         return None
 
-    upper_child = TElementChildRel.query.filter_by(
+    upper_child_rel = TElementChildRel.query.filter_by(
         parent_no=req.attr.parentNo,
         child_order=child_current_order - 1
     ).first()
-    upper_child.child_order += 1
-    child.child_order -= 1
+    upper_child_rel.child_order += 1
+    child_rel.child_order -= 1
 
-    child.save()
+    upper_child_rel.save()
+    child_rel.save()
     return None
 
 
 @http_service
 def move_down_element_child_order(req: RequestDTO):
-    child = TElementChildRel.query.filter_by(
+    child_rel = TElementChildRel.query.filter_by(
         parent_no=req.attr.parentNo,
         child_no=req.attr.childNo
     ).first()
-    Verify.not_empty(child, '子元素不存在')
-
-    child = TElementChildRel.query.filter_by(
-        parent_no=req.attr.parentNo,
-        child_no=req.attr.childNo
-    ).first()
-    Verify.not_empty(child, '子元素不存在')
+    Verify.not_empty(child_rel, '子元素不存在')
 
     childs_length = TElementChildRel.query.filter_by(parent_no=req.attr.parentNo).count()
-    child_current_order = child.child_order
-    if childs_length == child_current_order:
+    current_child_order = child_rel.child_order
+    if childs_length == current_child_order:
         return None
 
-    lower_child = TElementChildRel.query.filter_by(
+    lower_child_rel = TElementChildRel.query.filter_by(
         parent_no=req.attr.parentNo,
-        child_order=child_current_order + 1
+        child_order=current_child_order + 1
     ).first()
-    lower_child.child_order -= 1
-    child.child_order += 1
+    lower_child_rel.child_order -= 1
+    child_rel.child_order += 1
 
-    child.save()
+    lower_child_rel.save()
+    child_rel.save()
+    return None
+
+
+@http_service
+def duplicate_element(req: RequestDTO):
+    element = TTestElement.query.filter_by(element_no=req.attr.element_no).first()
+    Verify.not_empty(element, '测试元素不存在')
+
+    # todo 复制元素
     return None
 
 
@@ -490,11 +484,58 @@ def delete_element_no_commit(element_no):
     element = TTestElement.query.filter_by(element_no=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
-    el_childs = TElementChildRel.query.filter_by(element_no=element.element_no).all()
-    for el_child in el_childs:
-        child = TTestElement.query.filter_by(element_no=el_child.element_no).first()
-        child.delete(commit=False)
+    result = [{
+        'elementNo': element.element_no,
+        'elementName': element.element_name
+    }]
+
+    # 递归删除元素子代和关联关系
+    result.extend(delete_child_no_commit(element_no))
+    # 如存在父辈关联关系，则删除关联并重新排序父辈子代
+    child_rel = TElementChildRel.query.filter_by(child_no=element_no).first()
+    if child_rel:
+        # 重新排序父辈子代
+        TElementChildRel.query.filter(
+            TElementChildRel.parent_no == child_rel.parent_no,
+            TElementChildRel.child_order > child_rel.child_order
+        ).update({TElementChildRel.child_order: TElementChildRel.child_order - 1})
+        # 删除父辈关联
+        child_rel.delete(commit=False)
+
+    # 删除元素属性
+    delete_property_no_commit(element_no)
+    # 删除元素
     element.delete(commit=False)
+
+    db.session.flush()
+    return result
+
+
+def delete_child_no_commit(element_no):
+    child_rels = TElementChildRel.query.filter_by(parent_no=element_no).all()
+    result = []
+    for child_rel in child_rels:
+        # 查询子代元素信息
+        child = TTestElement.query.filter_by(element_no=child_rel.child_no).first()
+        if child:
+            result.append({'elementNo': child.element_no, 'elementName': child.element_name})
+
+        result.extend(delete_child_no_commit(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
+        # 删除父子关联关系
+        child_rel.delete(commit=False)
+        # 删除子代元素属性
+        delete_property_no_commit(child_rel.child_no)
+        # 删除子代元素
+        child.delete(commit=False)
+
+    db.session.flush()
+    return result
+
+
+def delete_property_no_commit(element_no):
+    props = TElementProperty.query.filter_by(element_no=element_no).all()
+    for prop in props:
+        prop.delete(commit=False)
 
     db.session.flush()
 
