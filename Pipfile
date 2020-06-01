@@ -24,6 +24,7 @@ requests = "==2.22.0"
 elasticsearch = "==7.6.0"
 flask-migrate = "==2.5.3"
 celery = "==4.4.2"
+pycryptodome = "*"
 
 [requires]
 python_version = "3.7"
