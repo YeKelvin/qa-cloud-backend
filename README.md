@@ -13,7 +13,7 @@ pipenv install
 set FLASK_APP=main.py
 set FLASK_ENV=development
 ```
-或PyCharm Settings-Tools-Terminal-Environment Variables添加如下变量
+或PyCharm Settings->Tools->Terminal->Environment Variables添加如下变量
 ```
 FLASK_APP=main.py;FLASK_ENV=development
 ```
