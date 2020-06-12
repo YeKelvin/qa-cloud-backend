@@ -6,6 +6,7 @@
 from flask import Blueprint
 
 blueprint = Blueprint('user', __name__, url_prefix='/user')
+blueprint2 = Blueprint('user2', __name__, url_prefix='/rest/api/1/user')
 
 from . import permission_route
 from . import role_route
