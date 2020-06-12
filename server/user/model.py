@@ -102,3 +102,91 @@ class TRolePermissionRel(Model):
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
     updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserBasicInfo(Model):
+    """用户基础信息表"""
+    __tablename__ = 'USER_BASIC_INFO'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
+    USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
+    STATE = db.Column(db.String(16), nullable=False, comment='用户状态(ENABLE启用, CLOSE禁用)')
+    MOBILE_NO = db.Column(db.String(16), comment='手机号')
+    EMAIL = db.Column(db.String(128), comment='邮箱')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserLoginInfo(Model):
+    """用户登陆号表
+    """
+    __tablename__ = 'USER_LOGIN_INFO'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserLoginLog(Model):
+    """用户登陆日志表
+    """
+    __tablename__ = 'USER_LOGIN_LOG'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserPassword(Model):
+    """用户密码表
+    """
+    __tablename__ = 'USER_PASSWORD'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserPasswordPublicKey(Model):
+    """用户密码公钥表
+    """
+    __tablename__ = 'USER_PASSWORD_PUBLIC_KEY'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
+
+
+class TUserAccessToken(Model):
+    """用户认证令牌表
+    """
+    __tablename__ = 'USER_ACCESS_TOKEN'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')

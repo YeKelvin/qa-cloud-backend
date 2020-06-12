@@ -1,38 +1,18 @@
-create table USER_ACCESS_TOKEN
-(
-    ID           int auto_increment primary key comment '主键ID',
-    VERSION      int(8)       not null default 0 comment '乐观锁',
-    USER_NO      varchar(32)  not null comment '用户编号',
-    LOGIN_NAME   varchar(64)  not null comment '登录账号',
-    ACCESS_TOKEN varchar(300) not null comment 'token',
-    EXPIRE_IN    timestamp    not null comment 'token到期时间',
-    STATE        tinyint(2)   not null default 0 comment 'token状态',
-    DEVICE_ID    varchar(40)  null comment '设备ID',
-    APP_ID       varchar(40)  null comment '应用ID',
-    REMARK       varchar(40)  null comment '备注',
-    DEL_STATE    tinyint(2)   not null default 0,
-    CREATE_BY    varchar(32)  not null comment '创建人',
-    CREATE_TIME  timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY    varchar(32)  not null comment '更新人',
-    UPDATE_TIME  timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
-) comment ='用户认证TOKEN表';
-
-
 create table USER_BASIC_INFO
 (
     ID          int auto_increment primary key comment '主键ID',
     VERSION     int(8)       not null default 0 comment '乐观锁',
+    DEL_STATE   tinyint(2)   not null default 0 comment '数据状态',
     USER_NO     varchar(32)  not null comment '用户编号',
     USER_NAME   varchar(255) not null comment '用户名称',
-    STATE       varchar(32)  not null comment '商户状态(ENABLE启用, CLOSE禁用)',
+    STATE       varchar(32)  not null comment '用户状态(ENABLE启用, CLOSE禁用)',
     MOBILE_NO   varchar(16)  null comment '手机号',
     EMAIL       varchar(255) null comment '邮箱',
     REMARK      varchar(40)  null comment '备注',
-    DEL_STATE   tinyint(2)   not null default 0,
-    CREATE_BY   varchar(32)  not null comment '创建人',
-    CREATE_TIME timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY   varchar(32)  not null comment '更新人',
-    UPDATE_TIME timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+    CREATED_BY   varchar(32)  not null comment '创建人',
+    CREATED_TIME timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY   varchar(32)  not null comment '更新人',
+    UPDATED_TIME timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment ='用户基础信息表';
 
 
@@ -40,15 +20,15 @@ create table USER_LOGIN_INFO
 (
     ID          int auto_increment primary key comment '主键ID',
     VERSION     int(8)      not null default 0 comment '乐观锁',
+    DEL_STATE   tinyint(2)  not null default 0 comment '数据状态',
     USER_NO     varchar(32) not null comment '用户编号',
     LOGIN_NAME  varchar(64) not null comment '登录账号',
     LOGIN_TYPE  varchar(32) not null comment '登陆类型(MOBILE:手机号,EMAIL:邮箱,ACCOUNT:账号)',
     REMARK      varchar(40) null comment '备注',
-    DEL_STATE   tinyint(2)  not null default 0,
-    CREATE_BY   varchar(32) not null comment '创建人',
-    CREATE_TIME timestamp   not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY   varchar(32) not null comment '更新人',
-    UPDATE_TIME timestamp   not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+    CREATED_BY   varchar(32) not null comment '创建人',
+    CREATED_TIME timestamp   not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY   varchar(32) not null comment '更新人',
+    UPDATED_TIME timestamp   not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment ='用户登陆号表';
 
 
@@ -56,15 +36,15 @@ create table USER_LOGIN_LOG
 (
     ID          int auto_increment primary key comment '主键ID',
     VERSION     int(8)       not null default 0 comment '乐观锁',
+    DEL_STATE   tinyint(2)   not null default 0 comment '数据状态',
     USER_NO     varchar(32)  not null comment '用户编号',
     LOGIN_NAME  varchar(64)  not null comment '登录账号',
     IP          varchar(256) null comment 'IP地址',
     REMARK      varchar(40)  null comment '备注',
-    DEL_STATE   tinyint(2)   not null default 0,
-    CREATE_BY   varchar(32)  not null comment '创建人',
-    CREATE_TIME timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY   varchar(32)  not null comment '更新人',
-    UPDATE_TIME timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+    CREATED_BY   varchar(32)  not null comment '创建人',
+    CREATED_TIME timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY   varchar(32)  not null comment '更新人',
+    UPDATED_TIME timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment ='用户登陆日志表';
 
 
@@ -72,6 +52,7 @@ create table USER_PASSWORD
 (
     ID                  int auto_increment primary key comment '主键ID',
     VERSION             int(8)       not null default 0 comment '乐观锁',
+    DEL_STATE           tinyint(2)   not null default 0 comment '数据状态',
     USER_NO             varchar(32)  not null comment '用户编号',
     PASSWORD            varchar(256) not null comment '密码',
     PASSWORD_TYPE       varchar(16)  not null comment '密码类型(LOGIN:登录密码, PAY:支付密码)',
@@ -81,34 +62,54 @@ create table USER_PASSWORD
     UNLOCK_TIME         timestamp    null comment '解锁时间',
     PWD_CREATE_TYPE     varchar(16)  not null comment '密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)',
     REMARK              varchar(40)  null comment '备注',
-    DEL_STATE           tinyint(2)   not null default 0,
-    CREATE_BY           varchar(32)  not null comment '创建人',
-    CREATE_TIME         timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY           varchar(32)  not null comment '更新人',
-    UPDATE_TIME         timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间',
+    CREATED_BY           varchar(32)  not null comment '创建人',
+    CREATED_TIME         timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY           varchar(32)  not null comment '更新人',
+    UPDATED_TIME         timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间',
     unique (USER_NO, PASSWORD_TYPE)
 ) comment ='用户密码表';
+
 
 create table USER_PASSWORD_PUBLIC_KEY
 (
     ID            int auto_increment primary key comment '主键ID',
     VERSION       int(8)       not null default 0 comment '乐观锁',
+    DEL_STATE     tinyint(2)   not null default 0 comment '数据状态',
     USER_NO       varchar(32)  not null comment '用户编号',
     PASSWORD_TYPE varchar(16)  not null comment '密码类型(LOGIN:登录密码, PAY:支付密码)',
     PASSWORD_KEY  varchar(128) not null comment 'RSA公钥',
     REMARK        varchar(40)  null comment '备注',
-    DEL_STATE     tinyint(2)   not null default 0,
-    CREATE_BY     varchar(32)  not null comment '创建人',
-    CREATE_TIME   timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY     varchar(32)  not null comment '更新人',
-    UPDATE_TIME   timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+    CREATED_BY     varchar(32)  not null comment '创建人',
+    CREATED_TIME   timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY     varchar(32)  not null comment '更新人',
+    UPDATED_TIME   timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment ='用户密码公钥表';
+
+create table USER_ACCESS_TOKEN
+(
+    ID           int auto_increment primary key comment '主键ID',
+    VERSION      int(8)       not null default 0 comment '乐观锁',
+    DEL_STATE    tinyint(2)   not null default 0 comment '数据状态',
+    USER_NO      varchar(32)  not null comment '用户编号',
+    LOGIN_NAME   varchar(64)  not null comment '登录账号',
+    ACCESS_TOKEN varchar(300) not null comment '令牌',
+    EXPIRE_IN    timestamp    not null comment '令牌到期时间',
+    STATE        tinyint(2)   not null default 0 comment '令牌状态',
+    DEVICE_ID    varchar(40)  null comment '设备ID',
+    APP_ID       varchar(40)  null comment '应用ID',
+    REMARK       varchar(40)  null comment '备注',
+    CREATED_BY    varchar(32)  not null comment '创建人',
+    CREATED_TIME  timestamp    not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY    varchar(32)  not null comment '更新人',
+    UPDATED_TIME  timestamp    not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+) comment ='用户认证令牌表';
 
 
 create table SYSTEM_OPERATION_LOG
 (
     ID             int auto_increment primary key comment '主键ID',
     VERSION        int(8)        not null default 0 comment '乐观锁',
+    DEL_STATE      tinyint(2)    not null default 0 comment '数据状态',
     LOG_NO         varchar(20)   not null comment '日志编号',
     USER_NO        varchar(32)   not null comment '用户编号',
     USER_NAME      varchar(30)   not null comment '用户名称',
@@ -123,10 +124,9 @@ create table SYSTEM_OPERATION_LOG
     RSP_TIME       timestamp     null comment '响应时间',
     TIME_CONSUMING int(7)        null comment '耗时(ms)',
     REMARK         varchar(40)   null comment '备注',
-    DEL_STATE      tinyint(2)    not null default 0,
-    CREATE_BY      varchar(32)   not null comment '创建人',
-    CREATE_TIME    timestamp     not null default CURRENT_TIMESTAMP comment '创建时间',
-    UPDATE_BY      varchar(32)   not null comment '更新人',
-    UPDATE_TIME    timestamp     not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
+    CREATED_BY      varchar(32)   not null comment '创建人',
+    CREATED_TIME    timestamp     not null default CURRENT_TIMESTAMP comment '创建时间',
+    UPDATED_BY      varchar(32)   not null comment '更新人',
+    UPDATED_TIME    timestamp     not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment ='操作日志记录表';
 

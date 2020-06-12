@@ -23,3 +23,17 @@ class TActionLog(Model):
     created_time = db.Column(db.DateTime, comment='创建时间')
     updated_by = db.Column(db.String(64), comment='更新人')
     updated_time = db.Column(db.DateTime, comment='更新时间')
+
+
+class TSystemOperationLog(Model):
+    """操作日志记录表
+    """
+    __tablename__ = 'SYSTEM_OPERATION_LOG'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(128), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, comment='更新时间')
