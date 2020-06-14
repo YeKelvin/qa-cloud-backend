@@ -25,6 +25,7 @@ elasticsearch = "==7.6.0"
 flask-migrate = "==2.5.3"
 celery = "==4.4.2"
 pycryptodome = "*"
+uwsgi = "*"
 
 [requires]
 python_version = "3.7"

@@ -30,4 +30,9 @@ flask initdata
 运行 main.py
 
 ## 服务端部署
-Nginx, Gunicorn, Supervisor
+Nginx, uWSGI, Supervisor
+
+## 启动uWSGI
+```
+uwsgi --ini uWSGI.ini
+```
