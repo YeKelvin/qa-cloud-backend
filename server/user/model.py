@@ -199,7 +199,7 @@ class TUserPasswordPublicKey(Model):
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码, PAY:支付密码)')
+    PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
     PASSWORD_KEY = db.Column(db.String(128), nullable=False, comment='RSA公钥')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
