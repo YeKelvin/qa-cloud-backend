@@ -56,7 +56,8 @@ def set_user():
             # 解密 token获取 payload
             payload = Auth.decode_auth_token(auth_token)
             # 设置全局属性
-            Global.set('user', TUser.query.filter_by(user_no=payload['data']['id']).first())
+            # Global.set('user', TUser.query.filter_by(user_no=payload['data']['id']).first())
+            Global.set('user_no', payload['data']['id'])
             Global.set('auth_token', auth_token)
             Global.set('auth_login_time', payload['data']['loginTime'])
         except jwt.ExpiredSignatureError:

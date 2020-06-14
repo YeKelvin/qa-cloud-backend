@@ -14,7 +14,7 @@ class Global:
         return getattr(g, 'logid', None)
 
     @classproperty
-    def user(cls):
+    def user_no(cls):
         return getattr(g, 'user', None)
 
     @classproperty

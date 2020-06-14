@@ -48,7 +48,7 @@ def login(req: RequestDTO):
 
 @http_service
 def logout():
-    user = Global.user
+    user = Global.user_no
     user.access_token = ''
     user.updated_by = user.username
     user.save()
@@ -148,7 +148,7 @@ def query_user_all():
 
 @http_service
 def query_user_info():
-    user = Global.user
+    user = Global.user_no
     user_roles = TUserRoleRel.query.filter_by(user_no=user.user_no).all()
     roles = []
     for user_role in user_roles:
