@@ -3,11 +3,8 @@
 # @File    : topic_service
 # @Time    : 2020/3/13 16:56
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from server.common.number_generator import generate_topic_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
@@ -23,7 +20,7 @@ def query_topic_list(req: RequestDTO):
     offset, limit = pagination(req)
 
     # 查询条件
-    conditions = []
+    conditions = [TTestTopic.DEL_STATE == 0]
     if req.attr.topicNo:
         conditions.append(TTestTopic.TOPIC_NO.like(f'%{req.attr.topicNo}%'))
     if req.attr.topicName:
@@ -52,7 +49,7 @@ def query_topic_list(req: RequestDTO):
 
 @http_service
 def query_topic_all():
-    topics = TTestTopic.query.order_by(TTestTopic.CREATED_TIME.desc()).all()
+    topics = TTestTopic.query.filter_by(DEL_STATE=0).order_by(TTestTopic.CREATED_TIME.desc()).all()
     result = []
     for topic in topics:
         result.append({
@@ -65,24 +62,20 @@ def query_topic_all():
 
 @http_service
 def create_topic(req: RequestDTO):
-    topic = TTestTopic.query.filter_by(TOPIC_NAME=req.attr.topicName).first()
+    topic = TTestTopic.query.filter_by(TOPIC_NAME=req.attr.topicName, DEL_STATE=0).first()
     Verify.empty(topic, '测试主题已存在')
 
     TTestTopic.create(
         TOPIC_NO=generate_topic_no(),
         TOPIC_NAME=req.attr.topicName,
-        TOPIC_DESC=req.attr.topicDesc,
-        CREATED_BY=Global.operator,
-        CREATED_TIME=datetime.now(),
-        UPDATED_BY=Global.operator,
-        UPDATED_TIME=datetime.now()
+        TOPIC_DESC=req.attr.topicDesc
     )
     return None
 
 
 @http_service
 def modify_topic(req: RequestDTO):
-    topic = TTestTopic.query.filter_by(TOPIC_NO=req.attr.topicNo).first()
+    topic = TTestTopic.query.filter_by(TOPIC_NO=req.attr.topicNo, DEL_STATE=0).first()
     Verify.not_empty(topic, '测试主题不存在')
 
     if req.attr.topicName is not None:
@@ -96,10 +89,10 @@ def modify_topic(req: RequestDTO):
 
 @http_service
 def delete_topic(req: RequestDTO):
-    topic = TTestTopic.query.filter_by(TOPIC_NO=req.attr.topicNo).first()
+    topic = TTestTopic.query.filter_by(TOPIC_NO=req.attr.topicNo, DEL_STATE=0).first()
     Verify.not_empty(topic, '测试主题不存在')
 
-    topic.delete()
+    topic.update(DEL_STATE=1)
     return None
 
 

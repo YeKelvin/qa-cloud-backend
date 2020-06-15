@@ -11,7 +11,7 @@ import jwt
 from flask import request, g
 
 from server.librarys.helpers.global_helper import Global
-from server.librarys.response import http_response, ResponseDTO
+from server.librarys.response import http_response
 from server.system.model import TActionLog
 from server.user.model import TPermission
 from server.user.utils.auth import Auth
@@ -27,7 +27,7 @@ def set_logid():
     设置单次请求的全局 logid
     """
     g.logid = (f'{threading.current_thread().ident}_'
-               f'{datetime.now().strftime("%Y%m%d%H%M%S%f")}_'
+               f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}_'
                f'{randoms.get_number(4)}')
 
 
@@ -76,15 +76,11 @@ def record_action(response):
     """
     success = Global.success
     if success and 'GET' not in request.method:
-        permission = TPermission.query.filter_by(endpoint=request.path).first()
+        permission = TPermission.query.filter_by(ENDPOINT=request.path).first()
         TActionLog.create(
-            action_detail=permission.permission_name if permission else None,
-            action_method=request.method,
-            action_endpoint=request.path,
-            created_time=datetime.now(),
-            created_by=Global.operator,
-            updated_time=datetime.now(),
-            updated_by=Global.operator
+            ACTION_DESC=permission.PERMISSION_NAME if permission else None,
+            ACTION_METHOD=request.method,
+            ACTION_ENDPOINT=request.path
         )
     return response
 

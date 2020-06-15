@@ -3,11 +3,8 @@
 # @File    : service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from server.common.number_generator import generate_item_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
@@ -23,7 +20,7 @@ def query_item_list(req: RequestDTO):
     offset, limit = pagination(req)
 
     # 查询条件
-    conditions = []
+    conditions = [TTestItem.DEL_STATE == 0]
     if req.attr.itemNo:
         conditions.append(TTestItem.ITEM_NO.like(f'%{req.attr.itemNo}%'))
     if req.attr.itemName:
@@ -54,7 +51,7 @@ def query_item_list(req: RequestDTO):
 
 @http_service
 def query_item_all():
-    items = TTestItem.query.order_by(TTestItem.CREATED_TIME.desc()).all()
+    items = TTestItem.query.filter_by(DEL_STATE=0).order_by(TTestItem.CREATED_TIME.desc()).all()
     result = []
     for item in items:
         result.append({
@@ -67,24 +64,20 @@ def query_item_all():
 
 @http_service
 def create_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(ITEM_NAME=req.attr.itemName).first()
+    item = TTestItem.query.filter_by(ITEM_NAME=req.attr.itemName, DEL_STATE=0).first()
     Verify.empty(item, '测试项目已存在')
 
     TTestItem.create(
         ITEM_NO=generate_item_no(),
         ITEM_NAME=req.attr.itemName,
-        ITEM_DESC=req.attr.itemDesc,
-        CREATED_BY=Global.operator,
-        CREATED_TIME=datetime.now(),
-        UPDATED_BY=Global.operator,
-        UPDATED_TIME=datetime.now()
+        ITEM_DESC=req.attr.itemDesc
     )
     return None
 
 
 @http_service
 def modify_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo).first()
+    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo, DEL_STATE=0).first()
     Verify.not_empty(item, '测试项目不存在')
 
     if req.attr.itemName is not None:
@@ -98,10 +91,10 @@ def modify_item(req: RequestDTO):
 
 @http_service
 def delete_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo).first()
+    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo, DEL_STATE=0).first()
     Verify.not_empty(item, '测试项目不存在')
 
-    item.delete()
+    item.update(DEL_STATE=1)
     return None
 
 

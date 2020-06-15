@@ -211,7 +211,7 @@ def init_role_permission_rel():
 
 @with_appcontext
 def init_action_log():
-    TActionLog.create(action_detail='init database data')
+    TActionLog.create(ACTION_DESC='init database data')
     click.echo('初始化操作日志数据成功')
 
 
