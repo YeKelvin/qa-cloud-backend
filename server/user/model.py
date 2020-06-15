@@ -24,6 +24,7 @@ class TUser(Model):
     USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
     MOBILE_NO = db.Column(db.String(16), comment='手机号')
     EMAIL = db.Column(db.String(128), comment='邮箱')
+    AVATAR = db.Column(db.String(256), comment='头像URL')
     STATE = db.Column(db.String(16), nullable=False, comment='用户状态(ENABLE启用, CLOSE禁用)')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')

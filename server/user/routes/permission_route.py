@@ -21,6 +21,7 @@ def query_permission_list():
     req = JsonParser(
         Argument('permissionNo'),
         Argument('permissionName'),
+        Argument('permissionDesc'),
         Argument('endpoint'),
         Argument('method'),
         Argument('state'),
@@ -47,9 +48,9 @@ def create_permission():
     """
     req = JsonParser(
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
+        Argument('permissionDesc'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
         Argument('method', required=True, nullable=False, help='请求方法不能为空'),
-        Argument('description'),
     ).parse()
     return service.create_permission(req)
 
@@ -63,6 +64,7 @@ def modify_permission():
     req = JsonParser(
         Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
+        Argument('permissionDesc'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
         Argument('method', required=True, nullable=False, help='请求方法不能为空'),
     ).parse()

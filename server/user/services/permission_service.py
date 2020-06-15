@@ -25,15 +25,17 @@ def query_permission_list(req: RequestDTO):
     # 查询条件
     conditions = []
     if req.attr.permissionNo:
-        conditions.append(TPermission.permission_no == req.attr.permissionNo)
+        conditions.append(TPermission.PERMISSION_NO.like(f'%{req.attr.permissionNo}%'))
     if req.attr.permissionName:
-        conditions.append(TPermission.permission_name.like(f'%{req.attr.permissionName}%'))
+        conditions.append(TPermission.PERMISSION_NAME.like(f'%{req.attr.permissionName}%'))
+    if req.attr.permissionDesc:
+        conditions.append(TPermission.PERMISSION_DESC.like(f'%{req.attr.permissionDesc}%'))
     if req.attr.endpoint:
-        conditions.append(TPermission.endpoint.like(f'%{req.attr.endpoint}%'))
+        conditions.append(TPermission.ENDPOINT.like(f'%{req.attr.endpoint}%'))
     if req.attr.method:
-        conditions.append(TPermission.method.like(f'%{req.attr.method}%'))
+        conditions.append(TPermission.METHOD.like(f'%{req.attr.method}%'))
     if req.attr.state:
-        conditions.append(TPermission.state.like(f'%{req.attr.state}%'))
+        conditions.append(TPermission.STATE.like(f'%{req.attr.state}%'))
 
     # 列表总数
     total_size = TPermission.query.filter(*conditions).count()
@@ -41,18 +43,19 @@ def query_permission_list(req: RequestDTO):
     permissions = TPermission.query.filter(
         *conditions
     ).order_by(
-        TPermission.created_time.desc()
+        TPermission.CREATED_TIME.desc()
     ).offset(offset).limit(limit).all()
 
     # 组装响应数据
     data_set = []
     for permission in permissions:
         data_set.append({
-            'permissionNo': permission.permission_no,
-            'permissionName': permission.permission_name,
-            'endpoint': permission.endpoint,
-            'method': permission.method,
-            'state': permission.state
+            'permissionNo': permission.PERMISSION_NO,
+            'permissionName': permission.PERMISSION_NAME,
+            'permissionDesc': permission.PERMISSION_DESC,
+            'endpoint': permission.ENDPOINT,
+            'method': permission.METHOD,
+            'state': permission.STATE
         })
 
     return {'dataSet': data_set, 'totalSize': total_size}
@@ -60,68 +63,71 @@ def query_permission_list(req: RequestDTO):
 
 @http_service
 def query_permission_all():
-    permissions = TPermission.query.order_by(TPermission.created_time.desc()).all()
+    permissions = TPermission.query.order_by(TPermission.CREATED_TIME.desc()).all()
     result = []
     for permission in permissions:
         result.append({
-            'permissionNo': permission.permission_no,
-            'permissionName': permission.permission_name,
-            'endpoint': permission.endpoint,
-            'method': permission.method,
-            'state': permission.state
+            'permissionNo': permission.PERMISSION_NO,
+            'permissionName': permission.PERMISSION_NAME,
+            'permissionDesc': permission.PERMISSION_DESC,
+            'endpoint': permission.ENDPOINT,
+            'method': permission.METHOD,
+            'state': permission.STATE
         })
     return result
 
 
 @http_service
 def create_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(endpoint=req.attr.endpoint, method=req.attr.method).first()
+    permission = TPermission.query.filter_by(ENDPOINT=req.attr.endpoint, METHOD=req.attr.method).first()
     Verify.empty(permission, '权限已存在')
 
     TPermission.create(
-        permission_no=generate_permission_no(),
-        permission_name=req.attr.permissionName,
-        endpoint=req.attr.endpoint,
-        method=req.attr.method,
-        state='NORMAL',
-        description=req.attr.description,
-        created_time=datetime.now(),
-        created_by=Global.operator,
-        updated_time=datetime.now(),
-        updated_by=Global.operator
+        PERMISSION_NO=generate_permission_no(),
+        PERMISSION_NAME=req.attr.permissionName,
+        PERMISSION_DESC=req.attr.permissionDesc,
+        ENDPOINT=req.attr.endpoint,
+        METHOD=req.attr.method,
+        STATE='NORMAL',
+        CREATED_BY=Global.operator,
+        CREATED_TIME=datetime.now(),
+        UPDATED_BY=Global.operator,
+        UPDATED_TIME=datetime.now()
     )
     return None
 
 
 @http_service
 def modify_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
+    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
     if req.attr.permissionNo is not None:
-        permission.permission_no = req.attr.permissionNo
+        permission.PERMISSION_NO = req.attr.permissionNo
     if req.attr.permissionName is not None:
-        permission.permission_name = req.attr.permissionName
+        permission.PERMISSION_NAME = req.attr.permissionName
+    if req.attr.permissionDesc is not None:
+        permission.PERMISSION_DESC = req.attr.permissionDesc
     if req.attr.endpoint is not None:
-        permission.endpoint = req.attr.endpoint
+        permission.ENDPOINT = req.attr.endpoint
     if req.attr.method is not None:
-        permission.method = req.attr.method
+        permission.METHOD = req.attr.method
     permission.save()
     return None
 
 
 @http_service
 def modify_permission_state(req: RequestDTO):
-    permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
+    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
-    permission.update(state=req.attr.state)
+    permission.update(STATE=req.attr.state)
     return None
 
 
 @http_service
 def delete_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(permission_no=req.attr.permissionNo).first()
+    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
     permission.delete()

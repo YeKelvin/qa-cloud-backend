@@ -21,8 +21,8 @@ def query_role_list():
     req = JsonParser(
         Argument('roleNo'),
         Argument('roleName'),
+        Argument('roleDesc'),
         Argument('state'),
-        Argument('description'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -46,7 +46,7 @@ def create_role():
     """
     req = JsonParser(
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('description', required=True, nullable=False, help='角色描述不能为空'),
+        Argument('roleDesc', required=True, nullable=False, help='角色描述不能为空'),
     ).parse()
     return service.create_role(req)
 
@@ -60,7 +60,7 @@ def modify_role():
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('description'),
+        Argument('roleDesc'),
     ).parse()
     return service.modify_role(req)
 
@@ -99,7 +99,7 @@ def query_user_role_rel_list():
     req = JsonParser(
         Argument('userNo'),
         Argument('roleNo'),
-        Argument('username'),
+        Argument('userName'),
         Argument('roleName'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
