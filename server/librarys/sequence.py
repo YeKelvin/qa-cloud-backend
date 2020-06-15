@@ -14,20 +14,22 @@ log = get_logger(__name__)
 
 
 class TSequence(Model):
-    __tablename__ = 't_sequence'
-    id = db.Column(db.Integer, primary_key=True)
-    seq_name = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
-    current_val = db.Column(db.Integer, nullable=False, default=0, comment='当前序列值')
-    min_val = db.Column(db.Integer, nullable=False, default=0, comment='序列最小值')
-    max_val = db.Column(db.Integer, nullable=False, default=999999999, comment='序列最大值')
-    increment = db.Column(db.Integer, nullable=False, default=1, comment='序列步长')
-    loop = db.Column(db.Boolean, nullable=False, default=False, comment='序列是否循环')
-    loop_count = db.Column(db.Integer, nullable=False, default=0, comment='序列允许循环次数')
-    description = db.Column(db.String(128), comment='备注')
-    created_time = db.Column(db.DateTime, comment='创建时间')
-    created_by = db.Column(db.String(64), comment='创建人')
-    updated_time = db.Column(db.DateTime, comment='更新时间')
-    updated_by = db.Column(db.String(64), comment='更新人')
+    __tablename__ = 'sequence'
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    SEQ_NAME = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
+    CURRENT_VAL = db.Column(db.Integer, nullable=False, default=0, comment='当前序列值')
+    MIN_VAL = db.Column(db.Integer, nullable=False, default=0, comment='序列最小值')
+    MAX_VAL = db.Column(db.Integer, nullable=False, default=999999999, comment='序列最大值')
+    INCREMENT = db.Column(db.Integer, nullable=False, default=1, comment='序列步长')
+    LOOP = db.Column(db.Boolean, nullable=False, default=False, comment='序列是否循环')
+    LOOP_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='序列允许循环次数')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
     @staticmethod
     def next_val(seq_name):
@@ -36,20 +38,20 @@ class TSequence(Model):
         Returns: 序列下一个值
 
         """
-        sequence = TSequence.query.filter_by(seq_name=seq_name).first()
+        sequence = TSequence.query.filter_by(SEQ_NAME=seq_name).first()
         # 判断序列当前值是否已达最大值
-        if sequence.current_val == sequence.max_val:
+        if sequence.CURRENT_VAL == sequence.MAX_VAL:
             # 如序列允许循环则当前值赋值最小值，否则抛异常
-            if sequence.loop:
-                next_value = sequence.min_val
-                sequence.loop_count = sequence.loop_count + 1
+            if sequence.LOOP:
+                next_value = sequence.MIN_VAL
+                sequence.LOOP_COUNT = sequence.LOOP_COUNT + 1
             else:
                 raise ServiceError(f'{seq_name}序列已达最大值')
         else:
             # 序列未达最大值，按步长增长
-            next_value = sequence.current_val + sequence.increment
+            next_value = sequence.CURRENT_VAL + sequence.INCREMENT
 
-        sequence.current_val = next_value
+        sequence.CURRENT_VAL = next_value
         db.session.commit()
         return next_value
 
@@ -60,8 +62,8 @@ class TSequence(Model):
         Returns: 序列当前值
 
         """
-        sequence = TSequence.query.filter_by(seq_name=seq_name).first()
-        return sequence.current_val
+        sequence = TSequence.query.filter_by(SEQ_NAME=seq_name).first()
+        return sequence.CURRENT_VAL
 
 
 class SqliteSequence:
@@ -82,7 +84,7 @@ class SqlalchemySequence:
         self.sequence = Sequence(seq_name)
 
     def next_value(self):
-        return self.sequence.next_value
+        return self.sequence.NEXT_VALUE
 
     def curr_value(self):
         pass

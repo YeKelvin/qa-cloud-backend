@@ -22,25 +22,22 @@ log = get_logger(__name__)
 @http_service
 def login(req: RequestDTO):
     # 查询用户登录信息
-    user_login_info = TUserLoginInfo.query.filter_by(LOGIN_NAME=req.attr.userName).first()
+    user_login_info = TUserLoginInfo.query.filter_by(LOGIN_NAME=req.attr.loginName).first()
     Verify.not_empty(user_login_info, '账号或密码不正确')
 
-    user_no = user_login_info.USER_NO
-    login_name = user_login_info.LOGIN_NAME
-
     # 查询用户信息
-    user = TUser.query.filter_by(USER_NO=user_no).first()
+    user = TUser.query.filter_by(USER_NO=user_login_info.USER_NO).first()
     Verify.not_empty(user, '账号或密码不正确')
     # 校验用户状态
     if user.STATE != 'ENABLE':
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    user_password = TUserPassword.query.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
+    user_password = TUserPassword.query.filter_by(USER_NO=user_login_info.USER_NO, PASSWORD_TYPE='LOGIN').first()
     Verify.not_empty(user_password, '账号或密码不正确')
 
     # 密码校验失败
-    if not user_password.check_password_hash(req.attr.password):
+    if not user_password.check_password_hash(req.attr.loginName, req.attr.password):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
@@ -48,9 +45,9 @@ def login(req: RequestDTO):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过
-    user_token = TUserAccessToken.query.filter_by(LOGIN_NAME=login_name).first()
+    user_token = TUserAccessToken.query.filter_by(LOGIN_NAME=req.attr.loginName).first()
     login_time = datetime.utcnow()
-    access_token = Auth.encode_auth_token(user_no, login_time.timestamp())
+    access_token = Auth.encode_auth_token(user_login_info.USER_NO, login_time.timestamp())
     expire_in = ...
 
     # 更新用户access token
@@ -62,8 +59,8 @@ def login(req: RequestDTO):
         )
     else:
         TUserAccessToken.create(
-            USER_NO=user_no,
-            LOGIN_NAME=login_name,
+            USER_NO=user_login_info.USER_NO,
+            LOGIN_NAME=req.attr.loginName,
             ACCESS_TOKEN=access_token,
             EXPIRE_IN=expire_in,
             STATE='VALID',
@@ -89,7 +86,7 @@ def login(req: RequestDTO):
     )
 
     # 设置全局操作员
-    Global.set('operator', user_no)
+    Global.set('operator', user_login_info.USER_NO)
     return {'accessToken': access_token}
 
 

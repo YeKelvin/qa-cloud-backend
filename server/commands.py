@@ -18,7 +18,7 @@ from server.script.model import (
     TElementPackage, TPackageElementRel, TScriptActivityLog
 )
 from server.system.model import TActionLog
-from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel
+from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
 
 from server.utils.log_util import get_logger
 
@@ -61,15 +61,15 @@ def initdata():
 def init_seq():
     """初始化序列（SQLite专用）
     """
-    TSequence.create(seq_name='seq_user_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_role_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_permission_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_item_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_topic_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_element_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_http_header_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_env_var_no', created_time=datetime.now(), created_by='system')
-    TSequence.create(seq_name='seq_package_no', created_time=datetime.now(), created_by='system')
+    TSequence.create(SEQ_NAME='seq_user_no')
+    TSequence.create(SEQ_NAME='seq_role_no')
+    TSequence.create(SEQ_NAME='seq_permission_no')
+    TSequence.create(SEQ_NAME='seq_item_no')
+    TSequence.create(SEQ_NAME='seq_topic_no')
+    TSequence.create(SEQ_NAME='seq_element_no')
+    TSequence.create(SEQ_NAME='seq_http_header_no')
+    TSequence.create(SEQ_NAME='seq_env_var_no')
+    TSequence.create(SEQ_NAME='seq_package_no')
     click.echo('创建序列成功')
 
 
@@ -78,13 +78,22 @@ def init_user():
     """初始化用户
     """
     TUser.create(
-        user_no=generate_user_no(),  # U0000000001
-        username='admin',
-        nickname='超级管理员',
-        password='admin',
-        state='NORMAL',
-        created_time=datetime.now(),
-        created_by='system'
+        USER_NO=generate_user_no(),  # U0000000001
+        USER_NAME='超级管理员',
+        STATE='ENABLE'
+    )
+
+    TUserLoginInfo.create(
+        USER_NO='U0000000001',
+        LOGIN_NAME='admin',
+        LOGIN_TYPE='MOBILE'
+    )
+
+    TUserPassword.create(
+        PASSWORD=TUserPassword.generate_password_hash('admin', 'admin'),
+        PASSWORD_TYPE='LOGIN',
+        ERROR_TIMES=0,
+        CREATE_TYPE='CUSTOMER'
     )
     click.echo('创建 admin用户成功')
 
@@ -93,10 +102,10 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    __create_role(name='SuperAdmin', description='超级管理员')  # R0000000001
-    __create_role(name='Admin', description='管理员')  # R0000000002
-    __create_role(name='Leader', description='组长')  # R0000000003
-    __create_role(name='General', description='用户')  # R0000000004
+    __create_role(name='SuperAdmin', role_desc='超级管理员')  # R0000000001
+    __create_role(name='Admin', role_desc='管理员')  # R0000000002
+    __create_role(name='Leader', role_desc='组长')  # R0000000003
+    __create_role(name='General', role_desc='用户')  # R0000000004
 
     click.echo('创建角色成功')
 
@@ -186,12 +195,7 @@ def init_permission():
 def init_user_role_rel():
     """初始化用户角色关联关系
     """
-    TUserRoleRel.create(
-        user_no='U0000000001',
-        role_no='R0000000001',
-        created_time=datetime.now(),
-        created_by='system'
-    )
+    TUserRoleRel.create(USER_NO='U0000000001', ROLE_NO='R0000000001')
     click.echo('创建用户角色关联关系成功')
 
 
@@ -201,31 +205,20 @@ def init_role_permission_rel():
     """
     permissions = TPermission.query.all()
     for permission in permissions:
-        TRolePermissionRel.create(
-            role_no='R0000000001',
-            permission_no=permission.permission_no,
-            created_time=datetime.now(),
-            created_by='system'
-        )
+        TRolePermissionRel.create(ROLE_NO='R0000000001', PERMISSION_NO=permission.permission_no)
     click.echo('创建角色权限关联关系成功')
 
 
 @with_appcontext
 def init_action_log():
-    TActionLog.create(
-        action_detail='init database data',
-        created_time=datetime.now(),
-        created_by='system',
-    )
+    TActionLog.create(action_detail='init database data')
     click.echo('初始化操作日志数据成功')
 
 
-def __create_role(name, description):
-    TRole.create(role_no=generate_role_no(), role_name=name, state='NORMAL', description=description,
-                 created_time=datetime.now(), created_by='system')
+def __create_role(name, role_desc):
+    TRole.create(ROLE_NO=generate_role_no(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
 
 
 def __create_permission(name, method, endpoint):
-    TPermission.create(permission_no=generate_permission_no(), permission_name=name,
-                       method=method, endpoint=endpoint,
-                       state='NORMAL', created_time=datetime.now(), created_by='system')
+    TPermission.create(PERMISSION_NO=generate_permission_no(), PERMISSION_NAME=name,
+                       METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')
