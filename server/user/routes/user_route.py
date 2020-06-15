@@ -17,8 +17,8 @@ def login():
     """用户登录
     """
     req = JsonParser(
-        Argument('username', required=True, nullable=False, help='账号或密码不能为空'),
-        Argument('password', required=True, nullable=False, help='账号或密码不能为空'),
+        Argument('loginName', required=True, nullable=False, help='登录账号或密码不能为空'),
+        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空'),
     ).parse()
     return service.login(req)
 
@@ -38,8 +38,8 @@ def register():
     """用户注册
     """
     req = JsonParser(
-        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('nickname', required=True, nullable=False, help='用户昵称不能为空'),
+        Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
+        Argument('userName', required=True, nullable=False, help='用户昵称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
         Argument('email'),
@@ -67,8 +67,8 @@ def query_user_list():
     """
     req = JsonParser(
         Argument('userNo'),
-        Argument('username'),
-        Argument('nickname'),
+        Argument('loginName'),
+        Argument('userName'),
         Argument('mobileNo'),
         Argument('email'),
         Argument('state'),
@@ -103,8 +103,7 @@ def modify_user():
     """
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
-        Argument('username', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('nickname', required=True, nullable=False, help='用户昵称不能为空'),
+        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('mobileNo'),
         Argument('email'),
     ).parse()

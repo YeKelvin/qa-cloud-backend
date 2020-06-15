@@ -11,8 +11,8 @@ from flask import request, g
 from server.librarys.exception import ErrorCode
 from server.librarys.helpers.global_helper import Global
 from server.librarys.response import http_response, ResponseDTO
-from server.user.model import (TUserRoleRel, TRolePermissionRel, TPermission, TRole, TUser, TUserAccessToken,
-                               TUserPassword)
+from server.user.model import (TUser, TRole, TUserRoleRel, TPermission, TRolePermissionRel,
+                               TUserPassword, TUserAccessToken)
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -87,7 +87,7 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 查询权限信息
-        permission = TPermission.query.filter_by(endpoint=request.path, method=request.method).first()
+        permission = TPermission.query.filter_by(ENDPOINT=request.path, METHOD=request.method).first()
         if not permission:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -96,16 +96,16 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 判断权限状态是否已禁用
-        if permission.state != 'NORMAL':
+        if permission.STATE != 'NORMAL':
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'permissionNo:[ {permission.permission_no} ] permissionName:[ {permission.permission_name} ]'
+                f'permissionNo:[ {permission.PERMISSION_NO} ] permissionName:[ {permission.PERMISSION_NAME} ]'
                 f'msg:[ 权限状态异常 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
         # 查询用户角色
-        user_role = TUserRoleRel.query.filter_by(user_no=user_no).first()
+        user_role = TUserRoleRel.query.filter_by(USER_NO=user_no).first()
         if not user_role:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -114,31 +114,31 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 查询角色信息
-        role = TRole.query.filter_by(role_no=user_role.role_no, state='NORMAL').first()
+        role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, STATE='NORMAL').first()
         if not role:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {user_role.role_no} ] msg:[ 查询角色信息失败 ]'
+                f'userNo:[ {user_no} ] roleNo:[ {user_role.ROLE_NO} ] msg:[ 查询角色信息失败 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
         # 判断权限状态是否已禁用
-        if role.state != 'NORMAL':
+        if role.STATE != 'NORMAL':
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {role.role_no} ] roleName:[ {role.role_name} ]'
+                f'userNo:[ {user_no} ] roleNo:[ {role.ROLE_NO} ] roleName:[ {role.ROLE_NAME} ]'
                 f'msg:[ 角色状态异常 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 
         # 查询角色权限关联关系
         role_permission_rel = TRolePermissionRel.query.filter_by(
-            role_no=user_role.role_no, permission_no=permission.permission_no
+            ROLE_NO=user_role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO
         ).first()
         if not role_permission_rel:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {user_role.role_no} ] permissionNo:[ {permission.permission_no} ]'
+                f'userNo:[ {user_no} ] roleNo:[ {user_role.ROLE_NO} ] permissionNo:[ {permission.PERMISSION_NO} ]'
                 f'msg:[ 查询角色权限关联关系失败，用户无当前请求的权限 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)

@@ -11,9 +11,10 @@ import jwt
 from flask import request, g
 
 from server.librarys.helpers.global_helper import Global
+from server.librarys.response import http_response, ResponseDTO
 from server.system.model import TActionLog
+from server.user.model import TPermission
 from server.user.utils.auth import Auth
-from server.user.model import TUser, TPermission
 from server.utils import randoms
 from server.utils.log_util import get_logger
 
@@ -86,3 +87,35 @@ def record_action(response):
             updated_by=Global.operator
         )
     return response
+
+
+access_control_allow_Headers = (
+    'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-TOKEN'
+)
+
+
+def cross_domain_access_before():
+    if request.method == 'OPTIONS':
+        response = http_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
+        response.headers['Access-Control-Max-Age'] = 24 * 60 * 60
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        return response
+
+
+def cross_domain_access_after(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
+    return response
+
+
+# app.register_error_handler(404, page_not_found)
+def page_not_found(_):
+    return http_response(errorMsg='Resource not found'), 404
+
+
+# app.register_error_handler(Exception, exception_handler)
+def exception_handler(ex):
+    log.exception(str(ex).replace('\n', '#'))
+    return http_response(errorMsg='服务开小差')

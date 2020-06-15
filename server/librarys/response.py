@@ -51,7 +51,10 @@ class ResponseDTO:
 
 
 def http_response(res: ResponseDTO = None,
-                  status: Enum = Status.CODE_200):
+                  status: Enum = Status.CODE_200,
+                  **kwargs):
+    if not res:
+        res = ResponseDTO(**kwargs)
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
