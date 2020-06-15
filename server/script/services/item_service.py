@@ -25,11 +25,11 @@ def query_item_list(req: RequestDTO):
     # 查询条件
     conditions = []
     if req.attr.itemNo:
-        conditions.append(TTestItem.item_no == req.attr.itemNo)
+        conditions.append(TTestItem.ITEM_NO.like(f'%{req.attr.itemNo}%'))
     if req.attr.itemName:
-        conditions.append(TTestItem.item_name.like(f'%{req.attr.itemName}%'))
-    if req.attr.itemDescription:
-        conditions.append(TTestItem.item_description.like(f'%{req.attr.itemDescription}%'))
+        conditions.append(TTestItem.ITEM_NAME.like(f'%{req.attr.itemName}%'))
+    if req.attr.itemDesc:
+        conditions.append(TTestItem.ITEM_DESC.like(f'%{req.attr.itemDesc}%'))
 
     # 列表总数
     total_size = TTestItem.query.filter(*conditions).count()
@@ -38,59 +38,59 @@ def query_item_list(req: RequestDTO):
     items = TTestItem.query.filter(
         *conditions
     ).order_by(
-        TTestItem.created_time.desc()
+        TTestItem.CREATED_TIME.desc()
     ).offset(offset).limit(limit).all()
 
     # 组装响应数据
     data_set = []
     for item in items:
         data_set.append({
-            'itemNo': item.item_no,
-            'itemName': item.item_name,
-            'itemDescription': item.item_description
+            'itemNo': item.ITEM_NO,
+            'itemName': item.ITEM_NAME,
+            'itemDesc': item.ITEM_DESC
         })
     return {'dataSet': data_set, 'totalSize': total_size}
 
 
 @http_service
 def query_item_all():
-    items = TTestItem.query.order_by(TTestItem.created_time.desc()).all()
+    items = TTestItem.query.order_by(TTestItem.CREATED_TIME.desc()).all()
     result = []
     for item in items:
         result.append({
-            'itemNo': item.item_no,
-            'itemName': item.item_name,
-            'itemDescription': item.item_description
+            'itemNo': item.ITEM_NO,
+            'itemName': item.ITEM_NAME,
+            'itemDesc': item.ITEM_DESC
         })
     return result
 
 
 @http_service
 def create_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(item_name=req.attr.itemName).first()
+    item = TTestItem.query.filter_by(ITEM_NAME=req.attr.itemName).first()
     Verify.empty(item, '测试项目已存在')
 
     TTestItem.create(
-        item_no=generate_item_no(),
-        item_name=req.attr.itemName,
-        item_description=req.attr.itemDescription,
-        created_by=Global.operator,
-        created_time=datetime.now(),
-        updated_by=Global.operator,
-        updated_time=datetime.now()
+        ITEM_NO=generate_item_no(),
+        ITEM_NAME=req.attr.itemName,
+        ITEM_DESC=req.attr.itemDesc,
+        CREATED_BY=Global.operator,
+        CREATED_TIME=datetime.now(),
+        UPDATED_BY=Global.operator,
+        UPDATED_TIME=datetime.now()
     )
     return None
 
 
 @http_service
 def modify_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
+    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo).first()
     Verify.not_empty(item, '测试项目不存在')
 
     if req.attr.itemName is not None:
-        item.item_name = req.attr.itemName
-    if req.attr.itemDescription is not None:
-        item.item_description = req.attr.itemDescription
+        item.ITEM_NAME = req.attr.itemName
+    if req.attr.itemDesc is not None:
+        item.ITEM_DESC = req.attr.itemDesc
 
     item.save()
     return None
@@ -98,7 +98,7 @@ def modify_item(req: RequestDTO):
 
 @http_service
 def delete_item(req: RequestDTO):
-    item = TTestItem.query.filter_by(item_no=req.attr.itemNo).first()
+    item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo).first()
     Verify.not_empty(item, '测试项目不存在')
 
     item.delete()

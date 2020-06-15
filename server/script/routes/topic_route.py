@@ -21,7 +21,7 @@ def query_topic_list():
     req = JsonParser(
         Argument('topicNo'),
         Argument('topicName'),
-        Argument('topicDescription'),
+        Argument('topicDesc'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -45,7 +45,7 @@ def create_topic():
     """
     req = JsonParser(
         Argument('topicName', required=True, nullable=False, help='主题名称不能为空'),
-        Argument('topicDescription'),
+        Argument('topicDesc'),
     ).parse()
     return service.create_topic(req)
 
@@ -59,7 +59,7 @@ def modify_topic():
     req = JsonParser(
         Argument('topicNo', required=True, nullable=False, help='主题编号不能为空'),
         Argument('topicName', required=True, nullable=False, help='主题名称不能为空'),
-        Argument('topicDescription'),
+        Argument('topicDesc'),
     ).parse()
     return service.modify_topic(req)
 

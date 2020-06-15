@@ -21,7 +21,7 @@ def query_item_list():
     req = JsonParser(
         Argument('itemNo'),
         Argument('itemName'),
-        Argument('itemDescription'),
+        Argument('itemDesc'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -45,7 +45,7 @@ def create_item():
     """
     req = JsonParser(
         Argument('itemName', required=True, nullable=False, help='项目名称不能为空'),
-        Argument('itemDescription'),
+        Argument('itemDesc'),
     ).parse()
     return service.create_item(req)
 
@@ -59,7 +59,7 @@ def modify_item():
     req = JsonParser(
         Argument('itemNo', required=True, nullable=False, help='项目编号不能为空'),
         Argument('itemName', required=True, nullable=False, help='项目名称不能为空'),
-        Argument('itemDescription'),
+        Argument('itemDesc'),
     ).parse()
     return service.modify_item(req)
 
