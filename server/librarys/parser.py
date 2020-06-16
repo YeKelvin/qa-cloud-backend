@@ -16,11 +16,14 @@ log = get_logger(__name__)
 
 
 class Argument:
-    def __init__(self, name: str,
+    def __init__(self,
+                 name: str,
                  type: type = str,
                  default: any = None,
                  required: bool = False,
                  nullable: bool = False,
+                 minlength: int = None,
+                 maxlength: int = None,
                  help: str = None):
         self.name = name  # 参数名称
         self.type = type  # 参数类型
@@ -28,6 +31,8 @@ class Argument:
         self.required = required  # 参数是否必须
         self.nullable = nullable  # 参数是否可为空
         self.help = help  # 参数不符合要求时的提示语
+        self.minlength = minlength
+        self.maxlength = maxlength
         if not isinstance(self.name, str):
             raise TypeError('Argument name must be string')
 
