@@ -19,7 +19,7 @@ class TUser(Model):
     """
     __tablename__ = 'USER'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
     USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
@@ -39,7 +39,7 @@ class TRole(Model):
     """
     __tablename__ = 'ROLE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
     ROLE_NAME = db.Column(db.String(128), comment='角色名称')
@@ -57,7 +57,7 @@ class TUserRoleRel(Model):
     """
     __tablename__ = 'USER_ROLE_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), nullable=False, comment='角色编号')
@@ -73,7 +73,7 @@ class TPermission(Model):
     """
     __tablename__ = 'PERMISSION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PERMISSION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='权限编号')
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
@@ -93,7 +93,7 @@ class TRolePermissionRel(Model):
     """
     __tablename__ = 'ROLE_PERMISSION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), nullable=False, comment='权限编号')
@@ -109,7 +109,7 @@ class TUserLoginInfo(Model):
     """
     __tablename__ = 'USER_LOGIN_INFO'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
@@ -126,7 +126,7 @@ class TUserLoginLog(Model):
     """
     __tablename__ = 'USER_LOGIN_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
@@ -144,7 +144,7 @@ class TUserPassword(Model):
     """
     __tablename__ = 'USER_PASSWORD'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='密码')
@@ -178,7 +178,7 @@ class TUserPasswordPublicKey(Model):
     """
     __tablename__ = 'USER_PASSWORD_PUBLIC_KEY'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
@@ -195,7 +195,7 @@ class TUserAccessToken(Model):
     """
     __tablename__ = 'USER_ACCESS_TOKEN'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')

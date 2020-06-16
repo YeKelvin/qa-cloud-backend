@@ -1,7 +1,7 @@
 create table USER
 (
     ID           int auto_increment primary key comment '表ID',
-    VERSION      int(8)       not null default 0 comment '乐观锁',
+    VERSION      int(8)       not null default 0 comment '版本号',
     DEL_STATE    tinyint(2)   not null default 0 comment '数据状态',
     USER_NO      varchar(32)  not null comment '用户编号',
     USER_NAME    varchar(255) not null comment '用户名称',
@@ -19,7 +19,7 @@ create table USER
 create table USER_LOGIN_INFO
 (
     ID           int auto_increment primary key comment '表ID',
-    VERSION      int(8)      not null default 0 comment '乐观锁',
+    VERSION      int(8)      not null default 0 comment '版本号',
     DEL_STATE    tinyint(2)  not null default 0 comment '数据状态',
     USER_NO      varchar(32) not null comment '用户编号',
     LOGIN_NAME   varchar(64) not null comment '登录账号',
@@ -35,7 +35,7 @@ create table USER_LOGIN_INFO
 create table USER_LOGIN_LOG
 (
     ID           int auto_increment primary key comment '表ID',
-    VERSION      int(8)      not null default 0 comment '乐观锁',
+    VERSION      int(8)      not null default 0 comment '版本号',
     DEL_STATE    tinyint(2)  not null default 0 comment '数据状态',
     USER_NO      varchar(32) not null comment '用户编号',
     LOGIN_NAME   varchar(64) not null comment '登录账号',
@@ -52,7 +52,7 @@ create table USER_LOGIN_LOG
 create table USER_PASSWORD
 (
     ID                int auto_increment primary key comment '表ID',
-    VERSION           int(8)       not null default 0 comment '乐观锁',
+    VERSION           int(8)       not null default 0 comment '版本号',
     DEL_STATE         tinyint(2)   not null default 0 comment '数据状态',
     USER_NO           varchar(32)  not null comment '用户编号',
     PASSWORD          varchar(256) not null comment '密码',
@@ -74,7 +74,7 @@ create table USER_PASSWORD
 create table USER_PASSWORD_PUBLIC_KEY
 (
     ID            int auto_increment primary key comment '表ID',
-    VERSION       int(8)       not null default 0 comment '乐观锁',
+    VERSION       int(8)       not null default 0 comment '版本号',
     DEL_STATE     tinyint(2)   not null default 0 comment '数据状态',
     USER_NO       varchar(32)  not null comment '用户编号',
     PASSWORD_TYPE varchar(16)  not null comment '密码类型(LOGIN:登录密码, PAY:支付密码)',
@@ -89,7 +89,7 @@ create table USER_PASSWORD_PUBLIC_KEY
 create table USER_ACCESS_TOKEN
 (
     ID           int auto_increment primary key comment '表ID',
-    VERSION      int(8)       not null default 0 comment '乐观锁',
+    VERSION      int(8)       not null default 0 comment '版本号',
     DEL_STATE    tinyint(2)   not null default 0 comment '数据状态',
     USER_NO      varchar(32)  not null comment '用户编号',
     LOGIN_NAME   varchar(64)  not null comment '登录账号',
@@ -109,7 +109,7 @@ create table USER_ACCESS_TOKEN
 create table SYSTEM_OPERATION_LOG
 (
     ID             int auto_increment primary key comment '表ID',
-    VERSION        int(8)        not null default 0 comment '乐观锁',
+    VERSION        int(8)        not null default 0 comment '版本号',
     DEL_STATE      tinyint(2)    not null default 0 comment '数据状态',
     LOG_NO         varchar(32)   not null comment '日志编号',
     USER_NO        varchar(32)   not null comment '用户编号',

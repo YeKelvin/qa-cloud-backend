@@ -16,7 +16,7 @@ class TTestItem(Model):
     """
     __tablename__ = 'TEST_ITEM'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='项目编号')
     ITEM_NAME = db.Column(db.String(128), nullable=False, comment='项目名称')
@@ -33,7 +33,7 @@ class TItemTopicRel(Model):
     """
     __tablename__ = 'ITEM_TOPIC_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
@@ -49,7 +49,7 @@ class TItemCollectionRel(Model):
     """
     __tablename__ = 'ITEM_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
@@ -65,7 +65,7 @@ class TItemUserRel(Model):
     """
     __tablename__ = 'ITEM_USER_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
@@ -81,7 +81,7 @@ class TTestTopic(Model):
     """
     __tablename__ = 'TEST_TOPIC'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TOPIC_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='主题编号')
     TOPIC_NAME = db.Column(db.String(128), nullable=False, comment='主题名称')
@@ -98,7 +98,7 @@ class TTopicCollectionRel(Model):
     """
     __tablename__ = 'TOPIC_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
@@ -114,7 +114,7 @@ class TTestElement(Model):
     """
     __tablename__ = 'TEST_ELEMENT'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
@@ -133,7 +133,7 @@ class TElementProperty(Model):
     """
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
@@ -150,7 +150,7 @@ class TElementChildRel(Model):
     """
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PARENT_NO = db.Column(db.String(32), nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
@@ -167,7 +167,7 @@ class TEnvironmentVariableCollection(Model):
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境集合编号')
     COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='环境集合名称')
@@ -184,7 +184,7 @@ class TEnvironmentVariableCollectionRel(Model):
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='环境集合编号')
     ENV_NO = db.Column(db.String(32), nullable=False, comment='环境变量编号')
@@ -200,7 +200,7 @@ class TEnvironmentVariable(Model):
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ENV_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境变量编号')
     ENV_KEY = db.Column(db.String(256), nullable=False, comment='环境变量名称')
@@ -218,7 +218,7 @@ class THTTPHeaderCollection:
     """
     __tablename__ = 'HTTP_HEADER_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集合编号')
     COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='头部集合名称')
@@ -235,7 +235,7 @@ class THTTPHeaderCollectionRel:
     """
     __tablename__ = 'HTTP_HEADER_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='头部集合编号')
     HEADER_NO = db.Column(db.String(32), nullable=False, comment='头部编号')
@@ -251,7 +251,7 @@ class THTTPHeader(Model):
     """
     __tablename__ = 'HTTP_HEADER'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部编号')
     HEADER_KEY = db.Column(db.String(256), nullable=False, comment='头部名称')
@@ -268,7 +268,7 @@ class TSQLConfiguration(Model):
     """
     __tablename__ = 'SQL_CONFIGURATION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     CONFIG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
     CONFIG_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
@@ -290,7 +290,7 @@ class TElementPackage(Model):
     """
     __tablename__ = 'ELEMENT_PACKAGE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
     PACKAGE_DESC = db.Column(db.String(256), nullable=False, comment='封装描述')
@@ -306,7 +306,7 @@ class TPackageElementRel(Model):
     """
     __tablename__ = 'PACKAGE_ELEMENT_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
     ELEMENT_NO = db.Column(db.String(256), nullable=False, comment='元素编号')
@@ -323,7 +323,7 @@ class TScriptActivityLog(Model):
     """
     __tablename__ = 'SCRIPT_ACTIVITY_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')

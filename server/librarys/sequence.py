@@ -16,7 +16,7 @@ log = get_logger(__name__)
 class TSequence(Model):
     __tablename__ = 'sequence'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     SEQ_NAME = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
     CURRENT_VAL = db.Column(db.Integer, nullable=False, default=0, comment='当前序列值')

@@ -33,7 +33,7 @@ class TSystemOperationLog(Model):
     """
     __tablename__ = 'SYSTEM_OPERATION_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='乐观锁')
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOG_NO = db.Column(db.String(32), index=True, nullable=False, comment='日志编号')
     USER_NO = db.Column(db.String(32),  comment='用户编号')
