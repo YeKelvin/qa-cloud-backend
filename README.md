@@ -8,6 +8,11 @@ cd test-platform-server/
 pipenv install
 ```
 
+## 安装send-anywhere模块
+```
+pip install git+https://github.com/YeKelvin/send-anywhere.git
+```
+
 ## 配置 click命令行环境
 ```
 set FLASK_APP=main.py
@@ -36,3 +41,7 @@ Nginx, uWSGI, Supervisor
 ```
 uwsgi --ini uWSGI.ini
 ```
+
+## 技术说明
+站在巨人的肩上，离不开开源的支持，主要使用到的技术如下：
+...
