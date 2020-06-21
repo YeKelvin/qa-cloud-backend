@@ -15,6 +15,7 @@ from server.librarys.verify import Verify
 from server.user.model import TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken, TUserLoginLog
 from server.user.utils.auth import Auth
 from server.utils.log_util import get_logger
+from server.utils.rsa_util import decrypt_by_rsa_private_key
 
 log = get_logger(__name__)
 

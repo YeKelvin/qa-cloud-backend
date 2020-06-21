@@ -3,48 +3,53 @@
 # @File    : rsa_util
 # @Time    : 2020/6/1 11:57
 # @Author  : Kelvin.Ye
-
-"""
-生成的公私钥文件格式如下
-私钥:
------BEGIN RSA PRIVATE KEY-----
-MIICX......./fx7KHM=
------END RSA PRIVATE KEY-----
-
-公钥:
------BEGIN PUBLIC KEY-----
-MIGDA.......AQAB
------END PUBLIC KEY-----
-"""
-
 import base64
 
 from Crypto import Random
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
-# PUBLIC_KEY = rf'-----BEGIN PUBLIC KEY-----\n{}\n-----END PUBLIC KEY-----\n'.format(json['PUBLIC KEY'])
-# RIVATE_KEY = rf'-----BEGIN RSA PRIVATE KEY-----\n{}\n-----END RSA PRIVATE KEY-----\n'.format(json['PRIVATE KEY'])
 
-# rsa_public_key = PUBLIC_KEY.encode('utf8')
-# rsa_private_key = RIVATE_KEY.encode('utf8')
+def generate_rsa_key() -> tuple:
+    """生产RSA公钥和私钥
+    """
+    rsa = RSA.generate(2048, Random.new().read)
+    public_key = rsa.publickey().exportKey()
+    private_key = rsa.exportKey()
+    return public_key, private_key
+
+
+def encrypt_by_rsa_public_key(content, public_key):
+    """通过RSA公钥加密
+
+    :param content:     加密内容
+    :param public_key:  RSA公钥
+    :return:            密文
+    """
+    rsakey = RSA.importKey(public_key)
+    cipher = PKCS1_v1_5.new(rsakey)
+    ciphertext = base64.b64encode(cipher.encrypt(content))
+    return ciphertext
+
+
+def decrypt_by_rsa_private_key(ciphertext, private_key):
+    """通过RSA私钥解密
+
+    :param ciphertext:  密文
+    :param private_key: RSA私钥
+    :return:            明文
+    """
+    rsakey = RSA.importKey(private_key)
+    cipher = PKCS1_v1_5.new(rsakey)
+    plaintext = cipher.decrypt(base64.b64decode(ciphertext), None)
+    return plaintext.decode('utf8')
+
 
 if __name__ == '__main__':
     message = b"this is test"
 
-    random_generator = Random.new().read
-    rsa = RSA.generate(2048, random_generator)
-
-    rsa_private_key = rsa.exportKey()
-    rsa_public_key = rsa.publickey().exportKey()
-
-    rsakey = RSA.importKey(rsa_public_key)
-    cipher = PKCS1_v1_5.new(rsakey)
-    cipher_text = base64.b64encode(cipher.encrypt(message))
-    print(cipher_text)
-
-    rsakey = RSA.importKey(rsa_private_key)
-    cipher = PKCS1_v1_5.new(rsakey)
-    random_generator = Random.new().read
-    text = cipher.decrypt(base64.b64decode(cipher_text), None)
-    print(text.decode('utf8'))
+    rsa_public_key, rsa_private_key = generate_rsa_key()
+    ciphertext = encrypt_by_public_key(message, rsa_public_key)
+    print(ciphertext)
+    plaintext = decrypt_by_private_key(ciphertext, rsa_private_key)
+    print(plaintext)

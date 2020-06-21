@@ -5,18 +5,17 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from server.database import Model, db
+from server.database import DBModel, db
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
 
-class TTestItem(Model):
+class TTestItem(DBModel):
     """测试项目表
     """
     __tablename__ = 'TEST_ITEM'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='项目编号')
     ITEM_NAME = db.Column(db.String(128), nullable=False, comment='项目名称')
@@ -28,12 +27,11 @@ class TTestItem(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TItemTopicRel(Model):
+class TItemTopicRel(DBModel):
     """项目主题关联表
     """
     __tablename__ = 'ITEM_TOPIC_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
@@ -44,12 +42,11 @@ class TItemTopicRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TItemCollectionRel(Model):
+class TItemCollectionRel(DBModel):
     """项目集合关联表
     """
     __tablename__ = 'ITEM_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
@@ -60,12 +57,11 @@ class TItemCollectionRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TItemUserRel(Model):
+class TItemUserRel(DBModel):
     """项目用户关联表
     """
     __tablename__ = 'ITEM_USER_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
@@ -76,12 +72,11 @@ class TItemUserRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TTestTopic(Model):
+class TTestTopic(DBModel):
     """测试主题表
     """
     __tablename__ = 'TEST_TOPIC'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TOPIC_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='主题编号')
     TOPIC_NAME = db.Column(db.String(128), nullable=False, comment='主题名称')
@@ -93,12 +88,11 @@ class TTestTopic(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TTopicCollectionRel(Model):
+class TTopicCollectionRel(DBModel):
     """主题集合关联表
     """
     __tablename__ = 'TOPIC_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
@@ -109,12 +103,11 @@ class TTopicCollectionRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TTestElement(Model):
+class TTestElement(DBModel):
     """测试元素表
     """
     __tablename__ = 'TEST_ELEMENT'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
@@ -128,12 +121,11 @@ class TTestElement(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TElementProperty(Model):
+class TElementProperty(DBModel):
     """测试元素属性表
     """
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
@@ -145,12 +137,11 @@ class TElementProperty(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TElementChildRel(Model):
+class TElementChildRel(DBModel):
     """元素子代关联表
     """
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PARENT_NO = db.Column(db.String(32), nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
@@ -162,12 +153,11 @@ class TElementChildRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariableCollection(Model):
+class TEnvironmentVariableCollection(DBModel):
     """环境变量集合表
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境集合编号')
     COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='环境集合名称')
@@ -179,12 +169,11 @@ class TEnvironmentVariableCollection(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariableCollectionRel(Model):
+class TEnvironmentVariableCollectionRel(DBModel):
     """环境变量集合关联表
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='环境集合编号')
     ENV_NO = db.Column(db.String(32), nullable=False, comment='环境变量编号')
@@ -195,12 +184,11 @@ class TEnvironmentVariableCollectionRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariable(Model):
+class TEnvironmentVariable(DBModel):
     """环境变量表
     """
     __tablename__ = 'ENVIRONMENT_VARIABLE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ENV_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境变量编号')
     ENV_KEY = db.Column(db.String(256), nullable=False, comment='环境变量名称')
@@ -218,7 +206,6 @@ class THTTPHeaderCollection:
     """
     __tablename__ = 'HTTP_HEADER_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集合编号')
     COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='头部集合名称')
@@ -235,7 +222,6 @@ class THTTPHeaderCollectionRel:
     """
     __tablename__ = 'HTTP_HEADER_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='头部集合编号')
     HEADER_NO = db.Column(db.String(32), nullable=False, comment='头部编号')
@@ -246,12 +232,11 @@ class THTTPHeaderCollectionRel:
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class THTTPHeader(Model):
+class THTTPHeader(DBModel):
     """HTTP头部表
     """
     __tablename__ = 'HTTP_HEADER'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部编号')
     HEADER_KEY = db.Column(db.String(256), nullable=False, comment='头部名称')
@@ -263,12 +248,11 @@ class THTTPHeader(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TSQLConfiguration(Model):
+class TSQLConfiguration(DBModel):
     """SQL配置表
     """
     __tablename__ = 'SQL_CONFIGURATION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     CONFIG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
     CONFIG_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
@@ -285,12 +269,11 @@ class TSQLConfiguration(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TElementPackage(Model):
+class TElementPackage(DBModel):
     """元素封装表
     """
     __tablename__ = 'ELEMENT_PACKAGE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
     PACKAGE_DESC = db.Column(db.String(256), nullable=False, comment='封装描述')
@@ -301,12 +284,11 @@ class TElementPackage(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TPackageElementRel(Model):
+class TPackageElementRel(DBModel):
     """封装元素关联表
     """
     __tablename__ = 'PACKAGE_ELEMENT_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
     ELEMENT_NO = db.Column(db.String(256), nullable=False, comment='元素编号')
@@ -318,12 +300,11 @@ class TPackageElementRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TScriptActivityLog(Model):
+class TScriptActivityLog(DBModel):
     """脚本活动日志表
     """
     __tablename__ = 'SCRIPT_ACTIVITY_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ITEM_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')

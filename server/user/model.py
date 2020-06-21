@@ -8,18 +8,17 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from server.database import Model, db
+from server.database import DBModel, db
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
 
-class TUser(Model):
+class TUser(DBModel):
     """用户表
     """
     __tablename__ = 'USER'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
     USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
@@ -34,12 +33,11 @@ class TUser(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TRole(Model):
+class TRole(DBModel):
     """角色表
     """
     __tablename__ = 'ROLE'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
     ROLE_NAME = db.Column(db.String(128), comment='角色名称')
@@ -52,12 +50,11 @@ class TRole(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TUserRoleRel(Model):
+class TUserRoleRel(DBModel):
     """用户角色关联表
     """
     __tablename__ = 'USER_ROLE_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), nullable=False, comment='角色编号')
@@ -68,12 +65,11 @@ class TUserRoleRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TPermission(Model):
+class TPermission(DBModel):
     """权限表
     """
     __tablename__ = 'PERMISSION'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PERMISSION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='权限编号')
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
@@ -88,12 +84,11 @@ class TPermission(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TRolePermissionRel(Model):
+class TRolePermissionRel(DBModel):
     """角色权限关联表
     """
     __tablename__ = 'ROLE_PERMISSION_REL'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), nullable=False, comment='权限编号')
@@ -104,12 +99,11 @@ class TRolePermissionRel(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TUserLoginInfo(Model):
+class TUserLoginInfo(DBModel):
     """用户登陆号表
     """
     __tablename__ = 'USER_LOGIN_INFO'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
@@ -121,12 +115,11 @@ class TUserLoginInfo(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TUserLoginLog(Model):
+class TUserLoginLog(DBModel):
     """用户登陆日志表
     """
     __tablename__ = 'USER_LOGIN_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
@@ -139,12 +132,11 @@ class TUserLoginLog(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TUserPassword(Model):
+class TUserPassword(DBModel):
     """用户密码表
     """
     __tablename__ = 'USER_PASSWORD'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='密码')
@@ -173,16 +165,14 @@ class TUserPassword(Model):
         return check_password_hash(source_pwd, pwd_md5)
 
 
-class TUserPasswordPublicKey(Model):
-    """用户密码公钥表
+class TUserPasswordKey(DBModel):
+    """用户密码密钥表
     """
-    __tablename__ = 'USER_PASSWORD_PUBLIC_KEY'
+    __tablename__ = 'USER_PASSWORD_KEY'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
-    PASSWORD_KEY = db.Column(db.String(128), nullable=False, comment='RSA公钥')
+    LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
+    PASSWORD_KEY = db.Column(db.String(128), nullable=False, comment='密码密钥')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -190,12 +180,11 @@ class TUserPasswordPublicKey(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TUserAccessToken(Model):
+class TUserAccessToken(DBModel):
     """用户认证令牌表
     """
     __tablename__ = 'USER_ACCESS_TOKEN'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')

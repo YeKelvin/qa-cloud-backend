@@ -5,13 +5,13 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from server.database import Model, db
+from server.database import DBModel, db
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
 
-class TActionLog(Model):
+class TActionLog(DBModel):
     """系统操作日志表
     """
     __tablename__ = 'ACTION_LOG'
@@ -28,12 +28,11 @@ class TActionLog(Model):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TSystemOperationLog(Model):
+class TSystemOperationLog(DBModel):
     """操作日志记录表
     """
     __tablename__ = 'SYSTEM_OPERATION_LOG'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOG_NO = db.Column(db.String(32), index=True, nullable=False, comment='日志编号')
     USER_NO = db.Column(db.String(32),  comment='用户编号')

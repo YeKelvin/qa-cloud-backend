@@ -47,7 +47,7 @@ class CRUDMixin:
         return commit and db.session.commit()
 
 
-class Model(CRUDMixin, db.Model):
+class DBModel(CRUDMixin, db.Model):
     """Base model class that includes CRUD convenience methods.
     """
 

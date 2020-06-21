@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from server.database import Model, db
+from server.database import DBModel, db
 from server.librarys.exception import ServiceError
 from server.utils import config
 from server.utils.log_util import get_logger
@@ -13,10 +13,9 @@ from server.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-class TSequence(Model):
+class TSequence(DBModel):
     __tablename__ = 'sequence'
     ID = db.Column(db.Integer, primary_key=True)
-    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     SEQ_NAME = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
     CURRENT_VAL = db.Column(db.Integer, nullable=False, default=0, comment='当前序列值')

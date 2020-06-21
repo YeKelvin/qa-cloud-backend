@@ -39,7 +39,7 @@ create table USER_LOGIN_LOG
     DEL_STATE    tinyint(2)  not null default 0 comment '数据状态',
     USER_NO      varchar(32) not null comment '用户编号',
     LOGIN_NAME   varchar(64) not null comment '登录账号',
-    LOGIN_TYPE   varchar(32) not null comment '登陆类型(MOBILE:手机号,EMAIL:邮箱,ACCOUNT:账号)',
+    LOGIN_TYPE   varchar(32) not null comment '登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)',
     IP           varchar(64) null comment 'IP地址',
     REMARK       varchar(64) null comment '备注',
     CREATED_BY   varchar(64) not null comment '创建人',
@@ -56,7 +56,7 @@ create table USER_PASSWORD
     DEL_STATE         tinyint(2)   not null default 0 comment '数据状态',
     USER_NO           varchar(32)  not null comment '用户编号',
     PASSWORD          varchar(256) not null comment '密码',
-    PASSWORD_TYPE     varchar(16)  not null comment '密码类型(LOGIN:登录密码, PAY:支付密码)',
+    PASSWORD_TYPE     varchar(16)  not null comment '密码类型(LOGIN:登录密码)',
     LAST_SUCCESS_TIME timestamp    null comment '最后一次密码校验成功时间',
     LAST_ERROR_TIME   timestamp    null comment '最后一次密码校验错误时间',
     ERROR_TIMES       int(2)       null comment '密码错误次数',
@@ -71,13 +71,12 @@ create table USER_PASSWORD
 ) comment ='用户密码表';
 
 
-create table USER_PASSWORD_PUBLIC_KEY
+create table USER_PASSWORD_KEY
 (
     ID            int auto_increment primary key comment '表ID',
     VERSION       int(8)       not null default 0 comment '版本号',
     DEL_STATE     tinyint(2)   not null default 0 comment '数据状态',
     USER_NO       varchar(32)  not null comment '用户编号',
-    PASSWORD_TYPE varchar(16)  not null comment '密码类型(LOGIN:登录密码, PAY:支付密码)',
     PASSWORD_KEY  varchar(128) not null comment 'RSA公钥',
     REMARK        varchar(64)  null comment '备注',
     CREATED_BY    varchar(64)  not null comment '创建人',
