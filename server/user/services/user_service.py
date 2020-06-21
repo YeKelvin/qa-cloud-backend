@@ -12,7 +12,8 @@ from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
-from server.user.model import TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken, TUserLoginLog
+from server.user.model import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
+                               TUserLoginLog, TUserPasswordKey)
 from server.user.utils.auth import Auth
 from server.utils.log_util import get_logger
 from server.utils.rsa_util import decrypt_by_rsa_private_key
@@ -29,6 +30,7 @@ def login(req: RequestDTO):
     # 查询用户信息
     user = TUser.query.filter_by(USER_NO=user_login_info.USER_NO, DEL_STATE=0).first()
     Verify.not_empty(user, '账号或密码不正确')
+
     # 校验用户状态
     if user.STATE != 'ENABLE':
         raise ServiceError('用户状态异常')
@@ -39,15 +41,20 @@ def login(req: RequestDTO):
     ).first()
     Verify.not_empty(user_password, '账号或密码不正确')
 
+    # 密码RSA解密
+    user_password_key = TUserPasswordKey.query.filter_by(LOGIN_NAME=user_login_info.USER_NO, DEL_STATE=0).first()
+    rsa_private_key = user_password_key.PASSWORD_KEY
+    password = decrypt_by_rsa_private_key(req.attr['password'], rsa_private_key)
+
     # 密码校验失败
-    if not user_password.check_password_hash(req.attr.loginName, req.attr.password):
+    if not user_password.check_password_hash(req.attr.loginName, password):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
         user_password.save()
         raise ServiceError('账号或密码不正确')
 
-    # 密码校验通过
+    # 密码校验通过后生成access token
     user_token = TUserAccessToken.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
     login_time = datetime.utcnow()
     access_token = Auth.encode_auth_token(user_login_info.USER_NO, login_time.timestamp())
@@ -69,14 +76,14 @@ def login(req: RequestDTO):
             STATE='VALID'
         )
 
-    # 更新用户密码信息
+    # 更新用户登录时间息
     user_password.update(
         last_login_time=login_time,
         last_success_time=login_time,
         error_times=0
     )
 
-    # 记录登录日志
+    # 记录用户登录日志
     TUserLoginLog.create(
         USER_NO=user_login_info.USER_NO,
         LOGIN_NAME=user_login_info.LOGIN_NAME,
@@ -105,7 +112,7 @@ def register(req: RequestDTO):
     Verify.empty(user_login_info, '登录账号已存在')
 
     user = TUser.query.filter_by(
-        USER_NAME=req.attr.userName, MOBILE_NO=req.attr.mobile_no, EMAIL=req.attr.email, DEL_STATE=0
+        USER_NAME=req.attr.userName, MOBILE_NO=req.attr.mobileNo, EMAIL=req.attr.email, DEL_STATE=0
     ).first()
     Verify.empty(user, '用户已存在')
 

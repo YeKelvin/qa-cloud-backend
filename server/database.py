@@ -25,6 +25,14 @@ class CRUDMixin:
         instance = cls(**kwargs)
         return instance.save(commit)
 
+    @classmethod
+    def query_by(cls, DEL_STATE=0, **kwargs):
+        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs)
+
+    @classmethod
+    def query(cls, DEL_STATE=0, *args):
+        return cls.query.filter(cls.DEL_STATE == DEL_STATE, *args)
+
     def update(self, commit=True, **kwargs):
         """Update specific fields of a record.
         """
