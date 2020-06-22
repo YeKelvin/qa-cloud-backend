@@ -14,7 +14,7 @@ from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
-from server.script.model import TTestElement, TElementProperty, TElementChildRel, TItemCollectionRel, TTestItem
+from server.script.model import TTestElement, TElementProperty, TElementChildRel, TProjectCollectionRel, TTestProject
 from server.script.services.element_helper import ElementStatus
 from server.utils.log_util import get_logger
 
@@ -28,10 +28,10 @@ def query_element_list(req: RequestDTO):
 
     # 查询条件
     conditions = []
-    if req.attr.itemNo:
-        conditions.append(TItemCollectionRel.ITEM_NO.like(f'%{req.attr.itemNo}%'))
-    if req.attr.itemName:
-        conditions.append(TTestItem.ITEM_NAME.like(f'%{req.attr.itemName}%'))
+    if req.attr.projectNo:
+        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
+    if req.attr.projectName:
+        conditions.append(TTestProject.PROJECT_NAME.like(f'%{req.attr.projectName}%'))
     if req.attr.elementNo:
         conditions.append(TTestElement.ELEMENT_NO == req.attr.elementNo)
     if req.attr.elementName:
@@ -44,10 +44,10 @@ def query_element_list(req: RequestDTO):
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
     # 列表总数，列表数据
-    if req.attr.itemName:
-        total_size, elements = select_item_and_collection_rel_and_element(conditions, offset, limit)
-    elif req.attr.itemNo:
-        total_size, elements = select_item_collection_rel_and_element(conditions, offset, limit)
+    if req.attr.projectName:
+        total_size, elements = select_project_and_collection_rel_and_element(conditions, offset, limit)
+    elif req.attr.projectNo:
+        total_size, elements = select_project_collection_rel_and_element(conditions, offset, limit)
     else:
         total_size, elements = select_element(conditions, offset, limit)
 
@@ -69,17 +69,17 @@ def query_element_all(req: RequestDTO):
     # 查询条件
     conditions = []
 
-    if req.attr.itemNo:
-        conditions.append(TItemCollectionRel.ITEM_NO.like(f'%{req.attr.itemNo}%'))
+    if req.attr.projectNo:
+        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
     if req.attr.elementType:
         conditions.append(TTestElement.ELEMENT_TYPE.like(f'%{req.attr.elementType}%'))
     if req.attr.enabled:
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
     elements = TTestElement.query.join(
-        TItemCollectionRel,
-        TItemCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TItemCollectionRel.DEL_STATE == 0
+        TProjectCollectionRel,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
+        TProjectCollectionRel.DEL_STATE == 0
     ).filter(
         *conditions
     ).order_by(
@@ -151,13 +151,13 @@ def create_element(req: RequestDTO):
         child_list=req.attr.childList
     )
 
-    if req.attr.itemNo:
-        item = TTestItem.query.filter_by(ITEM_NO=req.attr.itemNo, DEL_STATE=0).first()
-        Verify.not_empty(item, '测试项目不存在')
+    if req.attr.projectNo:
+        project = TTestProject.query.filter_by(PROJECT_NO=req.attr.projectNo, DEL_STATE=0).first()
+        Verify.not_empty(project, '测试项目不存在')
 
-        TItemCollectionRel.create(
+        TProjectCollectionRel.create(
             commit=False,
-            ITEM_NO=item.item_no,
+            PROJECT_NO=project.PROJECT_NO,
             COLLECTION_NO=element_no
         )
 
@@ -330,21 +330,21 @@ def select_element(conditions: list, offset, limit) -> (int, list):
     return total_size, elements
 
 
-def select_item_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
-    """TItemCollectionRel，TTestElement连表查询
+def select_project_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+    """TProjectCollectionRel，TTestElement连表查询
     """
     # 列表总数
     total_size = TTestElement.query.join(
-        TItemCollectionRel,
-        TItemCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TItemCollectionRel.DEL_STATE == 0
+        TProjectCollectionRel,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
+        TProjectCollectionRel.DEL_STATE == 0
     ).filter(*conditions).count()
 
     # 列表数据
     elements = TTestElement.query.join(
-        TItemCollectionRel,
-        TItemCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TItemCollectionRel.DEL_STATE == 0
+        TProjectCollectionRel,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
+        TProjectCollectionRel.DEL_STATE == 0
     ).filter(
         *conditions
     ).order_by(
@@ -354,25 +354,25 @@ def select_item_collection_rel_and_element(conditions: list, offset, limit) -> (
     return total_size, elements
 
 
-def select_item_and_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
-    """TTestItem，TItemCollectionRel，TTestElement连表查询
+def select_project_and_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+    """TTestProject，TProjectCollectionRel，TTestElement连表查询
     """
     # 列表总数
     total_size = TTestElement.query.join(
-        TItemCollectionRel,
-        TItemCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TItemCollectionRel.DEL_STATE == 0
+        TProjectCollectionRel,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
+        TProjectCollectionRel.DEL_STATE == 0
     ).join(
-        TTestItem, TTestItem.ITEM_NO == TItemCollectionRel.ITEM_NO
+        TTestProject, TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO
     ).filter(*conditions).count()
 
     # 列表数据
     elements = TTestElement.query.join(
-        TItemCollectionRel,
-        TItemCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TItemCollectionRel.DEL_STATE == 0
+        TProjectCollectionRel,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
+        TProjectCollectionRel.DEL_STATE == 0
     ).join(
-        TTestItem, TTestItem.ITEM_NO == TItemCollectionRel.ITEM_NO
+        TTestProject, TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO
     ).filter(
         *conditions
     ).order_by(

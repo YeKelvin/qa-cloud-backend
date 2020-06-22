@@ -12,7 +12,7 @@ from server.common.number_generator import generate_user_no, generate_role_no, g
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
-    TTestItem, TItemTopicRel, TItemCollectionRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
+    TTestProject, TItemTopicRel, TItemCollectionRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
     TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
     TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
     TElementPackage, TPackageElementRel, TScriptActivityLog
