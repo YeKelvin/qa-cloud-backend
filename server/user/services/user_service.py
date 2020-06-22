@@ -98,10 +98,9 @@ def login(req: RequestDTO):
 
 @http_service
 def logout():
-    user = Global.user_no
-    user.access_token = ''
-    user.updated_by = user.username
-    user.save()
+    user_token = TUserAccessToken.query.filter_by(USER_NO=Global.user_no, DEL_STATE=0).first()
+    user_token.STATE = 'INVALID'
+    user_token.save()
     return None
 
 
@@ -116,7 +115,7 @@ def register(req: RequestDTO):
     ).first()
     Verify.empty(user, '用户已存在')
 
-    # 创建用户
+    # 创建用户信息
     user_no = generate_user_no()
     TUser.create(
         USER_NO=user_no,
@@ -126,15 +125,19 @@ def register(req: RequestDTO):
         STATE='ENABLE'
     )
 
+    # 创建用户登录信息
     TUserLoginInfo.create(
-
+        USER_NO=user_no,
+        LOGIN_NAME=req.attr.loginName,
+        LOGIN_TYPE='ACCOUNT'
     )
 
+    # 创建用户登录密码
     TUserPassword.create(
-
+        USER_NO=user_no,
+        PASSWORD=TUserPassword.generate_password_hash(req.attr.loginName, req.attr.password),
+        PASSWORD_TYPE='LOGIN'
     )
-    password = req.attr.password,
-    error_times = 0,
 
     return None
 

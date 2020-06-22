@@ -3,11 +3,8 @@
 # @File    : role_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from server.common.number_generator import generate_role_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
@@ -121,6 +118,12 @@ def delete_role(req: RequestDTO):
 
 @http_service
 def query_user_role_rel_list(req: RequestDTO):
+    """todo 修改为自然连接
+    db.session.query(Bind.bindid, Bind.fromid, Bind.toid, Account.gameuid, Account.nickname)
+    .filter(Bind.toid == 1000)
+    .filter(Bind.fromid == Account.gameuid)
+    .all()
+    """
     # 分页
     offset, limit = pagination(req)
 

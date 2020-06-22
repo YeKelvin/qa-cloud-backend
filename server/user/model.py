@@ -190,7 +190,7 @@ class TUserAccessToken(DBModel):
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
     ACCESS_TOKEN = db.Column(db.String(512), comment='令牌')
     EXPIRE_IN = db.Column(db.DateTime, comment='令牌到期时间')
-    STATE = db.Column(db.String(16), nullable=False, comment='令牌状态(VALID:启用, INVALID:禁用)')
+    STATE = db.Column(db.String(16), nullable=False, comment='令牌状态(VALID:有效, INVALID:失效)')
     DEVICE_ID = db.Column(db.String(64), comment='设备ID')
     APP_ID = db.Column(db.String(64), comment='应用ID')
     REMARK = db.Column(db.String(64), comment='备注')

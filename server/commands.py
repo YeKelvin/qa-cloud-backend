@@ -3,8 +3,6 @@
 # @File    : commands.py
 # @Time    : 2019/11/7 10:55
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 import click
 from flask.cli import with_appcontext
 
@@ -12,14 +10,13 @@ from server.common.number_generator import generate_user_no, generate_role_no, g
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
-    TTestProject, TItemTopicRel, TItemCollectionRel, TItemUserRel, TTestTopic, TTopicCollectionRel, TTestElement,
-    TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
+    TTestProject, TProjectTopicRel, TProjectCollectionRel, TProjectUserRel, TTestTopic, TTopicCollectionRel,
+    TTestElement, TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
     TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
     TElementPackage, TPackageElementRel, TScriptActivityLog
 )
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
-
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -86,7 +83,7 @@ def init_user():
     TUserLoginInfo.create(
         USER_NO='U0000000001',
         LOGIN_NAME='admin',
-        LOGIN_TYPE='MOBILE'
+        LOGIN_TYPE='ACCOUNT'
     )
 
     TUserPassword.create(
@@ -149,14 +146,14 @@ def init_permission():
 
     # script模块路由
     # item
-    __create_permission(name='分页查询测试项目列表', method='GET', endpoint='/script/item/list')
-    __create_permission(name='查询所有测试项目', method='GET', endpoint='/script/item/all')
-    __create_permission(name='新增测试项目', method='POST', endpoint='/script/item')
-    __create_permission(name='修改测试项目', method='PUT', endpoint='/script/item')
-    __create_permission(name='删除测试项目', method='DELETE', endpoint='/script/item')
-    __create_permission(name='添加测试项目成员', method='POST', endpoint='/script/item/user')
-    __create_permission(name='修改测试项目成员', method='PUT', endpoint='/script/item/user')
-    __create_permission(name='删除测试项目成员', method='DELETE', endpoint='/script/item/user')
+    __create_permission(name='分页查询测试项目列表', method='GET', endpoint='/script/project/list')
+    __create_permission(name='查询所有测试项目', method='GET', endpoint='/script/project/all')
+    __create_permission(name='新增测试项目', method='POST', endpoint='/script/project')
+    __create_permission(name='修改测试项目', method='PUT', endpoint='/script/project')
+    __create_permission(name='删除测试项目', method='DELETE', endpoint='/script/project')
+    __create_permission(name='添加测试项目成员', method='POST', endpoint='/script/project/user')
+    __create_permission(name='修改测试项目成员', method='PUT', endpoint='/script/project/user')
+    __create_permission(name='删除测试项目成员', method='DELETE', endpoint='/script/project/user')
 
     # topic
     __create_permission(name='分页查询测试主题列表', method='GET', endpoint='/script/topic/list')

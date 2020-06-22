@@ -29,16 +29,15 @@ class CRUDMixin:
     def query_by(cls, DEL_STATE=0, **kwargs):
         return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs)
 
-    @classmethod
-    def query(cls, DEL_STATE=0, *args):
-        return cls.query.filter(cls.DEL_STATE == DEL_STATE, *args)
-
     def update(self, commit=True, **kwargs):
         """Update specific fields of a record.
         """
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         return commit and self.save() or self
+
+    def update_with_time(self, **kwargs):
+        return self.update(UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
 
     def save(self, commit=True):
         """Save the record.
