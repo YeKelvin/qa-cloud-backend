@@ -10,4 +10,5 @@ blueprint2 = Blueprint('user2', __name__, url_prefix='/rest/api/1/user')
 
 from . import permission_route
 from . import role_route
+from . import security_route
 from . import user_route

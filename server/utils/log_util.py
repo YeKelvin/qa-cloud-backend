@@ -24,49 +24,10 @@ FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME)
 # 日志级别
 LEVEL = config.get('log', 'level')
 
-LOGGING_CONFIG = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'standard': {
-            'format': FORMATTER
-        },
-    },
-    'filters': {
-
-    },
-    'handlers': {
-        'console': {
-            'level': LEVEL,
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard'
-        },
-        'default': {
-            'level': LEVEL,
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_FILE_NAME,
-            'when': 'MIDNIGHT',
-            'backupCount': 7,
-            'encoding': 'utf8',
-            'interval': 1,
-            'formatter': 'standard',
-        }
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console', 'default'],
-            'level': LEVEL,
-            'propagate': False
-        }
-    }
-}
-
-logging.config.dictConfig(config=LOGGING_CONFIG)
-
 
 def get_logger(name):
     logger = logging.getLogger(name)
-    # logger.propagate = False
-    # logger.setLevel(LEVEL)
-    # logger.addHandler(CONSOLE_HANDLER)
+    logger.propagate = False
+    logger.setLevel(LEVEL)
+    logger.addHandler(CONSOLE_HANDLER)
     return logger

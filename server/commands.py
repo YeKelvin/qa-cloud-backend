@@ -87,6 +87,7 @@ def init_user():
     )
 
     TUserPassword.create(
+        USER_NO='U0000000001',
         PASSWORD=TUserPassword.generate_password_hash('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
         ERROR_TIMES=0,
@@ -202,7 +203,7 @@ def init_role_permission_rel():
     """
     permissions = TPermission.query.all()
     for permission in permissions:
-        TRolePermissionRel.create(ROLE_NO='R0000000001', PERMISSION_NO=permission.permission_no)
+        TRolePermissionRel.create(ROLE_NO='R0000000001', PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联关系成功')
 
 
@@ -213,9 +214,19 @@ def init_action_log():
 
 
 def __create_role(name, role_desc):
-    TRole.create(ROLE_NO=generate_role_no(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
+    TRole.create(
+        ROLE_NO=generate_role_no(),
+        ROLE_NAME=name,
+        ROLE_DESC=role_desc,
+        STATE='ENABLE'
+    )
 
 
 def __create_permission(name, method, endpoint):
-    TPermission.create(PERMISSION_NO=generate_permission_no(), PERMISSION_NAME=name,
-                       METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')
+    TPermission.create(
+        PERMISSION_NO=generate_permission_no(),
+        PERMISSION_NAME=name,
+        METHOD=method,
+        ENDPOINT=endpoint,
+        STATE='ENABLE'
+    )

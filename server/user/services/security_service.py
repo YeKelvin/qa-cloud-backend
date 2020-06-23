@@ -17,7 +17,6 @@ def create_rsa_public_key(req: RequestDTO):
     rsa_public_key, rsa_private_key = generate_rsa_key()
     TUserPasswordKey.create(
         LOGIN_NAME=req.attr.loginName,
-        PASSWORD_TYPE='LOGIN',
-        PASSWORD_KEY=rsa_private_key
+        PASSWORD_KEY=str(rsa_private_key, encoding='utf8')
     )
-    return {'publicKey': rsa_public_key}
+    return {'publicKey': str(rsa_public_key, encoding='utf8')}
