@@ -78,9 +78,8 @@ def login(req: RequestDTO):
 
     # 更新用户登录时间息
     user_password.update(
-        last_login_time=login_time,
-        last_success_time=login_time,
-        error_times=0
+        LAST_SUCCESS_TIME=login_time,
+        ERROR_TIMES=0
     )
 
     # 记录用户登录日志
@@ -209,14 +208,15 @@ def query_user_all():
 
 @http_service
 def query_user_info():
-    user = Global.user_no
-    user_roles = TUserRoleRel.query.filter_by(USER_NO=user.USER_NO, DEL_STATE=0).all()
+    user_no = Global.user_no
+    user = TUser.query.filter_by(USER_NO=user_no, DEL_STATE=0).first()
+    user_roles = TUserRoleRel.query.filter_by(USER_NO=user_no, DEL_STATE=0).all()
     roles = []
     for user_role in user_roles:
         role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, DEL_STATE=0).first()
         roles.append(role.ROLE_NAME)
     return {
-        'userNo': user.USER_NO,
+        'userNo': user_no,
         'userName': user.USER_NAME,
         'mobileNo': user.MOBILE_NO,
         'email': user.EMAIL,

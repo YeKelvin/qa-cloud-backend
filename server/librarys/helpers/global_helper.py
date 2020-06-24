@@ -15,7 +15,7 @@ class Global:
 
     @classproperty
     def user_no(cls):
-        return getattr(g, 'user', None)
+        return getattr(g, 'user_no', None)
 
     @classproperty
     def auth_token(cls):

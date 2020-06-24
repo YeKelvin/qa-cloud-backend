@@ -10,7 +10,7 @@ from server.utils import config
 
 # 日志输出格式
 FORMATTER = logging.Formatter(
-    '[%(asctime)s][%(levelname)s][%(threadName)s][null][%(lineno)d][%(name)s.%(funcName)s][null] %(message)s'
+    '[%(asctime)s][%(levelname)s][%(threadName)s][%(lineno)d][%(name)s.%(funcName)s] %(message)s'
 )
 
 # 输出到控制台

@@ -138,8 +138,8 @@ def query_user_role_rel_list(req: RequestDTO):
     if req.attr.roleName:
         conditions.append(TRole.ROLE_NAME.like(f'%{req.attr.roleName}%'))
     # TUser查询条件
-    if req.attr.username:
-        conditions.append(TUser.USER_NAME.like(f'%{req.attr.username}%'))
+    if req.attr.userName:
+        conditions.append(TUser.USER_NAME.like(f'%{req.attr.userName}%'))
 
     # 列表总数
     total_size = TUserRoleRel.query.join(

@@ -32,40 +32,45 @@ def require_login(func):
             log.info(f'logId:[ {g.logid} ] msg:[ JWT解析 payload失败 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
-        # 查询 user失败或 user不存在
+        # 用户不存在
         user = TUser.query.filter_by(USER_NO=user_no).first()
         if not user:
             log.info(f'logId:[ {g.logid} ] msg:[ 用户不存在 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
-        # user已主动登出系统，需要重新登录
         user_token = TUserAccessToken.query.filter_by(USER_NO=user_no).first()
+        # 用户未登录，请先登录
+        if not user_token:
+            log.info(f'logId:[ {g.logid} ] msg:[ 用户未登录，请先登录 ]')
+            return __auth_fail_response(ErrorCode.E401001)
+
+        # 用户已登出系统，请重新登录
         if not user_token.ACCESS_TOKEN:
             log.info(f'logId:[ {g.logid} ] msg:[ 用户已登出系统，请重新登录 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
-        # user状态异常
-        if user.STATE != 'NORMAL':
-            log.info(f'logId:[ {g.logid} ] user.state:[ {user.state} ] msg:[ 用户状态异常 ]')
+        # 用户状态异常
+        if user.STATE != 'ENABLE':
+            log.info(f'logId:[ {g.logid} ] user.state:[ {user.STATE} ] msg:[ 用户状态异常 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
-        # user的 access_token已更变，不能使用旧 token认证
-        if auth_token != user.ACCESS_TOKEN:
-            log.info(f'logId:[ {g.logid} ] msg:[ 用户设备登录，请重新登录 ]')
+        # 用户异设备登录，请重新登录
+        if auth_token != user_token.ACCESS_TOKEN:
+            log.info(f'logId:[ {g.logid} ] msg:[ 用户异设备登录，请重新登录 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
-        # user 中的最后成功登录时间和 token中的登录时间不一致
+        # 用户最后成功登录时间和 token中的登录时间不一致
         user_password = TUserPassword.query.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
         if datetime.fromtimestamp(auth_login_time) != user_password.LAST_SUCCESS_TIME:
             log.info(
                 f'logId:[ {g.logid} ] '
                 f'auth_login_time:[ {datetime.fromtimestamp(auth_login_time)} ]'
                 f'last_success_time:[ {user_password.LAST_SUCCESS_TIME} ] '
-                f'msg:[ user中的最后成功登录时间和 token中的登录时间不一致 ]'
+                f'msg:[ 用户最后成功登录时间和 token中的登录时间不一致 ]'
             )
             return __auth_fail_response(ErrorCode.E401001)
 
-        Global.set('operator', user.username)
+        Global.set('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -96,7 +101,7 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 判断权限状态是否已禁用
-        if permission.STATE != 'NORMAL':
+        if permission.STATE != 'ENABLE':
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'permissionNo:[ {permission.PERMISSION_NO} ] permissionName:[ {permission.PERMISSION_NAME} ]'
@@ -114,7 +119,7 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 查询角色信息
-        role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, STATE='NORMAL').first()
+        role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, STATE='ENABLE').first()
         if not role:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -123,7 +128,7 @@ def require_permission(func):
             return __auth_fail_response(ErrorCode.E401002)
 
         # 判断权限状态是否已禁用
-        if role.STATE != 'NORMAL':
+        if role.STATE != 'ENABLE':
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'userNo:[ {user_no} ] roleNo:[ {role.ROLE_NO} ] roleName:[ {role.ROLE_NAME} ]'
