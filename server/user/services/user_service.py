@@ -3,7 +3,7 @@
 # @File    : user_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from server.common.number_generator import generate_user_no
 from server.librarys.decorators.service import http_service
@@ -42,12 +42,12 @@ def login(req: RequestDTO):
     Verify.not_empty(user_password, '账号或密码不正确')
 
     # 密码RSA解密
-    user_password_key = TUserPasswordKey.query.filter_by(LOGIN_NAME=user_login_info.USER_NO, DEL_STATE=0).first()
+    user_password_key = TUserPasswordKey.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
     rsa_private_key = user_password_key.PASSWORD_KEY
-    password = decrypt_by_rsa_private_key(req.attr['password'], rsa_private_key)
+    ras_decrypted_password = decrypt_by_rsa_private_key(req.attr['password'], rsa_private_key)
 
     # 密码校验失败
-    if not user_password.check_password_hash(req.attr.loginName, password):
+    if not user_password.check_password_hash(req.attr.loginName, user_password.PASSWORD, ras_decrypted_password):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
@@ -58,11 +58,11 @@ def login(req: RequestDTO):
     user_token = TUserAccessToken.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
     login_time = datetime.utcnow()
     access_token = Auth.encode_auth_token(user_login_info.USER_NO, login_time.timestamp())
-    expire_in = ...
+    expire_in = login_time + timedelta(days=0, seconds=Auth.EXPIRE_TIME)
 
     # 更新用户access token
     if user_token:
-        access_token.update(
+        user_token.update(
             ACCESS_TOKEN=access_token,
             STATE='VALID',
             EXPIRE_IN=expire_in,

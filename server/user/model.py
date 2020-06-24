@@ -159,7 +159,7 @@ class TUserPassword(DBModel):
         return generate_password_hash(pwd_md5)
 
     @staticmethod
-    def check_password_hash(login_name, in_pwd, source_pwd):
+    def check_password_hash(login_name, source_pwd, in_pwd):
         prefix_md5 = login_name + hashlib.md5(in_pwd.encode('utf-8')).hexdigest()
         pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
         return check_password_hash(source_pwd, pwd_md5)

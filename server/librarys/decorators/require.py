@@ -35,23 +35,23 @@ def require_login(func):
         # 查询 user失败或 user不存在
         user = TUser.query.filter_by(USER_NO=user_no).first()
         if not user:
-            log.info(f'logId:[ {g.logid} ] msg:[ 查询 user失败或 user不存在 ]')
+            log.info(f'logId:[ {g.logid} ] msg:[ 用户不存在 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user已主动登出系统，需要重新登录
         user_token = TUserAccessToken.query.filter_by(USER_NO=user_no).first()
         if not user_token.ACCESS_TOKEN:
-            log.info(f'logId:[ {g.logid} ] msg:[ user已主动登出系统，需要重新登录 ]')
+            log.info(f'logId:[ {g.logid} ] msg:[ 用户已登出系统，请重新登录 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user状态异常
         if user.STATE != 'NORMAL':
-            log.info(f'logId:[ {g.logid} ] user.state:[ {user.state} ] msg:[ user状态异常 ]')
+            log.info(f'logId:[ {g.logid} ] user.state:[ {user.state} ] msg:[ 用户状态异常 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user的 access_token已更变，不能使用旧 token认证
         if auth_token != user.ACCESS_TOKEN:
-            log.info(f'logId:[ {g.logid} ] msg:[ user的 access_token已更变，不能使用旧 token认证 ]')
+            log.info(f'logId:[ {g.logid} ] msg:[ 用户设备登录，请重新登录 ]')
             return __auth_fail_response(ErrorCode.E401001)
 
         # user 中的最后成功登录时间和 token中的登录时间不一致

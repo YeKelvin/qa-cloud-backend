@@ -15,8 +15,14 @@ log = get_logger(__name__)
 @http_service
 def create_rsa_public_key(req: RequestDTO):
     rsa_public_key, rsa_private_key = generate_rsa_key()
-    TUserPasswordKey.create(
-        LOGIN_NAME=req.attr.loginName,
-        PASSWORD_KEY=str(rsa_private_key, encoding='utf8')
-    )
+    user_password_key = TUserPasswordKey.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
+    if user_password_key:
+        user_password_key.update(
+            PASSWORD_KEY=str(rsa_private_key, encoding='utf8')
+        )
+    else:
+        TUserPasswordKey.create(
+            LOGIN_NAME=req.attr.loginName,
+            PASSWORD_KEY=str(rsa_private_key, encoding='utf8')
+        )
     return {'publicKey': str(rsa_public_key, encoding='utf8')}
