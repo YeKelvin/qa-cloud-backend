@@ -64,7 +64,10 @@ def query_element_list(req: RequestDTO):
 @http_service
 def query_element_all(req: RequestDTO):
     # 查询条件
-    conditions = []
+    conditions = [
+        TProjectCollectionRel.DEL_STATE == 0,
+        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO
+    ]
 
     if req.attr.projectNo:
         conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
@@ -73,15 +76,12 @@ def query_element_all(req: RequestDTO):
     if req.attr.enabled:
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
-    elements = TTestElement.query.join(
-        TProjectCollectionRel,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TProjectCollectionRel.DEL_STATE == 0
-    ).filter(
+    elements = db.session.query(TTestElement, TProjectCollectionRel).filter(
         *conditions
     ).order_by(
         TTestElement.CREATED_TIME.desc()
     ).all()
+
     result = []
     for element in elements:
         result.append({
@@ -96,10 +96,10 @@ def query_element_all(req: RequestDTO):
 
 @http_service
 def query_element_info(req: RequestDTO):
-    element = TTestElement.query.filter_by(ELEMENT_NO=req.attr.elementNo, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
     Verify.not_empty(element, '测试元素不存在')
 
-    el_props = TElementProperty.query.filter_by(ELEMENT_NO=req.attr.elementNo, DEL_STATE=0).all()
+    el_props = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo).all()
     propertys = {}
     for prop in el_props:
         propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
@@ -116,7 +116,7 @@ def query_element_info(req: RequestDTO):
 
 @http_service
 def query_element_child(req: RequestDTO):
-    child_rels = TElementChildRel.query.filter_by(PARENT_NO=req.attr.elementNo, DEL_STATE=0).all()
+    child_rels = TElementChildRel.query_by(PARENT_NO=req.attr.elementNo).all()
     # 根据 child_order排序
     child_rels.sort(key=lambda k: k.CHILD_ORDER)
     result = []
@@ -149,7 +149,7 @@ def create_element(req: RequestDTO):
     )
 
     if req.attr.projectNo:
-        project = TTestProject.query.filter_by(PROJECT_NO=req.attr.projectNo, DEL_STATE=0).first()
+        project = TTestProject.query_by(PROJECT_NO=req.attr.projectNo).first()
         Verify.not_empty(project, '测试项目不存在')
 
         TProjectCollectionRel.create(
@@ -183,7 +183,7 @@ def delete_element(req: RequestDTO):
 
 @http_service
 def enable_element(req: RequestDTO):
-    element = TTestElement.query.filter_by(ELEMENT_NO=req.attr.elementNo, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
     Verify.not_empty(element, '测试元素不存在')
 
     element.enabled = ElementStatus.ENABLE.value
@@ -193,7 +193,7 @@ def enable_element(req: RequestDTO):
 
 @http_service
 def disable_element(req: RequestDTO):
-    element = TTestElement.query.filter_by(ELEMENT_NO=req.attr.elementNo, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
     Verify.not_empty(element, '测试元素不存在')
 
     element.enabled = ElementStatus.DISABLE.value
@@ -203,11 +203,7 @@ def disable_element(req: RequestDTO):
 
 @http_service
 def add_element_property(req: RequestDTO):
-    el_prop = TElementProperty.query.filter_by(
-        ELEMENT_NO=req.attr.elementNo,
-        PROPERTY_NAME=req.attr.propertyName,
-        DEL_STATE=0
-    ).first()
+    el_prop = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo, PROPERTY_NAME=req.attr.propertyName).first()
     Verify.empty(el_prop, '元素属性已存在')
 
     TElementProperty.create(
@@ -220,11 +216,7 @@ def add_element_property(req: RequestDTO):
 
 @http_service
 def modify_element_property(req: RequestDTO):
-    el_prop = TElementProperty.query.filter_by(
-        ELEMENT_NO=req.attr.elementNo,
-        PROPERTY_NAME=req.attr.propertyName,
-        DEL_STATE=0
-    ).first()
+    el_prop = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo, PROPERTY_NAME=req.attr.propertyName).first()
     Verify.not_empty(el_prop, '元素属性不存在')
 
     el_prop.property_value = req.attr.propertyValue
@@ -250,61 +242,47 @@ def modify_element_child(req: RequestDTO):
 
 @http_service
 def move_up_element_child_order(req: RequestDTO):
-    child_rel = TElementChildRel.query.filter_by(
-        PARENT_NO=req.attr.parentNo,
-        CHILD_NO=req.attr.childNo,
-        DEL_STATE=0
-    ).first()
+    child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
-    childs_length = TElementChildRel.query.filter_by(PARENT_NO=req.attr.parentNo, DEL_STATE=0).count()
+    childs_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     child_current_order = child_rel.CHILD_ORDER
     if childs_length == 1 or child_current_order == 1:
         return None
 
-    upper_child_rel = TElementChildRel.query.filter_by(
+    upper_child_rel = TElementChildRel.query_by(
         PARENT_NO=req.attr.parentNo,
-        CHILD_ORDER=child_current_order - 1,
-        DEL_STATE=0
+        CHILD_ORDER=child_current_order - 1
     ).first()
-    upper_child_rel.CHILD_ORDER += 1
-    child_rel.CHILD_ORDER -= 1
+    upper_child_rel.update(CHILD_ORDER=upper_child_rel.CHILD_ORDER + 1)
+    child_rel.update(CHILD_ORDER=child_rel.CHILD_ORDER - 1)
 
-    upper_child_rel.save()
-    child_rel.save()
     return None
 
 
 @http_service
 def move_down_element_child_order(req: RequestDTO):
-    child_rel = TElementChildRel.query.filter_by(
-        PARENT_NO=req.attr.parentNo,
-        CHILD_NO=req.attr.childNo,
-        DEL_STATE=0
-    ).first()
+    child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
-    childs_length = TElementChildRel.query.filter_by(PARENT_NO=req.attr.parentNo, DEL_STATE=0).count()
+    childs_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     current_child_order = child_rel.CHILD_ORDER
     if childs_length == current_child_order:
         return None
 
-    lower_child_rel = TElementChildRel.query.filter_by(
+    lower_child_rel = TElementChildRel.query_by(
         PARENT_NO=req.attr.parentNo,
         CHILD_ORDER=current_child_order + 1,
-        DEL_STATE=0
     ).first()
-    lower_child_rel.CHILD_ORDER -= 1
-    child_rel.CHILD_ORDER += 1
+    lower_child_rel.update(CHILD_ORDER=lower_child_rel.CHILD_ORDER - 1)
+    child_rel.update(CHILD_ORDER=child_rel.CHILD_ORDER + 1)
 
-    lower_child_rel.save()
-    child_rel.save()
     return None
 
 
 @http_service
 def duplicate_element(req: RequestDTO):
-    element = TTestElement.query.filter_by(ELEMENT_NO=req.attr.element_no, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=req.attr.element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
     # todo 复制元素
@@ -330,19 +308,14 @@ def select_element(conditions: list, offset, limit) -> (int, list):
 def select_project_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
     """TProjectCollectionRel，TTestElement连表查询
     """
+    conditions.append(TProjectCollectionRel.DEL_STATE == 0)
+    conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
+
     # 列表总数
-    total_size = TTestElement.query.join(
-        TProjectCollectionRel,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TProjectCollectionRel.DEL_STATE == 0
-    ).filter(*conditions).count()
+    total_size = db.session.query(TTestElement, TProjectCollectionRel).filter(*conditions).count()
 
     # 列表数据
-    elements = TTestElement.query.join(
-        TProjectCollectionRel,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TProjectCollectionRel.DEL_STATE == 0
-    ).filter(
+    elements = db.session.query(TTestElement, TProjectCollectionRel).filter(
         *conditions
     ).order_by(
         TTestElement.CREATED_TIME.desc()
@@ -354,23 +327,16 @@ def select_project_collection_rel_and_element(conditions: list, offset, limit) -
 def select_project_and_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
     """TTestProject，TProjectCollectionRel，TTestElement连表查询
     """
+    conditions.append(TTestProject.DEL_STATE == 0)
+    conditions.append(TProjectCollectionRel.DEL_STATE == 0)
+    conditions.append(TTestElement.ELEMENT_NO == TProjectCollectionRel.COLLECTION_NO)
+    conditions.append(TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO)
+
     # 列表总数
-    total_size = TTestElement.query.join(
-        TProjectCollectionRel,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TProjectCollectionRel.DEL_STATE == 0
-    ).join(
-        TTestProject, TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO
-    ).filter(*conditions).count()
+    total_size = db.session.query(TTestElement, TTestProject, TProjectCollectionRel).filter(*conditions).count()
 
     # 列表数据
-    elements = TTestElement.query.join(
-        TProjectCollectionRel,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO,
-        TProjectCollectionRel.DEL_STATE == 0
-    ).join(
-        TTestProject, TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO
-    ).filter(
+    elements = db.session.query(TTestElement, TTestProject, TProjectCollectionRel).filter(
         *conditions
     ).order_by(
         TTestElement.CREATED_TIME.desc()
@@ -434,7 +400,7 @@ def add_element_child_no_commit(parent_no, child_list: [dict]):
 
 
 def modify_element_no_commit(element_no, element_name, element_comments, element_type, propertys, child_list):
-    element = TTestElement.query.filter_by(ELEMENT_NO=element_no, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
     if element_name is not None:
@@ -455,7 +421,7 @@ def modify_element_no_commit(element_no, element_name, element_comments, element
 
 def modify_element_property_no_commit(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
-        el_prop = TElementProperty.query.filter_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name, DEL_STATE=0).first()
+        el_prop = TElementProperty.query_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name).first()
         el_prop.PROPERTY_VALUE = prop_value
         el_prop.save(commit=False)
 
@@ -478,7 +444,7 @@ def modify_element_child_no_commit(child_list: [dict]):
 
 
 def delete_element_no_commit(element_no):
-    element = TTestElement.query.filter_by(ELEMENT_NO=element_no, DEL_STATE=0).first()
+    element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
     result = [{
@@ -489,7 +455,7 @@ def delete_element_no_commit(element_no):
     # 递归删除元素子代和关联关系
     result.extend(delete_child_no_commit(element_no))
     # 如存在父辈关联关系，则删除关联并重新排序父辈子代
-    child_rel = TElementChildRel.query.filter_by(CHILD_NO=element_no, DEL_STATE=0).first()
+    child_rel = TElementChildRel.query_by(CHILD_NO=element_no).first()
     if child_rel:
         # 重新排序父辈子代
         TElementChildRel.query.filter(
@@ -509,11 +475,11 @@ def delete_element_no_commit(element_no):
 
 
 def delete_child_no_commit(element_no):
-    child_rels = TElementChildRel.query.filter_by(PARENT_NO=element_no, DEL_STATE=0).all()
+    child_rels = TElementChildRel.query_by(PARENT_NO=element_no).all()
     result = []
     for child_rel in child_rels:
         # 查询子代元素信息
-        child = TTestElement.query.filter_by(ELEMENT_NO=child_rel.child_no, DEL_STATE=0).first()
+        child = TTestElement.query_by(ELEMENT_NO=child_rel.child_no).first()
         if child:
             result.append({'elementNo': child.ELEMENT_NO, 'elementName': child.ELEMENT_NAME})
 
@@ -530,7 +496,7 @@ def delete_child_no_commit(element_no):
 
 
 def delete_property_no_commit(element_no):
-    props = TElementProperty.query.filter_by(ELEMENT_NO=element_no, DEL_STATE=0).all()
+    props = TElementProperty.query_by(ELEMENT_NO=element_no).all()
     for prop in props:
         prop.update(commit=False, DEL_STATE=1)
 
@@ -538,4 +504,4 @@ def delete_property_no_commit(element_no):
 
 
 def next_child_order(parent_no):
-    return TElementChildRel.query.filter_by(PARENT_NO=parent_no, DEL_STATE=0).count() + 1
+    return TElementChildRel.query_by(PARENT_NO=parent_no).count() + 1

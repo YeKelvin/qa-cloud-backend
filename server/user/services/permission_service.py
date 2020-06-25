@@ -61,7 +61,7 @@ def query_permission_list(req: RequestDTO):
 
 @http_service
 def query_permission_all():
-    permissions = TPermission.query.filter_by(DEL_STATE=0).order_by(TPermission.CREATED_TIME.desc()).all()
+    permissions = TPermission.query_by().order_by(TPermission.CREATED_TIME.desc()).all()
     result = []
     for permission in permissions:
         result.append({
@@ -77,7 +77,7 @@ def query_permission_all():
 
 @http_service
 def create_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(ENDPOINT=req.attr.endpoint, METHOD=req.attr.method, DEL_STATE=0).first()
+    permission = TPermission.query_by(ENDPOINT=req.attr.endpoint, METHOD=req.attr.method).first()
     Verify.empty(permission, '权限已存在')
 
     TPermission.create(
@@ -93,7 +93,7 @@ def create_permission(req: RequestDTO):
 
 @http_service
 def modify_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo, DEL_STATE=0).first()
+    permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
     if req.attr.permissionNo is not None:
@@ -113,7 +113,7 @@ def modify_permission(req: RequestDTO):
 
 @http_service
 def modify_permission_state(req: RequestDTO):
-    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo, DEL_STATE=0).first()
+    permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
     permission.update(STATE=req.attr.state)
@@ -122,7 +122,7 @@ def modify_permission_state(req: RequestDTO):
 
 @http_service
 def delete_permission(req: RequestDTO):
-    permission = TPermission.query.filter_by(PERMISSION_NO=req.attr.permissionNo, DEL_STATE=0).first()
+    permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
     Verify.not_empty(permission, '权限不存在')
 
     permission.update(DEL_STATE=1)

@@ -21,6 +21,7 @@ def query_project_list(req: RequestDTO):
 
     # 查询条件
     conditions = [TTestProject.DEL_STATE == 0]
+
     if req.attr.projectNo:
         conditions.append(TTestProject.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
     if req.attr.projectName:
@@ -51,7 +52,7 @@ def query_project_list(req: RequestDTO):
 
 @http_service
 def query_project_all():
-    projects = TTestProject.query.filter_by(DEL_STATE=0).order_by(TTestProject.CREATED_TIME.desc()).all()
+    projects = TTestProject.query_by().order_by(TTestProject.CREATED_TIME.desc()).all()
     result = []
     for project in projects:
         result.append({
@@ -64,7 +65,7 @@ def query_project_all():
 
 @http_service
 def create_project(req: RequestDTO):
-    project = TTestProject.query.filter_by(PROJECT_NAME=req.attr.projectName, DEL_STATE=0).first()
+    project = TTestProject.query_by(PROJECT_NAME=req.attr.projectName).first()
     Verify.empty(project, '测试项目已存在')
 
     TTestProject.create(
@@ -77,7 +78,7 @@ def create_project(req: RequestDTO):
 
 @http_service
 def modify_project(req: RequestDTO):
-    project = TTestProject.query.filter_by(PROJECT_NO=req.attr.projectNo, DEL_STATE=0).first()
+    project = TTestProject.query_by(PROJECT_NO=req.attr.projectNo).first()
     Verify.not_empty(project, '测试项目不存在')
 
     if req.attr.projectName is not None:
@@ -91,7 +92,7 @@ def modify_project(req: RequestDTO):
 
 @http_service
 def delete_project(req: RequestDTO):
-    project = TTestProject.query.filter_by(PROJECT_NO=req.attr.projectNo, DEL_STATE=0).first()
+    project = TTestProject.query_by(PROJECT_NO=req.attr.projectNo).first()
     Verify.not_empty(project, '测试项目不存在')
 
     project.update(DEL_STATE=1)

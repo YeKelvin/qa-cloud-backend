@@ -56,7 +56,7 @@ def reset_password():
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
     ).parse()
-    return service.reset_password(req)
+    return service.reset_login_password(req)
 
 
 @blueprint.route('/list', methods=['GET'])

@@ -24,11 +24,11 @@ log = get_logger(__name__)
 @http_service
 def login(req: RequestDTO):
     # 查询用户登录信息
-    user_login_info = TUserLoginInfo.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
+    user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.attr.loginName).first()
     Verify.not_empty(user_login_info, '账号或密码不正确')
 
     # 查询用户信息
-    user = TUser.query.filter_by(USER_NO=user_login_info.USER_NO, DEL_STATE=0).first()
+    user = TUser.query_by(USER_NO=user_login_info.USER_NO).first()
     Verify.not_empty(user, '账号或密码不正确')
 
     # 校验用户状态
@@ -36,13 +36,11 @@ def login(req: RequestDTO):
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    user_password = TUserPassword.query.filter_by(
-        USER_NO=user_login_info.USER_NO, PASSWORD_TYPE='LOGIN', DEL_STATE=0
-    ).first()
+    user_password = TUserPassword.query_by(USER_NO=user_login_info.USER_NO, PASSWORD_TYPE='LOGIN').first()
     Verify.not_empty(user_password, '账号或密码不正确')
 
     # 密码RSA解密
-    user_password_key = TUserPasswordKey.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
+    user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=req.attr.loginName).first()
     rsa_private_key = user_password_key.PASSWORD_KEY
     ras_decrypted_password = decrypt_by_rsa_private_key(req.attr['password'], rsa_private_key)
 
@@ -55,7 +53,7 @@ def login(req: RequestDTO):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成access token
-    user_token = TUserAccessToken.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
+    user_token = TUserAccessToken.query_by(LOGIN_NAME=req.attr.loginName).first()
     login_time = datetime.utcnow()
     access_token = Auth.encode_auth_token(user_login_info.USER_NO, login_time.timestamp())
     expire_in = login_time + timedelta(days=0, seconds=Auth.EXPIRE_TIME)
@@ -97,7 +95,7 @@ def login(req: RequestDTO):
 
 @http_service
 def logout():
-    user_token = TUserAccessToken.query.filter_by(USER_NO=Global.user_no, DEL_STATE=0).first()
+    user_token = TUserAccessToken.query_by(USER_NO=Global.user_no).first()
     user_token.STATE = 'INVALID'
     user_token.save()
     return None
@@ -106,12 +104,10 @@ def logout():
 @http_service
 def register(req: RequestDTO):
     # 查询用户登录信息
-    user_login_info = TUserLoginInfo.query.filter_by(LOGIN_NAME=req.attr.loginName, DEL_STATE=0).first()
+    user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.attr.loginName).first()
     Verify.empty(user_login_info, '登录账号已存在')
 
-    user = TUser.query.filter_by(
-        USER_NAME=req.attr.userName, MOBILE_NO=req.attr.mobileNo, EMAIL=req.attr.email, DEL_STATE=0
-    ).first()
+    user = TUser.query_by(USER_NAME=req.attr.userName, MOBILE_NO=req.attr.mobileNo, EMAIL=req.attr.email).first()
     Verify.empty(user, '用户已存在')
 
     # 创建用户信息
@@ -142,13 +138,15 @@ def register(req: RequestDTO):
 
 
 @http_service
-def reset_password(req: RequestDTO):
+def reset_login_password(req: RequestDTO):
     """todo"""
-    user = TUser.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).first()
+    user = TUser.query_by(USER_NO=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
-    user.password = '123456'
-    user.save()
+    user_password = TUserPassword.query_by(USER_NO=req.attr.userNo, PASSWORD_TYPE='LOGIN').first()
+    Verify.not_empty(user_password, '用户登录密码不存在')
+
+    user_password.update(PASSWORD=TUserPassword.generate_password_hash(req.attr.loginName, req.attr.password))
     return None
 
 
@@ -159,6 +157,7 @@ def query_user_list(req: RequestDTO):
 
     # 查询条件
     conditions = [TUser.DEL_STATE == 0]
+
     if req.attr.userNo:
         conditions.append(TUser.USER_NO.like(f'%{req.attr.userNo}%'))
     if req.attr.userName:
@@ -178,10 +177,12 @@ def query_user_list(req: RequestDTO):
     # 组装响应数据
     data_set = []
     for user in users:
-        user_roles = TUserRoleRel.query.filter_by(USER_NO=user.USER_NO, DEL_STATE=0).all()
+        user_roles = TUserRoleRel.query_by(USER_NO=user.USER_NO).all()
         roles = []
         for user_role in user_roles:
-            role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, DEL_STATE=0).first()
+            role = TRole.query_by(ROLE_NO=user_role.ROLE_NO).first()
+            if not role:
+                continue
             roles.append(role.ROLE_NAME)
         data_set.append({
             'userNo': user.USER_NO,
@@ -197,7 +198,7 @@ def query_user_list(req: RequestDTO):
 
 @http_service
 def query_user_all():
-    users = TUser.query.order_by(TUser.CREATED_TIME.desc()).all()
+    users = TUser.query_by().order_by(TUser.CREATED_TIME.desc()).all()
     result = []
     for user in users:
         result.append({
@@ -210,11 +211,13 @@ def query_user_all():
 @http_service
 def query_user_info():
     user_no = Global.user_no
-    user = TUser.query.filter_by(USER_NO=user_no, DEL_STATE=0).first()
-    user_roles = TUserRoleRel.query.filter_by(USER_NO=user_no, DEL_STATE=0).all()
+    user = TUser.query_by(USER_NO=user_no).first()
+    user_roles = TUserRoleRel.query_by(USER_NO=user_no).all()
     roles = []
     for user_role in user_roles:
-        role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, DEL_STATE=0).first()
+        role = TRole.query_by(ROLE_NO=user_role.ROLE_NO).first()
+        if not role:
+            continue
         roles.append(role.ROLE_NAME)
     return {
         'userNo': user_no,
@@ -228,7 +231,7 @@ def query_user_info():
 
 @http_service
 def modify_user(req: RequestDTO):
-    user = TUser.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).first()
+    user = TUser.query_by(USER_NO=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
     if req.attr.userName is not None:
@@ -244,7 +247,7 @@ def modify_user(req: RequestDTO):
 
 @http_service
 def modify_user_state(req: RequestDTO):
-    user = TUser.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).first()
+    user = TUser.query_by(USER_NO=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
     user.update(STATE=req.attr.state)
@@ -253,11 +256,12 @@ def modify_user_state(req: RequestDTO):
 
 @http_service
 def delete_user(req: RequestDTO):
-    user = TUser.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).first()
+    """todo"""
+    user = TUser.query_by(USER_NO=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
     # 删除用户角色关联关系
-    user_roles = TUserRoleRel.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).all()
+    user_roles = TUserRoleRel.query_by(USER_NO=req.attr.userNo).all()
     for user_role in user_roles:
         user_role.update(DEL_STATE=1)
 
