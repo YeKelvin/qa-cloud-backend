@@ -143,6 +143,7 @@ def register(req: RequestDTO):
 
 @http_service
 def reset_password(req: RequestDTO):
+    """todo"""
     user = TUser.query.filter_by(USER_NO=req.attr.userNo, DEL_STATE=0).first()
     Verify.not_empty(user, '用户不存在')
 

@@ -21,6 +21,7 @@ def query_permission_list(req: RequestDTO):
 
     # 查询条件
     conditions = [TPermission.DEL_STATE == 0]
+
     if req.attr.permissionNo:
         conditions.append(TPermission.PERMISSION_NO.like(f'%{req.attr.permissionNo}%'))
     if req.attr.permissionName:

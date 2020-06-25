@@ -10,6 +10,7 @@ from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
 from server.utils.log_util import get_logger
+from server.extensions import db
 
 log = get_logger(__name__)
 
@@ -118,63 +119,49 @@ def delete_role(req: RequestDTO):
 
 @http_service
 def query_user_role_rel_list(req: RequestDTO):
-    """todo 修改为自然连接
-    db.session.query(Bind.bindid, Bind.fromid, Bind.toid, Account.gameuid, Account.nickname)
-    .filter(Bind.toid == 1000)
-    .filter(Bind.fromid == Account.gameuid)
-    .all()
-    """
     # 分页
     offset, limit = pagination(req)
 
     # 查询条件
-    conditions = [TUserRoleRel.DEL_STATE == 0]
-    # TUserRoleRel查询条件
+    conditions = [
+        TUser.DEL_STATE == 0,
+        TRole.DEL_STATE == 0,
+        TUserRoleRel.DEL_STATE == 0,
+        TUser.USER_NO == TUserRoleRel.USER_NO,
+        TRole.ROLE_NO == TUserRoleRel.ROLE_NO
+    ]
+
     if req.attr.userNo:
         conditions.append(TUserRoleRel.USER_NO.like(f'%{req.attr.userNo}%'))
     if req.attr.roleNo:
         conditions.append(TUserRoleRel.ROLE_NO.like(f'%{req.attr.roleNo}%'))
-    # TRole查询条件
     if req.attr.roleName:
         conditions.append(TRole.ROLE_NAME.like(f'%{req.attr.roleName}%'))
-    # TUser查询条件
     if req.attr.userName:
         conditions.append(TUser.USER_NAME.like(f'%{req.attr.userName}%'))
 
     # 列表总数
-    total_size = TUserRoleRel.query.join(
-        TRole, TRole.ROLE_NO == TUserRoleRel.ROLE_NO, TRole.DEL_STATE == 0
-    ).join(
-        TUser, TUser.USER_NO == TUserRoleRel.USER_NO, TUser.DEL_STATE == 0
-    ).filter(
-        *conditions
-    ).count()
+    total_size = db.session.query(TUser, TUser, TUserRoleRel).filter(*conditions).count()
 
     # 列表数据
-    querys = TUserRoleRel.query.with_entities(
+    results = db.session.query(
         TUserRoleRel.USER_NO,
         TUserRoleRel.ROLE_NO,
         TRole.ROLE_NAME,
         TUser.USER_NAME,
         TUserRoleRel.CREATED_TIME
-    ).join(
-        TRole, TRole.ROLE_NO == TUserRoleRel.ROLE_NO, TRole.DEL_STATE == 0
-    ).join(
-        TUser, TUser.USER_NO == TUserRoleRel.USER_NO, TUser.DEL_STATE == 0
-    ).filter(
-        *conditions
-    ).order_by(
+    ).filter(*conditions).order_by(
         TUserRoleRel.CREATED_TIME.desc()
     ).offset(offset).limit(limit).all()
 
     # 组装响应数据
     data_set = []
-    for query in querys:
+    for result in results:
         data_set.append({
-            'userNo': query.USER_NO,
-            'roleNo': query.ROLE_NO,
-            'userName': query.USER_NAME,
-            'roleName': query.ROLE_NAME,
+            'userNo': result.USER_NO,
+            'roleNo': result.ROLE_NO,
+            'userName': result.USER_NAME,
+            'roleName': result.ROLE_NAME,
         })
 
     return {'dataSet': data_set, 'totalSize': total_size}
@@ -204,16 +191,20 @@ def query_role_permission_rel_list(req: RequestDTO):
     offset, limit = pagination(req)
 
     # 查询条件
-    conditions = [TRolePermissionRel.DEL_STATE == 0]
-    # TRolePermissionRel查询条件
+    conditions = [
+        TRole.DEL_STATE == 0,
+        TPermission.DEL_STATE == 0,
+        TRolePermissionRel.DEL_STATE == 0,
+        TRole.ROLE_NO == TRolePermissionRel.ROLE_NO,
+        TPermission.PERMISSION_NO == TRolePermissionRel.PERMISSION_NO
+    ]
+
     if req.attr.roleNo:
         conditions.append(TRolePermissionRel.ROLE_NO.like(f'%{req.attr.roleNo}%'))
     if req.attr.permissionNo:
         conditions.append(TRolePermissionRel.PERMISSION_NO.like(f'%{req.attr.permissionNo}%'))
-    # TRole查询条件
     if req.attr.roleName:
         conditions.append(TRole.ROLE_NAME.like(f'%{req.attr.roleName}%'))
-    # TPermission查询条件
     if req.attr.permissionName:
         conditions.append(TPermission.PERMISSION_NAME.like(f'%{req.attr.permissionName}%'))
     if req.attr.endpoint:
@@ -222,16 +213,10 @@ def query_role_permission_rel_list(req: RequestDTO):
         conditions.append(TPermission.METHOD.like(f'%{req.attr.method}%'))
 
     # 列表总数
-    total_size = TRolePermissionRel.query.join(
-        TRole, TRole.ROLE_NO == TRolePermissionRel.ROLE_NO, TRole.DEL_STATE == 0
-    ).join(
-        TPermission, TPermission.PERMISSION_NO == TRolePermissionRel.PERMISSION_NO, TPermission.DEL_STATE == 0
-    ).filter(
-        *conditions
-    ).count()
+    total_size = db.session.query(TRole, TPermission, TRolePermissionRel).filter(*conditions).count()
 
     # 列表数据
-    querys = TRolePermissionRel.query.with_entities(
+    results = db.session.query(
         TRolePermissionRel.ROLE_NO,
         TRolePermissionRel.PERMISSION_NO,
         TRole.ROLE_NAME,
@@ -239,10 +224,6 @@ def query_role_permission_rel_list(req: RequestDTO):
         TPermission.ENDPOINT,
         TPermission.METHOD,
         TRolePermissionRel.CREATED_TIME
-    ).join(
-        TRole, TRole.ROLE_NO == TRolePermissionRel.ROLE_NO, TRole.DEL_STATE == 0
-    ).join(
-        TPermission, TPermission.PERMISSION_NO == TRolePermissionRel.PERMISSION_NO, TPermission.DEL_STATE == 0
     ).filter(
         *conditions
     ).order_by(
@@ -251,14 +232,14 @@ def query_role_permission_rel_list(req: RequestDTO):
 
     # 组装响应数据
     data_set = []
-    for query in querys:
+    for result in results:
         data_set.append({
-            'roleNo': query.ROLE_NO,
-            'roleName': query.ROLE_NAME,
-            'permissionNo': query.PERMISSION_NO,
-            'permissionName': query.PERMISSION_NAME,
-            'endpoint': query.ENDPOINT,
-            'method': query.METHOD
+            'roleNo': result.ROLE_NO,
+            'roleName': result.ROLE_NAME,
+            'permissionNo': result.PERMISSION_NO,
+            'permissionName': result.PERMISSION_NAME,
+            'endpoint': result.ENDPOINT,
+            'method': result.METHOD
         })
 
     return {'dataSet': data_set, 'totalSize': total_size}

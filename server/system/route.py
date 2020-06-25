@@ -22,7 +22,7 @@ def query_action_log_list():
     """分页查询操作日志列表
     """
     req = JsonParser(
-        Argument('actionDetail'),
+        Argument('actionDesc'),
         Argument('actionMethod'),
         Argument('actionEndpoint'),
         Argument('createdBy'),

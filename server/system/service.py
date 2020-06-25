@@ -20,39 +20,39 @@ def query_action_log_list(req: RequestDTO):
 
     # 查询条件
     conditions = []
-    if req.attr.actionDetail:
-        conditions.append(TActionLog.action_detail.like(f'%{req.attr.actionDetail}%'))
+    if req.attr.actionDesc:
+        conditions.append(TActionLog.ACTION_DESC.like(f'%{req.attr.actionDesc}%'))
     if req.attr.actionMethod:
-        conditions.append(TActionLog.action_method.like(f'%{req.attr.actionMethod}%'))
+        conditions.append(TActionLog.ACTION_METHOD.like(f'%{req.attr.actionMethod}%'))
     if req.attr.actionEndpoint:
-        conditions.append(TActionLog.action_endpoint.like(f'%{req.attr.actionEndpoint}%'))
+        conditions.append(TActionLog.ACTION_ENDPOINT.like(f'%{req.attr.actionEndpoint}%'))
     if req.attr.startTime:
-        conditions.append(TActionLog.created_time >= req.attr.startTime)
+        conditions.append(TActionLog.CREATED_TIME >= req.attr.startTime)
     if req.attr.endTime:
-        conditions.append(TActionLog.created_time <= req.attr.endTime)
+        conditions.append(TActionLog.CREATED_TIME <= req.attr.endTime)
     if req.attr.createdBy:
-        conditions.append(TActionLog.created_by.like(f'%{req.attr.createdBy}%'))
+        conditions.append(TActionLog.CREATED_BY.like(f'%{req.attr.createdBy}%'))
 
     # 列表总数
     total_size = TActionLog.query.filter(*conditions).count()
     # 列表数据
-    action_logs = TActionLog.query.filter(
+    logs = TActionLog.query.filter(
         *conditions
     ).order_by(
-        TActionLog.created_time.desc()
+        TActionLog.CREATED_TIME.desc()
     ).offset(offset).limit(limit).all()
 
     # 组装响应数据
     data_set = []
-    for action_log in action_logs:
+    for log in logs:
         data_set.append({
-            'actionDetail': action_log.action_detail,
-            'actionMethod': action_log.action_method,
-            'actionEndpoint': action_log.action_endpoint,
-            'oldValue': action_log.old_value,
-            'newValue': action_log.new_value,
-            'createdTime': action_log.created_time.strftime(STRFTIME_FORMAT),
-            'createdBy': action_log.created_by,
+            'actionDesc': log.ACTION_DESC,
+            'actionMethod': log.ACTION_METHOD,
+            'actionEndpoint': log.ACTION_ENDPOINT,
+            'oldValue': log.OLD_VALUE,
+            'newValue': log.NEW_VALUE,
+            'createdTime': log.CREATED_TIME.strftime(STRFTIME_FORMAT),
+            'createdBy': log.CREATED_BY,
         })
 
     return {'dataSet': data_set, 'totalSize': total_size}
