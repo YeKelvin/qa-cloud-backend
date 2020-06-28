@@ -3,8 +3,8 @@ import pathlib
 from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
-
 README = (HERE / "README.md").read_text()
+
 setup(
     name='test-platform-server',
     version='0.1',
@@ -15,16 +15,16 @@ setup(
     license='',
     author='Kaiwen.Ye',
     author_email='',
-    packages=find_packages(exclude=("test",)),
+    packages=find_packages(exclude=('test',)),
     include_package_data=True,
     install_requires=[
         "grpcio",
         "grpcio-tools",
         "requests",
     ],
-    extras_require={[
-
-    ]},
+    extras_require={
+        'test': []
+    },
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
