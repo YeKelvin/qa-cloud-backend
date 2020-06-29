@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from server.common.number_generator import generate_user_no
 from server.librarys.decorators.service import http_service
+from server.librarys.decorators.transaction import db_transaction
 from server.librarys.exception import ServiceError
 from server.librarys.helpers.global_helper import Global
 from server.librarys.helpers.sqlalchemy_helper import pagination
@@ -102,6 +103,7 @@ def logout():
 
 
 @http_service
+@db_transaction
 def register(req: RequestDTO):
     # 查询用户登录信息
     user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.attr.loginName).first()
@@ -113,6 +115,7 @@ def register(req: RequestDTO):
     # 创建用户信息
     user_no = generate_user_no()
     TUser.create(
+        commit=False,
         USER_NO=user_no,
         USER_NAME=req.attr.userName,
         MOBILE_NO=req.attr.mobileNo,
@@ -122,6 +125,7 @@ def register(req: RequestDTO):
 
     # 创建用户登录信息
     TUserLoginInfo.create(
+        commit=False,
         USER_NO=user_no,
         LOGIN_NAME=req.attr.loginName,
         LOGIN_TYPE='ACCOUNT'
@@ -129,9 +133,11 @@ def register(req: RequestDTO):
 
     # 创建用户登录密码
     TUserPassword.create(
+        commit=False,
         USER_NO=user_no,
         PASSWORD=TUserPassword.generate_password_hash(req.attr.loginName, req.attr.password),
-        PASSWORD_TYPE='LOGIN'
+        PASSWORD_TYPE='LOGIN',
+        CREATE_TYPE='CUSTOMER'
     )
 
     return None
