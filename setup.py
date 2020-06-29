@@ -18,6 +18,7 @@ setup(
     packages=find_packages(exclude=('test',)),
     include_package_data=True,
     install_requires=[
+        "orjson"
         "grpcio",
         "grpcio-tools",
         "requests",

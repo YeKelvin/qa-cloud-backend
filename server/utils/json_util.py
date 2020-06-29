@@ -3,19 +3,17 @@
 # @File    : json_util.py
 # @Time    : 2019/11/7 10:04
 # @Author  : Kelvin.Ye
-from typing import Union
-
 import orjson
 from jsonpath import jsonpath
 
 
-def to_json(obj: Union[dict, list]) -> str:
+def to_json(obj):
     """序列化
     """
     return orjson.dumps(obj)
 
 
-def from_json(json_text: str) -> Union[dict, list]:
+def from_json(json_text):
     """反序列化
     """
     return orjson.loads(json_text)
