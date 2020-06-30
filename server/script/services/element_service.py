@@ -10,7 +10,7 @@ from server.librarys.decorators.transaction import db_transaction
 from server.librarys.exception import ServiceError
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
-from server.script.model import TTestElement, TElementProperty, TElementChildRel, TProjectCollectionRel, TTestProject
+from server.script.model import TTestElement, TElementProperty, TElementChildRel, TWorkspaceCollectionRel, TWorkspace
 from server.script.services.element_helper import ElementStatus
 from server.utils.log_util import get_logger
 
@@ -33,16 +33,16 @@ def query_element_list(req: RequestDTO):
     if req.attr.enabled:
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
-    if req.attr.projectNo:
-        conditions.append(TProjectCollectionRel.DEL_STATE == 0)
-        conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
-        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
-    if req.attr.projectName:
-        conditions.append(TTestProject.DEL_STATE == 0)
-        conditions.append(TProjectCollectionRel.DEL_STATE == 0)
-        conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
-        conditions.append(TProjectCollectionRel.PROJECT_NO == TTestProject.PROJECT_NO)
-        conditions.append(TTestProject.PROJECT_NAME.like(f'%{req.attr.projectName}%'))
+    if req.attr.workspaceNo:
+        conditions.append(TWorkspaceCollectionRel.DEL_STATE == 0)
+        conditions.append(TWorkspaceCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
+        conditions.append(TWorkspaceCollectionRel.WORKSPACE_NO.like(f'%{req.attr.workspaceNo}%'))
+    if req.attr.workspaceName:
+        conditions.append(TWorkspace.DEL_STATE == 0)
+        conditions.append(TWorkspaceCollectionRel.DEL_STATE == 0)
+        conditions.append(TWorkspaceCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
+        conditions.append(TWorkspaceCollectionRel.WORKSPACE_NO == TWorkspace.WORKSPACE_NO)
+        conditions.append(TWorkspace.WORKSPACE_NAME.like(f'%{req.attr.workspaceName}%'))
 
     pagination = db.session.query(
         TTestElement.ELEMENT_NO,
@@ -70,12 +70,12 @@ def query_element_all(req: RequestDTO):
     # 查询条件
     conditions = [
         TTestElement.DEL_STATE == 0,
-        TProjectCollectionRel.DEL_STATE == 0,
-        TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO
+        TWorkspaceCollectionRel.DEL_STATE == 0,
+        TWorkspaceCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO
     ]
 
-    if req.attr.projectNo:
-        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
+    if req.attr.workspaceNo:
+        conditions.append(TWorkspaceCollectionRel.WORKSPACE_NO.like(f'%{req.attr.workspaceNo}%'))
     if req.attr.elementType:
         conditions.append(TTestElement.ELEMENT_TYPE.like(f'%{req.attr.elementType}%'))
     if req.attr.enabled:
@@ -155,13 +155,13 @@ def create_element(req: RequestDTO):
         child_list=req.attr.childList
     )
 
-    if req.attr.projectNo:
-        project = TTestProject.query_by(PROJECT_NO=req.attr.projectNo).first()
-        Verify.not_empty(project, '测试项目不存在')
+    if req.attr.workspaceNo:
+        workspace = TWorkspace.query_by(WORKSPACE_NO=req.attr.workspaceNo).first()
+        Verify.not_empty(workspace, '测试项目不存在')
 
-        TProjectCollectionRel.create(
+        TWorkspaceCollectionRel.create(
             commit=False,
-            PROJECT_NO=project.PROJECT_NO,
+            WORKSPACE_NO=req.attr.workspaceNo,
             COLLECTION_NO=element_no
         )
 

@@ -11,7 +11,7 @@ __seq_user_no__ = Sequence('seq_user_no')
 __seq_role_no__ = Sequence('seq_role_no')
 __seq_permission_no__ = Sequence('seq_permission_no')
 
-__seq_project_no__ = Sequence('seq_project_no')
+__seq_project_no__ = Sequence('seq_workspace_no')
 __seq_topic_no__ = Sequence('seq_topic_no')
 __seq_element_no__ = Sequence('seq_element_no')
 __seq_package_no__ = Sequence('seq_package_no')
@@ -37,8 +37,8 @@ def generate_permission_no():
     return 'P' + str(__seq_permission_no__.next_value()).zfill(__number_length__)
 
 
-def generate_project_no():
-    return 'PROJECT' + str(__seq_project_no__.next_value()).zfill(__number_length__)
+def generate_workspace_no():
+    return 'WS' + str(__seq_project_no__.next_value()).zfill(__number_length__)
 
 
 def generate_topic_no():

@@ -24,8 +24,8 @@ def query_element_list():
         Argument('elementComments'),
         Argument('elementType'),
         Argument('enabled'),
-        Argument('projectNo'),
-        Argument('projectName'),
+        Argument('workspaceNo'),
+        Argument('workspaceName'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
@@ -41,7 +41,7 @@ def query_element_all():
     req = JsonParser(
         Argument('elementType'),
         Argument('enabled'),
-        Argument('projectNo'),
+        Argument('workspaceNo'),
     ).parse()
     return service.query_element_all(req)
 
@@ -83,7 +83,7 @@ def create_element():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
         Argument('childList'),
-        Argument('projectNo'),
+        Argument('workspaceNo'),
     ).parse()
     return service.create_element(req)
 

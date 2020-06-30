@@ -11,15 +11,16 @@ from server.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-class TTestProject(DBModel):
-    """测试项目表
+class TWorkspace(DBModel):
+    """工作空间表
     """
-    __tablename__ = 'TEST_PROJECT'
+    __tablename__ = 'WORKSPACE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PROJECT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='项目编号')
-    PROJECT_NAME = db.Column(db.String(128), nullable=False, comment='项目名称')
-    PROJECT_DESC = db.Column(db.String(256), comment='项目描述')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='工作空间编号')
+    WORKSPACE_NAME = db.Column(db.String(128), nullable=False, comment='工作空间名称')
+    WORKSPACE_TYPE = db.Column(db.String(128), nullable=False, comment='工作空间类型')
+    WORKSPACE_DESC = db.Column(db.String(256), comment='工作空间描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -27,13 +28,13 @@ class TTestProject(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TProjectTopicRel(DBModel):
+class TWorkspaceTopicRel(DBModel):
     """项目主题关联表
     """
-    __tablename__ = 'PROJECT_TOPIC_REL'
+    __tablename__ = 'WORKSPACE_TOPIC_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PROJECT_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -42,13 +43,13 @@ class TProjectTopicRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TProjectCollectionRel(DBModel):
+class TWorkspaceCollectionRel(DBModel):
     """项目集合关联表
     """
-    __tablename__ = 'PROJECT_COLLECTION_REL'
+    __tablename__ = 'WORKSPACE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PROJECT_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -57,13 +58,13 @@ class TProjectCollectionRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TProjectUserRel(DBModel):
+class TWorkspaceUserRel(DBModel):
     """项目用户关联表
     """
-    __tablename__ = 'PROJECT_USER_REL'
+    __tablename__ = 'WORKSPACE_USER_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PROJECT_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -306,7 +307,7 @@ class TScriptActivityLog(DBModel):
     __tablename__ = 'SCRIPT_ACTIVITY_LOG'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PROJECT_NO = db.Column(db.String(32), nullable=False, comment='项目编号')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
     GROUP_NO = db.Column(db.String(32), nullable=False, comment='案例编号')

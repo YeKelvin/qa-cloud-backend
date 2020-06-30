@@ -10,7 +10,7 @@ from server.common.number_generator import generate_user_no, generate_role_no, g
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
-    TTestProject, TProjectTopicRel, TProjectCollectionRel, TProjectUserRel, TTestTopic, TTopicCollectionRel,
+    TWorkspace, TWorkspaceTopicRel, TWorkspaceCollectionRel, TWorkspaceUserRel, TTestTopic, TTopicCollectionRel,
     TTestElement, TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
     TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
     TElementPackage, TPackageElementRel, TScriptActivityLog
@@ -62,7 +62,7 @@ def init_seq():
     TSequence.create(SEQ_NAME='seq_user_no')
     TSequence.create(SEQ_NAME='seq_role_no')
     TSequence.create(SEQ_NAME='seq_permission_no')
-    TSequence.create(SEQ_NAME='seq_project_no')
+    TSequence.create(SEQ_NAME='seq_workspace_no')
     TSequence.create(SEQ_NAME='seq_topic_no')
     TSequence.create(SEQ_NAME='seq_element_no')
     TSequence.create(SEQ_NAME='seq_http_header_no')
@@ -148,14 +148,14 @@ def init_permission():
 
     # script模块路由
     # item
-    __create_permission(name='分页查询测试项目列表', method='GET', endpoint='/script/project/list')
-    __create_permission(name='查询所有测试项目', method='GET', endpoint='/script/project/all')
-    __create_permission(name='新增测试项目', method='POST', endpoint='/script/project')
-    __create_permission(name='修改测试项目', method='PUT', endpoint='/script/project')
-    __create_permission(name='删除测试项目', method='DELETE', endpoint='/script/project')
-    __create_permission(name='添加测试项目成员', method='POST', endpoint='/script/project/user')
-    __create_permission(name='修改测试项目成员', method='PUT', endpoint='/script/project/user')
-    __create_permission(name='删除测试项目成员', method='DELETE', endpoint='/script/project/user')
+    __create_permission(name='分页查询工作空间列表', method='GET', endpoint='/script/workspace/list')
+    __create_permission(name='查询所有工作空间', method='GET', endpoint='/script/workspace/all')
+    __create_permission(name='新增工作空间', method='POST', endpoint='/script/workspace')
+    __create_permission(name='修改工作空间', method='PUT', endpoint='/script/workspace')
+    __create_permission(name='删除工作空间', method='DELETE', endpoint='/script/workspace')
+    __create_permission(name='添加工作空间成员', method='POST', endpoint='/script/workspace/user')
+    __create_permission(name='修改工作空间成员', method='PUT', endpoint='/script/workspace/user')
+    __create_permission(name='删除工作空间成员', method='DELETE', endpoint='/script/workspace/user')
 
     # topic
     __create_permission(name='分页查询测试主题列表', method='GET', endpoint='/script/topic/list')
