@@ -18,6 +18,7 @@ from server.script.model import (
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
 from server.utils.log_util import get_logger
+from server.utils.security import encrypt_password
 
 log = get_logger(__name__)
 
@@ -88,7 +89,7 @@ def init_user():
 
     TUserPassword.create(
         USER_NO='U0000000001',
-        PASSWORD=TUserPassword.generate_password_hash('admin', 'admin'),
+        PASSWORD=encrypt_password('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
         ERROR_TIMES=0,
         CREATE_TYPE='CUSTOMER'

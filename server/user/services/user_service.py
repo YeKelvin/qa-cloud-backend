@@ -17,6 +17,7 @@ from server.user.model import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUser
 from server.user.utils.auth import Auth
 from server.utils.log_util import get_logger
 from server.utils.rsa_util import decrypt_by_rsa_private_key
+from server.utils.security import encrypt_password, check_password
 
 log = get_logger(__name__)
 
@@ -36,7 +37,7 @@ def login(req: RequestDTO):
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    user_password = TUserPassword.query_by(USER_NO=user_login_info.USER_NO, PASSWORD_TYPE='LOGIN').first()
+    user_password = TUserPassword.query_by(USER_NO=user.USER_NO, PASSWORD_TYPE='LOGIN').first()
     Verify.not_empty(user_password, '账号或密码不正确')
 
     # 密码RSA解密
@@ -45,7 +46,7 @@ def login(req: RequestDTO):
     ras_decrypted_password = decrypt_by_rsa_private_key(req.attr['password'], rsa_private_key)
 
     # 密码校验失败
-    if not user_password.check_password_hash(req.attr.loginName, user_password.PASSWORD, ras_decrypted_password):
+    if not check_password(req.attr.loginName, user_password.PASSWORD, ras_decrypted_password):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
@@ -53,9 +54,9 @@ def login(req: RequestDTO):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成access token
-    user_token = TUserAccessToken.query_by(LOGIN_NAME=req.attr.loginName).first()
+    user_token = TUserAccessToken.query_by(USER_NO=user.USER_NO).first()
     login_time = datetime.utcnow()
-    access_token = Auth.encode_auth_token(user_login_info.USER_NO, login_time.timestamp())
+    access_token = Auth.encode_auth_token(user.USER_NO, login_time.timestamp())
     expire_in = login_time + timedelta(days=0, seconds=Auth.EXPIRE_TIME)
 
     # 更新用户access token
@@ -67,8 +68,7 @@ def login(req: RequestDTO):
         )
     else:
         TUserAccessToken.create(
-            USER_NO=user_login_info.USER_NO,
-            LOGIN_NAME=req.attr.loginName,
+            USER_NO=user.USER_NO,
             ACCESS_TOKEN=access_token,
             EXPIRE_IN=expire_in,
             STATE='VALID'
@@ -89,7 +89,7 @@ def login(req: RequestDTO):
     )
 
     # 设置全局操作员
-    Global.set('operator', user_login_info.USER_NO)
+    Global.set('operator', user.USER_NAME)
     return {'accessToken': access_token}
 
 
@@ -134,7 +134,7 @@ def register(req: RequestDTO):
     TUserPassword.create(
         commit=False,
         USER_NO=user_no,
-        PASSWORD=TUserPassword.generate_password_hash(req.attr.loginName, req.attr.password),
+        PASSWORD=encrypt_password(req.attr.loginName, req.attr.password),
         PASSWORD_TYPE='LOGIN',
         CREATE_TYPE='CUSTOMER'
     )
@@ -150,7 +150,7 @@ def reset_login_password(req: RequestDTO):
     user_password = TUserPassword.query_by(USER_NO=req.attr.userNo, PASSWORD_TYPE='LOGIN').first()
     Verify.not_empty(user_password, '用户登录密码不存在')
 
-    user_password.update(PASSWORD=TUserPassword.generate_password_hash(req.attr.loginName, req.attr.password))
+    user_password.update(PASSWORD=encrypt_password(req.attr.loginName, req.attr.password))
     return None
 
 
@@ -267,21 +267,22 @@ def delete_user(req: RequestDTO):
     for user_role in user_roles:
         user_role.update(commit=False, DEL_STATE=1)
     # 删除用户登录信息
-    user_login_info = TUserLoginInfo.query_by(USER_NO=user_no).first()
-    if user_login_info:
+    user_login_infos = TUserLoginInfo.query_by(USER_NO=user_no).all()
+    for user_login_info in user_login_infos:
         user_login_info.update(commit=False, DEL_STATE=1)
     # 删除用户登录历史记录
-    user_login_log = TUserLoginLog.query_by(USER_NO=user_no).first()
-    if user_login_log:
+    user_login_logs = TUserLoginLog.query_by(USER_NO=user_no).all()
+    for user_login_log in user_login_logs:
         user_login_log.update(commit=False, DEL_STATE=1)
     # 删除用户密码
-    user_password = TUserPassword.query_by(USER_NO=user_no).first()
-    if user_password:
+    user_passwords = TUserPassword.query_by(USER_NO=user_no).all()
+    for user_password in user_passwords:
         user_password.update(commit=False, DEL_STATE=1)
     # 删除用户密码秘钥
-    user_password_key = TUserPasswordKey.query_by(USER_NO=user_no).first()
-    if user_password_key:
-        user_password_key.update(commit=False, DEL_STATE=1)
+    for user_login_info in user_login_infos:
+        user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=user_login_info.LOGIN_NAME).first()
+        if user_password_key:
+            user_password_key.update(commit=False, DEL_STATE=1)
     # 删除用户令牌
     user_access_token = TUserAccessToken.query_by(USER_NO=user_no).first()
     if user_access_token:

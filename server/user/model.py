@@ -3,10 +3,7 @@
 # @File    : model.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-import hashlib
 from datetime import datetime
-
-from werkzeug.security import generate_password_hash, check_password_hash
 
 from server.database import DBModel, db
 from server.utils.log_util import get_logger
@@ -152,18 +149,6 @@ class TUserPassword(DBModel):
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
-    @staticmethod
-    def generate_password_hash(login_name, password):
-        prefix_md5 = login_name + hashlib.md5(password.encode('utf-8')).hexdigest()
-        pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
-        return generate_password_hash(pwd_md5)
-
-    @staticmethod
-    def check_password_hash(login_name, source_pwd, in_pwd):
-        prefix_md5 = login_name + hashlib.md5(in_pwd.encode('utf-8')).hexdigest()
-        pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
-        return check_password_hash(source_pwd, pwd_md5)
-
 
 class TUserPasswordKey(DBModel):
     """用户密码密钥表
@@ -187,7 +172,6 @@ class TUserAccessToken(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
     ACCESS_TOKEN = db.Column(db.String(512), comment='令牌')
     EXPIRE_IN = db.Column(db.DateTime, comment='令牌到期时间')
     STATE = db.Column(db.String(16), nullable=False, comment='令牌状态(VALID:有效, INVALID:失效)')

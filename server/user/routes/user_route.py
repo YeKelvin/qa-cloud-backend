@@ -39,7 +39,7 @@ def register():
     """
     req = JsonParser(
         Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
-        Argument('userName', required=True, nullable=False, help='用户昵称不能为空'),
+        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
         Argument('email'),
@@ -67,7 +67,6 @@ def query_user_list():
     """
     req = JsonParser(
         Argument('userNo'),
-        Argument('loginName'),
         Argument('userName'),
         Argument('mobileNo'),
         Argument('email'),
