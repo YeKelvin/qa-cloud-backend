@@ -61,7 +61,7 @@ def init_seq():
     TSequence.create(SEQ_NAME='seq_user_no')
     TSequence.create(SEQ_NAME='seq_role_no')
     TSequence.create(SEQ_NAME='seq_permission_no')
-    TSequence.create(SEQ_NAME='seq_item_no')
+    TSequence.create(SEQ_NAME='seq_project_no')
     TSequence.create(SEQ_NAME='seq_topic_no')
     TSequence.create(SEQ_NAME='seq_element_no')
     TSequence.create(SEQ_NAME='seq_http_header_no')

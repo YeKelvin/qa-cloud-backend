@@ -51,7 +51,7 @@ class TSequence(DBModel):
             next_value = sequence.CURRENT_VAL + sequence.INCREMENT
 
         sequence.CURRENT_VAL = next_value
-        db.session.commit()
+        sequence.save()
         return next_value
 
     @staticmethod

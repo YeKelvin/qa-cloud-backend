@@ -38,7 +38,7 @@ def generate_permission_no():
 
 
 def generate_project_no():
-    return 'ITEM' + str(__seq_project_no__.next_value()).zfill(__number_length__)
+    return 'PROJECT' + str(__seq_project_no__.next_value()).zfill(__number_length__)
 
 
 def generate_topic_no():
