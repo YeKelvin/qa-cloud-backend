@@ -147,7 +147,7 @@ def query_element_child(req: RequestDTO):
 @http_service
 @db_transaction
 def create_element(req: RequestDTO):
-    element_no = create_element_by_transaction(
+    element_no = create_element_with_transaction(
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
@@ -171,7 +171,7 @@ def create_element(req: RequestDTO):
 @http_service
 @db_transaction
 def modify_element(req: RequestDTO):
-    modify_element_by_transaction(
+    modify_element_with_transaction(
         element_no=req.attr.elementNo,
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
@@ -185,7 +185,7 @@ def modify_element(req: RequestDTO):
 @http_service
 @db_transaction
 def delete_element(req: RequestDTO):
-    return delete_element_by_transaction(element_no=req.attr.elementNo)
+    return delete_element_with_transaction(element_no=req.attr.elementNo)
 
 
 @http_service
@@ -234,7 +234,7 @@ def modify_element_property(req: RequestDTO):
 @http_service
 @db_transaction
 def add_element_child(req: RequestDTO):
-    add_element_child_by_transaction(
+    add_element_child_with_transaction(
         parent_no=req.attr.parentNo,
         child_list=req.attr.childList
     )
@@ -244,7 +244,7 @@ def add_element_child(req: RequestDTO):
 @http_service
 @db_transaction
 def modify_element_child(req: RequestDTO):
-    modify_element_child_by_transaction(child_list=req.attr.childList)
+    modify_element_child_with_transaction(child_list=req.attr.childList)
 
 
 @http_service
@@ -296,7 +296,7 @@ def duplicate_element(req: RequestDTO):
     return None
 
 
-def create_element_by_transaction(element_name, element_comments, element_type,
+def create_element_with_transaction(element_name, element_comments, element_type,
                                   propertys: dict = None,
                                   child_list: [dict] = None):
     element_no = generate_element_no()
@@ -312,14 +312,14 @@ def create_element_by_transaction(element_name, element_comments, element_type,
     db.session.flush()
 
     if propertys:
-        add_element_property_by_transaction(element_no, propertys)
+        add_element_property_with_transaction(element_no, propertys)
     if child_list:
-        add_element_child_by_transaction(element_no, child_list)
+        add_element_child_with_transaction(element_no, child_list)
 
     return element_no
 
 
-def add_element_property_by_transaction(element_no, propertys: dict):
+def add_element_property_with_transaction(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         TElementProperty.create(
             commit=False,
@@ -331,9 +331,9 @@ def add_element_property_by_transaction(element_no, propertys: dict):
     db.session.flush()
 
 
-def add_element_child_by_transaction(parent_no, child_list: [dict]):
+def add_element_child_with_transaction(parent_no, child_list: [dict]):
     for child in child_list:
-        child_no = create_element_by_transaction(
+        child_no = create_element_with_transaction(
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
             element_type=child.get('elementType'),
@@ -350,7 +350,7 @@ def add_element_child_by_transaction(parent_no, child_list: [dict]):
     db.session.flush()
 
 
-def modify_element_by_transaction(element_no, element_name, element_comments, element_type, propertys, child_list):
+def modify_element_with_transaction(element_no, element_name, element_comments, element_type, propertys, child_list):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
@@ -365,12 +365,12 @@ def modify_element_by_transaction(element_no, element_name, element_comments, el
     db.session.flush()
 
     if propertys is not None:
-        modify_element_property_by_transaction(element_no, propertys)
+        modify_element_property_with_transaction(element_no, propertys)
     if child_list is not None:
-        modify_element_child_by_transaction(child_list)
+        modify_element_child_with_transaction(child_list)
 
 
-def modify_element_property_by_transaction(element_no, propertys: dict):
+def modify_element_property_with_transaction(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         el_prop = TElementProperty.query_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name).first()
         el_prop.PROPERTY_VALUE = prop_value
@@ -379,12 +379,12 @@ def modify_element_property_by_transaction(element_no, propertys: dict):
     db.session.flush()
 
 
-def modify_element_child_by_transaction(child_list: [dict]):
+def modify_element_child_with_transaction(child_list: [dict]):
     for child in child_list:
         if 'elementNo' not in child:
             raise ServiceError('子代元素编号不能为空')
 
-        modify_element_by_transaction(
+        modify_element_with_transaction(
             element_no=child.get('elementNo'),
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
@@ -394,7 +394,7 @@ def modify_element_child_by_transaction(child_list: [dict]):
         )
 
 
-def delete_element_by_transaction(element_no):
+def delete_element_with_transaction(element_no):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
@@ -404,7 +404,7 @@ def delete_element_by_transaction(element_no):
     }]
 
     # 递归删除元素子代和关联关系
-    result.extend(delete_child_by_transaction(element_no))
+    result.extend(delete_child_with_transaction(element_no))
     # 如存在父辈关联关系，则删除关联并重新排序父辈子代
     child_rel = TElementChildRel.query_by(CHILD_NO=element_no).first()
     if child_rel:
@@ -417,7 +417,7 @@ def delete_element_by_transaction(element_no):
         child_rel.update(commit=False, DEL_STATE=1)
 
     # 删除元素属性
-    delete_property_by_transaction(element_no)
+    delete_property_with_transaction(element_no)
     # 删除元素
     element.update(commit=False, DEL_STATE=1)
 
@@ -425,7 +425,7 @@ def delete_element_by_transaction(element_no):
     return result
 
 
-def delete_child_by_transaction(element_no):
+def delete_child_with_transaction(element_no):
     child_rels = TElementChildRel.query_by(PARENT_NO=element_no).all()
     result = []
     for child_rel in child_rels:
@@ -434,11 +434,11 @@ def delete_child_by_transaction(element_no):
         if child:
             result.append({'elementNo': child.ELEMENT_NO, 'elementName': child.ELEMENT_NAME})
 
-        result.extend(delete_child_by_transaction(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
+        result.extend(delete_child_with_transaction(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
         # 删除父子关联关系
         child_rel.update(commit=False, DEL_STATE=1)
         # 删除子代元素属性
-        delete_property_by_transaction(child_rel.child_no)
+        delete_property_with_transaction(child_rel.child_no)
         # 删除子代元素
         child.update(commit=False, DEL_STATE=1)
 
@@ -446,7 +446,7 @@ def delete_child_by_transaction(element_no):
     return result
 
 
-def delete_property_by_transaction(element_no):
+def delete_property_with_transaction(element_no):
     props = TElementProperty.query_by(ELEMENT_NO=element_no).all()
     for prop in props:
         prop.update(commit=False, DEL_STATE=1)
