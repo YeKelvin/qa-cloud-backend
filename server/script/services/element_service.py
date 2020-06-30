@@ -130,7 +130,7 @@ def query_element_child(req: RequestDTO):
     for child_rel in child_rels:
         conditions = [TTestElement.DEL_STATE == 0, TTestElement.ELEMENT_NO == child_rel.CHILD_NO]
         if req.attr.elementType:
-            conditions.append(TTestElement.ELEMENT_TYPE == req.attr.ELEMENT_TYPE)
+            conditions.append(TTestElement.ELEMENT_TYPE == req.attr.elementType)
         element = TTestElement.query.filter(*conditions).first()
         if element:
             result.append({
