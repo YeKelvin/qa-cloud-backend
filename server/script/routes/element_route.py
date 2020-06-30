@@ -206,7 +206,7 @@ def move_up_element_child_order():
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.move_up_element_child_order(req)
+    return service.move_up_child_order(req)
 
 
 @blueprint.route('/element/child/order/down', methods=['PATCH'])
@@ -219,7 +219,7 @@ def move_down_element_child_order():
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.move_down_element_child_order(req)
+    return service.move_down_child_order(req)
 
 
 @blueprint.route('/element/duplicate', methods=['POST'])

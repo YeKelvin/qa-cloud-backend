@@ -17,7 +17,8 @@ log = get_logger(__name__)
 @http_service
 def query_role_list(req: RequestDTO):
     # 查询条件
-    conditions = []
+    conditions = [TRole.DEL_STATE == 0]
+
     if req.attr.roleNo:
         conditions.append(TRole.ROLE_NO.like(f'%{req.attr.roleNo}%'))
     if req.attr.roleName:

@@ -20,11 +20,8 @@ log = get_logger(__name__)
 @http_service
 def query_element_list(req: RequestDTO):
     # 查询条件
-    conditions = []
-    if req.attr.projectNo:
-        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
-    if req.attr.projectName:
-        conditions.append(TTestProject.PROJECT_NAME.like(f'%{req.attr.projectName}%'))
+    conditions = [TTestElement.DEL_STATE == 0]
+
     if req.attr.elementNo:
         conditions.append(TTestElement.ELEMENT_NO == req.attr.elementNo)
     if req.attr.elementName:
@@ -36,19 +33,28 @@ def query_element_list(req: RequestDTO):
     if req.attr.enabled:
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
-    # 列表总数，列表数据
-    page = req.attr.page
-    page_size = req.attr.pageSize
+    if req.attr.projectNo:
+        conditions.append(TProjectCollectionRel.DEL_STATE == 0)
+        conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
+        conditions.append(TProjectCollectionRel.PROJECT_NO.like(f'%{req.attr.projectNo}%'))
     if req.attr.projectName:
-        items, total_size = select_project_and_collection_rel_and_element(conditions, page, page_size)
-    elif req.attr.projectNo:
-        items, total_size = select_project_collection_rel_and_element(conditions, page, page_size)
-    else:
-        items, total_size = select_element(conditions, page, page_size)
+        conditions.append(TTestProject.DEL_STATE == 0)
+        conditions.append(TProjectCollectionRel.DEL_STATE == 0)
+        conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
+        conditions.append(TProjectCollectionRel.PROJECT_NO == TTestProject.PROJECT_NO)
+        conditions.append(TTestProject.PROJECT_NAME.like(f'%{req.attr.projectName}%'))
+
+    pagination = db.session.query(
+        TTestElement.ELEMENT_NO,
+        TTestElement.ELEMENT_NAME,
+        TTestElement.ELEMENT_COMMENTS,
+        TTestElement.ELEMENT_TYPE,
+        TTestElement.ENABLED
+    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
     # 组装数据
     data_set = []
-    for item in items:
+    for item in pagination.items:
         data_set.append({
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
@@ -56,13 +62,14 @@ def query_element_list(req: RequestDTO):
             'elementType': item.ELEMENT_TYPE,
             'enabled': item.ENABLED
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service
 def query_element_all(req: RequestDTO):
     # 查询条件
     conditions = [
+        TTestElement.DEL_STATE == 0,
         TProjectCollectionRel.DEL_STATE == 0,
         TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO
     ]
@@ -74,20 +81,22 @@ def query_element_all(req: RequestDTO):
     if req.attr.enabled:
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
-    elements = db.session.query(TTestElement, TProjectCollectionRel).filter(
-        *conditions
-    ).order_by(
-        TTestElement.CREATED_TIME.desc()
-    ).all()
+    items = db.session.query(
+        TTestElement.ELEMENT_NO,
+        TTestElement.ELEMENT_NAME,
+        TTestElement.ELEMENT_COMMENTS,
+        TTestElement.ELEMENT_TYPE,
+        TTestElement.ENABLED
+    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).all()
 
     result = []
-    for element in elements:
+    for item in items:
         result.append({
-            'elementNo': element.ELEMENT_NO,
-            'elementName': element.ELEMENT_NAME,
-            'elementComments': element.ELEMENT_COMMENTS,
-            'elementType': element.ELEMENT_TYPE,
-            'enabled': element.ENABLED
+            'elementNo': item.ELEMENT_NO,
+            'elementName': item.ELEMENT_NAME,
+            'elementComments': item.ELEMENT_COMMENTS,
+            'elementType': item.ELEMENT_TYPE,
+            'enabled': item.ENABLED
         })
     return result
 
@@ -119,7 +128,7 @@ def query_element_child(req: RequestDTO):
     child_rels.sort(key=lambda k: k.CHILD_ORDER)
     result = []
     for child_rel in child_rels:
-        conditions = [TTestElement.ELEMENT_NO == child_rel.CHILD_NO, TTestElement.DEL_STATE == 0]
+        conditions = [TTestElement.DEL_STATE == 0, TTestElement.ELEMENT_NO == child_rel.CHILD_NO]
         if req.attr.elementType:
             conditions.append(TTestElement.ELEMENT_TYPE == req.attr.ELEMENT_TYPE)
         element = TTestElement.query.filter(*conditions).first()
@@ -138,7 +147,7 @@ def query_element_child(req: RequestDTO):
 @http_service
 @db_transaction
 def create_element(req: RequestDTO):
-    element_no = create_element_no_commit(
+    element_no = create_element_by_transaction(
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
@@ -162,7 +171,7 @@ def create_element(req: RequestDTO):
 @http_service
 @db_transaction
 def modify_element(req: RequestDTO):
-    modify_element_no_commit(
+    modify_element_by_transaction(
         element_no=req.attr.elementNo,
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
@@ -176,7 +185,7 @@ def modify_element(req: RequestDTO):
 @http_service
 @db_transaction
 def delete_element(req: RequestDTO):
-    return delete_element_no_commit(element_no=req.attr.elementNo)
+    return delete_element_by_transaction(element_no=req.attr.elementNo)
 
 
 @http_service
@@ -225,7 +234,7 @@ def modify_element_property(req: RequestDTO):
 @http_service
 @db_transaction
 def add_element_child(req: RequestDTO):
-    add_element_child_no_commit(
+    add_element_child_by_transaction(
         parent_no=req.attr.parentNo,
         child_list=req.attr.childList
     )
@@ -235,11 +244,11 @@ def add_element_child(req: RequestDTO):
 @http_service
 @db_transaction
 def modify_element_child(req: RequestDTO):
-    modify_element_child_no_commit(child_list=req.attr.childList)
+    modify_element_child_by_transaction(child_list=req.attr.childList)
 
 
 @http_service
-def move_up_element_child_order(req: RequestDTO):
+def move_up_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
@@ -259,7 +268,7 @@ def move_up_element_child_order(req: RequestDTO):
 
 
 @http_service
-def move_down_element_child_order(req: RequestDTO):
+def move_down_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
@@ -287,49 +296,9 @@ def duplicate_element(req: RequestDTO):
     return None
 
 
-def select_element(conditions: list, page, page_size) -> (int, list):
-    """查询 TTestElement表
-    """
-    pagination = TTestElement.query.filter(
-        *conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
-
-    return pagination.items, pagination.total
-
-
-def select_project_collection_rel_and_element(conditions: list, page, page_size) -> (int, list):
-    """TProjectCollectionRel，TTestElement连表查询
-    """
-    conditions.append(TProjectCollectionRel.DEL_STATE == 0)
-    conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
-
-    pagination = db.session.query(
-        TTestElement,
-        TProjectCollectionRel
-    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
-
-    return pagination.items, pagination.total
-
-
-def select_project_and_collection_rel_and_element(conditions: list, page, page_size) -> (int, list):
-    """TTestProject，TProjectCollectionRel，TTestElement连表查询
-    """
-    conditions.append(TTestProject.DEL_STATE == 0)
-    conditions.append(TProjectCollectionRel.DEL_STATE == 0)
-    conditions.append(TTestElement.ELEMENT_NO == TProjectCollectionRel.COLLECTION_NO)
-    conditions.append(TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO)
-
-    pagination = db.session.query(
-        TTestElement,
-        TTestProject,
-        TProjectCollectionRel
-    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
-
-    return pagination.items, pagination.total
-
-
-def create_element_no_commit(element_name, element_comments, element_type,
-                             propertys: dict = None,
-                             child_list: [dict] = None):
+def create_element_by_transaction(element_name, element_comments, element_type,
+                                  propertys: dict = None,
+                                  child_list: [dict] = None):
     element_no = generate_element_no()
 
     TTestElement.create(
@@ -343,14 +312,14 @@ def create_element_no_commit(element_name, element_comments, element_type,
     db.session.flush()
 
     if propertys:
-        add_element_property_no_commit(element_no, propertys)
+        add_element_property_by_transaction(element_no, propertys)
     if child_list:
-        add_element_child_no_commit(element_no, child_list)
+        add_element_child_by_transaction(element_no, child_list)
 
     return element_no
 
 
-def add_element_property_no_commit(element_no, propertys: dict):
+def add_element_property_by_transaction(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         TElementProperty.create(
             commit=False,
@@ -362,9 +331,9 @@ def add_element_property_no_commit(element_no, propertys: dict):
     db.session.flush()
 
 
-def add_element_child_no_commit(parent_no, child_list: [dict]):
+def add_element_child_by_transaction(parent_no, child_list: [dict]):
     for child in child_list:
-        child_no = create_element_no_commit(
+        child_no = create_element_by_transaction(
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
             element_type=child.get('elementType'),
@@ -381,7 +350,7 @@ def add_element_child_no_commit(parent_no, child_list: [dict]):
     db.session.flush()
 
 
-def modify_element_no_commit(element_no, element_name, element_comments, element_type, propertys, child_list):
+def modify_element_by_transaction(element_no, element_name, element_comments, element_type, propertys, child_list):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
@@ -396,12 +365,12 @@ def modify_element_no_commit(element_no, element_name, element_comments, element
     db.session.flush()
 
     if propertys is not None:
-        modify_element_property_no_commit(element_no, propertys)
+        modify_element_property_by_transaction(element_no, propertys)
     if child_list is not None:
-        modify_element_child_no_commit(child_list)
+        modify_element_child_by_transaction(child_list)
 
 
-def modify_element_property_no_commit(element_no, propertys: dict):
+def modify_element_property_by_transaction(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         el_prop = TElementProperty.query_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name).first()
         el_prop.PROPERTY_VALUE = prop_value
@@ -410,12 +379,12 @@ def modify_element_property_no_commit(element_no, propertys: dict):
     db.session.flush()
 
 
-def modify_element_child_no_commit(child_list: [dict]):
+def modify_element_child_by_transaction(child_list: [dict]):
     for child in child_list:
         if 'elementNo' not in child:
             raise ServiceError('子代元素编号不能为空')
 
-        modify_element_no_commit(
+        modify_element_by_transaction(
             element_no=child.get('elementNo'),
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
@@ -425,7 +394,7 @@ def modify_element_child_no_commit(child_list: [dict]):
         )
 
 
-def delete_element_no_commit(element_no):
+def delete_element_by_transaction(element_no):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
@@ -435,7 +404,7 @@ def delete_element_no_commit(element_no):
     }]
 
     # 递归删除元素子代和关联关系
-    result.extend(delete_child_no_commit(element_no))
+    result.extend(delete_child_by_transaction(element_no))
     # 如存在父辈关联关系，则删除关联并重新排序父辈子代
     child_rel = TElementChildRel.query_by(CHILD_NO=element_no).first()
     if child_rel:
@@ -448,7 +417,7 @@ def delete_element_no_commit(element_no):
         child_rel.update(commit=False, DEL_STATE=1)
 
     # 删除元素属性
-    delete_property_no_commit(element_no)
+    delete_property_by_transaction(element_no)
     # 删除元素
     element.update(commit=False, DEL_STATE=1)
 
@@ -456,7 +425,7 @@ def delete_element_no_commit(element_no):
     return result
 
 
-def delete_child_no_commit(element_no):
+def delete_child_by_transaction(element_no):
     child_rels = TElementChildRel.query_by(PARENT_NO=element_no).all()
     result = []
     for child_rel in child_rels:
@@ -465,11 +434,11 @@ def delete_child_no_commit(element_no):
         if child:
             result.append({'elementNo': child.ELEMENT_NO, 'elementName': child.ELEMENT_NAME})
 
-        result.extend(delete_child_no_commit(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
+        result.extend(delete_child_by_transaction(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
         # 删除父子关联关系
         child_rel.update(commit=False, DEL_STATE=1)
         # 删除子代元素属性
-        delete_property_no_commit(child_rel.child_no)
+        delete_property_by_transaction(child_rel.child_no)
         # 删除子代元素
         child.update(commit=False, DEL_STATE=1)
 
@@ -477,7 +446,7 @@ def delete_child_no_commit(element_no):
     return result
 
 
-def delete_property_no_commit(element_no):
+def delete_property_by_transaction(element_no):
     props = TElementProperty.query_by(ELEMENT_NO=element_no).all()
     for prop in props:
         prop.update(commit=False, DEL_STATE=1)
