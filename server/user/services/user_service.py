@@ -254,16 +254,37 @@ def modify_user_state(req: RequestDTO):
 
 
 @http_service
+@db_transaction
 def delete_user(req: RequestDTO):
-    """todo"""
-    user = TUser.query_by(USER_NO=req.attr.userNo).first()
+    user_no = req.attr.userNo
+    user = TUser.query_by(USER_NO=user_no).first()
     Verify.not_empty(user, '用户不存在')
 
-    # 删除用户角色关联关系
-    user_roles = TUserRoleRel.query_by(USER_NO=req.attr.userNo).all()
-    for user_role in user_roles:
-        user_role.update(DEL_STATE=1)
-
     # 删除用户
-    user.update(DEL_STATE=1)
+    user.update(commit=False, DEL_STATE=1)
+    # 删除用户角色关联关系
+    user_roles = TUserRoleRel.query_by(USER_NO=user_no).all()
+    for user_role in user_roles:
+        user_role.update(commit=False, DEL_STATE=1)
+    # 删除用户登录信息
+    user_login_info = TUserLoginInfo.query_by(USER_NO=user_no).first()
+    if user_login_info:
+        user_login_info.update(commit=False, DEL_STATE=1)
+    # 删除用户登录历史记录
+    user_login_log = TUserLoginLog.query_by(USER_NO=user_no).first()
+    if user_login_log:
+        user_login_log.update(commit=False, DEL_STATE=1)
+    # 删除用户密码
+    user_password = TUserPassword.query_by(USER_NO=user_no).first()
+    if user_password:
+        user_password.update(commit=False, DEL_STATE=1)
+    # 删除用户密码秘钥
+    user_password_key = TUserPasswordKey.query_by(USER_NO=user_no).first()
+    if user_password_key:
+        user_password_key.update(commit=False, DEL_STATE=1)
+    # 删除用户令牌
+    user_access_token = TUserAccessToken.query_by(USER_NO=user_no).first()
+    if user_access_token:
+        user_access_token.update(commit=False, DEL_STATE=1)
+
     return None

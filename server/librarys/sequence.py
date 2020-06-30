@@ -14,7 +14,7 @@ log = get_logger(__name__)
 
 
 class TSequence(DBModel):
-    __tablename__ = 'sequence'
+    __tablename__ = 'SEQUENCE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     SEQ_NAME = db.Column(db.String(128), index=True, unique=True, nullable=False, comment='序列名称')
