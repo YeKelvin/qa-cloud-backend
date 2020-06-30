@@ -23,8 +23,8 @@ def query_role_list():
         Argument('roleName'),
         Argument('roleDesc'),
         Argument('state'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_role_list(req)
 
@@ -101,8 +101,8 @@ def query_user_role_rel_list():
         Argument('roleNo'),
         Argument('userName'),
         Argument('roleName'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_user_role_rel_list(req)
 
@@ -146,8 +146,8 @@ def query_role_permission_rel_list():
         Argument('permissionName'),
         Argument('endpoint'),
         Argument('method'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_role_permission_rel_list(req)
 

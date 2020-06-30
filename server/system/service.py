@@ -4,7 +4,6 @@
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.system.model import TActionLog
 from server.utils.log_util import get_logger
@@ -15,9 +14,6 @@ log = get_logger(__name__)
 
 @http_service
 def query_action_log_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = []
     if req.attr.actionDesc:
@@ -33,26 +29,20 @@ def query_action_log_list(req: RequestDTO):
     if req.attr.createdBy:
         conditions.append(TActionLog.CREATED_BY.like(f'%{req.attr.createdBy}%'))
 
-    # 列表总数
-    total_size = TActionLog.query.filter(*conditions).count()
-    # 列表数据
-    logs = TActionLog.query.filter(
-        *conditions
-    ).order_by(
-        TActionLog.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
+    pagination = TActionLog.query.filter(
+        *conditions).order_by(TActionLog.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for log in logs:
+    for item in pagination.items:
         data_set.append({
-            'actionDesc': log.ACTION_DESC,
-            'actionMethod': log.ACTION_METHOD,
-            'actionEndpoint': log.ACTION_ENDPOINT,
-            'oldValue': log.OLD_VALUE,
-            'newValue': log.NEW_VALUE,
-            'createdTime': log.CREATED_TIME.strftime(STRFTIME_FORMAT),
-            'createdBy': log.CREATED_BY,
+            'actionDesc': item.ACTION_DESC,
+            'actionMethod': item.ACTION_METHOD,
+            'actionEndpoint': item.ACTION_ENDPOINT,
+            'oldValue': item.OLD_VALUE,
+            'newValue': item.NEW_VALUE,
+            'createdTime': item.CREATED_TIME.strftime(STRFTIME_FORMAT),
+            'createdBy': item.CREATED_BY,
         })
 
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}

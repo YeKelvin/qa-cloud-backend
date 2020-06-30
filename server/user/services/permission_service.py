@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 from server.common.number_generator import generate_permission_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.user.model import TPermission
@@ -16,9 +15,6 @@ log = get_logger(__name__)
 
 @http_service
 def query_permission_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [TPermission.DEL_STATE == 0]
 
@@ -35,28 +31,22 @@ def query_permission_list(req: RequestDTO):
     if req.attr.state:
         conditions.append(TPermission.STATE.like(f'%{req.attr.state}%'))
 
-    # 列表总数
-    total_size = TPermission.query.filter(*conditions).count()
-    # 列表数据
-    permissions = TPermission.query.filter(
-        *conditions
-    ).order_by(
-        TPermission.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
+    pagination = TPermission.query.filter(
+        *conditions).order_by(TPermission.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for permission in permissions:
+    for item in pagination.items:
         data_set.append({
-            'permissionNo': permission.PERMISSION_NO,
-            'permissionName': permission.PERMISSION_NAME,
-            'permissionDesc': permission.PERMISSION_DESC,
-            'endpoint': permission.ENDPOINT,
-            'method': permission.METHOD,
-            'state': permission.STATE
+            'permissionNo': item.PERMISSION_NO,
+            'permissionName': item.PERMISSION_NAME,
+            'permissionDesc': item.PERMISSION_DESC,
+            'endpoint': item.ENDPOINT,
+            'method': item.METHOD,
+            'state': item.STATE
         })
 
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service

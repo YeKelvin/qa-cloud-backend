@@ -6,7 +6,7 @@
 from server.librarys.request import RequestDTO
 
 
-def pagination(req: RequestDTO):
+def paginate(req: RequestDTO):
     offset = (int(req.attr.page) - 1) * int(req.attr.pageSize)
     limit = int(req.attr.pageSize)
     return offset, limit

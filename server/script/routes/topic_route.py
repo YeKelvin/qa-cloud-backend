@@ -22,8 +22,8 @@ def query_topic_list():
         Argument('topicNo'),
         Argument('topicName'),
         Argument('topicDesc'),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_topic_list(req)
 

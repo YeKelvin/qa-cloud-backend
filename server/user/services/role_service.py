@@ -6,7 +6,6 @@
 from server.common.number_generator import generate_role_no
 from server.extensions import db
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.user.model import TUser, TUserRoleRel, TRole, TPermission, TRolePermissionRel
@@ -17,9 +16,6 @@ log = get_logger(__name__)
 
 @http_service
 def query_role_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = []
     if req.attr.roleNo:
@@ -31,21 +27,19 @@ def query_role_list(req: RequestDTO):
     if req.attr.state:
         conditions.append(TRole.STATE.like(f'%{req.attr.state}%'))
 
-    # 列表总数
-    total_size = TRole.query.filter(*conditions).count()
-    # 列表数据
-    roles = TRole.query.filter(*conditions).order_by(TRole.CREATED_TIME.desc()).offset(offset).limit(limit).all()
+    pagination = TRole.query.filter(
+        *conditions).order_by(TRole.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for role in roles:
+    for item in pagination.items:
         data_set.append({
-            'roleNo': role.ROLE_NO,
-            'roleName': role.ROLE_NAME,
-            'roleDesc': role.ROLE_DESC,
-            'state': role.STATE
+            'roleNo': item.ROLE_NO,
+            'roleName': item.ROLE_NAME,
+            'roleDesc': item.ROLE_DESC,
+            'state': item.STATE
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service
@@ -119,9 +113,6 @@ def delete_role(req: RequestDTO):
 
 @http_service
 def query_user_role_rel_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [
         TUser.DEL_STATE == 0,
@@ -140,31 +131,25 @@ def query_user_role_rel_list(req: RequestDTO):
     if req.attr.userName:
         conditions.append(TUser.USER_NAME.like(f'%{req.attr.userName}%'))
 
-    # 列表总数
-    total_size = db.session.query(TUser, TUser, TUserRoleRel).filter(*conditions).count()
-
-    # 列表数据
-    results = db.session.query(
+    pagination = db.session.query(
         TUserRoleRel.USER_NO,
         TUserRoleRel.ROLE_NO,
         TRole.ROLE_NAME,
         TUser.USER_NAME,
         TUserRoleRel.CREATED_TIME
-    ).filter(*conditions).order_by(
-        TUserRoleRel.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
+    ).filter(*conditions).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for result in results:
+    for item in pagination.items:
         data_set.append({
-            'userNo': result.USER_NO,
-            'roleNo': result.ROLE_NO,
-            'userName': result.USER_NAME,
-            'roleName': result.ROLE_NAME,
+            'userNo': item.USER_NO,
+            'roleNo': item.ROLE_NO,
+            'userName': item.USER_NAME,
+            'roleName': item.ROLE_NAME,
         })
 
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service
@@ -187,9 +172,6 @@ def delete_user_role_rel(req: RequestDTO):
 
 @http_service
 def query_role_permission_rel_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [
         TRole.DEL_STATE == 0,
@@ -212,11 +194,7 @@ def query_role_permission_rel_list(req: RequestDTO):
     if req.attr.method:
         conditions.append(TPermission.METHOD.like(f'%{req.attr.method}%'))
 
-    # 列表总数
-    total_size = db.session.query(TRole, TPermission, TRolePermissionRel).filter(*conditions).count()
-
-    # 列表数据
-    results = db.session.query(
+    pagination = db.session.query(
         TRolePermissionRel.ROLE_NO,
         TRolePermissionRel.PERMISSION_NO,
         TRole.ROLE_NAME,
@@ -224,25 +202,21 @@ def query_role_permission_rel_list(req: RequestDTO):
         TPermission.ENDPOINT,
         TPermission.METHOD,
         TRolePermissionRel.CREATED_TIME
-    ).filter(
-        *conditions
-    ).order_by(
-        TRolePermissionRel.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
+    ).filter(*conditions).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for result in results:
+    for item in pagination.items:
         data_set.append({
-            'roleNo': result.ROLE_NO,
-            'roleName': result.ROLE_NAME,
-            'permissionNo': result.PERMISSION_NO,
-            'permissionName': result.PERMISSION_NAME,
-            'endpoint': result.ENDPOINT,
-            'method': result.METHOD
+            'roleNo': item.ROLE_NO,
+            'roleName': item.ROLE_NAME,
+            'permissionNo': item.PERMISSION_NO,
+            'permissionName': item.PERMISSION_NAME,
+            'endpoint': item.ENDPOINT,
+            'method': item.METHOD
         })
 
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service

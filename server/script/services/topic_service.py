@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 from server.common.number_generator import generate_topic_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.script.model import TTestTopic
@@ -16,11 +15,9 @@ log = get_logger(__name__)
 
 @http_service
 def query_topic_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [TTestTopic.DEL_STATE == 0]
+
     if req.attr.topicNo:
         conditions.append(TTestTopic.TOPIC_NO.like(f'%{req.attr.topicNo}%'))
     if req.attr.topicName:
@@ -28,23 +25,18 @@ def query_topic_list(req: RequestDTO):
     if req.attr.topicDesc:
         conditions.append(TTestTopic.TOPIC_DESC.like(f'%{req.attr.topicDesc}%'))
 
-    # 列表总数
-    total_size = TTestTopic.query.filter(*conditions).count()
+    pagination = TTestTopic.query.filter(
+        *conditions).order_by(TTestTopic.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 列表数据
-    topics = TTestTopic.query.filter(
-        *conditions
-    ).order_by(TTestTopic.CREATED_TIME.desc()).offset(offset).limit(limit).all()
-
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for topic in topics:
+    for item in pagination.items:
         data_set.append({
-            'topicNo': topic.TOPIC_NO,
-            'topicName': topic.TOPIC_NAME,
-            'topicDesc': topic.TOPIC_DESC
+            'topicNo': item.TOPIC_NO,
+            'topicName': item.TOPIC_NAME,
+            'topicDesc': item.TOPIC_DESC
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service

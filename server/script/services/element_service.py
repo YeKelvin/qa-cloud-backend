@@ -8,7 +8,6 @@ from server.extensions import db
 from server.librarys.decorators.service import http_service
 from server.librarys.decorators.transaction import db_transaction
 from server.librarys.exception import ServiceError
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.script.model import TTestElement, TElementProperty, TElementChildRel, TProjectCollectionRel, TTestProject
@@ -20,9 +19,6 @@ log = get_logger(__name__)
 
 @http_service
 def query_element_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = []
     if req.attr.projectNo:
@@ -41,22 +37,24 @@ def query_element_list(req: RequestDTO):
         conditions.append(TTestElement.ENABLED.like(f'%{req.attr.enabled}%'))
 
     # 列表总数，列表数据
+    page = req.attr.page
+    page_size = req.attr.pageSize
     if req.attr.projectName:
-        total_size, elements = select_project_and_collection_rel_and_element(conditions, offset, limit)
+        items, total_size = select_project_and_collection_rel_and_element(conditions, page, page_size)
     elif req.attr.projectNo:
-        total_size, elements = select_project_collection_rel_and_element(conditions, offset, limit)
+        items, total_size = select_project_collection_rel_and_element(conditions, page, page_size)
     else:
-        total_size, elements = select_element(conditions, offset, limit)
+        items, total_size = select_element(conditions, page, page_size)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for element in elements:
+    for item in items:
         data_set.append({
-            'elementNo': element.ELEMENT_NO,
-            'elementName': element.ELEMENT_NAME,
-            'elementComments': element.ELEMENT_COMMENTS,
-            'elementType': element.ELEMENT_TYPE,
-            'enabled': element.ENABLED
+            'elementNo': item.ELEMENT_NO,
+            'elementName': item.ELEMENT_NAME,
+            'elementComments': item.ELEMENT_COMMENTS,
+            'elementType': item.ELEMENT_TYPE,
+            'enabled': item.ENABLED
         })
     return {'dataSet': data_set, 'totalSize': total_size}
 
@@ -289,42 +287,30 @@ def duplicate_element(req: RequestDTO):
     return None
 
 
-def select_element(conditions: list, offset, limit) -> (int, list):
+def select_element(conditions: list, page, page_size) -> (int, list):
     """查询 TTestElement表
     """
-    # 列表总数
-    total_size = TTestElement.query.filter(*conditions).count()
+    pagination = TTestElement.query.filter(
+        *conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
 
-    # 列表数据
-    elements = TTestElement.query.filter(
-        *conditions
-    ).order_by(
-        TTestElement.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
-
-    return total_size, elements
+    return pagination.items, pagination.total
 
 
-def select_project_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+def select_project_collection_rel_and_element(conditions: list, page, page_size) -> (int, list):
     """TProjectCollectionRel，TTestElement连表查询
     """
     conditions.append(TProjectCollectionRel.DEL_STATE == 0)
     conditions.append(TProjectCollectionRel.COLLECTION_NO == TTestElement.ELEMENT_NO)
 
-    # 列表总数
-    total_size = db.session.query(TTestElement, TProjectCollectionRel).filter(*conditions).count()
+    pagination = db.session.query(
+        TTestElement,
+        TProjectCollectionRel
+    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
 
-    # 列表数据
-    elements = db.session.query(TTestElement, TProjectCollectionRel).filter(
-        *conditions
-    ).order_by(
-        TTestElement.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
-
-    return total_size, elements
+    return pagination.items, pagination.total
 
 
-def select_project_and_collection_rel_and_element(conditions: list, offset, limit) -> (int, list):
+def select_project_and_collection_rel_and_element(conditions: list, page, page_size) -> (int, list):
     """TTestProject，TProjectCollectionRel，TTestElement连表查询
     """
     conditions.append(TTestProject.DEL_STATE == 0)
@@ -332,17 +318,13 @@ def select_project_and_collection_rel_and_element(conditions: list, offset, limi
     conditions.append(TTestElement.ELEMENT_NO == TProjectCollectionRel.COLLECTION_NO)
     conditions.append(TTestProject.PROJECT_NO == TProjectCollectionRel.PROJECT_NO)
 
-    # 列表总数
-    total_size = db.session.query(TTestElement, TTestProject, TProjectCollectionRel).filter(*conditions).count()
+    pagination = db.session.query(
+        TTestElement,
+        TTestProject,
+        TProjectCollectionRel
+    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(page, page_size)
 
-    # 列表数据
-    elements = db.session.query(TTestElement, TTestProject, TProjectCollectionRel).filter(
-        *conditions
-    ).order_by(
-        TTestElement.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
-
-    return total_size, elements
+    return pagination.items, pagination.total
 
 
 def create_element_no_commit(element_name, element_comments, element_type,

@@ -10,7 +10,6 @@ from server.librarys.decorators.service import http_service
 from server.librarys.decorators.transaction import db_transaction
 from server.librarys.exception import ServiceError
 from server.librarys.helpers.global_helper import Global
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.user.model import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
@@ -145,7 +144,6 @@ def register(req: RequestDTO):
 
 @http_service
 def reset_login_password(req: RequestDTO):
-    """todo"""
     user = TUser.query_by(USER_NO=req.attr.userNo).first()
     Verify.not_empty(user, '用户不存在')
 
@@ -158,9 +156,6 @@ def reset_login_password(req: RequestDTO):
 
 @http_service
 def query_user_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [TUser.DEL_STATE == 0]
 
@@ -175,15 +170,13 @@ def query_user_list(req: RequestDTO):
     if req.attr.state:
         conditions.append(TUser.STATE.like(f'%{req.attr.state}%'))
 
-    # 列表总数
-    total_size = TUser.query.filter(*conditions).count()
-    # 列表数据
-    users = TUser.query.filter(*conditions).order_by(TUser.CREATED_TIME.desc()).offset(offset).limit(limit).all()
+    pagination = TUser.query.filter(
+        *conditions).order_by(TUser.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for user in users:
-        user_roles = TUserRoleRel.query_by(USER_NO=user.USER_NO).all()
+    for item in pagination.items:
+        user_roles = TUserRoleRel.query_by(USER_NO=item.USER_NO).all()
         roles = []
         for user_role in user_roles:
             role = TRole.query_by(ROLE_NO=user_role.ROLE_NO).first()
@@ -191,15 +184,15 @@ def query_user_list(req: RequestDTO):
                 continue
             roles.append(role.ROLE_NAME)
         data_set.append({
-            'userNo': user.USER_NO,
-            'userName': user.USER_NAME,
-            'mobileNo': user.MOBILE_NO,
-            'email': user.EMAIL,
-            'avatar': user.AVATAR,
-            'state': user.STATE,
+            'userNo': item.USER_NO,
+            'userName': item.USER_NAME,
+            'mobileNo': item.MOBILE_NO,
+            'email': item.EMAIL,
+            'avatar': item.AVATAR,
+            'state': item.STATE,
             'roles': roles
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service

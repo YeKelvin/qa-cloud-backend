@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 from server.common.number_generator import generate_project_no
 from server.librarys.decorators.service import http_service
-from server.librarys.helpers.sqlalchemy_helper import pagination
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
 from server.script.model import TTestProject
@@ -16,9 +15,6 @@ log = get_logger(__name__)
 
 @http_service
 def query_project_list(req: RequestDTO):
-    # 分页
-    offset, limit = pagination(req)
-
     # 查询条件
     conditions = [TTestProject.DEL_STATE == 0]
 
@@ -29,25 +25,18 @@ def query_project_list(req: RequestDTO):
     if req.attr.projectDesc:
         conditions.append(TTestProject.PROJECT_DESC.like(f'%{req.attr.projectDesc}%'))
 
-    # 列表总数
-    total_size = TTestProject.query.filter(*conditions).count()
+    pagination = TTestProject.query.filter(
+        *conditions).order_by(TTestProject.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
 
-    # 列表数据
-    projects = TTestProject.query.filter(
-        *conditions
-    ).order_by(
-        TTestProject.CREATED_TIME.desc()
-    ).offset(offset).limit(limit).all()
-
-    # 组装响应数据
+    # 组装数据
     data_set = []
-    for project in projects:
+    for item in pagination.items:
         data_set.append({
-            'projectNo': project.PROJECT_NO,
-            'projectName': project.PROJECT_NAME,
-            'projectDesc': project.PROJECT_DESC
+            'projectNo': item.PROJECT_NO,
+            'projectName': item.PROJECT_NAME,
+            'projectDesc': item.PROJECT_DESC
         })
-    return {'dataSet': data_set, 'totalSize': total_size}
+    return {'dataSet': data_set, 'totalSize': pagination.total}
 
 
 @http_service
