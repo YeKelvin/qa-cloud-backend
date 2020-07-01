@@ -178,8 +178,8 @@ def init_permission():
 def init_user_role_rel():
     """初始化用户角色关联关系
     """
-    user = TUser.query.filter_by(USER_NAME='超级管理员')
-    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员')
+    user = TUser.query.filter_by(USER_NAME='超级管理员').first()
+    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
     TUserRoleRel.create(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联关系成功')
 
@@ -189,7 +189,7 @@ def init_role_permission_rel():
     """初始化角色权限关联关系
     """
     permissions = TPermission.query.all()
-    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员')
+    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
     for permission in permissions:
         TRolePermissionRel.create(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联关系成功')
