@@ -3,59 +3,16 @@
 # @File    : number_generator
 # @Time    : 2020/3/20 14:03
 # @Author  : Kelvin.Ye
-from server.librarys.sequence import Sequence
+from server.utils import config
+from server.utils.snowflake import IdWorker
 
-__number_length__ = 10
-
-__seq_user_no__ = Sequence('seq_user_no')
-__seq_role_no__ = Sequence('seq_role_no')
-__seq_permission_no__ = Sequence('seq_permission_no')
-
-__seq_project_no__ = Sequence('seq_workspace_no')
-__seq_topic_no__ = Sequence('seq_topic_no')
-__seq_element_no__ = Sequence('seq_element_no')
-__seq_package_no__ = Sequence('seq_package_no')
-__seq_env_var_no__ = Sequence('seq_env_var_no')
-__seq_http_header_no__ = Sequence('seq_http_header_no')
+__ID_WORKER__ = IdWorker(
+    int(config.get('snowflake', 'datacenter.id')),
+    int(config.get('snowflake', 'worker.id')),
+    int(config.get('snowflake', 'sequence'))
+)
 
 
-def generate_user_no():
-    """生成用户编号
-    """
-    return 'U' + str(__seq_user_no__.next_value()).zfill(__number_length__)
-
-
-def generate_role_no():
-    """生成角色编号
-    """
-    return 'R' + str(__seq_role_no__.next_value()).zfill(__number_length__)
-
-
-def generate_permission_no():
-    """生成权限编号
-    """
-    return 'P' + str(__seq_permission_no__.next_value()).zfill(__number_length__)
-
-
-def generate_workspace_no():
-    return 'WS' + str(__seq_project_no__.next_value()).zfill(__number_length__)
-
-
-def generate_topic_no():
-    return 'TOPIC' + str(__seq_topic_no__.next_value()).zfill(__number_length__)
-
-
-def generate_element_no():
-    return 'EL' + str(__seq_element_no__.next_value()).zfill(__number_length__)
-
-
-def generate_package_no():
-    return 'EP' + str(__seq_package_no__.next_value()).zfill(__number_length__)
-
-
-def generate_env_no():
-    return 'ENV' + str(__seq_env_var_no__.next_value()).zfill(__number_length__)
-
-
-def generate_header_no():
-    return 'HEADER' + str(__seq_http_header_no__.next_value()).zfill(__number_length__)
+def generate_no():
+    """生成编号"""
+    return __ID_WORKER__.new_id()

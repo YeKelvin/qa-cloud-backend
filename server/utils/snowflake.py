@@ -49,7 +49,7 @@ class InvalidSystemClock(Exception):
     pass
 
 
-class IdWorker(object):
+class IdWorker:
     def __init__(self, datacenter_id, worker_id, sequence=0):
         """
 
@@ -71,7 +71,7 @@ class IdWorker(object):
 
         self.last_timestamp = -1  # 上次计算的时间戳
 
-    def get_id(self):
+    def new_id(self):
         """获取新ID
         """
         timestamp = int(time.time() * 1000)
@@ -111,4 +111,4 @@ class IdWorker(object):
 
 if __name__ == '__main__':
     worker = IdWorker(1, 2, 0)
-    print(worker.get_id())
+    print(worker.new_id())

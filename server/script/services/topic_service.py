@@ -3,7 +3,7 @@
 # @File    : topic_service
 # @Time    : 2020/3/13 16:56
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_topic_no
+from server.common.number_generator import generate_no
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify
@@ -58,7 +58,7 @@ def create_topic(req: RequestDTO):
     Verify.empty(topic, '测试主题已存在')
 
     TTestTopic.create(
-        TOPIC_NO=generate_topic_no(),
+        TOPIC_NO=generate_no(),
         TOPIC_NAME=req.attr.topicName,
         TOPIC_DESC=req.attr.topicDesc
     )

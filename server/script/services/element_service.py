@@ -3,7 +3,7 @@
 # @File    : element_service
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_element_no
+from server.common.number_generator import generate_no
 from server.extensions import db
 from server.librarys.decorators.service import http_service
 from server.librarys.decorators.transaction import db_transaction
@@ -299,7 +299,7 @@ def duplicate_element(req: RequestDTO):
 def create_element_with_transaction(element_name, element_comments, element_type,
                                   propertys: dict = None,
                                   child_list: [dict] = None):
-    element_no = generate_element_no()
+    element_no = generate_no()
 
     TTestElement.create(
         commit=False,

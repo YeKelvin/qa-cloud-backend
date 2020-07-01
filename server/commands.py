@@ -6,7 +6,7 @@
 import click
 from flask.cli import with_appcontext
 
-from server.common.number_generator import generate_user_no, generate_role_no, generate_permission_no
+from server.common.number_generator import generate_no
 from server.extensions import db
 from server.librarys.sequence import TSequence
 from server.script.model import (
@@ -45,7 +45,6 @@ def initdb(drop):
 def initdata():
     """初始化数据
     """
-    init_seq()
     init_user()
     init_role()
     init_permission()
@@ -56,39 +55,24 @@ def initdata():
 
 
 @with_appcontext
-def init_seq():
-    """初始化序列（SQLite专用）
-    """
-    TSequence.create(SEQ_NAME='seq_user_no')
-    TSequence.create(SEQ_NAME='seq_role_no')
-    TSequence.create(SEQ_NAME='seq_permission_no')
-    TSequence.create(SEQ_NAME='seq_workspace_no')
-    TSequence.create(SEQ_NAME='seq_topic_no')
-    TSequence.create(SEQ_NAME='seq_element_no')
-    TSequence.create(SEQ_NAME='seq_http_header_no')
-    TSequence.create(SEQ_NAME='seq_env_var_no')
-    TSequence.create(SEQ_NAME='seq_package_no')
-    click.echo('创建序列成功')
-
-
-@with_appcontext
 def init_user():
     """初始化用户
     """
+    user_no = generate_no()
     TUser.create(
-        USER_NO=generate_user_no(),  # U0000000001
+        USER_NO=user_no,
         USER_NAME='超级管理员',
         STATE='ENABLE'
     )
 
     TUserLoginInfo.create(
-        USER_NO='U0000000001',
+        USER_NO=user_no,
         LOGIN_NAME='admin',
         LOGIN_TYPE='ACCOUNT'
     )
 
     TUserPassword.create(
-        USER_NO='U0000000001',
+        USER_NO=user_no,
         PASSWORD=encrypt_password('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
         ERROR_TIMES=0,
@@ -101,10 +85,10 @@ def init_user():
 def init_role():
     """初始化角色
     """
-    __create_role(name='SuperAdmin', role_desc='超级管理员')  # R0000000001
-    __create_role(name='Admin', role_desc='管理员')  # R0000000002
-    __create_role(name='Leader', role_desc='组长')  # R0000000003
-    __create_role(name='General', role_desc='用户')  # R0000000004
+    __create_role(name='SuperAdmin', role_desc='超级管理员')
+    __create_role(name='Admin', role_desc='管理员')
+    __create_role(name='Leader', role_desc='组长')
+    __create_role(name='General', role_desc='用户')
 
     click.echo('创建角色成功')
 
@@ -194,7 +178,9 @@ def init_permission():
 def init_user_role_rel():
     """初始化用户角色关联关系
     """
-    TUserRoleRel.create(USER_NO='U0000000001', ROLE_NO='R0000000001')
+    user = TUser.query.filter_by(USER_NAME='超级管理员')
+    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员')
+    TUserRoleRel.create(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联关系成功')
 
 
@@ -203,20 +189,21 @@ def init_role_permission_rel():
     """初始化角色权限关联关系
     """
     permissions = TPermission.query.all()
+    role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员')
     for permission in permissions:
-        TRolePermissionRel.create(ROLE_NO='R0000000001', PERMISSION_NO=permission.PERMISSION_NO)
+        TRolePermissionRel.create(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联关系成功')
 
 
 @with_appcontext
 def init_action_log():
-    TActionLog.create(ACTION_DESC='init database data')
+    TActionLog.create(ACTION_DESC='INIT DB')
     click.echo('初始化操作日志数据成功')
 
 
 def __create_role(name, role_desc):
     TRole.create(
-        ROLE_NO=generate_role_no(),
+        ROLE_NO=generate_no(),
         ROLE_NAME=name,
         ROLE_DESC=role_desc,
         STATE='ENABLE'
@@ -225,7 +212,7 @@ def __create_role(name, role_desc):
 
 def __create_permission(name, method, endpoint):
     TPermission.create(
-        PERMISSION_NO=generate_permission_no(),
+        PERMISSION_NO=generate_no(),
         PERMISSION_NAME=name,
         METHOD=method,
         ENDPOINT=endpoint,

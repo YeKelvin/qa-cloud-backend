@@ -3,7 +3,7 @@
 # @File    : role_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_role_no
+from server.common.number_generator import generate_no
 from server.extensions import db
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
@@ -63,7 +63,7 @@ def create_role(req: RequestDTO):
     Verify.empty(role, '角色已存在')
 
     TRole.create(
-        ROLE_NO=generate_role_no(),
+        ROLE_NO=generate_no(),
         ROLE_NAME=req.attr.roleName,
         ROLE_DESC=req.attr.roleDesc,
         STATE='ENABLE'

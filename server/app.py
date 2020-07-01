@@ -3,7 +3,6 @@
 # @File    : app.py
 # @Time    : 2019/11/7 11:02
 # @Author  : Kelvin.Ye
-import logging
 import os
 
 from flasgger import Swagger
@@ -13,7 +12,7 @@ from flask_cors import CORS
 from server import user, system, commands, hooks, script
 from server.extensions import db, swagger, migrate
 from server.utils import config
-from server.utils.log_util import get_logger, CONSOLE_HANDLER, LEVEL
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
@@ -23,7 +22,6 @@ __app__ = None
 def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
-    # configure_logger()
     register_cors(app)
     register_extensions(app)
     register_blueprints(app)
@@ -49,12 +47,6 @@ def configure_flask(app):
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
     )
-
-
-def configure_logger():
-    logger = logging.getLogger()
-    logger.addHandler(CONSOLE_HANDLER)
-    logger.setLevel(LEVEL)
 
 
 def register_cors(app):
