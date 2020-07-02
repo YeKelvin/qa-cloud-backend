@@ -16,7 +16,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_element_list():
-    """分页查询测试元素列表
+    """分页查询测试元素列表 todo 需要支持topic
     """
     req = JsonParser(
         Argument('elementNo'),
@@ -36,7 +36,7 @@ def query_element_list():
 @require_login
 @require_permission
 def query_element_all():
-    """查询所有测试元素
+    """查询所有测试元素 todo 需要支持topic
     """
     req = JsonParser(
         Argument('elementType'),
@@ -58,31 +58,31 @@ def query_element_info():
     return service.query_element_info(req)
 
 
-@blueprint.route('/element/child', methods=['GET'])
+@blueprint.route('/element/children', methods=['GET'])
 @require_login
 @require_permission
-def query_element_child():
+def query_element_children():
     """查询测试元素子代
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('elementType'),
+        Argument('depth', type=bool, required=True, default=True),
     ).parse()
-    return service.query_element_child(req)
+    return service.query_element_children(req)
 
 
 @blueprint.route('/element', methods=['POST'])
 @require_login
 @require_permission
 def create_element():
-    """新增测试元素（支持新增子代，子代还必须包含 order属性）
+    """新增测试元素（支持新增子代，子代必须包含 order属性）
     """
     req = JsonParser(
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementComments'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('childList'),
+        Argument('children'),
         Argument('workspaceNo'),
     ).parse()
     return service.create_element(req)
@@ -92,7 +92,7 @@ def create_element():
 @require_login
 @require_permission
 def modify_element():
-    """修改测试元素（支持修改子代，子代还必须包含 elementNo属性和 order属性）
+    """修改测试元素（支持修改子代，子代必须包含elementNo和order）
     """
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
@@ -101,7 +101,7 @@ def modify_element():
         Argument('elementType'),
         Argument('enabled'),
         Argument('propertys'),
-        Argument('childList'),
+        Argument('children'),
     ).parse()
     return service.modify_element(req)
 
@@ -170,7 +170,7 @@ def modify_element_property():
     return service.modify_element_property(req)
 
 
-@blueprint.route('/element/child', methods=['POST'])
+@blueprint.route('/element/children', methods=['POST'])
 @require_login
 @require_permission
 def add_element_child():
@@ -178,22 +178,22 @@ def add_element_child():
     """
     req = JsonParser(
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('childList', required=True, nullable=False, help='子元素列表不能为空'),
+        Argument('children', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
-    return service.add_element_child(req)
+    return service.add_element_children(req)
 
 
-@blueprint.route('/element/child', methods=['PUT'])
+@blueprint.route('/element/children', methods=['PUT'])
 @require_login
 @require_permission
 def modify_element_child():
-    """根据父元素编号修改元素子代（子代还必须包含 elementNo属性和 order属性）
+    """根据父元素编号修改元素子代（子代必须包含elementNo和order）
     """
     req = JsonParser(
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('childList', required=True, nullable=False, help='子元素列表不能为空'),
+        Argument('children', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
-    return service.modify_element_child(req)
+    return service.modify_element_children(req)
 
 
 @blueprint.route('/element/child/order/up', methods=['PATCH'])

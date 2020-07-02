@@ -58,7 +58,6 @@ def query_element_list(req: RequestDTO):
         data_set.append({
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
-            'elementComments': item.ELEMENT_COMMENTS,
             'elementType': item.ELEMENT_TYPE,
             'enabled': item.ENABLED
         })
@@ -94,7 +93,6 @@ def query_element_all(req: RequestDTO):
         result.append({
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
-            'elementComments': item.ELEMENT_COMMENTS,
             'elementType': item.ELEMENT_TYPE,
             'enabled': item.ENABLED
         })
@@ -107,6 +105,7 @@ def query_element_info(req: RequestDTO):
     Verify.not_empty(element, '测试元素不存在')
 
     el_props = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo).all()
+    has_children = TElementChildRel.query_by(PARENT_NO=req.attr.elementNo).count() > 0
     propertys = {}
     for prop in el_props:
         propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
@@ -117,29 +116,35 @@ def query_element_info(req: RequestDTO):
         'elementComments': element.ELEMENT_COMMENTS,
         'elementType': element.ELEMENT_TYPE,
         'enabled': element.ENABLED,
-        'propertys': propertys
+        'propertys': propertys,
+        'hasChildren': has_children
     }
 
 
 @http_service
-def query_element_child(req: RequestDTO):
-    child_rels = TElementChildRel.query_by(PARENT_NO=req.attr.elementNo).all()
-    # 根据 child_order排序
-    child_rels.sort(key=lambda k: k.CHILD_ORDER)
+def query_element_children(req: RequestDTO):
+    return depth_query_element_children(req.attr.elementNo, req.attr.depth)
+
+
+def depth_query_element_children(elementNo, depth):
     result = []
-    for child_rel in child_rels:
-        conditions = [TTestElement.DEL_STATE == 0, TTestElement.ELEMENT_NO == child_rel.CHILD_NO]
-        if req.attr.elementType:
-            conditions.append(TTestElement.ELEMENT_TYPE == req.attr.elementType)
-        element = TTestElement.query.filter(*conditions).first()
+    element_children_rel = TElementChildRel.query_by(PARENT_NO=elementNo).all()
+    if not element_children_rel:
+        return result
+
+    # 根据 child_order排序
+    element_children_rel.sort(key=lambda k: k.CHILD_ORDER)
+    for element_child_rel in element_children_rel:
+        element = TTestElement.query_by(ELEMENT_NO=element_child_rel.CHILD_NO).first()
         if element:
+            children = depth and query_element_children(element_child_rel.CHILD_NO, depth) or []
             result.append({
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
-                'elementComments': element.ELEMENT_COMMENTS,
                 'elementType': element.ELEMENT_TYPE,
                 'enabled': element.ENABLED,
-                'childOrder': child_rel.CHILD_ORDER
+                'order': element_child_rel.CHILD_ORDER,
+                'children': children
             })
     return result
 
@@ -152,7 +157,7 @@ def create_element(req: RequestDTO):
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
         propertys=req.attr.propertys,
-        child_list=req.attr.childList
+        children=req.attr.children
     )
 
     if req.attr.workspaceNo:
@@ -177,7 +182,7 @@ def modify_element(req: RequestDTO):
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
         propertys=req.attr.propertys,
-        child_list=req.attr.childList
+        children=req.attr.children
     )
     return None
 
@@ -233,18 +238,18 @@ def modify_element_property(req: RequestDTO):
 
 @http_service
 @db_transaction
-def add_element_child(req: RequestDTO):
+def add_element_children(req: RequestDTO):
     add_element_child_with_transaction(
         parent_no=req.attr.parentNo,
-        child_list=req.attr.childList
+        children=req.attr.children
     )
     return None
 
 
 @http_service
 @db_transaction
-def modify_element_child(req: RequestDTO):
-    modify_element_child_with_transaction(child_list=req.attr.childList)
+def modify_element_children(req: RequestDTO):
+    modify_element_child_with_transaction(children=req.attr.children)
 
 
 @http_service
@@ -252,9 +257,9 @@ def move_up_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
-    childs_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
+    children_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     child_current_order = child_rel.CHILD_ORDER
-    if childs_length == 1 or child_current_order == 1:
+    if children_length == 1 or child_current_order == 1:
         return None
 
     upper_child_rel = TElementChildRel.query_by(
@@ -272,9 +277,9 @@ def move_down_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
     Verify.not_empty(child_rel, '子元素不存在')
 
-    childs_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
+    children_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     current_child_order = child_rel.CHILD_ORDER
-    if childs_length == current_child_order:
+    if children_length == current_child_order:
         return None
 
     lower_child_rel = TElementChildRel.query_by(
@@ -297,10 +302,8 @@ def duplicate_element(req: RequestDTO):
 
 
 def create_element_with_transaction(element_name, element_comments, element_type,
-                                  propertys: dict = None,
-                                  child_list: [dict] = None):
+                                    propertys: dict = None, children: [dict] = None):
     element_no = generate_no()
-
     TTestElement.create(
         commit=False,
         ELEMENT_NO=element_no,
@@ -313,8 +316,8 @@ def create_element_with_transaction(element_name, element_comments, element_type
 
     if propertys:
         add_element_property_with_transaction(element_no, propertys)
-    if child_list:
-        add_element_child_with_transaction(element_no, child_list)
+    if children:
+        add_element_child_with_transaction(element_no, children)
 
     return element_no
 
@@ -331,14 +334,14 @@ def add_element_property_with_transaction(element_no, propertys: dict):
     db.session.flush()
 
 
-def add_element_child_with_transaction(parent_no, child_list: [dict]):
-    for child in child_list:
+def add_element_child_with_transaction(parent_no, children: [dict]):
+    for child in children:
         child_no = create_element_with_transaction(
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
             element_type=child.get('elementType'),
             propertys=child.get('propertys'),
-            child_list=child.get('childList')
+            children=child.get('children')
         )
         TElementChildRel.create(
             commit=False,
@@ -350,7 +353,7 @@ def add_element_child_with_transaction(parent_no, child_list: [dict]):
     db.session.flush()
 
 
-def modify_element_with_transaction(element_no, element_name, element_comments, element_type, propertys, child_list):
+def modify_element_with_transaction(element_no, element_name, element_comments, element_type, propertys, children):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     Verify.not_empty(element, '测试元素不存在')
 
@@ -366,8 +369,8 @@ def modify_element_with_transaction(element_no, element_name, element_comments, 
 
     if propertys is not None:
         modify_element_property_with_transaction(element_no, propertys)
-    if child_list is not None:
-        modify_element_child_with_transaction(child_list)
+    if children is not None:
+        modify_element_child_with_transaction(children)
 
 
 def modify_element_property_with_transaction(element_no, propertys: dict):
@@ -379,8 +382,8 @@ def modify_element_property_with_transaction(element_no, propertys: dict):
     db.session.flush()
 
 
-def modify_element_child_with_transaction(child_list: [dict]):
-    for child in child_list:
+def modify_element_child_with_transaction(children: [dict]):
+    for child in children:
         if 'elementNo' not in child:
             raise ServiceError('子代元素编号不能为空')
 
@@ -390,7 +393,7 @@ def modify_element_child_with_transaction(child_list: [dict]):
             element_comments=child.get('elementComments'),
             element_type=child.get('elementType'),
             propertys=child.get('propertys'),
-            child_list=child.get('childList')
+            children=child.get('children')
         )
 
 
