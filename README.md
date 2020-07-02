@@ -10,7 +10,14 @@ pipenv install
 
 ## 安装send-anywhere模块
 ```
-pip install git+https://github.com/YeKelvin/send-anywhere.git
+pip3 install git+https://github.com/YeKelvin/send-anywhere.git
+cd send-anywhere/
+python3 setup.py build
+python3 setup.py sdist
+cd dist/
+tar -zxvf send-anywhere-{version}.tar.gz
+cd send-anywhere-{version}/
+python3 setup.py install
 ```
 
 ## 配置 click命令行环境
