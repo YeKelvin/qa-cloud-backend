@@ -4,6 +4,7 @@
 # @Time    : 2019/11/7 15:30
 # @Author  : Kelvin.Ye
 import traceback
+from enum import Enum
 
 from flask import request
 
@@ -22,19 +23,23 @@ class Argument:
                  default: any = None,
                  required: bool = False,
                  nullable: bool = False,
-                 minlength: int = None,
-                 maxlength: int = None,
+                 min: int = None,
+                 max: int = None,
+                 enum: Enum = None,
+                 regular: str = None,
                  help: str = None):
         self.name = name  # 参数名称
         self.type = type  # 参数类型
-        self.default = default  # 默认值
-        self.required = required  # 参数是否必须
-        self.nullable = nullable  # 参数是否可为空
+        self.default = default  # 参数默认值
+        self.required = required  # 参数是否要求必须
+        self.nullable = nullable  # 参数是否允许为空
+        self.min = min  # 参数允许的最小值或最小长度 todo
+        self.max = max  # 参数允许的最大值或最大长度 todo
+        self.enum = enum  # 参数枚举校验 todo
+        self.regular = regular  # 参数正则表达式校验 todo
         self.help = help  # 参数不符合要求时的提示语
-        self.minlength = minlength
-        self.maxlength = maxlength
         if not isinstance(self.name, str):
-            raise TypeError('Argument name must be string')
+            raise TypeError('argument name must be string')
 
     def parse(self, has_key, value):
         """解析 HTTP参数
@@ -50,7 +55,7 @@ class Argument:
         if not has_key:
             if self.required and self.default is None:
                 # 若该参数必须且没有定义默认值则抛异常
-                raise ParseError(self.help or f'Required Error: {self.name} is required')
+                raise ParseError(self.help or f'required error: {self.name} is required')
             else:
                 # 返回默认值
                 return self.default
@@ -62,7 +67,7 @@ class Argument:
                 return self.default
             elif not self.nullable and self.required:
                 # 若该参数必须、不能为空且没有定义默认值则抛异常
-                raise ParseError(self.help or f'Value Error: {self.name} must not be null')
+                raise ParseError(self.help or f'value error: {self.name} must not be null')
             else:
                 # 若该参数可为空时，返回None
                 return None
@@ -77,7 +82,7 @@ class Argument:
             elif self.type == dict or self.type == list:
                 value = from_json(value)
         except (ValueError, AssertionError):
-            raise ParseError(self.help or f'Type Error: {self.name} type must be {self.type}')
+            raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
 
         return value
 
@@ -112,7 +117,7 @@ class BaseParser:
         request_dto = RequestDTO()
         try:
             if not self.args:
-                raise ParseError('Arguments不允许为空')
+                raise ParseError('arguments are not allowed to be empty')
             self._init(data)
             for arg in self.args:
                 request_dto.attr[arg.name] = arg.parse(*self._get(arg.name))
@@ -144,4 +149,4 @@ class JsonParser(BaseParser):
             elif isinstance(data, dict):
                 self.__data = data
             else:
-                raise ParseError('Invalid data type for parse')
+                raise ParseError('invalid data type for parse')
