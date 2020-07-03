@@ -137,7 +137,7 @@ def depth_query_element_children(elementNo, depth):
     for element_child_rel in element_children_rel:
         element = TTestElement.query_by(ELEMENT_NO=element_child_rel.CHILD_NO).first()
         if element:
-            children = depth and query_element_children(element_child_rel.CHILD_NO, depth) or []
+            children = depth and depth_query_element_children(element_child_rel.CHILD_NO, depth) or []
             result.append({
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
