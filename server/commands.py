@@ -6,15 +6,8 @@
 import click
 from flask.cli import with_appcontext
 
-from server.common.number_generator import generate_no
+from server.librarys.number_generator import generate_no
 from server.extensions import db
-from server.librarys.sequence import TSequence
-from server.script.model import (
-    TWorkspace, TWorkspaceTopicRel, TWorkspaceCollectionRel, TWorkspaceUserRel, TTestTopic, TTopicCollectionRel,
-    TTestElement, TElementProperty, TElementChildRel, TEnvironmentVariableCollection, TEnvironmentVariableCollectionRel,
-    TEnvironmentVariable, THTTPHeaderCollection, THTTPHeaderCollectionRel, THTTPHeader, TSQLConfiguration,
-    TElementPackage, TPackageElementRel, TScriptActivityLog
-)
 from server.system.model import TActionLog
 from server.user.model import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
 from server.utils.log_util import get_logger

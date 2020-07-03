@@ -3,7 +3,7 @@
 # @File    : topic_service
 # @Time    : 2020/3/13 16:56
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.librarys.number_generator import generate_no
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify

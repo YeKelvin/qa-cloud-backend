@@ -3,7 +3,7 @@
 # @File    : service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.librarys.number_generator import generate_no
 from server.librarys.decorators.service import http_service
 from server.librarys.request import RequestDTO
 from server.librarys.verify import Verify

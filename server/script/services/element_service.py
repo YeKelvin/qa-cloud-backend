@@ -3,7 +3,7 @@
 # @File    : element_service
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.librarys.number_generator import generate_no
 from server.extensions import db
 from server.librarys.decorators.service import http_service
 from server.librarys.decorators.transaction import db_transaction

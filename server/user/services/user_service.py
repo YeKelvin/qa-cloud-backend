@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime, timedelta
 
-from server.common.number_generator import generate_no
+from server.librarys.number_generator import generate_no
 from server.librarys.decorators.service import http_service
 from server.librarys.decorators.transaction import db_transaction
 from server.librarys.exception import ServiceError
