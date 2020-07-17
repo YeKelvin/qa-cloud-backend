@@ -86,23 +86,22 @@ def record_action(response):
 
 
 access_control_allow_Headers = (
-    'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-TOKEN'
+    'Accept,Accept-Encoding,Accept-Language,'
+    'Access-Control-Allow-Origin,Authorization,'
+    'Content-Type,Connection,Cache-Control,'
+    'Host,Origin,Referer,User-Agent'
 )
 
 
-def cross_domain_access_before():
-    if request.method == 'OPTIONS':
-        response = http_response()
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
-        response.headers['Access-Control-Max-Age'] = 24 * 60 * 60
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
-        return response
-
-
-def cross_domain_access_after(response):
+def cross_domain_access(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
+    # response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
+    response.headers['Access-Control-Allow-Headers'] = '*'
+
+    if request.method == 'OPTIONS':
+        response.headers['Access-Control-Max-Age'] = 60 * 60 * 24
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+
     return response
 
 

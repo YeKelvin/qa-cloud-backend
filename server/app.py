@@ -7,7 +7,6 @@ import os
 
 from flasgger import Swagger
 from flask import Flask
-from flask_cors import CORS
 
 from server import user, system, commands, hooks, script
 from server.extensions import db, swagger, migrate
@@ -22,7 +21,6 @@ __app__ = None
 def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
-    register_cors(app)
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
@@ -49,10 +47,6 @@ def configure_flask(app):
     )
 
 
-def register_cors(app):
-    CORS(app, supports_credentials=True)
-
-
 def register_extensions(app):
     """Register Flask extensions.
     """
@@ -72,6 +66,7 @@ def register_hooks(app):
     app.before_request(hooks.set_logid)
     app.before_request(hooks.set_user)
     app.after_request(hooks.record_action)
+    app.after_request(hooks.cross_domain_access)
 
 
 def register_shell_context(app):
