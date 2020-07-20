@@ -7,7 +7,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "==1.1.1"
+flask = "==1.1.2"
 flask-socketio = "==4.2.1"
 flask-sqlalchemy = "==2.4.1"
 flasgger = "==0.9.3"
