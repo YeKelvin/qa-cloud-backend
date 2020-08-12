@@ -25,6 +25,8 @@ flask-migrate = "==2.5.3"
 celery = "==4.4.2"
 pycryptodome = "*"
 uwsgi = "*"
+flake8 = "*"
+yapf = "*"
 
 [requires]
 python_version = "3.7"
