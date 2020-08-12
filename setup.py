@@ -3,7 +3,7 @@ import pathlib
 from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
-with open(r'{HERE}/README.md', 'r', encoding='utf-8') as f:
+with open(f'{HERE}/README.md', 'r', encoding='utf-8') as f:
     README = f.read()
 
 setup(
@@ -36,6 +36,8 @@ setup(
     ])
 
 """
+一、Option选项说明
+|-----------------------|-------------------------------------------------------
 |option                 |说明
 |-----------------------|-------------------------------------------------------
 |name	                |包名称
@@ -71,13 +73,10 @@ setup(
 |extras_require	        |当前包的高级/额外特性需要依赖的分发包
 |zip_safe	            |不压缩包，而是以目录的形式安装
 |-----------------------|-------------------------------------------------------
-"""
 
-"""
-根据不同操作系统安装不同的依赖
-
-install_requires=[
-'winkerberos; platform_system == "Windows"',
-'pykerberos; platform_system == "Linux"',
+二、根据不同操作系统安装不同的依赖
+install_requires = [
+    'winkerberos; platform_system == "Windows"',
+    'pykerberos; platform_system == "Linux"',
 ]
 """
