@@ -21,16 +21,31 @@ cd send-anywhere-{version}/
 python3 setup.py install
 ```
 
-## 配置 click命令行环境
+## 配置 click命令执行环境
+
+### bash
 
 ```bash
 set FLASK_APP=main.py;set FLASK_ENV=development
 ```
 
-或PyCharm Settings->Tools->Terminal->Environment Variables添加如下变量
+### PyCharm
 
-```bash
+Settings->Tools->Terminal->Environment Variables添加以下变量
+
+```args
 FLASK_APP=main.py;FLASK_ENV=development
+```
+
+### VS Code
+
+添加环境变量
+
+```json
+{
+    "FLASK_APP":"main.py",
+    "FLASK_ENV":"development"
+}
 ```
 
 ## 初始化
@@ -42,7 +57,7 @@ flask initdata
 
 ## 调试
 
-`flask run`
+`flask run --host 0.0.0.0 --port 5000`
 或
 运行 main.py
 
@@ -53,7 +68,7 @@ Nginx, uWSGI, Supervisor
 ## 启动uWSGI
 
 ```bash
-uwsgi --ini uWSGI.ini
+uwsgi --ini uwsgi.ini
 ```
 
 ## 技术说明
