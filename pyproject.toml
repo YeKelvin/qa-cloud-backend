@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "appui-automator"
+name = "test-platform-server"
 version = "0.1.0"
 description = ""
 authors = ["Kelvin.Ye <testmankelvin@163.com>"]
@@ -34,7 +34,7 @@ requests = "^2.24.0"
 elasticsearch = "^7.9.1"
 celery = "^5.0.1"
 pycryptodome = "3.9.8"
-uwsgi = "2.0.19.1"
+uwsgi = { version = "2.0.19.1", markers = "platform_system == 'Linux'" }
 flake8 = "*"
 yapf = "*"
 
