@@ -12,5 +12,5 @@ __pycache__/
 
 # pytest
 .pytest_cache/
-assert/
+asserts/
 report.html
