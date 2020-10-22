@@ -39,12 +39,31 @@ FLASK_APP=main.py;FLASK_ENV=development
 
 ### VS Code
 
-添加环境变量
+添加launch.json
 
 ```json
 {
-    "FLASK_APP":"main.py",
-    "FLASK_ENV":"development"
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "cwd": "${workspaceRoot}",
+            "env": {
+                "FLASK_APP": "main.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0"
+            },
+            "args": [
+                "run",
+                "--host 0.0.0.0",
+                "--port 5000"
+            ],
+            "jinja": false
+        }
+    ]
 }
 ```
 
