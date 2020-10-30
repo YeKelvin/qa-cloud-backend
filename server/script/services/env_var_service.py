@@ -3,9 +3,9 @@
 # @File    : env_var_service
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
-from server.librarys.decorators.service import http_service
-from server.librarys.request import RequestDTO
-from server.utils.log_util import get_logger
+from server.common.decorators.service import http_service
+from server.common.request import RequestDTO
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

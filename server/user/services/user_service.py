@@ -5,19 +5,19 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime, timedelta
 
-from server.librarys.number_generator import generate_no
-from server.librarys.decorators.service import http_service
-from server.librarys.decorators.transaction import db_transaction
-from server.librarys.exception import ServiceError
-from server.librarys.helpers.global_helper import Global
-from server.librarys.request import RequestDTO
-from server.librarys.verify import Verify
-from server.user.model import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
-                               TUserLoginLog, TUserPasswordKey)
+from server.common.number_generator import generate_no
+from server.common.decorators.service import http_service
+from server.common.decorators.transaction import db_transaction
+from server.common.exception import ServiceError
+from server.common.helpers.global_helper import Global
+from server.common.request import RequestDTO
+from server.common.verify import Verify
+from server.user.models import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
+                                TUserLoginLog, TUserPasswordKey)
 from server.user.utils.auth import Auth
-from server.utils.log_util import get_logger
-from server.utils.rsa_util import decrypt_by_rsa_private_key
-from server.utils.security import encrypt_password, check_password
+from server.common.utils.log_util import get_logger
+from server.common.utils.rsa_util import decrypt_by_rsa_private_key
+from server.common.utils.security import encrypt_password, check_password
 
 log = get_logger(__name__)
 

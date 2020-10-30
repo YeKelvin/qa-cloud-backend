@@ -8,8 +8,8 @@
 Database module, including the SQLAlchemy database object and DB-related utilities.
 """
 
-from server.extensions import db
-from server.utils.log_util import get_logger
+from server.extension import db
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

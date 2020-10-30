@@ -3,9 +3,9 @@
 # @File    : element_package_service
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
-from server.librarys.decorators.service import http_service
-from server.librarys.request import RequestDTO
-from server.utils.log_util import get_logger
+from server.common.decorators.service import http_service
+from server.common.request import RequestDTO
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

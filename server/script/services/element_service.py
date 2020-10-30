@@ -3,16 +3,16 @@
 # @File    : element_service
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from server.librarys.number_generator import generate_no
-from server.extensions import db
-from server.librarys.decorators.service import http_service
-from server.librarys.decorators.transaction import db_transaction
-from server.librarys.exception import ServiceError
-from server.librarys.request import RequestDTO
-from server.librarys.verify import Verify
-from server.script.model import TTestElement, TElementProperty, TElementChildRel, TWorkspaceCollectionRel, TWorkspace
+from server.common.number_generator import generate_no
+from server.extension import db
+from server.common.decorators.service import http_service
+from server.common.decorators.transaction import db_transaction
+from server.common.exception import ServiceError
+from server.common.request import RequestDTO
+from server.common.verify import Verify
+from server.script.models import TTestElement, TElementProperty, TElementChildRel, TWorkspaceCollectionRel, TWorkspace
 from server.script.services.element_helper import ElementStatus
-from server.utils.log_util import get_logger
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

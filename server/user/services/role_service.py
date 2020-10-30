@@ -3,12 +3,12 @@
 # @File    : role_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from server.librarys.decorators.service import http_service
-from server.librarys.number_generator import generate_no
-from server.librarys.request import RequestDTO
-from server.librarys.verify import Verify
-from server.user.model import TUserRoleRel, TRole, TRolePermissionRel
-from server.utils.log_util import get_logger
+from server.common.decorators.service import http_service
+from server.common.number_generator import generate_no
+from server.common.request import RequestDTO
+from server.common.verify import Verify
+from server.user.models import TUserRoleRel, TRole, TRolePermissionRel
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

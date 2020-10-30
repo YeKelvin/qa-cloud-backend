@@ -8,10 +8,10 @@ import os
 from flasgger import Swagger
 from flask import Flask
 
-from server import user, system, commands, hooks, script
-from server.extensions import db, swagger, migrate
-from server.utils import config
-from server.utils.log_util import get_logger
+from server import user, system, command, hook, script
+from server.extension import db, swagger, migrate
+from server.common.utils import config
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 
@@ -57,16 +57,16 @@ def register_extensions(app):
 def register_blueprints(app):
     """Register Flask blueprints.
     """
-    app.register_blueprint(user.routes.blueprint)
-    app.register_blueprint(system.route.blueprint)
-    app.register_blueprint(script.routes.blueprint)
+    app.register_blueprint(user.controllers.blueprint)
+    app.register_blueprint(system.controllers.blueprint)
+    app.register_blueprint(script.controllers.blueprint)
 
 
 def register_hooks(app):
-    app.before_request(hooks.set_logid)
-    app.before_request(hooks.set_user)
-    app.after_request(hooks.record_action)
-    app.after_request(hooks.cross_domain_access)
+    app.before_request(hook.set_logid)
+    app.before_request(hook.set_user)
+    app.after_request(hook.record_action)
+    app.after_request(hook.cross_domain_access)
 
 
 def register_shell_context(app):
@@ -82,8 +82,8 @@ def register_shell_context(app):
 def register_commands(app):
     """Register Click commands.
     """
-    app.cli.add_command(commands.initdb)
-    app.cli.add_command(commands.initdata)
+    app.cli.add_command(command.initdb)
+    app.cli.add_command(command.initdata)
 
 
 def register_swagger(app):

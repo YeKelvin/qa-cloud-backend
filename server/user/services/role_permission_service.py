@@ -3,12 +3,12 @@
 # @File    : role_permission_service
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye
-from server.extensions import db
-from server.librarys.decorators.service import http_service
-from server.librarys.request import RequestDTO
-from server.librarys.verify import Verify
-from server.user.model import TRole, TPermission, TRolePermissionRel
-from server.utils.log_util import get_logger
+from server.extension import db
+from server.common.decorators.service import http_service
+from server.common.request import RequestDTO
+from server.common.verify import Verify
+from server.user.models import TRole, TPermission, TRolePermissionRel
+from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : auth.py
-# @Time    : 2019/11/8 15:07
+# @File    : jwt_util.py
+# @Time    : 2019/11/7 15:50
 # @Author  : Kelvin.Ye
 
 """
@@ -39,7 +39,7 @@ import jwt
 from server.common.utils import config
 
 
-class Auth:
+class JWT:
     SECRET_KEY = config.get('jwt', 'secret.key')
     EXPIRE_TIME = int(config.get('jwt', 'expire.time'))
 
@@ -47,12 +47,9 @@ class Auth:
     def encode_auth_token(user_no, login_time):
         """生成认证Token
 
-        Args:
-            user_no:    用户编号
-            login_time: 登录时间
-
-        Returns:
-            token
+        :param user_no:     用户编号
+        :param login_time:  登录时间
+        :return:            token
         """
         header = {
             'typ': 'JWT',
@@ -60,7 +57,7 @@ class Auth:
         }
 
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=Auth.EXPIRE_TIME),  # 销毁的时间
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=JWT.EXPIRE_TIME),  # 销毁的时间
             'iat': datetime.datetime.utcnow(),  # 签发时间
             'iss': config.get('jwt', 'issuer'),  # 签发者
             'data': {
@@ -68,25 +65,20 @@ class Auth:
                 'loginTime': login_time
             }
         }
-        token = jwt.encode(payload, Auth.SECRET_KEY, algorithm='HS256', headers=header)
+        token = jwt.encode(payload, JWT.SECRET_KEY, algorithm='HS256', headers=header)
         return str(token, encoding='utf-8')
 
     @staticmethod
-    def decode_auth_token(auth_token) -> dict:
+    def decode_auth_token(auth_token):
         """验证Token
 
-        Args:
-            auth_token:
-
-        Returns:
-
-        Raises:
-            jwt.ExpiredSignatureError（token过期）
-            jwt.InvalidTokenError（无效token）
+        :param auth_token:
+        :return: int | str
+        :except: jwt.ExpiredSignatureError（token过期） | jwt.InvalidTokenError（无效token）
         """
 
         # 取消过期时间验证
-        payload = jwt.decode(auth_token, Auth.SECRET_KEY, options={'verify_exp': True})
+        payload = jwt.decode(auth_token, JWT.SECRET_KEY, options={'verify_exp': True})
         if 'data' in payload and 'id' in payload['data']:
             return payload
         else:
