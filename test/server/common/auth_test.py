@@ -5,12 +5,12 @@
 # @Author  : Kelvin.Ye
 import datetime
 
-from server.user.utils.auth import Auth
+from server.common.utils.auth import JWTAuth
 
 
 def test_auth_token():
     user_no = 'U00000001'
-    token = Auth.encode_auth_token(user_no, datetime.datetime.utcnow())
+    token = JWTAuth.encode_auth_token(user_no, datetime.datetime.utcnow())
     print(token)
-    payload = Auth.decode_auth_token(token)
+    payload = JWTAuth.decode_auth_token(token)
     print(payload)

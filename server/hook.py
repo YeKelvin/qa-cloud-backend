@@ -14,7 +14,7 @@ from server.common.helpers.global_helper import Global
 from server.common.response import http_response
 from server.system.models import TActionLog
 from server.user.models import TPermission
-from server.user.utils.auth import Auth
+from server.common.utils.auth import JWTAuth
 from server.common.utils import randoms
 from server.common.utils.log_util import get_logger
 
@@ -55,7 +55,7 @@ def set_user():
             return
         try:
             # 解密 token获取 payload
-            payload = Auth.decode_auth_token(auth_token)
+            payload = JWTAuth.decode_auth_token(auth_token)
             # 设置全局属性
             # Global.set('user', TUser.query.filter_by(user_no=payload['data']['id']).first())
             Global.set('user_no', payload['data']['id'])

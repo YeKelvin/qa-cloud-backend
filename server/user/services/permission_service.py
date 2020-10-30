@@ -3,10 +3,10 @@
 # @File    : permission_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.user.models import TPermission
 from server.common.utils.log_util import get_logger
 
@@ -71,7 +71,7 @@ def create_permission(req: RequestDTO):
     Verify.empty(permission, '权限已存在')
 
     TPermission.create(
-        PERMISSION_NO=generate_no(),
+        PERMISSION_NO=new_id(),
         PERMISSION_NAME=req.attr.permissionName,
         PERMISSION_DESC=req.attr.permissionDesc,
         ENDPOINT=req.attr.endpoint,

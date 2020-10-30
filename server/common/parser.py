@@ -8,7 +8,7 @@ from enum import Enum
 
 from flask import request
 
-from server.common.exception import ParseError
+from server.common.exceptions import ParseError
 from server.common.request import RequestDTO
 from server.common.utils.json_util import from_json
 from server.common.utils.log_util import get_logger

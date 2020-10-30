@@ -3,15 +3,15 @@
 # @File    : element_service
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.extension import db
 from server.common.decorators.service import http_service
 from server.common.decorators.transaction import db_transaction
-from server.common.exception import ServiceError
+from server.common.exceptions import ServiceError
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.script.models import TTestElement, TElementProperty, TElementChildRel, TWorkspaceCollectionRel, TWorkspace
-from server.script.services.element_helper import ElementStatus
+from server.script.enums import ElementStatus
 from server.common.utils.log_util import get_logger
 
 log = get_logger(__name__)
@@ -303,7 +303,7 @@ def duplicate_element(req: RequestDTO):
 
 def create_element_with_transaction(element_name, element_comments, element_type,
                                     propertys: dict = None, children: [dict] = None):
-    element_no = generate_no()
+    element_no = new_id()
     TTestElement.create(
         commit=False,
         ELEMENT_NO=element_no,

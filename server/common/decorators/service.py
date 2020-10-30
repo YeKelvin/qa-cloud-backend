@@ -8,7 +8,7 @@ from functools import wraps
 
 from flask import request, g
 
-from server.common.exception import ServiceError, ErrorCode
+from server.common.exceptions import ServiceError, ErrorCode
 from server.common.request import RequestDTO
 from server.common.response import http_response, ResponseDTO
 from server.common.utils.log_util import get_logger

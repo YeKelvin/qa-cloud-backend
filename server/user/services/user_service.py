@@ -5,16 +5,16 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime, timedelta
 
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.decorators.transaction import db_transaction
-from server.common.exception import ServiceError
+from server.common.exceptions import ServiceError
 from server.common.helpers.global_helper import Global
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.user.models import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
                                 TUserLoginLog, TUserPasswordKey)
-from server.user.utils.auth import Auth
+from server.common.utils.auth import JWTAuth
 from server.common.utils.log_util import get_logger
 from server.common.utils.rsa_util import decrypt_by_rsa_private_key
 from server.common.utils.security import encrypt_password, check_password
@@ -56,8 +56,8 @@ def login(req: RequestDTO):
     # 密码校验通过后生成access token
     user_token = TUserAccessToken.query_by(USER_NO=user.USER_NO).first()
     login_time = datetime.utcnow()
-    access_token = Auth.encode_auth_token(user.USER_NO, login_time.timestamp())
-    expire_in = login_time + timedelta(days=0, seconds=Auth.EXPIRE_TIME)
+    access_token = JWTAuth.encode_auth_token(user.USER_NO, login_time.timestamp())
+    expire_in = login_time + timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME)
 
     # 更新用户access token
     if user_token:
@@ -112,7 +112,7 @@ def register(req: RequestDTO):
     Verify.empty(user, '用户已存在')
 
     # 创建用户信息
-    user_no = generate_no()
+    user_no = new_id()
     TUser.create(
         commit=False,
         USER_NO=user_no,

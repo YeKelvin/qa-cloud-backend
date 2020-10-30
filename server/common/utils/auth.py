@@ -39,7 +39,7 @@ import jwt
 from server.common.utils import config
 
 
-class Auth:
+class JWTAuth:
     SECRET_KEY = config.get('jwt', 'secret.key')
     EXPIRE_TIME = int(config.get('jwt', 'expire.time'))
 
@@ -60,7 +60,7 @@ class Auth:
         }
 
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=Auth.EXPIRE_TIME),  # 销毁的时间
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),  # 销毁的时间
             'iat': datetime.datetime.utcnow(),  # 签发时间
             'iss': config.get('jwt', 'issuer'),  # 签发者
             'data': {
@@ -68,7 +68,7 @@ class Auth:
                 'loginTime': login_time
             }
         }
-        token = jwt.encode(payload, Auth.SECRET_KEY, algorithm='HS256', headers=header)
+        token = jwt.encode(payload, JWTAuth.SECRET_KEY, algorithm='HS256', headers=header)
         return str(token, encoding='utf-8')
 
     @staticmethod
@@ -86,7 +86,7 @@ class Auth:
         """
 
         # 取消过期时间验证
-        payload = jwt.decode(auth_token, Auth.SECRET_KEY, options={'verify_exp': True})
+        payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, options={'verify_exp': True})
         if 'data' in payload and 'id' in payload['data']:
             return payload
         else:

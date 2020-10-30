@@ -13,6 +13,6 @@ __ID_WORKER__ = IdWorker(
 )
 
 
-def generate_no():
+def new_id():
     """生成编号"""
     return __ID_WORKER__.new_id()

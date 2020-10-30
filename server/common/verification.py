@@ -3,7 +3,7 @@
 # @File    : verify
 # @Time    : 2019/11/21 15:04
 # @Author  : Kelvin.Ye
-from server.common.exception import ServiceError, ErrorCode
+from server.common.exceptions import ServiceError, ErrorCode
 
 
 class Verify:

@@ -6,7 +6,7 @@
 from server.extension import db
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.user.models import TUser, TUserRoleRel, TRole
 from server.common.utils.log_util import get_logger
 

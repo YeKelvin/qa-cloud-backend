@@ -7,9 +7,9 @@ from enum import Enum
 
 from flask import make_response
 
-from server.common.exception import ErrorCode
+from server.common.exceptions import ErrorCode
 from server.common.helpers.global_helper import Global
-from server.common.status import Status
+from server.common.enums import HttpStatus
 from server.common.utils.json_util import to_json
 
 
@@ -50,9 +50,7 @@ class ResponseDTO:
         return str(self.__dict__)
 
 
-def http_response(res: ResponseDTO = None,
-                  status: Enum = Status.CODE_200,
-                  **kwargs):
+def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, **kwargs):
     if not res:
         res = ResponseDTO(**kwargs)
     res_json = to_json(res.__dict__)

@@ -6,7 +6,7 @@
 import click
 from flask.cli import with_appcontext
 
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.extension import db
 from server.system.models import TActionLog
 from server.user.models import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
@@ -51,7 +51,7 @@ def initdata():
 def init_user():
     """初始化用户
     """
-    user_no = generate_no()
+    user_no = new_id()
     TUser.create(
         USER_NO=user_no,
         USER_NAME='超级管理员',
@@ -196,7 +196,7 @@ def init_action_log():
 
 def __create_role(name, role_desc):
     TRole.create(
-        ROLE_NO=generate_no(),
+        ROLE_NO=new_id(),
         ROLE_NAME=name,
         ROLE_DESC=role_desc,
         STATE='ENABLE'
@@ -205,7 +205,7 @@ def __create_role(name, role_desc):
 
 def __create_permission(name, method, endpoint):
     TPermission.create(
-        PERMISSION_NO=generate_no(),
+        PERMISSION_NO=new_id(),
         PERMISSION_NAME=name,
         METHOD=method,
         ENDPOINT=endpoint,

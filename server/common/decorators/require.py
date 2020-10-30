@@ -8,7 +8,7 @@ from functools import wraps
 
 from flask import request, g
 
-from server.common.exception import ErrorCode
+from server.common.exceptions import ErrorCode
 from server.common.helpers.global_helper import Global
 from server.common.response import http_response, ResponseDTO
 from server.user.models import (TUser, TRole, TUserRoleRel, TPermission, TRolePermissionRel,

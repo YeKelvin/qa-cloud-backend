@@ -3,10 +3,10 @@
 # @File    : service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.script.models import TWorkspace
 from server.common.utils.log_util import get_logger
 
@@ -62,7 +62,7 @@ def create_workspace(req: RequestDTO):
     Verify.empty(project, '工作空间已存在')
 
     TWorkspace.create(
-        WORKSPACE_NO=generate_no(),
+        WORKSPACE_NO=new_id(),
         WORKSPACE_NAME=req.attr.workspaceName,
         WORKSPACE_TYPE=req.attr.workspaceType,
         WORKSPACE_DESC=req.attr.workspaceDesc

@@ -4,9 +4,9 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from server.common.decorators.service import http_service
-from server.common.number_generator import generate_no
+from server.common.id_generator import new_id
 from server.common.request import RequestDTO
-from server.common.verify import Verify
+from server.common.verification import Verify
 from server.user.models import TUserRoleRel, TRole, TRolePermissionRel
 from server.common.utils.log_util import get_logger
 
@@ -62,7 +62,7 @@ def create_role(req: RequestDTO):
     Verify.empty(role, '角色已存在')
 
     TRole.create(
-        ROLE_NO=generate_no(),
+        ROLE_NO=new_id(),
         ROLE_NAME=req.attr.roleName,
         ROLE_DESC=req.attr.roleDesc,
         STATE='ENABLE'
