@@ -2,10 +2,10 @@
 
 ## 安装依赖
 
-```bash
-pip install pipenv
+```shell
+pip install --upgrade poetry
 cd test-platform-server/
-pipenv install
+python3 -m poetry install
 ```
 
 ## 安装send-anywhere模块
