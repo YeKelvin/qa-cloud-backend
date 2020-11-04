@@ -1,16 +1,15 @@
-.pycharm/
 .idea/
 .vscode/
 .cache/
 .venv/
 __pycache__/
 
-*.lock
-*config.ini
-*.db
-*.log
-
 # pytest
 .pytest_cache/
 assets/
 report.html
+
+*.lock
+*config.ini
+*.db
+*.log
