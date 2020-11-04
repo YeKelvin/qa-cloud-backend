@@ -26,8 +26,8 @@ def set_logid():
 
     设置单次请求的全局 logid
     """
-    g.logid = (f'{threading.current_thread().ident}_'
-               f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}_'
+    g.logid = (f'{threading.current_thread().ident}'
+               f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}'
                f'{randoms.get_number(4)}')
 
 

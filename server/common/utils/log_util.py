@@ -30,4 +30,5 @@ def get_logger(name):
     logger.propagate = False
     logger.setLevel(LEVEL)
     logger.addHandler(CONSOLE_HANDLER)
+    logger.addHandler(FILE_HANDLER)
     return logger
