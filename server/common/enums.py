@@ -1,18 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : status.py
-# @Time    : 2019/11/7 11:54
+# @File    : enums
+# @Time    : 2020/10/30 14:49
 # @Author  : Kelvin.Ye
-
-"""
-HTTP Status Code
-"""
-
 from enum import Enum, unique
 
 
 @unique
+class State(Enum):
+    """状态间有迁移关系
+    """
+    ...
+
+
+@unique
 class Status(Enum):
+    """状态码没有互相迁移关系
+    """
+    ...
+
+
+@unique
+class HttpStatus(Enum):
     # 1xx（临时响应），表示临时响应并需要请求者继续执行操作的状态代码。
     CODE_100 = 100  # 继续
     CODE_101 = 101  # 切换协议
