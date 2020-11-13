@@ -7,9 +7,10 @@
 """
 Database module, including the SQLAlchemy database object and DB-related utilities.
 """
+from datetime import datetime
 
-from server.extension import db
 from server.common.utils.log_util import get_logger
+from server.extension import db
 
 log = get_logger(__name__)
 
@@ -64,3 +65,12 @@ class DBModel(CRUDMixin, db.Model):
 
     def __str__(self):
         return str(self.__dict__)
+
+
+class BaseColumn:
+    ID = db.Column(db.Integer, primary_key=True)
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
