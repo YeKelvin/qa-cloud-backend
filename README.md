@@ -90,6 +90,11 @@ Nginx, uWSGI, Supervisor
 uwsgi --ini uwsgi.ini
 ```
 
+## 监控面板
+```url
+/dashboard
+```
+
 ## 技术说明
 
 站在巨人的肩上，离不开开源的支持，主要使用到的技术如下：

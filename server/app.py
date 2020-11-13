@@ -4,6 +4,7 @@
 # @Time    : 2019/11/7 11:02
 # @Author  : Kelvin.Ye
 import os
+import flask_monitoringdashboard as dashboard
 
 from flasgger import Swagger
 from flask import Flask
@@ -52,6 +53,7 @@ def register_extensions(app):
     """
     db.init_app(app)
     migrate.init_app(app, db)
+    dashboard.bind(app)
 
 
 def register_blueprints(app):
