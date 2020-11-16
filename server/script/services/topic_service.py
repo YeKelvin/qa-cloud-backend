@@ -6,7 +6,7 @@
 from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.validator import Verify
+from server.common.validator import assert_blank, assert_not_blank
 from server.script.models import TTestTopic
 from server.common.utils.log_util import get_logger
 
@@ -55,7 +55,7 @@ def query_topic_all():
 @http_service
 def create_topic(req: RequestDTO):
     topic = TTestTopic.query_by(TOPIC_NAME=req.attr.topicName).first()
-    Verify.blank(topic, '测试主题已存在')
+    assert_blank(topic, '测试主题已存在')
 
     TTestTopic.create(
         TOPIC_NO=new_id(),
@@ -68,7 +68,7 @@ def create_topic(req: RequestDTO):
 @http_service
 def modify_topic(req: RequestDTO):
     topic = TTestTopic.query_by(TOPIC_NO=req.attr.topicNo).first()
-    Verify.not_blank(topic, '测试主题不存在')
+    assert_not_blank(topic, '测试主题不存在')
 
     if req.attr.topicName is not None:
         topic.TOPIC_NAME = req.attr.topicName
@@ -82,7 +82,7 @@ def modify_topic(req: RequestDTO):
 @http_service
 def delete_topic(req: RequestDTO):
     topic = TTestTopic.query_by(TOPIC_NO=req.attr.topicNo).first()
-    Verify.not_blank(topic, '测试主题不存在')
+    assert_not_blank(topic, '测试主题不存在')
 
     topic.update(DEL_STATE=1)
     return None

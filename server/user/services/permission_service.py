@@ -6,7 +6,7 @@
 from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.validator import Verify
+from server.common.validator import assert_blank, assert_not_blank
 from server.user.models import TPermission
 from server.common.utils.log_util import get_logger
 
@@ -68,7 +68,7 @@ def query_permission_all():
 @http_service
 def create_permission(req: RequestDTO):
     permission = TPermission.query_by(ENDPOINT=req.attr.endpoint, METHOD=req.attr.method).first()
-    Verify.blank(permission, '权限已存在')
+    assert_blank(permission, '权限已存在')
 
     TPermission.create(
         PERMISSION_NO=new_id(),
@@ -84,7 +84,7 @@ def create_permission(req: RequestDTO):
 @http_service
 def modify_permission(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
-    Verify.not_blank(permission, '权限不存在')
+    assert_not_blank(permission, '权限不存在')
 
     if req.attr.permissionNo is not None:
         permission.PERMISSION_NO = req.attr.permissionNo
@@ -104,7 +104,7 @@ def modify_permission(req: RequestDTO):
 @http_service
 def modify_permission_state(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
-    Verify.not_blank(permission, '权限不存在')
+    assert_not_blank(permission, '权限不存在')
 
     permission.update(STATE=req.attr.state)
     return None
@@ -113,7 +113,7 @@ def modify_permission_state(req: RequestDTO):
 @http_service
 def delete_permission(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.attr.permissionNo).first()
-    Verify.not_blank(permission, '权限不存在')
+    assert_not_blank(permission, '权限不存在')
 
     permission.update(DEL_STATE=1)
     return None

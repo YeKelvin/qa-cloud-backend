@@ -6,7 +6,7 @@
 from server.extension import db
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.validator import Verify
+from server.common.validator import assert_blank, assert_not_blank
 from server.user.models import TRole, TPermission, TRolePermissionRel
 from server.common.utils.log_util import get_logger
 
@@ -65,7 +65,7 @@ def query_role_permission_rel_list(req: RequestDTO):
 @http_service
 def create_role_permission_rel(req: RequestDTO):
     role_permission = TRolePermissionRel.query_by(ROLE_NO=req.attr.roleNo, PERMISSION_NO=req.attr.permissionNo).first()
-    Verify.blank(role_permission, '角色权限关联关系已存在')
+    assert_blank(role_permission, '角色权限关联关系已存在')
 
     TRolePermissionRel.create(ROLE_NO=req.attr.roleNo, PERMISSION_NO=req.attr.permissionNo)
     return None
@@ -74,7 +74,7 @@ def create_role_permission_rel(req: RequestDTO):
 @http_service
 def delete_role_permission_rel(req: RequestDTO):
     role_permission = TRolePermissionRel.query_by(ROLE_NO=req.attr.roleNo, PERMISSION_NO=req.attr.permissionNo).first()
-    Verify.not_blank(role_permission, '角色权限关联关系不存在')
+    assert_not_blank(role_permission, '角色权限关联关系不存在')
 
     role_permission.update(DEL_STATE=1)
     return None
