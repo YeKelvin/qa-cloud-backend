@@ -6,7 +6,7 @@
 from server.common.id_generator import new_id
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.verification import Verify
+from server.common.validator import Verify
 from server.script.models import TWorkspace
 from server.common.utils.log_util import get_logger
 
@@ -59,7 +59,7 @@ def query_workspace_all():
 @http_service
 def create_workspace(req: RequestDTO):
     project = TWorkspace.query_by(WORKSPACE_NAME=req.attr.workspaceName).first()
-    Verify.empty(project, '工作空间已存在')
+    Verify.blank(project, '工作空间已存在')
 
     TWorkspace.create(
         WORKSPACE_NO=new_id(),
@@ -73,7 +73,7 @@ def create_workspace(req: RequestDTO):
 @http_service
 def modify_workspace(req: RequestDTO):
     workspace = TWorkspace.query_by(WORKSPACE_NO=req.attr.workspaceNo).first()
-    Verify.not_empty(workspace, '工作空间不存在')
+    Verify.not_blank(workspace, '工作空间不存在')
 
     if req.attr.workspaceName is not None:
         workspace.WORKSPACE_NAME = req.attr.workspaceName
@@ -89,7 +89,7 @@ def modify_workspace(req: RequestDTO):
 @http_service
 def delete_workspace(req: RequestDTO):
     workspace = TWorkspace.query_by(WORKSPACE_NO=req.attr.workspaceNo).first()
-    Verify.not_empty(workspace, '工作空间不存在')
+    Verify.not_blank(workspace, '工作空间不存在')
 
     workspace.update(DEL_STATE=1)
     return None

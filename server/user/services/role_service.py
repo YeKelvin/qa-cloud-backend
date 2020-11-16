@@ -6,7 +6,7 @@
 from server.common.decorators.service import http_service
 from server.common.id_generator import new_id
 from server.common.request import RequestDTO
-from server.common.verification import Verify
+from server.common.validator import Verify
 from server.user.models import TUserRoleRel, TRole, TRolePermissionRel
 from server.common.utils.log_util import get_logger
 
@@ -59,7 +59,7 @@ def query_role_all():
 @http_service
 def create_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NAME=req.attr.roleName).first()
-    Verify.empty(role, '角色已存在')
+    Verify.blank(role, '角色已存在')
 
     TRole.create(
         ROLE_NO=new_id(),
@@ -73,7 +73,7 @@ def create_role(req: RequestDTO):
 @http_service
 def modify_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.attr.roleNo).first()
-    Verify.not_empty(role, '角色不存在')
+    Verify.not_blank(role, '角色不存在')
 
     if req.attr.roleName is not None:
         role.ROLE_NAME = req.attr.roleName
@@ -87,7 +87,7 @@ def modify_role(req: RequestDTO):
 @http_service
 def modify_role_state(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.attr.roleNo).first()
-    Verify.not_empty(role, '角色不存在')
+    Verify.not_blank(role, '角色不存在')
 
     role.update(STATE=req.attr.state)
     return None
@@ -96,10 +96,10 @@ def modify_role_state(req: RequestDTO):
 @http_service
 def delete_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.attr.roleNo).first()
-    Verify.not_empty(role, '角色不存在')
+    Verify.not_blank(role, '角色不存在')
 
     user_roles = TUserRoleRel.query_by(ROLE_NO=req.attr.roleNo).all()
-    Verify.empty(user_roles, '角色与用户存在关联关系，请先解除关联')
+    Verify.blank(user_roles, '角色与用户存在关联关系，请先解除关联')
 
     # 删除角色权限关联关系
     role_permissions = TRolePermissionRel.query_by(ROLE_NO=req.attr.roleNo).all()

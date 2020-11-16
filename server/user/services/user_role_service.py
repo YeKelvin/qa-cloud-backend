@@ -6,7 +6,7 @@
 from server.extension import db
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.verification import Verify
+from server.common.validator import Verify
 from server.user.models import TUser, TUserRoleRel, TRole
 from server.common.utils.log_util import get_logger
 
@@ -57,7 +57,7 @@ def query_user_role_rel_list(req: RequestDTO):
 @http_service
 def create_user_role_rel(req: RequestDTO):
     user_role = TUserRoleRel.query_by(USER_NO=req.attr.userNo, ROLE_NO=req.attr.roleNo).first()
-    Verify.empty(user_role, '用户角色关联关系已存在')
+    Verify.blank(user_role, '用户角色关联关系已存在')
 
     TUserRoleRel.create(USER_NO=req.attr.userNo, ROLE_NO=req.attr.roleNo)
     return None
@@ -66,7 +66,7 @@ def create_user_role_rel(req: RequestDTO):
 @http_service
 def delete_user_role_rel(req: RequestDTO):
     user_role = TUserRoleRel.query_by(USER_NO=req.attr.userNo, ROLE_NO=req.attr.roleNo).first()
-    Verify.not_empty(user_role, '用户角色关联关系不存在')
+    Verify.not_blank(user_role, '用户角色关联关系不存在')
 
     user_role.update(DEL_STATE=1)
     return None

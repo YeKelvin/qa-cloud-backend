@@ -7,11 +7,8 @@ from server.common.exceptions import ServiceError, ErrorCode
 
 
 class Verify:
-    """verification
-    """
-
     @staticmethod
-    def empty(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
+    def blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
         """验证 obj对象为空，不为空则抛异常
 
         :param obj:         对象
@@ -24,7 +21,7 @@ class Verify:
             raise ServiceError(errorMsg, error)
 
     @staticmethod
-    def not_empty(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
+    def not_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
         """验证 obj对象非空，为空则抛异常
 
         :param obj:         对象

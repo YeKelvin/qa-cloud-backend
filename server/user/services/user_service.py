@@ -11,7 +11,7 @@ from server.common.decorators.transaction import db_transaction
 from server.common.exceptions import ServiceError
 from server.common.helpers.global_helper import Global
 from server.common.request import RequestDTO
-from server.common.verification import Verify
+from server.common.validator import Verify
 from server.user.models import (TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken,
                                 TUserLoginLog, TUserPasswordKey)
 from server.common.utils.auth import JWTAuth
@@ -26,11 +26,11 @@ log = get_logger(__name__)
 def login(req: RequestDTO):
     # 查询用户登录信息
     user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.attr.loginName).first()
-    Verify.not_empty(user_login_info, '账号或密码不正确')
+    Verify.not_blank(user_login_info, '账号或密码不正确')
 
     # 查询用户信息
     user = TUser.query_by(USER_NO=user_login_info.USER_NO).first()
-    Verify.not_empty(user, '账号或密码不正确')
+    Verify.not_blank(user, '账号或密码不正确')
 
     # 校验用户状态
     if user.STATE != 'ENABLE':
@@ -38,7 +38,7 @@ def login(req: RequestDTO):
 
     # 查询用户密码
     user_password = TUserPassword.query_by(USER_NO=user.USER_NO, PASSWORD_TYPE='LOGIN').first()
-    Verify.not_empty(user_password, '账号或密码不正确')
+    Verify.not_blank(user_password, '账号或密码不正确')
 
     # 密码RSA解密
     user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=req.attr.loginName).first()
@@ -106,10 +106,10 @@ def logout():
 def register(req: RequestDTO):
     # 查询用户登录信息
     user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.attr.loginName).first()
-    Verify.empty(user_login_info, '登录账号已存在')
+    Verify.blank(user_login_info, '登录账号已存在')
 
     user = TUser.query_by(USER_NAME=req.attr.userName, MOBILE_NO=req.attr.mobileNo, EMAIL=req.attr.email).first()
-    Verify.empty(user, '用户已存在')
+    Verify.blank(user, '用户已存在')
 
     # 创建用户信息
     user_no = new_id()
@@ -145,10 +145,10 @@ def register(req: RequestDTO):
 @http_service
 def reset_login_password(req: RequestDTO):
     user = TUser.query_by(USER_NO=req.attr.userNo).first()
-    Verify.not_empty(user, '用户不存在')
+    Verify.not_blank(user, '用户不存在')
 
     user_password = TUserPassword.query_by(USER_NO=req.attr.userNo, PASSWORD_TYPE='LOGIN').first()
-    Verify.not_empty(user_password, '用户登录密码不存在')
+    Verify.not_blank(user_password, '用户登录密码不存在')
 
     user_password.update(PASSWORD=encrypt_password(req.attr.loginName, req.attr.password))
     return None
@@ -231,7 +231,7 @@ def query_user_info():
 @http_service
 def modify_user(req: RequestDTO):
     user = TUser.query_by(USER_NO=req.attr.userNo).first()
-    Verify.not_empty(user, '用户不存在')
+    Verify.not_blank(user, '用户不存在')
 
     if req.attr.userName is not None:
         user.USER_NAME = req.attr.userName
@@ -247,7 +247,7 @@ def modify_user(req: RequestDTO):
 @http_service
 def modify_user_state(req: RequestDTO):
     user = TUser.query_by(USER_NO=req.attr.userNo).first()
-    Verify.not_empty(user, '用户不存在')
+    Verify.not_blank(user, '用户不存在')
 
     user.update(STATE=req.attr.state)
     return None
@@ -258,7 +258,7 @@ def modify_user_state(req: RequestDTO):
 def delete_user(req: RequestDTO):
     user_no = req.attr.userNo
     user = TUser.query_by(USER_NO=user_no).first()
-    Verify.not_empty(user, '用户不存在')
+    Verify.not_blank(user, '用户不存在')
 
     # 删除用户
     user.update(commit=False, DEL_STATE=1)

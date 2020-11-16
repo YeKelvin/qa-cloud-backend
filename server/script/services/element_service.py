@@ -9,7 +9,7 @@ from server.common.decorators.service import http_service
 from server.common.decorators.transaction import db_transaction
 from server.common.exceptions import ServiceError
 from server.common.request import RequestDTO
-from server.common.verification import Verify
+from server.common.validator import Verify
 from server.script.models import TTestElement, TElementProperty, TElementChildRel, TWorkspaceCollectionRel, TWorkspace
 from server.script.enums import ElementStatus
 from server.common.utils.log_util import get_logger
@@ -102,7 +102,7 @@ def query_element_all(req: RequestDTO):
 @http_service
 def query_element_info(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     el_props = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo).all()
     has_children = TElementChildRel.query_by(PARENT_NO=req.attr.elementNo).count() > 0
@@ -162,7 +162,7 @@ def create_element(req: RequestDTO):
 
     if req.attr.workspaceNo:
         workspace = TWorkspace.query_by(WORKSPACE_NO=req.attr.workspaceNo).first()
-        Verify.not_empty(workspace, '测试项目不存在')
+        Verify.not_blank(workspace, '测试项目不存在')
 
         TWorkspaceCollectionRel.create(
             commit=False,
@@ -196,7 +196,7 @@ def delete_element(req: RequestDTO):
 @http_service
 def enable_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.ENABLE.value
     element.save()
@@ -206,7 +206,7 @@ def enable_element(req: RequestDTO):
 @http_service
 def disable_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.attr.elementNo).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.DISABLE.value
     element.save()
@@ -216,7 +216,7 @@ def disable_element(req: RequestDTO):
 @http_service
 def add_element_property(req: RequestDTO):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo, PROPERTY_NAME=req.attr.propertyName).first()
-    Verify.empty(el_prop, '元素属性已存在')
+    Verify.blank(el_prop, '元素属性已存在')
 
     TElementProperty.create(
         ELEMENT_NO=req.attr.elementNo,
@@ -229,7 +229,7 @@ def add_element_property(req: RequestDTO):
 @http_service
 def modify_element_property(req: RequestDTO):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.attr.elementNo, PROPERTY_NAME=req.attr.propertyName).first()
-    Verify.not_empty(el_prop, '元素属性不存在')
+    Verify.not_blank(el_prop, '元素属性不存在')
 
     el_prop.property_value = req.attr.propertyValue
     el_prop.save()
@@ -255,7 +255,7 @@ def modify_element_children(req: RequestDTO):
 @http_service
 def move_up_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
-    Verify.not_empty(child_rel, '子元素不存在')
+    Verify.not_blank(child_rel, '子元素不存在')
 
     children_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     child_current_order = child_rel.CHILD_ORDER
@@ -275,7 +275,7 @@ def move_up_child_order(req: RequestDTO):
 @http_service
 def move_down_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo, CHILD_NO=req.attr.childNo).first()
-    Verify.not_empty(child_rel, '子元素不存在')
+    Verify.not_blank(child_rel, '子元素不存在')
 
     children_length = TElementChildRel.query_by(PARENT_NO=req.attr.parentNo).count()
     current_child_order = child_rel.CHILD_ORDER
@@ -295,7 +295,7 @@ def move_down_child_order(req: RequestDTO):
 @http_service
 def duplicate_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.attr.element_no).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     # todo 复制元素
     return None
@@ -355,7 +355,7 @@ def add_element_child_with_transaction(parent_no, children: [dict]):
 
 def modify_element_with_transaction(element_no, element_name, element_comments, element_type, propertys, children):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     if element_name is not None:
         element.ELEMENT_NAME = element_name
@@ -399,7 +399,7 @@ def modify_element_child_with_transaction(children: [dict]):
 
 def delete_element_with_transaction(element_no):
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
-    Verify.not_empty(element, '测试元素不存在')
+    Verify.not_blank(element, '测试元素不存在')
 
     result = [{
         'elementNo': element.ELEMENT_NO,
