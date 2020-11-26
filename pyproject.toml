@@ -35,9 +35,10 @@ requests = "^2.24.0"
 elasticsearch = "^7.9.1"
 celery = "^5.0.1"
 pycryptodome = "3.9.8"
-uwsgi = { version = "2.0.19.1", markers = "platform_system == 'Linux'" }
+numpy = "^1.19.3"
 flake8 = "*"
 yapf = "*"
+uwsgi = { version = "2.0.19.1", markers = "platform_system == 'Linux'" }
 
 [tool.poetry.dev-dependencies]
 
