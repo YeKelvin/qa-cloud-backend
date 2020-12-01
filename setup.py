@@ -15,7 +15,7 @@ setup(
     url='',
     license='',
     author='Kaiwen.Ye',
-    author_email='',
+    author_email='testmankelvin@163.com',
     packages=find_packages(exclude=('test',)),
     include_package_data=True,
     install_requires=[
