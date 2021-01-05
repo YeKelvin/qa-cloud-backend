@@ -1,0 +1,18 @@
+{
+    "python.pythonPath": ".cache/virtualenvs/py3.8/Scripts/python.exe",
+    "code-runner.executorMap": {
+        "python": "$pythonPath -u $fullFileName",
+    },
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.runInTerminal": true,
+    // 将项目路径添加到python path中
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH":"${workspaceRoot}"
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH":"${workspaceRoot}"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH":"${workspaceRoot}"
+    }
+}
