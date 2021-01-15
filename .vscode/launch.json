@@ -19,7 +19,9 @@
             "request": "launch",
             "module": "flask",
             "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
             "env": {
+                "PYTHONPATH": "${workspaceRoot}",
                 "FLASK_APP": "main.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
