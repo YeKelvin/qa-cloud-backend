@@ -1,5 +1,5 @@
 {
-    // "python.pythonPath": ".\\.cache\\virtualenvs\\py3.8\\Scripts\\python3.exe",
+    // "python.pythonPath": ".\\.cache\\virtualenvs\\py3.8\\Scripts\\python.exe",
     "python.pythonPath": "./.cache/virtualenvs/py3.8/bin/python3",
     "code-runner.executorMap": {
         "python": "$pythonPath -u $fullFileName",
