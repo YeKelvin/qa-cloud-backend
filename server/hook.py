@@ -100,7 +100,7 @@ def cross_domain_access(response):
 
     if request.method == 'OPTIONS':
         response.headers['Access-Control-Max-Age'] = 60 * 60 * 24
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE'
 
     return response
 
