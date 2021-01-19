@@ -144,6 +144,8 @@ class TElementChildRel(DBModel):
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    # todo 元素关联表增加集合编号，方便查找子元素所属的集合编号
+    COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
     PARENT_NO = db.Column(db.String(32), nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     CHILD_ORDER = db.Column(db.Integer, nullable=False, comment='子元素序号')
