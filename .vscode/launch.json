@@ -8,7 +8,7 @@
             "program": "${file}",
             "cwd": "${workspaceRoot}",
             "stopOnEntry": true,
-            "console": "integratedTerminal",
+            "console": "internalConsole",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
             }
@@ -19,7 +19,7 @@
             "request": "launch",
             "module": "flask",
             "cwd": "${workspaceRoot}",
-            "console": "integratedTerminal",
+            "console": "internalConsole",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",
                 "FLASK_APP": "main.py",
