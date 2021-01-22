@@ -5,15 +5,13 @@
     "python.linting.pylintEnabled": false,
     "python.linting.lintOnSave": true,
     "python.formatting.provider": "yapf",
-    /*
     "python.linting.flake8Args": [
         "--max-line-length=120",
         "--ignore=E501, E262",
     ],
     "python.formatting.yapfArgs": [
-        "--sytle=yapf_style.cfg" // 不行就把 “yapf_style.cfg” 文件改名为 “.style.yapf”，然后把该配置删掉
+        "--sytle=yapf_style.cfg" // yapf_style.cfg | .style.yapf
     ],
-    */
     "code-runner.executorMap": {
         "python": "$pythonPath -u $fullFileName",
     },
