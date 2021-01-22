@@ -17,9 +17,9 @@
             "name": "Python: Flask",
             "type": "python",
             "request": "launch",
-            "module": "flask",
             "cwd": "${workspaceRoot}",
             "console": "internalConsole",
+            "module": "flask",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",
                 "FLASK_APP": "main.py",
@@ -32,6 +32,23 @@
                 "--port", "5000"
             ],
             "jinja": true
+        },
+        {
+            "name": "PyTest",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "stopOnEntry": false,
+            "console": "internalConsole",
+            "module": "pytest",
+            "args": [
+                "-sv",
+                "--disable-pytest-warnings",
+                "--html=report.html"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
         }
     ]
 }

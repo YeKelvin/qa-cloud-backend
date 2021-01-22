@@ -1,22 +1,33 @@
 {
+    /* Python PATH */
     // "python.pythonPath": ".\\.cache\\virtualenvs\\py3.8\\Scripts\\python.exe",
     "python.pythonPath": "./.cache/virtualenvs/py3.8/bin/python3",
+
+    /* Python Lint */
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": false,
     "python.linting.lintOnSave": true,
-    "python.formatting.provider": "yapf",
     "python.linting.flake8Args": [
         "--max-line-length=120",
         "--ignore=E501, E262",
     ],
+    "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [
         "--sytle=yapf_style.cfg" // yapf_style.cfg | .style.yapf
     ],
+
+    /* Python Test Framework */
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+
+    /* Code Runner */
     "code-runner.executorMap": {
         "python": "$pythonPath -u $fullFileName",
     },
     "code-runner.saveFileBeforeRun": true,
     "code-runner.runInTerminal": true,
+
     /* 将项目路径添加到python path中 */
     "terminal.integrated.env.windows": {
         "PYTHONPATH": "${workspaceRoot}"
