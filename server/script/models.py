@@ -29,7 +29,7 @@ class TWorkspace(DBModel):
 
 
 class TWorkspaceTopicRel(DBModel):
-    """项目主题关联表
+    """工作空间主题关联表
     """
     __tablename__ = 'WORKSPACE_TOPIC_REL'
     ID = db.Column(db.Integer, primary_key=True)
@@ -44,7 +44,7 @@ class TWorkspaceTopicRel(DBModel):
 
 
 class TWorkspaceCollectionRel(DBModel):
-    """项目集合关联表
+    """工作空间集合关联表
     """
     __tablename__ = 'WORKSPACE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
@@ -59,7 +59,7 @@ class TWorkspaceCollectionRel(DBModel):
 
 
 class TWorkspaceUserRel(DBModel):
-    """项目用户关联表
+    """工作空间用户关联表
     """
     __tablename__ = 'WORKSPACE_USER_REL'
     ID = db.Column(db.Integer, primary_key=True)
@@ -114,7 +114,7 @@ class TTestElement(DBModel):
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     ELEMENT_COMMENTS = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
-    ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用')
+    ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用', default=True)
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -131,6 +131,7 @@ class TElementProperty(DBModel):
     ELEMENT_NO = db.Column(db.String(32), nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.String(4096), nullable=False, comment='属性值')
+    # ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用', default=True) # TODO: 属性增加启用状态
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -144,7 +145,7 @@ class TElementChildRel(DBModel):
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    # todo 元素关联表增加根元素编号，方便查找子元素所属的根元素编号
+    # TODO: 元素关联表增加根元素编号，方便查找子元素所属的根元素编号
     # ROOT_NO = db.Column(db.String(32), nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')

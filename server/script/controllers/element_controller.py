@@ -177,6 +177,7 @@ def add_element_child():
     """根据父元素编号新增元素子代
     """
     req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('children', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
@@ -190,6 +191,7 @@ def modify_element_child():
     """根据父元素编号修改元素子代（子代必须包含elementNo和order）
     """
     req = JsonParser(
+        # Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'), TODO: 接口添加rootNo
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('children', required=True, nullable=False, help='子元素列表不能为空'),
     ).parse()
