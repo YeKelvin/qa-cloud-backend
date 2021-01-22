@@ -1,19 +1,32 @@
 {
     // "python.pythonPath": ".\\.cache\\virtualenvs\\py3.8\\Scripts\\python.exe",
     "python.pythonPath": "./.cache/virtualenvs/py3.8/bin/python3",
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.lintOnSave": true,
+    "python.formatting.provider": "yapf",
+    /*
+    "python.linting.flake8Args": [
+        "--max-line-length=120",
+        "--ignore=E501, E262",
+    ],
+    "python.formatting.yapfArgs": [
+        "--sytle=yapf_style.cfg" // 不行就把 “yapf_style.cfg” 文件改名为 “.style.yapf”，然后把该配置删掉
+    ],
+    */
     "code-runner.executorMap": {
         "python": "$pythonPath -u $fullFileName",
     },
     "code-runner.saveFileBeforeRun": true,
     "code-runner.runInTerminal": true,
-    // 将项目路径添加到python path中
+    /* 将项目路径添加到python path中 */
     "terminal.integrated.env.windows": {
-        "PYTHONPATH":"${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}"
     },
     "terminal.integrated.env.osx": {
-        "PYTHONPATH":"${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}"
     },
     "terminal.integrated.env.linux": {
-        "PYTHONPATH":"${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}"
     }
 }
