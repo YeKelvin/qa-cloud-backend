@@ -30,12 +30,21 @@
 
     /* 将项目路径添加到python path中 */
     "terminal.integrated.env.windows": {
-        "PYTHONPATH": "${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}",
+        "FLASK_APP": "main.py",
+        "FLASK_ENV": "development",
+        "FLASK_DEBUG": "0"
     },
     "terminal.integrated.env.osx": {
-        "PYTHONPATH": "${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}",
+        "FLASK_APP": "main.py",
+        "FLASK_ENV": "development",
+        "FLASK_DEBUG": "0"
     },
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${workspaceRoot}"
+        "PYTHONPATH": "${workspaceRoot}",
+        "FLASK_APP": "main.py",
+        "FLASK_ENV": "development",
+        "FLASK_DEBUG": "0"
     }
 }
