@@ -29,42 +29,12 @@ python3 setup.py install
 set FLASK_APP=main.py;set FLASK_ENV=development
 ```
 
-### PyCharm
+### 虚拟环境添加pth
 
-Settings->Tools->Terminal->Environment Variables添加以下变量
-
-```args
-FLASK_APP=main.py;FLASK_ENV=development
-```
-
-### VS Code
-
-添加launch.json
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Flask",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
-            "cwd": "${workspaceRoot}",
-            "env": {
-                "FLASK_APP": "main.py",
-                "FLASK_ENV": "development",
-                "FLASK_DEBUG": "0"
-            },
-            "args": [
-                "run",
-                "--host 0.0.0.0",
-                "--port 5000"
-            ],
-            "jinja": false
-        }
-    ]
-}
+```shell
+cd venv/Lib/site-packages
+new file myproject.pth
+添加项目绝对路径
 ```
 
 ## 初始化

@@ -6,22 +6,22 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceFolder}",
             "stopOnEntry": true,
             "console": "internalConsole",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceFolder}"
             }
         },
         {
             "name": "Python: Flask",
             "type": "python",
             "request": "launch",
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "module": "flask",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}",
+                "PYTHONPATH": "${workspaceFolder}",
                 "FLASK_APP": "main.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
@@ -37,7 +37,7 @@
             "name": "PyTest",
             "type": "python",
             "request": "launch",
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "console": "internalConsole",
             "module": "pytest",
@@ -47,7 +47,7 @@
                 "--html=report.html"
             ],
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceFolder}"
             }
         }
     ]

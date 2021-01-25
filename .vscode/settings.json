@@ -1,7 +1,7 @@
 {
     /* Python PATH */
     "python.venvFolders": ["virtualenvs"],
-    "python.venvPath": "${workspaceRoot}/.cache",
+    "python.venvPath": "${workspaceFolder}/.cache",
     // "python.pythonPath": ".\\.cache\\virtualenvs\\test-platform-server-C_iUzpkb-py3.8\\Scripts\\python",
     "python.pythonPath": "./.cache/virtualenvs/test-platform-server-C_iUzpkb-py3.8/bin/python3",
 
@@ -32,19 +32,19 @@
 
     /* 将项目路径添加到python path中 */
     "terminal.integrated.env.windows": {
-        "PYTHONPATH": "${workspaceRoot}",
+        "PYTHONPATH": "${workspaceFolder}",
         "FLASK_APP": "main.py",
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
     },
     "terminal.integrated.env.osx": {
-        "PYTHONPATH": "${workspaceRoot}",
+        "PYTHONPATH": "${workspaceFolder}",
         "FLASK_APP": "main.py",
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
     },
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${workspaceRoot}",
+        "PYTHONPATH": "${workspaceFolder}",
         "FLASK_APP": "main.py",
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
