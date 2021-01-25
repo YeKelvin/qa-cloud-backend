@@ -2,7 +2,7 @@
     /* Python PATH */
     "python.venvFolders": ["virtualenvs"],
     "python.venvPath": "${workspaceFolder}/.cache",
-    // "python.pythonPath": ".\\.cache\\virtualenvs\\test-platform-server-C_iUzpkb-py3.8\\Scripts\\python",
+    // "python.pythonPath": ".\\.cache\\virtualenvs\\test-platform-server-C_iUzpkb-py3.8\\Scripts\\python.exe",
     "python.pythonPath": "./.cache/virtualenvs/test-platform-server-C_iUzpkb-py3.8/bin/python3",
 
     /* Python Lint */
