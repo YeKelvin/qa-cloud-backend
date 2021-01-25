@@ -23,6 +23,7 @@ def http_service(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        # 获取请求对象
         req: RequestDTO = (args[0] if args else None) or kwargs.get('req', RequestDTO())
         # 记录开始时间
         starttime = timestamp_as_ms()
@@ -47,14 +48,16 @@ def http_service(func):
             # 捕获 service层的业务异常
             res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
         except Exception:
+            # 捕获所有异常
             log.error(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'traceback:[ {traceback.format_exc()} ]'
             )
             res = ResponseDTO(error=ErrorCode.E500000)
         finally:
-            # 计算耗时，单位毫秒
+            # 记录接口耗时（毫秒）
             elapsed_time = timestamp_as_ms() - starttime
+            # 包装http响应
             http_res = http_response(res)
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
