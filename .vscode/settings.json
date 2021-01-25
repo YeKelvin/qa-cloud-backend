@@ -1,5 +1,7 @@
 {
     /* Python PATH */
+    "python.venvFolders": ["virtualenvs"],
+    "python.venvPath": "${workspaceRoot}/.cache",
     // "python.pythonPath": ".\\.cache\\virtualenvs\\py3.8\\Scripts\\python.exe",
     "python.pythonPath": "./.cache/virtualenvs/py3.8/bin/python3",
 
