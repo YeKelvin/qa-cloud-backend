@@ -39,6 +39,8 @@ numpy = "^1.19.3"
 flake8 = "*"
 yapf = "*"
 uwsgi = { version = "2.0.19.1", markers = "platform_system == 'Linux'" }
+flask-graphql = "^2.0.1"
+graphene = "^2.1.8"
 
 [tool.poetry.dev-dependencies]
 
