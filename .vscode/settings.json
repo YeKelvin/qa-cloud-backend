@@ -2,7 +2,7 @@
     /* Python PATH */
     "python.venvFolders": ["virtualenvs"],
     "python.venvPath": "${workspaceFolder}/.cache",
-    "python.pythonPath": "path/to/your/python",
+    // "python.pythonPath": "path/to/your/python",
 
     /* Python Lint */
     "python.linting.flake8Enabled": true,
