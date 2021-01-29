@@ -13,3 +13,4 @@ from . import env_var_controller
 from . import http_header_controller
 from . import workspace_controller
 from . import topic_controller
+from . import test_controller
