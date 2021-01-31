@@ -157,6 +157,7 @@ def create_element(req: RequestDTO):
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
         element_type=req.attr.elementType,
+        element_class=req.attr.elementClass,
         propertys=req.attr.propertys,
         children=req.attr.children
     )
@@ -181,7 +182,6 @@ def modify_element(req: RequestDTO):
         element_no=req.attr.elementNo,
         element_name=req.attr.elementName,
         element_comments=req.attr.elementComments,
-        element_type=req.attr.elementType,
         propertys=req.attr.propertys,
         children=req.attr.children
     )

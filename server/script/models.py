@@ -114,6 +114,7 @@ class TTestElement(DBModel):
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     ELEMENT_COMMENTS = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
+    ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素类')
     ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用', default=True)
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')

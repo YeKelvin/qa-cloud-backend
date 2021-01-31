@@ -16,9 +16,9 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def execute_script():
-    """分页查询测试元素列表
+    """运行脚本
     """
     req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
     ).parse()
     return service.execute_script(req)
