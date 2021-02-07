@@ -18,6 +18,8 @@ log = get_logger(__name__)
 
 def create_element(element_name, element_comments, element_type, element_class,
                    propertys: dict = None, children: Iterable[dict] = None):
+    """递归创建元素
+    """
     element_no = new_id()
     TTestElement.create(
         commit=False,
@@ -51,11 +53,14 @@ def add_element_property(element_no, propertys: dict):
 
 
 def add_element_child(parent_no, children: Iterable[dict]):
+    """遍历添加元素子代
+    """
     for child in children:
         child_no = create_element(
             element_name=child.get('elementName'),
             element_comments=child.get('elementComments'),
             element_type=child.get('elementType'),
+            element_class=child.get('elementClass'),
             propertys=child.get('propertys'),
             children=child.get('children')
         )
@@ -70,6 +75,8 @@ def add_element_child(parent_no, children: Iterable[dict]):
 
 
 def modify_element(element_no, element_name, element_comments, propertys, children):
+    """递归修改元素
+    """
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     assert_not_blank(element, '测试元素不存在')
 
@@ -88,6 +95,8 @@ def modify_element(element_no, element_name, element_comments, propertys, childr
 
 
 def modify_element_property(element_no, propertys: dict):
+    """遍历修改元素属性
+    """
     for prop_name, prop_value in propertys.items():
         el_prop = TElementProperty.query_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name).first()
         el_prop.PROPERTY_VALUE = prop_value
@@ -97,6 +106,8 @@ def modify_element_property(element_no, propertys: dict):
 
 
 def modify_element_child(children: Iterable[dict]):
+    """遍历修改元素子代
+    """
     for child in children:
         if 'elementNo' not in child:
             raise ServiceError('子代元素编号不能为空')
@@ -112,6 +123,8 @@ def modify_element_child(children: Iterable[dict]):
 
 
 def delete_element(element_no):
+    """递归删除元素
+    """
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
     assert_not_blank(element, '测试元素不存在')
 
