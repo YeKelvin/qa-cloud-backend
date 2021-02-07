@@ -16,6 +16,30 @@ from server.script.models import TElementChildRel, TElementProperty, TTestElemen
 log = get_logger(__name__)
 
 
+def depth_query_element_children(element_no, depth):
+    result = []
+    element_children_rel = TElementChildRel.query_by(PARENT_NO=element_no).all()
+    if not element_children_rel:
+        return result
+
+    # 根据 child_order排序
+    element_children_rel.sort(key=lambda k: k.CHILD_ORDER)
+    for element_child_rel in element_children_rel:
+        element = TTestElement.query_by(ELEMENT_NO=element_child_rel.CHILD_NO).first()
+        if element:
+            children = depth and depth_query_element_children(element_child_rel.CHILD_NO, depth) or []
+            result.append({
+                'elementNo': element.ELEMENT_NO,
+                'elementName': element.ELEMENT_NAME,
+                'elementType': element.ELEMENT_TYPE,
+                'elementClass': element.ELEMENT_CLASS,
+                'enabled': element.ENABLED,
+                'order': element_child_rel.CHILD_ORDER,
+                'children': children
+            })
+    return result
+
+
 def create_element(element_name, element_comments, element_type, element_class,
                    propertys: dict = None, children: Iterable[dict] = None):
     """递归创建元素

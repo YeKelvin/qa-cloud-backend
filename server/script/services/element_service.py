@@ -10,9 +10,7 @@ from server.common.utils.log_util import get_logger
 from server.common.validator import assert_blank, assert_not_blank
 from server.extension import db
 from server.script.enums import ElementStatus
-from server.script.models import (TElementChildRel, TElementProperty,
-                                  TTestElement, TWorkspace,
-                                  TWorkspaceCollectionRel)
+from server.script.models import TElementChildRel, TElementProperty, TTestElement, TWorkspace, TWorkspaceCollectionRel
 from server.script.services import element_helper as helper
 
 log = get_logger(__name__)
@@ -124,31 +122,7 @@ def query_element_info(req: RequestDTO):
 
 @http_service
 def query_element_children(req: RequestDTO):
-    return depth_query_element_children(req.attr.elementNo, req.attr.depth)
-
-
-def depth_query_element_children(elementNo, depth):
-    result = []
-    element_children_rel = TElementChildRel.query_by(PARENT_NO=elementNo).all()
-    if not element_children_rel:
-        return result
-
-    # 根据 child_order排序
-    element_children_rel.sort(key=lambda k: k.CHILD_ORDER)
-    for element_child_rel in element_children_rel:
-        element = TTestElement.query_by(ELEMENT_NO=element_child_rel.CHILD_NO).first()
-        if element:
-            children = depth and depth_query_element_children(element_child_rel.CHILD_NO, depth) or []
-            result.append({
-                'elementNo': element.ELEMENT_NO,
-                'elementName': element.ELEMENT_NAME,
-                'elementType': element.ELEMENT_TYPE,
-                'elementClass': element.ELEMENT_CLASS,
-                'enabled': element.ENABLED,
-                'order': element_child_rel.CHILD_ORDER,
-                'children': children
-            })
-    return result
+    return helper.depth_query_element_children(req.attr.elementNo, req.attr.depth)
 
 
 @http_service
