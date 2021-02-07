@@ -14,7 +14,8 @@
     ],
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [
-        "--sytle=yapf_style.cfg" // yapf_style.cfg | .style.yapf
+        "--style",
+        "{based_on_style: pep8, indent_width: 4}"
     ],
 
     /* Python Test Framework */
@@ -49,5 +50,22 @@
         "FLASK_APP": "main.py",
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
-    }
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#1f6fd0",
+        "activityBar.activeBorder": "#ee90bb",
+        "activityBar.background": "#1f6fd0",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#ee90bb",
+        "activityBarBadge.foreground": "#15202b",
+        "statusBar.background": "#1857a4",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#1f6fd0",
+        "titleBar.activeBackground": "#1857a4",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#1857a499",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#1857a4"
 }
