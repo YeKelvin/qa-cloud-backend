@@ -162,6 +162,9 @@ def init_permission():
     __create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
     __create_permission(name='复制测试元素及其子代', method='POST', endpoint='/script/element/duplicate')
 
+    # execution
+    __create_permission(name='执行脚本', method='POST', endpoint='/script/execute')
+
     # environment variable
 
     click.echo('创建权限成功')
