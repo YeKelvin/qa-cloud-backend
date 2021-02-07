@@ -143,6 +143,7 @@ def depth_query_element_children(elementNo, depth):
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
+                'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
                 'order': element_child_rel.CHILD_ORDER,
                 'children': children
