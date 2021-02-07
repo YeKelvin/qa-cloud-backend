@@ -18,4 +18,6 @@ def execute_script(req: RequestDTO):
     script = [helper.element_to_dict(req.attr.collectionNo)]
 
     # 开始执行脚本
-    Runner.start(script)
+    Runner.start(script)  #TODO: 另外开一个线程执行
+
+    return None
