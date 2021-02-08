@@ -4,15 +4,15 @@
 # @Time    : 2019/11/7 11:02
 # @Author  : Kelvin.Ye
 import os
-import flask_monitoringdashboard as dashboard
 
+import flask_monitoringdashboard as dashboard
 from flasgger import Swagger
 from flask import Flask
 
-from server import user, system, command, hook, script
-from server.extension import db, swagger, migrate
+from server import command, hook, script, system, user
 from server.common.utils import config
 from server.common.utils.log_util import get_logger
+from server.extension import db, migrate, socketio, swagger
 
 log = get_logger(__name__)
 
@@ -54,6 +54,7 @@ def register_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
     dashboard.bind(app)
+    socketio.init_app(app)
 
 
 def register_blueprints(app):
@@ -67,6 +68,7 @@ def register_blueprints(app):
 def register_hooks(app):
     app.before_request(hook.set_logid)
     app.before_request(hook.set_user)
+
     app.after_request(hook.record_action)
     app.after_request(hook.cross_domain_access)
 
