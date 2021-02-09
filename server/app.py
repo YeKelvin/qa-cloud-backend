@@ -11,7 +11,7 @@ from flask import Flask
 
 from server import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
 from server.common.utils import config
-from server.common.utils.log_util import get_logger
+from server.common.utils.log_util import get_logger, CONSOLE_HANDLER, FILE_HANDLER
 from server.extension import db, migrate, socketio, swagger
 
 log = get_logger(__name__)
@@ -22,6 +22,7 @@ __app__ = None
 def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
+    configure_logger(app)
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
@@ -49,8 +50,7 @@ def configure_flask(app):
 
 
 def register_extensions(app):
-    """Register Flask extensions.
-    """
+    """Register Flask extensions."""
     db.init_app(app)
     socketio.init_app(app)
     migrate.init_app(app, db)
@@ -58,8 +58,7 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    """Register Flask blueprints.
-    """
+    """Register Flask blueprints."""
     app.register_blueprint(user.controllers.blueprint)
     app.register_blueprint(system.controllers.blueprint)
     app.register_blueprint(script.controllers.blueprint)
@@ -78,8 +77,7 @@ def register_hooks(app):
 
 
 def register_shell_context(app):
-    """Register shell context objects.
-    """
+    """Register shell context objects."""
     def shell_context():
         return {"db": db}
 
@@ -87,10 +85,16 @@ def register_shell_context(app):
 
 
 def register_commands(app):
-    """Register Click commands.
-    """
+    """Register Click commands."""
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
+
+
+def configure_logger(app):
+    """Configure loggers."""
+    if not app.logger.handlers:
+        app.logger.addHandler(CONSOLE_HANDLER)
+        app.logger.addHandler(FILE_HANDLER)
 
 
 def register_swagger(app):
@@ -107,8 +111,7 @@ def register_swagger(app):
 
 
 def __generate_db_url() -> str:
-    """生成 db url
-    """
+    """生成 db url"""
     db_type = config.get('db', 'type')
     if not db_type.startswith('sqlite'):
         username = config.get('db', 'username')
