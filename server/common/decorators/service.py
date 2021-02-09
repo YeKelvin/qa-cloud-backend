@@ -51,7 +51,7 @@ def http_service(func):
             # 捕获所有异常
             log.error(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'traceback:[ {traceback.format_exc()} ]'
+                f'traceback:\n{traceback.format_exc()}'
             )
             res = ResponseDTO(error=ErrorCode.E500000)
         finally:

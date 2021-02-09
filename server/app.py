@@ -71,12 +71,15 @@ def register_hooks(app):
 
     app.after_request(hook.record_action)
     app.after_request(hook.cross_domain_access)
+    # TODO: 添加errorhandler
+    # @app.errorhandler(Exception)
+    # def error_handler(e):
+    #     ...
 
 
 def register_shell_context(app):
     """Register shell context objects.
     """
-
     def shell_context():
         return {"db": db}
 
