@@ -7,8 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from flasgger import Swagger
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
 
 from server.common.utils.log_util import get_logger
 

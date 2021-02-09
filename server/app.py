@@ -9,7 +9,7 @@ import flask_monitoringdashboard as dashboard
 from flasgger import Swagger
 from flask import Flask
 
-from server import command, hook, script, system, user
+from server import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
 from server.common.utils import config
 from server.common.utils.log_util import get_logger
 from server.extension import db, migrate, socketio, swagger
@@ -52,9 +52,9 @@ def register_extensions(app):
     """Register Flask extensions.
     """
     db.init_app(app)
+    socketio.init_app(app)
     migrate.init_app(app, db)
     dashboard.bind(app)
-    socketio.init_app(app)
 
 
 def register_blueprints(app):
