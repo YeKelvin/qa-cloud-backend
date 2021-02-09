@@ -49,6 +49,12 @@ def configure_flask(app):
     )
 
 
+def configure_logger(app):
+    """Configure loggers."""
+    app.logger.addHandler(CONSOLE_HANDLER)
+    app.logger.addHandler(FILE_HANDLER)
+
+
 def register_extensions(app):
     """Register Flask extensions."""
     db.init_app(app)
@@ -88,13 +94,6 @@ def register_commands(app):
     """Register Click commands."""
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
-
-
-def configure_logger(app):
-    """Configure loggers."""
-    if not app.logger.handlers:
-        app.logger.addHandler(CONSOLE_HANDLER)
-        app.logger.addHandler(FILE_HANDLER)
 
 
 def register_swagger(app):
