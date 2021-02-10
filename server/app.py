@@ -11,7 +11,7 @@ from flask import Flask
 
 from server import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
 from server.common.utils import config
-from server.common.utils.log_util import get_logger, CONSOLE_HANDLER, FILE_HANDLER
+from server.common.utils.log_util import get_logger
 from server.extension import db, migrate, socketio, swagger
 
 log = get_logger(__name__)
@@ -22,7 +22,6 @@ __app__ = None
 def create_app() -> Flask:
     app = Flask(__name__)
     configure_flask(app)
-    configure_logger(app)
     register_extensions(app)
     register_blueprints(app)
     register_hooks(app)
@@ -47,12 +46,6 @@ def configure_flask(app):
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
     )
-
-
-def configure_logger(app):
-    """Configure loggers."""
-    app.logger.addHandler(CONSOLE_HANDLER)
-    app.logger.addHandler(FILE_HANDLER)
 
 
 def register_extensions(app):
@@ -98,13 +91,20 @@ def register_commands(app):
 
 def register_swagger(app):
     swagger.config = Swagger.DEFAULT_CONFIG.copy().update({
-        'title': '测试平台 RESTful API',  # 配置大标题
-        'description': 'Test Platform Server RESTful API',  # 配置公共描述内容
-        'host': '0.0.0.0',  # 请求域名
-        'swagger_ui_bundle_js': '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js',
-        'swagger_ui_standalone_preset_js': '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js',
-        'jquery_js': '//unpkg.com/jquery@2.2.4/dist/jquery.min.js',
-        'swagger_ui_css': '//unpkg.com/swagger-ui-dist@3/swagger-ui.css',
+        'title':
+        '测试平台 RESTful API',  # 配置大标题
+        'description':
+        'Test Platform Server RESTful API',  # 配置公共描述内容
+        'host':
+        '0.0.0.0',  # 请求域名
+        'swagger_ui_bundle_js':
+        '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js',
+        'swagger_ui_standalone_preset_js':
+        '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js',
+        'jquery_js':
+        '//unpkg.com/jquery@2.2.4/dist/jquery.min.js',
+        'swagger_ui_css':
+        '//unpkg.com/swagger-ui-dist@3/swagger-ui.css',
     })
     swagger.init_app(app)
 

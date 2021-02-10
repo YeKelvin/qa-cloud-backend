@@ -4,29 +4,32 @@
 # @Time    : 2019/11/7 10:12
 # @Author  : Kelvin.Ye
 import logging
-# from logging.config import dictConfig
+from logging.config import dictConfig
 
 from server.common.utils import config
 
-LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(lineno)d][%(name)s.%(funcName)s] %(message)s'
+# 日志格式
+LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d] %(message)s'
 
-"""
+# logger配置
 dictConfig({
     'version': 1,
     'root': {
-        # handler的level会覆盖掉这里的level
-        'level': config.get('log', 'level'),
+        'propagate': 0,
+        'level': config.get('log', 'level'),  # handler的level会覆盖掉这里的level
         'handlers': ['console', 'file']
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'default'
+            'formatter': 'default',
+            'stream': 'ext://flask.logging.wsgi_errors_stream'
         },
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
             'filename': config.get('log', 'name')
         }
     },
@@ -36,12 +39,11 @@ dictConfig({
         }
     }
 })
-"""
 
 # 日志级别
 LEVEL = config.get('log', 'level')
 
-# 日志输出格式
+# 日志格式
 FORMATTER = logging.Formatter(LOG_FORMAT)
 
 # 输出到控制台
@@ -50,7 +52,7 @@ CONSOLE_HANDLER.setFormatter(FORMATTER)
 
 # 写入日志文件
 LOG_FILE_NAME = config.get('log', 'name')
-FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME)
+FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
 
 
 def get_logger(name):
