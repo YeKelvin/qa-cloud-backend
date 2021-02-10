@@ -12,3 +12,4 @@ report.html
 *config.ini
 *.db
 *.log
+.env

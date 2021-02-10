@@ -26,10 +26,11 @@ dictConfig({
             'stream': 'ext://flask.logging.wsgi_errors_stream'
         },
         'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            # 'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.FileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
-            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            # 'maxBytes': 1024 * 1024 * 10,  # 10MB
             'filename': config.get('log', 'name')
         }
     },
@@ -43,6 +44,9 @@ dictConfig({
 # 日志级别
 LEVEL = config.get('log', 'level')
 
+# 日志文件名称
+LOG_FILE_NAME = config.get('log', 'name')
+
 # 日志格式
 FORMATTER = logging.Formatter(LOG_FORMAT)
 
@@ -51,8 +55,8 @@ CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
 # 写入日志文件
-LOG_FILE_NAME = config.get('log', 'name')
 FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
+FILE_HANDLER.setFormatter(FORMATTER)
 
 
 def get_logger(name):
