@@ -34,22 +34,13 @@
 
     /* 将项目路径添加到python path中 */
     "terminal.integrated.env.windows": {
-        "PYTHONPATH": "${workspaceFolder}",
-        "FLASK_APP": "main.py",
-        "FLASK_ENV": "development",
-        "FLASK_DEBUG": "0"
+        "PYTHONPATH": "${workspaceFolder}"
     },
     "terminal.integrated.env.osx": {
-        "PYTHONPATH": "${workspaceFolder}",
-        "FLASK_APP": "main.py",
-        "FLASK_ENV": "development",
-        "FLASK_DEBUG": "0"
+        "PYTHONPATH": "${workspaceFolder}"
     },
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${workspaceFolder}",
-        "FLASK_APP": "main.py",
-        "FLASK_ENV": "development",
-        "FLASK_DEBUG": "0"
+        "PYTHONPATH": "${workspaceFolder}"
     },
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#1f6fd0",

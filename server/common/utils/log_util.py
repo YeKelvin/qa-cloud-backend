@@ -27,10 +27,12 @@ dictConfig({
         },
         'file': {
             # 'class': 'logging.handlers.RotatingFileHandler',
+            # 'maxBytes': 1024 * 1024 * 10,  # 10MB
+            # 'class': 'logging.handlers.TimedRotatingFileHandler',
+            # 'when': 'D',
             'class': 'logging.FileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
-            # 'maxBytes': 1024 * 1024 * 10,  # 10MB
             'filename': config.get('log', 'name')
         }
     },
