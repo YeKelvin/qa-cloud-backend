@@ -28,6 +28,12 @@ def on_disconnect():
     log.debug(f'socket request:[ {request.__dict__} ]')
 
 
+@socketio.on('message')
+def on_message(data):
+    log.info(f'socket event:[ message ] sid:[ {request.sid} ] received message:[ {data} ]')
+    log.debug(f'socket request:[ {request.__dict__} ]')
+
+
 @socketio.on_error_default
 def error_handler(e):
     ...

@@ -1,4 +1,6 @@
 {
+    "files.insertFinalNewline": true,
+
     /* Python PATH */
     "python.venvFolders": ["virtualenvs"],
     "python.venvPath": "${workspaceFolder}/.cache",
