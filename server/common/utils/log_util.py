@@ -61,7 +61,7 @@ FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
 
 
-def get_logger(name):
+def get_logger(name) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.propagate = False
     logger.setLevel(LEVEL)
