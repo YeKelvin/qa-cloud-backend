@@ -7,8 +7,8 @@
             "request": "launch",
             "program": "${file}",
             "cwd": "${workspaceFolder}",
-            "stopOnEntry": true,
             "console": "internalConsole",
+            "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
@@ -20,6 +20,7 @@
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "module": "flask",
+            "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 // "FLASK_APP": "main:app",
@@ -28,6 +29,7 @@
             },
             "args": [
                 "run",
+                "--no-reload",
                 // "--host", "0.0.0.0",
                 // "--port", "5000"
             ]
@@ -37,9 +39,9 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "stopOnEntry": false,
             "console": "internalConsole",
             "module": "pytest",
+            "justMyCode": false,
             "args": [
                 "-sv",
                 "--disable-pytest-warnings",

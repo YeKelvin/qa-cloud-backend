@@ -43,6 +43,7 @@ flask-graphql = "^2.0.1"
 graphene = { version = "^2.1.8", extras=["sqlalchemy"] }
 send-anywhere = {path = "../send-anywhere", develop = true}
 python-dotenv = "^0.15.0"
+gevent-websocket = "^0.10.1"
 
 [tool.poetry.dev-dependencies]
 

@@ -7,11 +7,11 @@ from flask import Blueprint
 
 blueprint = Blueprint('script', __name__, url_prefix='/script')
 
-from . import element_controller
-from . import element_package_controller
-from . import execution_controller
-from . import env_var_controller
-from . import http_header_controller
-from . import workspace_controller
-from . import topic_controller
-from . import test_controller
+from . import element_controller  # noqa
+from . import element_package_controller  # noqa
+from . import execution_controller  # noqa
+from . import env_var_controller  # noqa
+from . import http_header_controller  # noqa
+from . import workspace_controller  # noqa
+from . import topic_controller  # noqa
+from . import test_controller  # noqa

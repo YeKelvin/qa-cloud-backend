@@ -10,12 +10,9 @@ from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 
-from server.common.utils.log_util import get_logger
-
-log = get_logger(__name__)
 
 db = SQLAlchemy()
-socketio = SocketIO(cors_allowed_origins='*', logger=True, engineio_logger=True)
 swagger = Swagger()
 migrate = Migrate()
 executor = ThreadPoolExecutor(max_workers=10)
+socketio = SocketIO(cors_allowed_origins='*', logger=True, engineio_logger=True)

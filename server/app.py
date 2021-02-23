@@ -39,9 +39,7 @@ def get_app_instance() -> Flask:
 
 def configure_flask(app):
     app.config.from_mapping(
-        DEV='development',
-        DEBUG=True,
-        SQLALCHEMY_DATABASE_URI=__generate_db_url(),
+        SQLALCHEMY_DATABASE_URI=__generate_db_url__(),
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
@@ -51,9 +49,15 @@ def configure_flask(app):
 def register_extensions(app):
     """Register Flask extensions."""
     db.init_app(app)
-    socketio.init_app(app)
     migrate.init_app(app, db)
     dashboard.bind(app)
+    register_socketio(app)
+    # register_swagger(app)
+
+
+def register_socketio(app):
+    socketio.init_app(app)
+    from server import socket  # noqa  # app运行前加载events，否则handle不到
 
 
 def register_blueprints(app):
@@ -110,7 +114,7 @@ def register_swagger(app):
     swagger.init_app(app)
 
 
-def __generate_db_url() -> str:
+def __generate_db_url__() -> str:
     """生成 db url"""
     db_type = config.get('db', 'type')
     if not db_type.startswith('sqlite'):

@@ -13,4 +13,4 @@ log = get_logger(__name__)
 @socketio.on('test')
 def on_test(data):
     emit('received')
-    log.info(f'i am test event, received data={data}')
+    print(f'i am test event, received data={data}')
