@@ -44,14 +44,6 @@ def handle_disconnect():
     )
 
 
-@socketio.on('message')
-def handle_message(data):
-    log.info(
-        f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
-        f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ] message:[ {data} ]'
-    )
-
-
 @socketio.on_error_default
 def handle_error_default(e):
     log.error(
