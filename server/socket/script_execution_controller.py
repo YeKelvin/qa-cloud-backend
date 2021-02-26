@@ -3,8 +3,6 @@
 # @File    : script_execution_controller.py
 # @Time    : 2021/2/9 10:41
 # @Author  : Kelvin.Ye
-from typing import Final
-
 from flask import request
 from flask_socketio import emit
 from server.common.utils.log_util import get_logger
@@ -12,25 +10,18 @@ from server.extension import socketio
 
 log = get_logger(__name__)
 
-NAMESPACE = '/script'  # type:Final
-
 
 @socketio.on('test_event')
 def on_test_event(data):
-    log.debug(f'event:[ test_event ] received message:[ {data} ]')
+    log.debug(f'socket sid:[ {request.sid} ] event:[ test_event ] received message:[ {data} ]')
 
 
-@socketio.on('execution_result', namespace=NAMESPACE)
+@socketio.on('execution_result')
 def execution_result(data):
     log.info(f'socket sid:[ {request.sid} ] event:[ execution_result ] received data:[ {data} ]')
-    # emit('execution_result', '')
+    emit('execution_result', '我是中转的消息', room=data['to'])
 
 
-@socketio.on('execution_log', namespace=NAMESPACE)
+@socketio.on('execution_log')
 def execution_log(data):
-    ...
-
-
-@socketio.on_error(NAMESPACE)
-def error_handler_log(e):
     ...
