@@ -22,6 +22,12 @@ def execution_result(data):
     emit('execution_result', '我是中转的消息', room=data['to'])
 
 
+@socketio.on('execution_completed')
+def execution_completed(data):
+    log.info(f'socket sid:[ {request.sid} ] event:[ execution_completed ] received data:[ {data} ]')
+    emit('execution_completed', None, room=data['to'])
+
+
 @socketio.on('execution_log')
 def execution_log(data):
     ...
