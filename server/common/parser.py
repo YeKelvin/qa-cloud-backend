@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 import traceback
 from enum import Enum
+from typing import List
 
 from flask import request
 
@@ -28,18 +29,19 @@ class Argument:
                  enum: Enum = None,
                  regular: str = None,
                  help: str = None):
+        if not isinstance(self.name, str):
+            raise TypeError('argument name must be string')
+
         self.name = name  # 参数名称
         self.type = type  # 参数类型
         self.default = default  # 参数默认值
-        self.required = required  # 参数是否要求必须
+        self.required = required  # 参数是否要求必传
         self.nullable = nullable  # 参数是否允许为空
-        self.min = min  # 参数允许的最小值或最小长度 todo
-        self.max = max  # 参数允许的最大值或最大长度 todo
-        self.enum = enum  # 参数枚举校验 todo
-        self.regular = regular  # 参数正则表达式校验 todo
+        self.min = min  # 参数允许的最小值或最小长度 TODO
+        self.max = max  # 参数允许的最大值或最大长度 TODO
+        self.enum = enum  # 参数枚举校验 TODO
+        self.regular = regular  # 参数正则表达式校验 TODO
         self.help = help  # 参数不符合要求时的提示语
-        if not isinstance(self.name, str):
-            raise TypeError('argument name must be string')
 
     def parse(self, has_key, value):
         """解析 HTTP参数
@@ -89,7 +91,7 @@ class Argument:
 
 class BaseParser:
     def __init__(self, *args):
-        self.args: [Argument] = []
+        self.args: List[Argument] = []
         for arg in args:
             if not isinstance(arg, Argument):
                 raise TypeError(f'{arg} is not instance of Argument class')

@@ -16,13 +16,14 @@ def element_to_dict(element_no):
     assert_not_blank(element, '测试元素不存在')
 
     # 递归查询元素子代
-    element_child_rels = TElementChildRel.query_by(PARENT_NO=element_no).all()
+    # 查询时根据order asc排序
+    element_child_rels = TElementChildRel.query_by(PARENT_NO=element_no).order_by(TElementChildRel.CHILD_ORDER).all()
     children = []
     if element_child_rels:
         for element_child_rel in element_child_rels:
             children.append(element_to_dict(element_child_rel.CHILD_NO))
 
-    # 包装为字典返回
+    # 组装dict返回
     el_dict = {
         'name': element.ELEMENT_NAME,
         'comments': element.ELEMENT_COMMENTS,
@@ -38,7 +39,7 @@ def property_to_dict(element_no):
     # 查询元素属性，只查询enabled的属性
     props = TElementProperty.query_by(ELEMENT_NO=element_no, ENABLED=True).all()
 
-    # 包装为字典返回
+    # 组装dict返回
     prop_dict = {}
     for prop in props:
         prop_dict[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE

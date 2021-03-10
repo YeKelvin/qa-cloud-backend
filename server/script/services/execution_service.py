@@ -18,9 +18,29 @@ def execute_script(req: RequestDTO):
     # 根据collectionNo递归查询脚本数据并转换成dict
     script = [helper.element_to_dict(req.attr.collectionNo)]
 
+    if req.attr.sid:
+        ...
+
     # 新增线程执行脚本
-    # TODO: 暂时用ThreadPoolExecutor，后面改用Celery
-    # https://www.celerycn.io/
+    # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
     executor.submit(Runner.start, script)
 
     return None
+
+
+def add_socket_result_collector_component(script: dict, sid: str):
+    component = {
+        'name': 'SocketResultCollector',
+        'comments': None,
+        'class': 'SocketResultCollector',
+        'enabled': True,
+        'property': {
+            'SocketResultCollector__url': '',
+            'SocketResultCollector__headers': None,
+            'SocketResultCollector__namespace': None,
+            'SocketResultCollector__event_name': 'execution_result',
+            'SocketResultCollector__target_sid': sid
+        },
+        'child': None
+    }
+    collection_child = script['child']

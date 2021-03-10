@@ -20,5 +20,6 @@ def execute_script():
     """
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('sid')
     ).parse()
     return service.execute_script(req)
