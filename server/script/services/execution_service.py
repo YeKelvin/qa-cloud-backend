@@ -6,6 +6,7 @@
 from sendanywhere.runner import Runner
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
+from server.common.utils import config
 from server.common.utils.log_util import get_logger
 from server.extension import executor
 from server.script.services import execution_helper as helper
@@ -16,13 +17,14 @@ log = get_logger(__name__)
 @http_service
 def execute_script(req: RequestDTO):
     # 根据collectionNo递归查询脚本数据并转换成dict
-    script = [helper.element_to_dict(req.attr.collectionNo)]
+    collection = helper.element_to_dict(req.attr.collectionNo)
 
     # TODO: 增加脚本完整性校验，例如脚本下是否有内容
 
     if req.attr.sid:
-        add_socket_result_collector_component(script, req.attr.sid)
+        add_socket_result_collector_component(collection, req.attr.sid)
 
+    script = [collection]
     # 新增线程执行脚本
     # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
     executor.submit(Runner.start, script)
@@ -31,19 +33,21 @@ def execute_script(req: RequestDTO):
 
 
 def add_socket_result_collector_component(script: dict, sid: str):
-    component = {
+    protocol = config.get('public', 'http.protocol')
+    host = config.get('public', 'http.host')
+    port = config.get('public', 'http.port')
+
+    script['child'].insert(0, {
         'name': 'SocketResultCollector',
         'comments': None,
         'class': 'SocketResultCollector',
         'enabled': True,
         'property': {
-            'SocketResultCollector__url': '',
+            'SocketResultCollector__url': f'{protocol}://{host}:{port}',
             'SocketResultCollector__headers': None,
             'SocketResultCollector__namespace': None,
             'SocketResultCollector__event_name': 'execution_result',
             'SocketResultCollector__target_sid': sid
         },
         'child': None
-    }
-    collection_children = script['child']
-    collection_children.insert(0, component)
+    })
