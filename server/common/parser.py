@@ -29,9 +29,6 @@ class Argument:
                  enum: Enum = None,
                  regular: str = None,
                  help: str = None):
-        if not isinstance(self.name, str):
-            raise TypeError('argument name must be string')
-
         self.name = name  # 参数名称
         self.type = type  # 参数类型
         self.default = default  # 参数默认值
@@ -42,6 +39,9 @@ class Argument:
         self.enum = enum  # 参数枚举校验 TODO
         self.regular = regular  # 参数正则表达式校验 TODO
         self.help = help  # 参数不符合要求时的提示语
+
+        if not isinstance(self.name, str):
+            raise TypeError('argument name must be string')
 
     def parse(self, has_key, value):
         """解析 HTTP参数
