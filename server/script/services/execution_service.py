@@ -3,10 +3,11 @@
 # @File    : execution_service
 # @Time    : 2020/3/20 15:00
 # @Author  : Kelvin.Ye
+import traceback
+
 from sendanywhere.runner import Runner
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.utils import config
 from server.common.utils.log_util import get_logger
 from server.extension import executor
 from server.script.services import execution_helper as helper
@@ -22,32 +23,34 @@ def execute_script(req: RequestDTO):
     # TODO: 增加脚本完整性校验，例如脚本下是否有内容
 
     if req.attr.sid:
-        add_socket_result_collector_component(collection, req.attr.sid)
+        add_flask_socketio_result_collector_component(collection, req.attr.sid)
 
     script = [collection]
     # 新增线程执行脚本
     # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
-    executor.submit(Runner.start, script)
 
+    def start():
+        try:
+            Runner.start(script)
+        except Exception:
+            log.error(traceback.format_exc())
+
+    executor.submit(start)
     return None
 
 
-def add_socket_result_collector_component(script: dict, sid: str):
-    protocol = config.get('public', 'http.protocol')
-    host = config.get('public', 'http.host')
-    port = config.get('public', 'http.port')
-
+def add_flask_socketio_result_collector_component(script: dict, sid: str):
     script['child'].insert(0, {
-        'name': 'SocketResultCollector',
+        'name': 'FlaskSocketIOResultCollector',
         'comments': None,
-        'class': 'SocketResultCollector',
+        'class': 'FlaskSocketIOResultCollector',
         'enabled': True,
         'property': {
-            'SocketResultCollector__url': f'{protocol}://{host}:{port}',
-            'SocketResultCollector__headers': None,
-            'SocketResultCollector__namespace': None,
-            'SocketResultCollector__event_name': 'execution_result',
-            'SocketResultCollector__target_sid': sid
+            'FlaskSocketIOResultCollector__namespace': '/',
+            'FlaskSocketIOResultCollector__event_name': 'execution_result',
+            'FlaskSocketIOResultCollector__target_sid': sid,
+            'FlaskSocketIOResultCollector__flask_sio_instance_module': 'server.extension',
+            'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
         },
         'child': None
     })

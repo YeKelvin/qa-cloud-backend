@@ -27,13 +27,19 @@ def create_app() -> Flask:
     register_hooks(app)
     register_shell_context(app)
     register_commands(app)
+    set_app(app)
     return app
 
 
-def get_app_instance() -> Flask:
+def set_app(app):
+    global __app__
+    __app__ = app
+
+
+def get_app() -> Flask:
     global __app__
     if __app__ is None:
-        __app__ = create_app()
+        raise RuntimeError('please call create_app() first')
     return __app__
 
 

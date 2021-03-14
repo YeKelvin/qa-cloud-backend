@@ -19,7 +19,7 @@ def on_test_event(data):
 @socketio.on('execution_result')
 def execution_result(data):
     log.info(f'socket sid:[ {request.sid} ] event:[ execution_result ] received data:[ {data} ]')
-    emit('execution_result', '我是中转的消息', room=data['to'])
+    emit('execution_result', data, room=data['to'])
 
 
 @socketio.on('execution_completed')

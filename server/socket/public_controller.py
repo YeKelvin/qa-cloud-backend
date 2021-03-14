@@ -49,7 +49,7 @@ def handle_error_default(e):
     log.error(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ] '
-        f'traceback:\n{traceback.format_exc()}')
+        f'\n{traceback.format_exc()}')
 
 
 # @socketio.on_error()
