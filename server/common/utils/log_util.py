@@ -26,10 +26,6 @@ dictConfig({
             'stream': 'ext://flask.logging.wsgi_errors_stream'
         },
         'file': {
-            # 'class': 'logging.handlers.RotatingFileHandler',
-            # 'maxBytes': 1024 * 1024 * 10,  # 10MB
-            # 'class': 'logging.handlers.TimedRotatingFileHandler',
-            # 'when': 'D',
             'class': 'logging.FileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
@@ -68,3 +64,21 @@ def get_logger(name) -> logging.Logger:
     logger.addHandler(CONSOLE_HANDLER)
     logger.addHandler(FILE_HANDLER)
     return logger
+
+
+class WerkzeugLogFilter(logging.Filter):
+    def __init__(self):
+        super(WerkzeugLogFilter, self).__init__()
+
+    def filter(self, record):
+        print(record.__dict__)
+        return True
+
+
+class SendAnywhereLogFilter(logging.Filter):
+    def __init__(self):
+        super(WerkzeugLogFilter, self).__init__()
+
+    def filter(self, record):
+        print(record.__dict__)
+        return True
