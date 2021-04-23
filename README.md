@@ -8,19 +8,6 @@ cd test-platform-server/
 python3 -m poetry install
 ```
 
-## 安装send-anywhere模块
-
-```bash
-pip3 install git+https://github.com/YeKelvin/send-anywhere.git
-cd send-anywhere/
-python3 setup.py build
-python3 setup.py sdist
-cd dist/
-tar -zxvf send-anywhere-{version}.tar.gz
-cd send-anywhere-{version}/
-python3 setup.py install
-```
-
 ## 配置 click命令执行环境
 
 ### bash
@@ -61,11 +48,12 @@ uwsgi --ini uwsgi.ini
 ```
 
 ## 监控面板
+
 ```url
 /dashboard
 ```
 
 ## 技术说明
 
-站在巨人的肩上，离不开开源的支持，主要使用到的技术如下：
+站在巨人的肩上，主要使用以下开源项目：
 ...
