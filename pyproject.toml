@@ -17,7 +17,7 @@ url = "https://mirror.baidu.com/pypi/simple/"
 secondary = true
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 flask = "^1.1.2"
 flask-socketio = "^5.0.1"
 flask-sqlalchemy = "^2.5.1"
@@ -32,7 +32,6 @@ gevent = "^21.1.2"
 gevent-websocket = "^0.10.1"
 graphene = { version = "^2.1.8", extras=["sqlalchemy"] }
 celery = "^5.0.1"
-elasticsearch = "^7.9.1"
 requests = "^2.24.0"
 pyjwt = "^1.7.1"
 pytest = "^5.4.3"
