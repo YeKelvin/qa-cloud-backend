@@ -1,8 +1,19 @@
 {
+    /* vscode */
     "files.insertFinalNewline": true,
+    "files.exclude": {
+        "**/.idea": true,
+        "**/.pytest_cache": true,
+        "**/__pycache__": true,
+    },
+    "files.watcherExclude": {
+        "**/.cache": true
+    },
 
     /* Python PATH */
-    "python.venvFolders": ["virtualenvs"],
+    "python.venvFolders": [
+        "virtualenvs"
+    ],
     "python.venvPath": "${workspaceFolder}/.cache",
     // "python.pythonPath": "path/to/your/python",
 
@@ -10,21 +21,13 @@
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": false,
     "python.linting.lintOnSave": true,
-    "python.linting.flake8Args": [
-        "--max-line-length=120",
-        "--ignore=E501, E262",
-    ],
     "python.formatting.provider": "yapf",
-    "python.formatting.yapfArgs": [
-        "--style",
-        "{based_on_style: pep8, indent_width: 4}"
-    ],
 
     /* Python Test Framework */
+    "python.testing.cwd": "${workspaceFolder}",
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-
     "python.languageServer": "Pylance",
 
     /* Code Runner */

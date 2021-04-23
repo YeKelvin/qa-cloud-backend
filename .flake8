@@ -1,0 +1,9 @@
+[flake8]
+max-line-length=120
+ignore =
+    # indentation is not a multiple of four,
+    E111, E114,
+    # visually indented line with same indent as next logical line,
+    E129,
+    E262,
+    E501

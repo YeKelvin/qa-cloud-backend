@@ -1,7 +1,25 @@
 [style]
-based_on_style=pep8
-spaces_before_comment = 4
-split_before_logical_operator = true
-COLUMN_LIMIT=120
-INDENT_WIDTH=4
-SPLIT_BEFORE_DOT=True
+based_on_style = google
+spaces_before_comment = 2
+
+# The column limit (or max line-length)
+COLUMN_LIMIT = 120
+
+# The number of columns to use for indentation.
+INDENT_WIDTH = 4
+
+# Put closing brackets on a separate line, dedented, if the bracketed expression can't fit in a single line.
+# Applies to all kinds of brackets, including function definitions and calls
+DEDENT_CLOSING_BRACKETS = True
+
+# Do not split consecutive brackets. Only relevant when DEDENT_CLOSING_BRACKETS or INDENT_CLOSING_BRACKETS is set.
+COALESCE_BRACKETS = True
+
+# If a comma separated list (dict, list, tuple, or function def) is on a line that is too long,
+# split such that all elements are on a single line.
+SPLIT_ALL_COMMA_SEPARATED_VALUES = True
+
+# Variation on SPLIT_ALL_COMMA_SEPARATED_VALUES in which,
+# if a subexpression with a comma fits in its starting line,
+# then the subexpression is not split.
+SPLIT_ALL_TOP_LEVEL_COMMA_SEPARATED_VALUES = True

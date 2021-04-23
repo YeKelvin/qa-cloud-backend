@@ -20,15 +20,15 @@ secondary = true
 python = "^3.6"
 flask = "^1.1.2"
 flask-socketio = "^5.0.1"
-flask-sqlalchemy = "^2.4.4"
-flask-migrate = "^2.5.3"
+flask-sqlalchemy = "^2.5.1"
+flask-migrate = "^2.7.0"
 flask-monitoringdashboard = "^3.1.0"
 flask-graphql = "^2.0.1"
 flasgger = "^0.9.5"
-orjson = "^3.4.1"
+orjson = "^3.5.2"
 jsonpath = "^0.82"
-gunicorn = "^20.0.4"
-gevent = "^20.0.9"
+gunicorn = "^20.1.0"
+gevent = "^21.1.2"
 gevent-websocket = "^0.10.1"
 graphene = { version = "^2.1.8", extras=["sqlalchemy"] }
 celery = "^5.0.1"
@@ -36,13 +36,13 @@ elasticsearch = "^7.9.1"
 requests = "^2.24.0"
 pyjwt = "^1.7.1"
 pytest = "^5.4.3"
-pytest-html = "^2.1.1"
+pytest-html = "^3.1.1"
 pycryptodome = "^3.9.9"
 python-dotenv = "^0.15.0"
-numpy = "^1.19.3"
+numpy = "^1.20.2"
 flake8 = "*"
 yapf = "*"
-uwsgi = { version = "2.0.19.1", markers = "platform_system == 'Linux'" }
+uwsgi = { version = "*", markers = "platform_system == 'Linux'" }
 send-anywhere = {path = "../send-anywhere", develop = true}
 
 [tool.poetry.dev-dependencies]
