@@ -9,7 +9,6 @@ assets/
 report.html
 
 *.lock
-*config.ini
 *.db
 *.log
 .env

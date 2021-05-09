@@ -39,7 +39,7 @@ flask initdata
 
 ## 服务端部署
 
-Nginx, uWSGI, Supervisor
+Nginx, uWSGI, Systemd / Supervisor
 
 ## 启动uWSGI
 
