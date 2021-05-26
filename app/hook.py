@@ -47,12 +47,12 @@ def set_user():
         auth_header = request.headers.get('Authorization')
         auth_array = auth_header.split(' ')
         if not auth_array or len(auth_array) != 2:
-            log.info(f'logId:[ {g.logid} ] 解析 Authorization HTTP Header有误')
+            log.info(f'logId:[ {g.logid} ] 解析Authorization Header有误')
             return
         auth_schema = auth_array[0]
         auth_token = auth_array[1]
-        if auth_schema != 'JWT':  # TODO: 改成basic
-            log.info(f'logId:[ {g.logid} ] Authorization中的 schema请使用 JWT开头')
+        if auth_schema != 'Bearer':
+            log.info(f'logId:[ {g.logid} ] 请使用Bearer Schema')
             return
         try:
             # 解密 token获取 payload

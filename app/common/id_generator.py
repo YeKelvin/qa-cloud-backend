@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : number_generator
+# @File    : id_generator.py
 # @Time    : 2020/3/20 14:03
 # @Author  : Kelvin.Ye
 from app.utils import config

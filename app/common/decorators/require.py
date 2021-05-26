@@ -6,13 +6,20 @@
 from datetime import datetime
 from functools import wraps
 
-from flask import request, g
+from flask import g
+from flask import request
 
 from app.common.exceptions import ErrorCode
 from app.common.helpers.global_helper import Global
-from app.common.response import http_response, ResponseDTO
-from app.user.models import (TUser, TRole, TUserRoleRel, TPermission, TRolePermissionRel,
-                                TUserPassword, TUserAccessToken)
+from app.common.response import http_response
+from app.common.response import ResponseDTO
+from app.user.models import TPermission
+from app.user.models import TRole
+from app.user.models import TRolePermissionRel
+from app.user.models import TUser
+from app.user.models import TUserAccessToken
+from app.user.models import TUserPassword
+from app.user.models import TUserRoleRel
 from app.utils.log_util import get_logger
 
 log = get_logger(__name__)

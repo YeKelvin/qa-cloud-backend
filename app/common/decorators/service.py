@@ -3,14 +3,17 @@
 # @File    : service
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
-import traceback
 from functools import wraps
+import traceback
 
-from flask import request, g
+from flask import g
+from flask import request
 
-from app.common.exceptions import ServiceError, ErrorCode
+from app.common.exceptions import ErrorCode
+from app.common.exceptions import ServiceError
 from app.common.request import RequestDTO
-from app.common.response import http_response, ResponseDTO
+from app.common.response import http_response
+from app.common.response import ResponseDTO
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_as_ms
 
