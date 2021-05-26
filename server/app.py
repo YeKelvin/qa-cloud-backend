@@ -9,7 +9,7 @@ from flasgger import Swagger
 from flask import Flask
 
 from server import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
-from server.common.utils import config
+from server.utils import config
 from server.utils.log_util import get_logger
 from server.extension import db, migrate, socketio, swagger
 

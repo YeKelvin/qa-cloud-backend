@@ -36,7 +36,7 @@ import datetime
 
 import jwt
 
-from server.common.utils import config
+from server.utils import config
 
 
 class JWTAuth:

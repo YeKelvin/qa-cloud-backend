@@ -3,19 +3,20 @@
 # @File    : hooks.py
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
+from datetime import datetime
 import threading
 import traceback
-from datetime import datetime
 
+from flask import g
+from flask import request
 import jwt
-from flask import request, g
 
 from server.common.helpers.global_helper import Global
 from server.common.response import http_response
 from server.system.models import TActionLog
 from server.user.models import TPermission
+from server.utils import randoms
 from server.utils.auth import JWTAuth
-from server.common.utils import randoms
 from server.utils.log_util import get_logger
 
 log = get_logger(__name__)

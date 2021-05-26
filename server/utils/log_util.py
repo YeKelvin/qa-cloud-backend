@@ -6,7 +6,7 @@
 import logging
 from logging.config import dictConfig
 
-from server.common.utils import config
+from server.utils import config
 
 # 日志格式
 LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d] %(message)s'
