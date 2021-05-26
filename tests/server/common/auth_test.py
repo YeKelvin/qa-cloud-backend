@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 import datetime
 
-from server.utils.auth import JWTAuth
+from app.utils.auth import JWTAuth
 
 
 def test_auth_token():
