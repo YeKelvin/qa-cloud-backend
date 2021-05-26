@@ -10,8 +10,8 @@ from server.common.id_generator import new_id
 from server.extension import db
 from server.system.models import TActionLog
 from server.user.models import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
-from server.common.utils.log_util import get_logger
-from server.common.utils.security import encrypt_password
+from server.utils.log_util import get_logger
+from server.utils.security import encrypt_password
 
 log = get_logger(__name__)
 

@@ -6,7 +6,7 @@
 from server.common.decorators.service import http_service
 from server.common.decorators.transaction import db_transaction
 from server.common.request import RequestDTO
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.common.validator import assert_blank, assert_not_blank
 from server.extension import db
 from server.script.enums import ElementStatus

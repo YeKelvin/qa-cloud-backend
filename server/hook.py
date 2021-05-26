@@ -14,9 +14,9 @@ from server.common.helpers.global_helper import Global
 from server.common.response import http_response
 from server.system.models import TActionLog
 from server.user.models import TPermission
-from server.common.utils.auth import JWTAuth
+from server.utils.auth import JWTAuth
 from server.common.utils import randoms
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

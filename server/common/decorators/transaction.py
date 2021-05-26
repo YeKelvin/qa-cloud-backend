@@ -6,7 +6,7 @@
 from functools import wraps
 
 from flask import g, request
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.extension import db
 
 log = get_logger(__name__)

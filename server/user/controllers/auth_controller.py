@@ -6,7 +6,7 @@
 from server.common.parser import JsonParser, Argument
 from server.user.controllers import blueprint
 from server.user.services import auth_service as service
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

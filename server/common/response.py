@@ -10,7 +10,7 @@ from flask import make_response
 from server.common.exceptions import ErrorCode
 from server.common.helpers.global_helper import Global
 from server.common.enums import HttpStatus
-from server.common.utils.json_util import to_json
+from server.utils.json_util import to_json
 
 
 class ResponseDTO:

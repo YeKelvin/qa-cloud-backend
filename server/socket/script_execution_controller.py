@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from flask import request
 from flask_socketio import emit
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.extension import socketio
 
 log = get_logger(__name__)

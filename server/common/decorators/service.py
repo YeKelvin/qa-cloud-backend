@@ -11,8 +11,8 @@ from flask import request, g
 from server.common.exceptions import ServiceError, ErrorCode
 from server.common.request import RequestDTO
 from server.common.response import http_response, ResponseDTO
-from server.common.utils.log_util import get_logger
-from server.common.utils.time_util import timestamp_as_ms
+from server.utils.log_util import get_logger
+from server.utils.time_util import timestamp_as_ms
 
 log = get_logger(__name__)
 

@@ -13,7 +13,7 @@ from server.common.helpers.global_helper import Global
 from server.common.response import http_response, ResponseDTO
 from server.user.models import (TUser, TRole, TUserRoleRel, TPermission, TRolePermissionRel,
                                 TUserPassword, TUserAccessToken)
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

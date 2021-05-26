@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

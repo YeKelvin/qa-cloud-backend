@@ -8,7 +8,7 @@ from server.common.id_generator import new_id
 from server.common.request import RequestDTO
 from server.common.validator import assert_blank, assert_not_blank
 from server.user.models import TUserRoleRel, TRole, TRolePermissionRel
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

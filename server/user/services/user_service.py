@@ -15,10 +15,10 @@ from server.common.validator import assert_blank, assert_not_blank
 from server.user.models import (
     TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken, TUserLoginLog, TUserPasswordKey
 )
-from server.common.utils.auth import JWTAuth
-from server.common.utils.log_util import get_logger
-from server.common.utils.rsa_util import decrypt_by_rsa_private_key
-from server.common.utils.security import encrypt_password, check_password
+from server.utils.auth import JWTAuth
+from server.utils.log_util import get_logger
+from server.utils.rsa_util import decrypt_by_rsa_private_key
+from server.utils.security import encrypt_password, check_password
 
 log = get_logger(__name__)
 

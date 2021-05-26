@@ -8,7 +8,7 @@ from flask import Blueprint
 from server.common.decorators.require import require_login, require_permission
 from server.common.parser import JsonParser, Argument
 from server.system import services
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

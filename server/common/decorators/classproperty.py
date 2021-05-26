@@ -3,7 +3,7 @@
 # @File    : classpro
 # @Time    : 2020/1/14 10:50
 # @Author  : Kelvin.Ye
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

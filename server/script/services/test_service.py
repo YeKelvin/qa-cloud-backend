@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 

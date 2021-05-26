@@ -7,7 +7,7 @@ from typing import Iterable
 
 from server.common.exceptions import ServiceError
 from server.common.id_generator import new_id
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.common.validator import assert_not_blank
 from server.extension import db
 from server.script.enums import ElementStatus

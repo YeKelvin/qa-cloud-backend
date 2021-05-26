@@ -6,7 +6,7 @@
 from gevent.pywsgi import WSGIServer
 
 from server.app import create_app
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 
 log = get_logger(__name__)
 app = create_app()

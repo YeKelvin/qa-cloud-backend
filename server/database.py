@@ -9,7 +9,7 @@ Database module, including the SQLAlchemy database object and DB-related utiliti
 """
 from datetime import datetime
 
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.extension import db
 
 log = get_logger(__name__)

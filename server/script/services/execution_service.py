@@ -8,7 +8,7 @@ import traceback
 from sendanywhere.runner import Runner
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
-from server.common.utils.log_util import get_logger
+from server.utils.log_util import get_logger
 from server.extension import executor
 from server.script.services import execution_helper as helper
 

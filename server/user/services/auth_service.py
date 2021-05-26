@@ -6,8 +6,8 @@
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
 from server.user.models import TUserPasswordKey
-from server.common.utils.log_util import get_logger
-from server.common.utils.rsa_util import generate_rsa_key
+from server.utils.log_util import get_logger
+from server.utils.rsa_util import generate_rsa_key
 
 log = get_logger(__name__)
 

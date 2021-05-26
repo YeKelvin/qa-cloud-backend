@@ -6,8 +6,8 @@
 from server.common.decorators.service import http_service
 from server.common.request import RequestDTO
 from server.system.models import TActionLog
-from server.common.utils.log_util import get_logger
-from server.common.utils.time_util import STRFTIME_FORMAT
+from server.utils.log_util import get_logger
+from server.utils.time_util import STRFTIME_FORMAT
 
 log = get_logger(__name__)
 
