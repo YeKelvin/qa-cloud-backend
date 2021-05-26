@@ -50,7 +50,7 @@ def set_user():
             return
         auth_schema = auth_array[0]
         auth_token = auth_array[1]
-        if auth_schema != 'JWT':
+        if auth_schema != 'JWT':  # TODO: 改成basic
             log.info(f'logId:[ {g.logid} ] Authorization中的 schema请使用 JWT开头')
             return
         try:

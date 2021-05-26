@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 import os
 
-import flask_monitoringdashboard as dashboard
 from flasgger import Swagger
 from flask import Flask
 
@@ -56,7 +55,6 @@ def register_extensions(app):
     """Register Flask extensions."""
     db.init_app(app)
     migrate.init_app(app, db)
-    dashboard.bind(app)
     register_socketio(app)
     # register_swagger(app)
 

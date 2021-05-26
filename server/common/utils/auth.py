@@ -69,7 +69,7 @@ class JWTAuth:
             }
         }
         token = jwt.encode(payload, JWTAuth.SECRET_KEY, algorithm='HS256', headers=header)
-        return str(token, encoding='utf-8')
+        return token
 
     @staticmethod
     def decode_auth_token(auth_token) -> dict:
@@ -86,7 +86,7 @@ class JWTAuth:
         """
 
         # 取消过期时间验证
-        payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, options={'verify_exp': True})
+        payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, algorithms=['HS256'], options={'verify_exp': True})
         if 'data' in payload and 'id' in payload['data']:
             return payload
         else:

@@ -29,10 +29,6 @@ class TUser(DBModel):
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
-    __mapper_args__ = {
-        'order_by': CREATED_TIME.desc()
-    }
-
 
 class TRole(DBModel):
     """角色表
