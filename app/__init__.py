@@ -44,7 +44,7 @@ def get_app() -> Flask:
 
 def configure_flask(app):
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI=__generate_db_url__(),
+        SQLALCHEMY_DATABASE_URI=get_db_url(),
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
@@ -61,7 +61,8 @@ def register_extensions(app):
 
 def register_socketio(app):
     socketio.init_app(app)
-    from app import socket  # noqa  # app运行前加载events，否则handle不到
+    # app运行前加载events，否则handle不到
+    from app import socket  # noqa
 
 
 def register_blueprints(app):
@@ -118,18 +119,20 @@ def register_swagger(app):
     swagger.init_app(app)
 
 
-def __generate_db_url__() -> str:
-    """生成 db url"""
+def get_db_url() -> str:
+    """获取dbUrl"""
     db_type = config.get('db', 'type')
-    if not db_type.startswith('sqlite'):
-        username = config.get('db', 'username')
-        password = config.get('db', 'password')
-        address = config.get('db', 'address')
-        name = config.get('db', 'name')
-        db_url = f'{db_type}://{username}:{password}@{address}/{name}'
-        return db_url
-    else:
-        address = config.get_project_path()
-        name = config.get('db', 'name')
-        db_url = f'{db_type}:///{os.path.join(address, name)}.db'
-        return db_url
+    if db_type.startswith('sqlite'):
+        return get_sqlite_url()
+
+    username = config.get('db', 'username')
+    password = config.get('db', 'password')
+    address = config.get('db', 'address')
+    name = config.get('db', 'name')
+    db_url = f'{db_type}://{username}:{password}@{address}/{name}'
+    return db_url
+
+
+def get_sqlite_url():
+    name = config.get('db', 'name')
+    return f'sqlite:///{os.path.join(config.get_project_path(), name)}.db'
