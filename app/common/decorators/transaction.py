@@ -5,9 +5,12 @@
 # @Author  : Kelvin.Ye
 from functools import wraps
 
-from flask import g, request
-from app.utils.log_util import get_logger
+from flask import g
+from flask import request
+
 from app.extension import db
+from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

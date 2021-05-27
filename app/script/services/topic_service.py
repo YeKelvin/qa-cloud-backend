@@ -3,12 +3,14 @@
 # @File    : topic_service
 # @Time    : 2020/3/13 16:56
 # @Author  : Kelvin.Ye
-from app.common.id_generator import new_id
 from app.common.decorators.service import http_service
+from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank, assert_not_blank
+from app.common.validator import assert_blank
+from app.common.validator import assert_not_blank
 from app.script.models import TTestTopic
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

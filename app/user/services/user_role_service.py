@@ -3,12 +3,16 @@
 # @File    : user_role_service
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye
-from app.extension import db
 from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank, assert_not_blank
-from app.user.models import TUser, TUserRoleRel, TRole
+from app.common.validator import assert_blank
+from app.common.validator import assert_not_blank
+from app.extension import db
+from app.user.models import TRole
+from app.user.models import TUser
+from app.user.models import TUserRoleRel
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

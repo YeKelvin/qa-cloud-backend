@@ -6,12 +6,18 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import db_transaction
 from app.common.request import RequestDTO
-from app.utils.log_util import get_logger
-from app.common.validator import assert_blank, assert_not_blank
+from app.common.validator import assert_blank
+from app.common.validator import assert_not_blank
 from app.extension import db
 from app.script.enums import ElementStatus
-from app.script.models import TElementChildRel, TElementProperty, TTestElement, TWorkspace, TWorkspaceCollectionRel
+from app.script.models import TElementChildRel
+from app.script.models import TElementProperty
+from app.script.models import TTestElement
+from app.script.models import TWorkspace
+from app.script.models import TWorkspaceCollectionRel
 from app.script.services import element_helper as helper
+from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

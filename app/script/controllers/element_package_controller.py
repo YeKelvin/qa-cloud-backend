@@ -3,11 +3,14 @@
 # @File    : element_package
 # @Time    : 2020/3/17 14:31
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login, require_permission
-from app.common.parser import JsonParser, Argument
+from app.common.decorators.require import require_login
+from app.common.decorators.require import require_permission
+from app.common.parser import Argument
+from app.common.parser import JsonParser
 from app.script.controllers import blueprint
 from app.script.services import element_package_service as service
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

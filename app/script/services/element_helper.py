@@ -7,11 +7,14 @@ from typing import Iterable
 
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.utils.log_util import get_logger
 from app.common.validator import assert_not_blank
 from app.extension import db
 from app.script.enums import ElementStatus
-from app.script.models import TElementChildRel, TElementProperty, TTestElement
+from app.script.models import TElementChildRel
+from app.script.models import TElementProperty
+from app.script.models import TTestElement
+from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

@@ -6,6 +6,7 @@
 from app.utils import config
 from app.utils.snowflake import IdWorker
 
+
 __ID_WORKER__ = IdWorker(
     int(config.get('snowflake', 'datacenter.id')),
     int(config.get('snowflake', 'worker.id')),

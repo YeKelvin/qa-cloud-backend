@@ -3,22 +3,31 @@
 # @File    : user_service
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from app.common.id_generator import new_id
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import db_transaction
 from app.common.exceptions import ServiceError
 from app.common.helpers.global_helper import Global
+from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank, assert_not_blank
-from app.user.models import (
-    TUser, TUserRoleRel, TRole, TUserLoginInfo, TUserPassword, TUserAccessToken, TUserLoginLog, TUserPasswordKey
-)
+from app.common.validator import assert_blank
+from app.common.validator import assert_not_blank
+from app.user.models import TRole
+from app.user.models import TUser
+from app.user.models import TUserAccessToken
+from app.user.models import TUserLoginInfo
+from app.user.models import TUserLoginLog
+from app.user.models import TUserPassword
+from app.user.models import TUserPasswordKey
+from app.user.models import TUserRoleRel
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
-from app.utils.security import encrypt_password, check_password
+from app.utils.security import check_password
+from app.utils.security import encrypt_password
+
 
 log = get_logger(__name__)
 

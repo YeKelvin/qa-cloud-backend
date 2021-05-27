@@ -3,12 +3,16 @@
 # @File    : role_permission_service
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye
-from app.extension import db
 from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank, assert_not_blank
-from app.user.models import TRole, TPermission, TRolePermissionRel
+from app.common.validator import assert_blank
+from app.common.validator import assert_not_blank
+from app.extension import db
+from app.user.models import TPermission
+from app.user.models import TRole
+from app.user.models import TRolePermissionRel
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

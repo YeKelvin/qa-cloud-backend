@@ -3,8 +3,8 @@
 # @File    : service
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
-from functools import wraps
 import traceback
+from functools import wraps
 
 from flask import g
 from flask import request
@@ -12,10 +12,11 @@ from flask import request
 from app.common.exceptions import ErrorCode
 from app.common.exceptions import ServiceError
 from app.common.request import RequestDTO
-from app.common.response import http_response
 from app.common.response import ResponseDTO
+from app.common.response import http_response
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_as_ms
+
 
 log = get_logger(__name__)
 

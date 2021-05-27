@@ -3,7 +3,8 @@
 # @File    : verify
 # @Time    : 2019/11/21 15:04
 # @Author  : Kelvin.Ye
-from app.common.exceptions import ServiceError, ErrorCode
+from app.common.exceptions import ErrorCode
+from app.common.exceptions import ServiceError
 
 
 def assert_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:

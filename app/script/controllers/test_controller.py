@@ -3,10 +3,12 @@
 # @File    : test_controller.py
 # @Time    : 2021/1/27 09:19
 # @Author  : Kelvin.Ye
-from app.common.parser import JsonParser, Argument
+from app.common.parser import Argument
+from app.common.parser import JsonParser
 from app.script.controllers import blueprint
 from app.script.services import test_service as service
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

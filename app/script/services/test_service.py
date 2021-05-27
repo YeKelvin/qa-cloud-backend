@@ -7,6 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
 from app.utils.log_util import get_logger
 
+
 log = get_logger(__name__)
 
 

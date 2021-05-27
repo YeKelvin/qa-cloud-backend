@@ -3,10 +3,12 @@
 # @File    : security_route
 # @Time    : 2020/6/12 18:24
 # @Author  : Kelvin.Ye
-from app.common.parser import JsonParser, Argument
+from app.common.parser import Argument
+from app.common.parser import JsonParser
 from app.user.controllers import blueprint
 from app.user.services import auth_service as service
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

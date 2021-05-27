@@ -5,8 +5,10 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from app.database import DBModel, db
+from app.database import DBModel
+from app.database import db
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

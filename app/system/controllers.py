@@ -5,10 +5,13 @@
 # @Author  : Kelvin.Ye
 from flask import Blueprint
 
-from app.common.decorators.require import require_login, require_permission
-from app.common.parser import JsonParser, Argument
+from app.common.decorators.require import require_login
+from app.common.decorators.require import require_permission
+from app.common.parser import Argument
+from app.common.parser import JsonParser
 from app.system import services
 from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

@@ -7,6 +7,7 @@ from flask import Blueprint
 
 from app.utils.log_util import get_logger
 
+
 log = get_logger(__name__)
 
 # TODO: prefix修改为 /rest/api/{v+版本号}/{module}/{resource}

@@ -9,8 +9,9 @@ Database module, including the SQLAlchemy database object and DB-related utiliti
 """
 from datetime import datetime
 
-from app.utils.log_util import get_logger
 from app.extension import db
+from app.utils.log_util import get_logger
+
 
 log = get_logger(__name__)
 

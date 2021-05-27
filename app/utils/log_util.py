@@ -8,6 +8,7 @@ from logging.config import dictConfig
 
 from app.utils import config
 
+
 # 日志格式
 LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d] %(message)s'
 

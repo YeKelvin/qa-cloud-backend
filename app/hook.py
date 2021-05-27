@@ -3,13 +3,13 @@
 # @File    : hooks.py
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
-from datetime import datetime
 import threading
 import traceback
+from datetime import datetime
 
+import jwt
 from flask import g
 from flask import request
-import jwt
 
 from app.common.helpers.global_helper import Global
 from app.common.response import http_response
@@ -19,6 +19,7 @@ from app.utils import randoms
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 
+
 log = get_logger(__name__)
 
 
@@ -27,9 +28,11 @@ def set_logid():
 
     设置单次请求的全局 logid
     """
-    g.logid = (f'{threading.current_thread().ident}'
-               f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}'
-               f'{randoms.get_number(4)}')
+    g.logid = (
+        f'{threading.current_thread().ident}'
+        f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}'
+        f'{randoms.get_number(4)}'
+    )
 
 
 def set_user():

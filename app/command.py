@@ -9,9 +9,16 @@ from flask.cli import with_appcontext
 from app.common.id_generator import new_id
 from app.extension import db
 from app.system.models import TActionLog
-from app.user.models import TUser, TRole, TPermission, TUserRoleRel, TRolePermissionRel, TUserLoginInfo, TUserPassword
+from app.user.models import TPermission
+from app.user.models import TRole
+from app.user.models import TRolePermissionRel
+from app.user.models import TUser
+from app.user.models import TUserLoginInfo
+from app.user.models import TUserPassword
+from app.user.models import TUserRoleRel
 from app.utils.log_util import get_logger
 from app.utils.security import encrypt_password
+
 
 log = get_logger(__name__)
 

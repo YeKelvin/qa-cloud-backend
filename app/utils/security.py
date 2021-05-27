@@ -5,7 +5,8 @@
 # @Author  : Kelvin.Ye
 import hashlib
 
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash
 
 
 def encrypt_password(login_name, password):

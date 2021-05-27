@@ -4,13 +4,14 @@
 # @Time    : 2020/6/1 11:57
 # @Author  : Kelvin.Ye
 import base64
+from typing import Tuple
 
 from Crypto import Random
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
 
-def generate_rsa_key() -> (bytes, bytes):
+def generate_rsa_key() -> Tuple[bytes, bytes]:
     """生产RSA公钥和私钥
     """
     rsa = RSA.generate(2048, Random.new().read)

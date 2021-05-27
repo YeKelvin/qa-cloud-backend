@@ -3,6 +3,9 @@
 # @File    : snowflake_util
 # @Time    : 2020/6/17 13:55
 # @Author  : Kelvin.Ye
+import logging
+import time
+
 
 """
 Snowflake是Twitter提出来的一个算法，其目的是生成一个64bit的整数:
@@ -19,8 +22,6 @@ WORKER_ID = 0       # 机器ID
 SEQUENCE = 0        # 序列号
 """
 
-import time
-import logging
 
 # 64位ID的位数划分
 DATACENTER_ID_BITS = 5

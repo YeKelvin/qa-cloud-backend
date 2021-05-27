@@ -9,6 +9,7 @@ from app.user.models import TUserPasswordKey
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import generate_rsa_key
 
+
 log = get_logger(__name__)
 
 
