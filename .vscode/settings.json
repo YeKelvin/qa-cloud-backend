@@ -10,7 +10,7 @@
         "**/.cache": true
     },
 
-    // "python.pythonPath": "path/to/your/python",
+    // "python.pythonPath": "${workspaceFolder}/path/to/your/python",
 
     /* Python Lint */
     "python.linting.flake8Enabled": true,
