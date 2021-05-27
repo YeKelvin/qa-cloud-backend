@@ -7,7 +7,7 @@ import configparser
 import os
 
 __CONFIG_PATH__ = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'config.ini')
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config.ini')
 )
 
 
@@ -32,4 +32,4 @@ def get(section, key, filepath=__CONFIG_PATH__) -> str:
 def get_project_path():
     """返回项目根目录路径。
     """
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
