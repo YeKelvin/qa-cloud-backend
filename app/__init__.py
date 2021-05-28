@@ -5,13 +5,12 @@
 # @Author  : Kelvin.Ye
 import os
 
-from flasgger import Swagger
 from flask import Flask
 
 from app import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
 from app.utils import config
 from app.utils.log_util import get_logger
-from app.extension import db, migrate, socketio, swagger
+from app.extension import db, migrate, socketio
 
 log = get_logger(__name__)
 
@@ -52,11 +51,10 @@ def configure_flask(app):
 
 
 def register_extensions(app):
-    """Register Flask extensions."""
+    """Register Flask extensions"""
     db.init_app(app)
     migrate.init_app(app, db)
     register_socketio(app)
-    # register_swagger(app)
 
 
 def register_socketio(app):
@@ -66,7 +64,7 @@ def register_socketio(app):
 
 
 def register_blueprints(app):
-    """Register Flask blueprints."""
+    """Register Flask blueprints"""
     app.register_blueprint(user.controllers.blueprint)
     app.register_blueprint(system.controllers.blueprint)
     app.register_blueprint(script.controllers.blueprint)
@@ -86,7 +84,7 @@ def register_hooks(app):
 
 
 def register_shell_context(app):
-    """Register shell context objects."""
+    """Register shell context objects"""
     def shell_context():
         return {"db": db}
 
@@ -94,29 +92,9 @@ def register_shell_context(app):
 
 
 def register_commands(app):
-    """Register Click commands."""
+    """Register Click commands"""
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
-
-
-def register_swagger(app):
-    swagger.config = Swagger.DEFAULT_CONFIG.copy().update({
-        'title':
-        '测试平台 RESTful API',  # 配置大标题
-        'description':
-        'Test Platform Server RESTful API',  # 配置公共描述内容
-        'host':
-        '0.0.0.0',  # 请求域名
-        'swagger_ui_bundle_js':
-        '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js',
-        'swagger_ui_standalone_preset_js':
-        '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js',
-        'jquery_js':
-        '//unpkg.com/jquery@2.2.4/dist/jquery.min.js',
-        'swagger_ui_css':
-        '//unpkg.com/swagger-ui-dist@3/swagger-ui.css',
-    })
-    swagger.init_app(app)
 
 
 def get_db_url() -> str:
