@@ -15,15 +15,14 @@ flask = "^2.0.1"
 flask-socketio = "^5.0.3"
 flask-sqlalchemy = "^2.5.1"
 flask-migrate = "^3.0.0"
-flask_pydantic = "^0.8.0"
 orjson = "^3.5.2"
 jsonpath = "^0.82"
-gevent = "^21.1.2"
-gevent-websocket = "^0.10.1"
-celery = "^5.1.0"
+pydantic = "^1.8.2"
 pyjwt = "^2.1.0"
 pycryptodome = "^3.10.1"
 python-dotenv = "^0.17.1"
+gevent = "^21.1.2"
+gevent-websocket = "^0.10.1"
 gunicorn = { version = "*", markers = "platform_system == 'Linux'" }
 uwsgi = { version = "*", markers = "platform_system == 'Linux'" }
 send-anywhere = {path = "../send-anywhere", develop = true}
