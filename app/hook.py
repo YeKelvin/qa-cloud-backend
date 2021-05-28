@@ -41,27 +41,27 @@ def set_user():
     设置单次请求的全局 user信息
     """
     # 排除指定的请求
-    if '/user/login' in request.path and 'POST' in request.method:
+    if ('/user/login' in request.path) and ('POST' in request.method):
         return
 
-    # 判断请求头部是否含有 Authorization属性
+    # 判断请求头部是否包含Authorization属性
     if 'Authorization' in request.headers:
-        # 解析 JWT token并判断是否符合规范
+        # 判断Authorization是否符合规范
         auth_header = request.headers.get('Authorization')
         auth_array = auth_header.split(' ')
         if not auth_array or len(auth_array) != 2:
             log.info(f'logId:[ {g.logid} ] 解析Authorization Header有误')
             return
-        auth_schema = auth_array[0]
-        auth_token = auth_array[1]
+
+        auth_schema, auth_token = auth_array
         if auth_schema != 'Bearer':
             log.info(f'logId:[ {g.logid} ] 请使用Bearer Schema')
             return
+
         try:
-            # 解密 token获取 payload
+            # 解析token，获取payload
             payload = JWTAuth.decode_auth_token(auth_token)
             # 设置全局属性
-            # Global.set('user', TUser.query.filter_by(user_no=payload['data']['id']).first())
             Global.set('user_no', payload['data']['id'])
             Global.set('auth_token', auth_token)
             Global.set('auth_login_time', payload['data']['loginTime'])
