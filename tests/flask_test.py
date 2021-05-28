@@ -3,7 +3,9 @@
 # @File    : test.py
 # @Time    : 2019/11/13 17:59
 # @Author  : Kelvin.Ye
-from flask import Flask, request
+from flask import Flask
+from flask import request
+
 
 app = Flask(__name__)
 
