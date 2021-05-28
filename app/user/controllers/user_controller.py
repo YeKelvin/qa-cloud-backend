@@ -15,7 +15,8 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/login', methods=['POST'])
+# @blueprint.route('/login', methods=['POST'])
+@blueprint.post('/login')
 def login():
     """用户登录
     """
@@ -26,7 +27,8 @@ def login():
     return service.login(req)
 
 
-@blueprint.route('/logout', methods=['POST'])
+# @blueprint.route('/logout', methods=['POST'])
+@blueprint.post('/logout')
 @require_login
 def logout():
     """用户登出
@@ -34,7 +36,8 @@ def logout():
     return service.logout()
 
 
-@blueprint.route('/register', methods=['POST'])
+# @blueprint.route('/register', methods=['POST'])
+@blueprint.post('/register')
 @require_login
 @require_permission
 def register():
@@ -50,7 +53,8 @@ def register():
     return service.register(req)
 
 
-@blueprint.route('/password/reset', methods=['PATCH'])
+# @blueprint.route('/password/reset', methods=['PATCH'])
+@blueprint.patch('/password/reset')
 @require_login
 @require_permission
 def reset_password():
@@ -62,7 +66,8 @@ def reset_password():
     return service.reset_login_password(req)
 
 
-@blueprint.route('/list', methods=['GET'])
+# @blueprint.route('/list', methods=['GET'])
+@blueprint.get('/list')
 @require_login
 @require_permission
 def query_user_list():
@@ -80,7 +85,8 @@ def query_user_list():
     return service.query_user_list(req)
 
 
-@blueprint.route('/all', methods=['GET'])
+# @blueprint.route('/all', methods=['GET'])
+@blueprint.get('/all')
 @require_login
 @require_permission
 def query_user_all():
@@ -89,7 +95,8 @@ def query_user_all():
     return service.query_user_all()
 
 
-@blueprint.route('/info', methods=['GET'])
+# @blueprint.route('/info', methods=['GET'])
+@blueprint.get('/info')
 @require_login
 def query_user_info():
     """查询个人用户信息
@@ -97,7 +104,8 @@ def query_user_info():
     return service.query_user_info()
 
 
-@blueprint.route('/info', methods=['PUT'])
+# @blueprint.route('/info', methods=['PUT'])
+@blueprint.put('/info')
 @require_login
 @require_permission
 def modify_user():
@@ -112,7 +120,8 @@ def modify_user():
     return service.modify_user(req)
 
 
-@blueprint.route('/info/state', methods=['PATCH'])
+# @blueprint.route('/info/state', methods=['PATCH'])
+@blueprint.patch('/info/state')
 @require_login
 @require_permission
 def modify_user_state():
@@ -125,7 +134,8 @@ def modify_user_state():
     return service.modify_user_state(req)
 
 
-@blueprint.route('', methods=['DELETE'])
+# @blueprint.route('', methods=['DELETE'])
+@blueprint.delete('')
 @require_login
 @require_permission
 def delete_user():

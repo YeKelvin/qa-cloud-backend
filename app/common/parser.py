@@ -14,22 +14,23 @@ from app.common.request import RequestDTO
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 
-
 log = get_logger(__name__)
 
 
 class Argument:
-    def __init__(self,
-                 name: str,
-                 type: type = str,
-                 default: any = None,
-                 required: bool = False,
-                 nullable: bool = False,
-                 min: int = None,
-                 max: int = None,
-                 enum: Enum = None,
-                 regular: str = None,
-                 help: str = None):
+
+    def __init__(
+        self,
+        name: str,
+        type: type = str,
+        default: any = None,
+        required: bool = False,
+        nullable: bool = False,
+        min: int = None,
+        max: int = None,
+        enum: Enum = None,
+        help: str = None
+    ):
         self.name = name  # 参数名称
         self.type = type  # 参数类型
         self.default = default  # 参数默认值
@@ -38,7 +39,6 @@ class Argument:
         self.min = min  # 参数允许的最小值或最小长度 TODO
         self.max = max  # 参数允许的最大值或最大长度 TODO
         self.enum = enum  # 参数枚举校验 TODO
-        self.regular = regular  # 参数正则表达式校验 TODO
         self.help = help  # 参数不符合要求时的提示语
 
         if not isinstance(self.name, str):
@@ -91,6 +91,7 @@ class Argument:
 
 
 class BaseParser:
+
     def __init__(self, *args):
         self.args: List[Argument] = []
         for arg in args:
@@ -98,7 +99,7 @@ class BaseParser:
                 raise TypeError(f'{arg} is not instance of Argument class')
             self.args.append(arg)
 
-    def _get(self, key):
+    def get(self, key):
         """通过 keyName获取 key是否存在和 keyValue的 tuple
 
         Args:
@@ -109,7 +110,7 @@ class BaseParser:
         """
         raise NotImplementedError
 
-    def _init(self, data):
+    def initialize(self, data):
         """把 HTTP请求参数转换为 Json对象
         """
         raise NotImplementedError
@@ -121,9 +122,9 @@ class BaseParser:
         try:
             if not self.args:
                 raise ParseError('arguments are not allowed to be empty')
-            self._init(data)
+            self.initialize(data)
             for arg in self.args:
-                request_dto.attr[arg.name] = arg.parse(*self._get(arg.name))
+                request_dto.attr[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
             request_dto.error = err.message
         except Exception as ex:
@@ -133,23 +134,24 @@ class BaseParser:
 
 
 class JsonParser(BaseParser):
+
     def __init__(self, *args):
         super().__init__(*args)
-        self.__data = None
+        self._data = None
 
-    def _get(self, key):
-        return key in self.__data, self.__data.get(key)
+    def get(self, key):
+        return key in self._data, self._data.get(key)
 
-    def _init(self, data):
+    def initialize(self, data):
         if not data:
             if request.is_json:
-                self.__data = request.json
+                self._data = request.json
             else:
-                self.__data = request.values.to_dict()
+                self._data = request.values.to_dict()
         else:
             if isinstance(data, str):
-                self.__data = from_json(data)
+                self._data = from_json(data)
             elif isinstance(data, dict):
-                self.__data = data
+                self._data = data
             else:
                 raise ParseError('invalid data type for parse')

@@ -15,7 +15,8 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/permission/list', methods=['GET'])
+# @blueprint.route('/permission/list', methods=['GET'])
+@blueprint.get('/permission/list')
 @require_login
 @require_permission
 def query_permission_list():
@@ -34,7 +35,8 @@ def query_permission_list():
     return service.query_permission_list(req)
 
 
-@blueprint.route('/permission/all', methods=['GET'])
+# @blueprint.route('/permission/all', methods=['GET'])
+@blueprint.get('/permission/all')
 @require_login
 @require_permission
 def query_permission_all():
@@ -43,7 +45,8 @@ def query_permission_all():
     return service.query_permission_all()
 
 
-@blueprint.route('/permission', methods=['POST'])
+# @blueprint.route('/permission', methods=['POST'])
+@blueprint.post('/permission')
 @require_login
 @require_permission
 def create_permission():
@@ -58,7 +61,8 @@ def create_permission():
     return service.create_permission(req)
 
 
-@blueprint.route('/permission', methods=['PUT'])
+# @blueprint.route('/permission', methods=['PUT'])
+@blueprint.put('/permission')
 @require_login
 @require_permission
 def modify_permission():
@@ -74,7 +78,8 @@ def modify_permission():
     return service.modify_permission(req)
 
 
-@blueprint.route('/permission/state', methods=['PATCH'])
+# @blueprint.route('/permission/state', methods=['PATCH'])
+@blueprint.patch('/permission/state')
 @require_login
 @require_permission
 def modify_permission_state():
@@ -87,7 +92,8 @@ def modify_permission_state():
     return service.modify_permission_state(req)
 
 
-@blueprint.route('/permission', methods=['DELETE'])
+# @blueprint.route('/permission', methods=['DELETE'])
+@blueprint.delete('/permission')
 @require_login
 @require_permission
 def delete_permission():

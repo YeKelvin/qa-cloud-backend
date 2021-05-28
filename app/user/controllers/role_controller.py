@@ -15,7 +15,8 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/role/list', methods=['GET'])
+# @blueprint.route('/role/list', methods=['GET'])
+@blueprint.get('/role/list')
 @require_login
 @require_permission
 def query_role_list():
@@ -32,7 +33,8 @@ def query_role_list():
     return service.query_role_list(req)
 
 
-@blueprint.route('/role/all', methods=['GET'])
+# @blueprint.route('/role/all', methods=['GET'])
+@blueprint.get('/role/all')
 @require_login
 @require_permission
 def query_role_all():
@@ -41,7 +43,8 @@ def query_role_all():
     return service.query_role_all()
 
 
-@blueprint.route('/role', methods=['POST'])
+# @blueprint.route('/role', methods=['POST'])
+@blueprint.post('/role')
 @require_login
 @require_permission
 def create_role():
@@ -54,7 +57,8 @@ def create_role():
     return service.create_role(req)
 
 
-@blueprint.route('/role', methods=['PUT'])
+# @blueprint.route('/role', methods=['PUT'])
+@blueprint.put('/role')
 @require_login
 @require_permission
 def modify_role():
@@ -68,7 +72,8 @@ def modify_role():
     return service.modify_role(req)
 
 
-@blueprint.route('/role/state', methods=['PATCH'])
+# @blueprint.route('/role/state', methods=['PATCH'])
+@blueprint.patch('/role/state')
 @require_login
 @require_permission
 def modify_role_state():
@@ -81,7 +86,8 @@ def modify_role_state():
     return service.modify_role_state(req)
 
 
-@blueprint.route('/role', methods=['DELETE'])
+# @blueprint.route('/role', methods=['DELETE'])
+@blueprint.delete('/role')
 @require_login
 @require_permission
 def delete_role():

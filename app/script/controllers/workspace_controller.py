@@ -15,7 +15,8 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/workspace/list', methods=['GET'])
+# @blueprint.route('/workspace/list', methods=['GET'])
+@blueprint.get('/workspace/list')
 @require_login
 @require_permission
 def query_workspace_list():
@@ -32,7 +33,8 @@ def query_workspace_list():
     return service.query_workspace_list(req)
 
 
-@blueprint.route('/workspace/all', methods=['GET'])
+# @blueprint.route('/workspace/all', methods=['GET'])
+@blueprint.get('/workspace/all')
 @require_login
 @require_permission
 def query_workspace_all():
@@ -41,7 +43,8 @@ def query_workspace_all():
     return service.query_workspace_all()
 
 
-@blueprint.route('/workspace', methods=['POST'])
+# @blueprint.route('/workspace', methods=['POST'])
+@blueprint.post('/workspace')
 @require_login
 @require_permission
 def create_workspace():
@@ -55,7 +58,8 @@ def create_workspace():
     return service.create_workspace(req)
 
 
-@blueprint.route('/workspace', methods=['PUT'])
+# @blueprint.route('/workspace', methods=['PUT'])
+@blueprint.put('/workspace')
 @require_login
 @require_permission
 def modify_workspace():
@@ -70,7 +74,8 @@ def modify_workspace():
     return service.modify_workspace(req)
 
 
-@blueprint.route('/workspace', methods=['DELETE'])
+# @blueprint.route('/workspace', methods=['DELETE'])
+@blueprint.delete('/workspace')
 @require_login
 @require_permission
 def delete_workspace():
@@ -82,7 +87,8 @@ def delete_workspace():
     return service.delete_workspace(req)
 
 
-@blueprint.route('/workspace/user', methods=['POST'])
+# @blueprint.route('/workspace/user', methods=['POST'])
+@blueprint.post('/workspace/user')
 @require_login
 @require_permission
 def add_workspace_user():
@@ -95,7 +101,8 @@ def add_workspace_user():
     return service.add_workspace_user(req)
 
 
-@blueprint.route('/workspace/user', methods=['PUT'])
+# @blueprint.route('/workspace/user', methods=['PUT'])
+@blueprint.put('/workspace/user')
 @require_login
 @require_permission
 def modify_workspace_user():
@@ -108,7 +115,8 @@ def modify_workspace_user():
     return service.modify_workspace_user(req)
 
 
-@blueprint.route('/workspace/user', methods=['DELETE'])
+# @blueprint.route('/workspace/user', methods=['DELETE'])
+@blueprint.delete('/workspace/user')
 @require_login
 @require_permission
 def remove_workspace_user():

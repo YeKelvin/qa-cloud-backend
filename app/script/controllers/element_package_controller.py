@@ -15,7 +15,8 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/element/package/list', methods=['GET'])
+# @blueprint.route('/element/package/list', methods=['GET'])
+@blueprint.get('/element/package/list')
 @require_login
 @require_permission
 def query_element_package_list():
@@ -29,7 +30,8 @@ def query_element_package_list():
     return service.query_element_package_list(req)
 
 
-@blueprint.route('/element/package/all', methods=['GET'])
+# @blueprint.route('/element/package/all', methods=['GET'])
+@blueprint.get('/element/package/all')
 @require_login
 @require_permission
 def query_element_package_all():

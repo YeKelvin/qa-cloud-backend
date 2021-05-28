@@ -37,7 +37,7 @@ class TSystemOperationLog(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOG_NO = db.Column(db.String(32), index=True, nullable=False, comment='日志编号')
-    USER_NO = db.Column(db.String(32),  comment='用户编号')
+    USER_NO = db.Column(db.String(32), comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), comment='登录账号')
     CONTENT = db.Column(db.String(512), comment='操作内容')
     OPT_TYPE = db.Column(db.String(32), comment='操作类型(LOGIN:登录, INSERT:新增, DELETE:删除, UPDATE:修改, QUERY:查询)')
