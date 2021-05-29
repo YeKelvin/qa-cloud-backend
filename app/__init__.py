@@ -7,10 +7,12 @@ import os
 
 from flask import Flask
 
-from app import user, system, script, command, hook  # user一定要排第一位，不然会报循环引用的Error
+from app.extension import db
+from app.extension import migrate
+from app.extension import socketio
 from app.utils import config
 from app.utils.log_util import get_logger
-from app.extension import db, migrate, socketio
+
 
 log = get_logger(__name__)
 
@@ -65,12 +67,18 @@ def register_socketio(app):
 
 def register_blueprints(app):
     """Register Flask blueprints"""
-    app.register_blueprint(user.controllers.blueprint)
-    app.register_blueprint(system.controllers.blueprint)
-    app.register_blueprint(script.controllers.blueprint)
+    from app.script.controllers import blueprint as script_blueprint
+    from app.system.controllers import blueprint as system_blueprint
+    from app.user.controllers import blueprint as user_blueprint
+
+    app.register_blueprint(script_blueprint)
+    app.register_blueprint(system_blueprint)
+    app.register_blueprint(user_blueprint)
 
 
 def register_hooks(app):
+    from app import hook
+
     app.before_request(hook.set_logid)
     app.before_request(hook.set_user)
 
@@ -93,6 +101,8 @@ def register_shell_context(app):
 
 def register_commands(app):
     """Register Click commands"""
+    from app import command
+
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
 
