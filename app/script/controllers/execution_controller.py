@@ -15,7 +15,6 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-# @blueprint.route('/execute', methods=['POST'])
 @blueprint.post('/execute')
 @require_login
 @require_permission

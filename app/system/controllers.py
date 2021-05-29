@@ -20,7 +20,6 @@ log = get_logger(__name__)
 blueprint = Blueprint('system', __name__, url_prefix='/system')
 
 
-# @blueprint.route('/action/log/list', methods=['GET'])
 @blueprint.get('/action/log/list')
 @require_login
 @require_permission

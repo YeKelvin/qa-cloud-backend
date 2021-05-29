@@ -15,7 +15,7 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/topic/list', methods=['GET'])
+@blueprint.get('/topic/list')
 @require_login
 @require_permission
 def query_topic_list():
@@ -31,7 +31,7 @@ def query_topic_list():
     return service.query_topic_list(req)
 
 
-@blueprint.route('/topic/all', methods=['GET'])
+@blueprint.get('/topic/all')
 @require_login
 @require_permission
 def query_topic_all():
@@ -40,7 +40,7 @@ def query_topic_all():
     return service.query_topic_all()
 
 
-@blueprint.route('/topic', methods=['POST'])
+@blueprint.post('/topic')
 @require_login
 @require_permission
 def create_topic():
@@ -53,7 +53,7 @@ def create_topic():
     return service.create_topic(req)
 
 
-@blueprint.route('/topic', methods=['PUT'])
+@blueprint.put('/topic')
 @require_login
 @require_permission
 def modify_topic():
@@ -67,7 +67,7 @@ def modify_topic():
     return service.modify_topic(req)
 
 
-@blueprint.route('/topic', methods=['DELETE'])
+@blueprint.delete('/topic')
 @require_login
 @require_permission
 def delete_topic():
@@ -79,7 +79,7 @@ def delete_topic():
     return service.delete_topic(req)
 
 
-@blueprint.route('/topic/collection', methods=['POST'])
+@blueprint.post('/topic/collection')
 @require_login
 @require_permission
 def add_topic_collection():
@@ -92,7 +92,7 @@ def add_topic_collection():
     return service.add_topic_collection(req)
 
 
-@blueprint.route('/topic/collection', methods=['PUT'])
+@blueprint.put('/topic/collection')
 @require_login
 @require_permission
 def modify_topic_collection():
@@ -105,7 +105,7 @@ def modify_topic_collection():
     return service.modify_topic_collection(req)
 
 
-@blueprint.route('/topic/collection', methods=['DELETE'])
+@blueprint.delete('/topic/collection')
 @require_login
 @require_permission
 def remove_topic_collection():

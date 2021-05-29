@@ -15,11 +15,11 @@ log = get_logger(__name__)
 blueprint = Blueprint('file', __name__, url_prefix='/file')
 
 
-@blueprint.route('/upload', methods=['POST'])
+@blueprint.post('/upload')
 def upload():
     pass
 
 
-@blueprint.route('/download', methods=['GET'])
+@blueprint.get('/download')
 def download():
     pass

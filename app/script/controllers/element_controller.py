@@ -15,7 +15,6 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-# @blueprint.route('/element/list', methods=['GET'])
 @blueprint.get('/element/list')
 @require_login
 @require_permission
@@ -36,7 +35,6 @@ def query_element_list():
     return service.query_element_list(req)
 
 
-# @blueprint.route('/element/all', methods=['GET'])
 @blueprint.get('/element/all')
 @require_login
 @require_permission
@@ -51,7 +49,6 @@ def query_element_all():
     return service.query_element_all(req)
 
 
-# @blueprint.route('/element/info', methods=['GET'])
 @blueprint.get('/element/info')
 @require_login
 @require_permission
@@ -64,7 +61,6 @@ def query_element_info():
     return service.query_element_info(req)
 
 
-# @blueprint.route('/element/children', methods=['GET'])
 @blueprint.get('/element/children')
 @require_login
 @require_permission
@@ -78,7 +74,6 @@ def query_element_children():
     return service.query_element_children(req)
 
 
-# @blueprint.route('/element', methods=['POST'])
 @blueprint.post('/element')
 @require_login
 @require_permission
@@ -97,7 +92,6 @@ def create_element():
     return service.create_element(req)
 
 
-# @blueprint.route('/element', methods=['PUT'])
 @blueprint.put('/element')
 @require_login
 @require_permission
@@ -115,7 +109,6 @@ def modify_element():
     return service.modify_element(req)
 
 
-# @blueprint.route('/element', methods=['DELETE'])
 @blueprint.delete('/element')
 @require_login
 @require_permission
@@ -128,7 +121,6 @@ def delete_element():
     return service.delete_element(req)
 
 
-# @blueprint.route('/element/enable', methods=['PATCH'])
 @blueprint.patch('/element/enable')
 @require_login
 @require_permission
@@ -141,7 +133,6 @@ def enable_element():
     return service.enable_element(req)
 
 
-# @blueprint.route('/element/disable', methods=['PATCH'])
 @blueprint.patch('/element/disable')
 @require_login
 @require_permission
@@ -154,7 +145,6 @@ def disable_element():
     return service.disable_element(req)
 
 
-# @blueprint.route('/element/property', methods=['POST'])
 @blueprint.post('/element/property')
 @require_login
 @require_permission
@@ -169,7 +159,6 @@ def add_element_property():
     return service.add_element_property(req)
 
 
-# @blueprint.route('/element/property', methods=['PUT'])
 @blueprint.put('/element/property')
 @require_login
 @require_permission
@@ -184,7 +173,6 @@ def modify_element_property():
     return service.modify_element_property(req)
 
 
-# @blueprint.route('/element/children', methods=['POST'])
 @blueprint.post('/element/children')
 @require_login
 @require_permission
@@ -199,7 +187,6 @@ def add_element_child():
     return service.add_element_children(req)
 
 
-# @blueprint.route('/element/children', methods=['PUT'])
 @blueprint.put('/element/children')
 @require_login
 @require_permission
@@ -214,7 +201,6 @@ def modify_element_child():
     return service.modify_element_children(req)
 
 
-# @blueprint.route('/element/child/order/up', methods=['PATCH'])
 @blueprint.patch('/element/child/order/up')
 @require_login
 @require_permission
@@ -228,7 +214,6 @@ def move_up_element_child_order():
     return service.move_up_child_order(req)
 
 
-# @blueprint.route('/element/child/order/down', methods=['PATCH'])
 @blueprint.patch('/element/child/order/down')
 @require_login
 @require_permission
@@ -242,7 +227,6 @@ def move_down_element_child_order():
     return service.move_down_child_order(req)
 
 
-# @blueprint.route('/element/duplicate', methods=['POST'])
 @blueprint.post('/element/duplicate')
 @require_login
 @require_permission

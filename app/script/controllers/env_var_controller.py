@@ -15,7 +15,7 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/environment/variable/list', methods=['GET'])
+@blueprint.get('/environment/variable/list')
 @require_login
 @require_permission
 def query_environment_variable_list():
@@ -29,7 +29,7 @@ def query_environment_variable_list():
     return service.query_environment_variable_list(req)
 
 
-@blueprint.route('/environment/variable/all', methods=['GET'])
+@blueprint.get('/environment/variable/all')
 @require_login
 @require_permission
 def query_environment_variable_all():
@@ -41,7 +41,7 @@ def query_environment_variable_all():
     return service.query_environment_variable_all(req)
 
 
-@blueprint.route('/environment/variable', methods=['POST'])
+@blueprint.post('/environment/variable')
 @require_login
 @require_permission
 def create_environment_variable():
@@ -53,7 +53,7 @@ def create_environment_variable():
     return service.create_environment_variable(req)
 
 
-@blueprint.route('/environment/variable', methods=['PUT'])
+@blueprint.put('/environment/variable')
 @require_login
 @require_permission
 def modify_environment_variable():
@@ -65,7 +65,7 @@ def modify_environment_variable():
     return service.modify_environment_variable(req)
 
 
-@blueprint.route('/environment/variable', methods=['DELETE'])
+@blueprint.delete('/environment/variable')
 @require_login
 @require_permission
 def delete_environment_variable():

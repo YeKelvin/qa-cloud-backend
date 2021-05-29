@@ -13,7 +13,6 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-# @blueprint.route('/encryption/factor', methods=['GET'])
 @blueprint.get('/encryption/factor')
 def create_rsa_public_key():
     """获取加密因子

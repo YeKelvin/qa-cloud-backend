@@ -15,7 +15,6 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-# @blueprint.route('/role/rel/list', methods=['GET'])
 @blueprint.get('/role/rel/list')
 @require_login
 @require_permission
@@ -33,7 +32,6 @@ def query_user_role_rel_list():
     return service.query_user_role_rel_list(req)
 
 
-# @blueprint.route('/role/rel', methods=['POST'])
 @blueprint.post('/role/rel')
 @require_login
 @require_permission
@@ -47,7 +45,6 @@ def create_user_role_rel():
     return service.create_user_role_rel(req)
 
 
-# @blueprint.route('/role/rel', methods=['DELETE'])
 @blueprint.delete('/role/rel')
 @require_login
 @require_permission

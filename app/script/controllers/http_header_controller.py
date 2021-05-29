@@ -15,7 +15,7 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.route('/http/header/list', methods=['GET'])
+@blueprint.get('/http/header/list')
 @require_login
 @require_permission
 def query_http_header_list():
@@ -29,7 +29,7 @@ def query_http_header_list():
     return service.query_http_header_list(req)
 
 
-@blueprint.route('/http/header/all', methods=['GET'])
+@blueprint.get('/http/header/all')
 @require_login
 @require_permission
 def query_http_header_all():
@@ -41,7 +41,7 @@ def query_http_header_all():
     return service.query_http_header_all(req)
 
 
-@blueprint.route('/http/header', methods=['POST'])
+@blueprint.post('/http/header')
 @require_login
 @require_permission
 def create_http_header():
@@ -53,7 +53,7 @@ def create_http_header():
     return service.create_http_header(req)
 
 
-@blueprint.route('/http/header', methods=['PUT'])
+@blueprint.put('/http/header')
 @require_login
 @require_permission
 def modify_http_header():
@@ -65,7 +65,7 @@ def modify_http_header():
     return service.modify_http_header(req)
 
 
-@blueprint.route('/http/header', methods=['DELETE'])
+@blueprint.delete('/http/header')
 @require_login
 @require_permission
 def delete_http_header():
