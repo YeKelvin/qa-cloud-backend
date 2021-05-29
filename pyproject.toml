@@ -18,7 +18,7 @@ flask-migrate = "^3.0.0"
 orjson = "^3.5.2"
 jsonpath = "^0.82"
 pydantic = "^1.8.2"
-pyjwt = "^2.1.0"
+pyjwt = { version = "^2.1.0", extras=["crypto"] }
 pycryptodome = "^3.10.1"
 python-dotenv = "^0.17.1"
 gevent = "^21.1.2"
