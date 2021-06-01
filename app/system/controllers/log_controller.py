@@ -3,21 +3,16 @@
 # @File    : route.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from flask import Blueprint
-
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.system import services
+from app.system.controllers import blueprint
+from app.system.services import log_service as service
 from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)
-
-# TODO: prefix修改为 /rest/api/{v+版本号}/{module}/{resource}
-# TODO: 响应报文的Header添加名为 API-Version 的头，值为 day-month-year 格式的日期
-blueprint = Blueprint('system', __name__, url_prefix='/system')
 
 
 @blueprint.get('/action/log/list')
@@ -36,4 +31,4 @@ def query_action_log_list():
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return services.query_action_log_list(req)
+    return service.query_action_log_list(req)

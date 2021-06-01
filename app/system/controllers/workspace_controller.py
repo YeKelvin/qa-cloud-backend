@@ -7,8 +7,8 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.script.controllers import blueprint
-from app.script.services import workspace_service as service
+from app.system.controllers import blueprint
+from app.system.services import workspace_service as service
 from app.utils.log_util import get_logger
 
 
