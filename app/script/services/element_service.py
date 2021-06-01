@@ -32,7 +32,7 @@ def query_element_list(req: RequestDTO):
     if req.attr.elementName:
         conditions.append(TTestElement.ELEMENT_NAME.like(f'%{req.attr.elementName}%'))
     if req.attr.elementComments:
-        conditions.append(TTestElement.ELEMENT_COMMENTS.like(f'%{req.attr.elementComments}%'))
+        conditions.append(TTestElement.ELEMENT_REMARK.like(f'%{req.attr.elementComments}%'))
     if req.attr.elementType:
         conditions.append(TTestElement.ELEMENT_TYPE.like(f'%{req.attr.elementType}%'))
     if req.attr.enabled:
@@ -52,7 +52,7 @@ def query_element_list(req: RequestDTO):
     pagination = db.session.query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_COMMENTS,
+        TTestElement.ELEMENT_REMARK,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
     ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.attr.page, req.attr.pageSize)
@@ -88,7 +88,7 @@ def query_element_all(req: RequestDTO):
     items = db.session.query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_COMMENTS,
+        TTestElement.ELEMENT_REMARK,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
     ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).all()
@@ -118,7 +118,7 @@ def query_element_info(req: RequestDTO):
     return {
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
-        'elementComments': element.ELEMENT_COMMENTS,
+        'elementComments': element.ELEMENT_REMARK,
         'elementType': element.ELEMENT_TYPE,
         'enabled': element.ENABLED,
         'propertys': propertys,

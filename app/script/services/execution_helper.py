@@ -29,7 +29,7 @@ def element_to_dict(element_no):
     # 组装dict返回
     el_dict = {
         'name': element.ELEMENT_NAME,
-        'comments': element.ELEMENT_COMMENTS,
+        'comments': element.ELEMENT_REMARK,
         'class': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
         'property': property_to_dict(element_no),

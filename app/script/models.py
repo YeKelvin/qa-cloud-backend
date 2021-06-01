@@ -14,8 +14,7 @@ log = get_logger(__name__)
 
 
 class TWorkspace(DBModel):
-    """工作空间表
-    """
+    """工作空间表"""
     __tablename__ = 'WORKSPACE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -31,8 +30,7 @@ class TWorkspace(DBModel):
 
 
 class TWorkspaceCollectionRel(DBModel):
-    """工作空间集合关联表
-    """
+    """工作空间集合关联表"""
     __tablename__ = 'WORKSPACE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -46,8 +44,7 @@ class TWorkspaceCollectionRel(DBModel):
 
 
 class TWorkspaceUserRel(DBModel):
-    """工作空间用户关联表
-    """
+    """工作空间用户关联表"""
     __tablename__ = 'WORKSPACE_USER_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -61,14 +58,13 @@ class TWorkspaceUserRel(DBModel):
 
 
 class TTestElement(DBModel):
-    """测试元素表
-    """
+    """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
-    ELEMENT_COMMENTS = db.Column(db.String(512), comment='元素描述')
+    ELEMENT_REMARK = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素类')
     ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用', default=True)
@@ -80,8 +76,7 @@ class TTestElement(DBModel):
 
 
 class TElementProperty(DBModel):
-    """测试元素属性表
-    """
+    """测试元素属性表"""
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -96,9 +91,22 @@ class TElementProperty(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
+class TPropertyRel(DBModel):
+    """元素属性关系表"""
+    __tablename__ = 'PROPERTY_REL'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    PARENT_NO = db.Column(db.String(32), nullable=False, comment='父元素编号')
+    CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
 class TElementChildRel(DBModel):
-    """元素子代关联表
-    """
+    """元素子代关联表"""
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -114,8 +122,7 @@ class TElementChildRel(DBModel):
 
 
 class TEnvironmentVariableCollection(DBModel):
-    """环境变量集合表
-    """
+    """环境变量集合表"""
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -130,8 +137,7 @@ class TEnvironmentVariableCollection(DBModel):
 
 
 class TEnvironmentVariableCollectionRel(DBModel):
-    """环境变量集合关联表
-    """
+    """环境变量集合关联表"""
     __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -145,8 +151,7 @@ class TEnvironmentVariableCollectionRel(DBModel):
 
 
 class TEnvironmentVariable(DBModel):
-    """环境变量表
-    """
+    """环境变量表"""
     __tablename__ = 'ENVIRONMENT_VARIABLE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -162,8 +167,7 @@ class TEnvironmentVariable(DBModel):
 
 
 class THTTPHeaderCollection:
-    """HTTP头部集合表
-    """
+    """HTTP头部集合表"""
     __tablename__ = 'HTTP_HEADER_COLLECTION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -178,8 +182,7 @@ class THTTPHeaderCollection:
 
 
 class THTTPHeaderCollectionRel:
-    """HTTP头部集合关联表
-    """
+    """HTTP头部集合关联表"""
     __tablename__ = 'HTTP_HEADER_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -193,8 +196,7 @@ class THTTPHeaderCollectionRel:
 
 
 class THTTPHeader(DBModel):
-    """HTTP头部表
-    """
+    """HTTP头部表"""
     __tablename__ = 'HTTP_HEADER'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -209,8 +211,7 @@ class THTTPHeader(DBModel):
 
 
 class TSQLConfiguration(DBModel):
-    """SQL配置表
-    """
+    """SQL配置表"""
     __tablename__ = 'SQL_CONFIGURATION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -230,8 +231,7 @@ class TSQLConfiguration(DBModel):
 
 
 class TElementPackage(DBModel):
-    """元素封装表
-    """
+    """元素封装表"""
     __tablename__ = 'ELEMENT_PACKAGE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -245,8 +245,7 @@ class TElementPackage(DBModel):
 
 
 class TPackageElementRel(DBModel):
-    """封装元素关联表
-    """
+    """封装元素关联表"""
     __tablename__ = 'PACKAGE_ELEMENT_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -261,8 +260,7 @@ class TPackageElementRel(DBModel):
 
 
 class TScriptActivityLog(DBModel):
-    """脚本活动日志表
-    """
+    """脚本活动日志表"""
     __tablename__ = 'SCRIPT_ACTIVITY_LOG'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')

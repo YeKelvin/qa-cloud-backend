@@ -52,7 +52,7 @@ def create_element(element_name, element_comments, element_type, element_class,
         commit=False,
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
-        ELEMENT_COMMENTS=element_comments,
+        ELEMENT_REMARK=element_comments,
         ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
         ENABLED=ElementStatus.ENABLE.value
@@ -110,7 +110,7 @@ def modify_element(element_no, element_name, element_comments, propertys, childr
     if element_name is not None:
         element.ELEMENT_NAME = element_name
     if element_comments is not None:
-        element.ELEMENT_COMMENTS = element_comments
+        element.ELEMENT_REMARK = element_comments
 
     element.save(commit=False)
     db.session.flush()
