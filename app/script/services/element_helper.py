@@ -43,7 +43,7 @@ def depth_query_element_children(element_no, depth):
     return result
 
 
-def create_element(element_name, element_comments, element_type, element_class,
+def create_element(element_name, element_remark, element_type, element_class,
                    propertys: dict = None, children: Iterable[dict] = None):
     """递归创建元素
     """
@@ -52,7 +52,7 @@ def create_element(element_name, element_comments, element_type, element_class,
         commit=False,
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
-        ELEMENT_REMARK=element_comments,
+        ELEMENT_REMARK=element_remark,
         ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
         ENABLED=ElementStatus.ENABLE.value
@@ -85,7 +85,7 @@ def add_element_child(parent_no, children: Iterable[dict]):
     for child in children:
         child_no = create_element(
             element_name=child.get('elementName'),
-            element_comments=child.get('elementComments'),
+            element_remark=child.get('elementRemark'),
             element_type=child.get('elementType'),
             element_class=child.get('elementClass'),
             propertys=child.get('propertys'),
@@ -101,7 +101,7 @@ def add_element_child(parent_no, children: Iterable[dict]):
     db.session.flush()
 
 
-def modify_element(element_no, element_name, element_comments, propertys, children):
+def modify_element(element_no, element_name, element_remark, propertys, children):
     """递归修改元素
     """
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
@@ -109,8 +109,8 @@ def modify_element(element_no, element_name, element_comments, propertys, childr
 
     if element_name is not None:
         element.ELEMENT_NAME = element_name
-    if element_comments is not None:
-        element.ELEMENT_REMARK = element_comments
+    if element_remark is not None:
+        element.ELEMENT_REMARK = element_remark
 
     element.save(commit=False)
     db.session.flush()
@@ -142,7 +142,7 @@ def modify_element_child(children: Iterable[dict]):
         modify_element(
             element_no=child.get('elementNo'),
             element_name=child.get('elementName'),
-            element_comments=child.get('elementComments'),
+            element_remark=child.get('elementRemark'),
             element_type=child.get('elementType'),
             propertys=child.get('propertys'),
             children=child.get('children')

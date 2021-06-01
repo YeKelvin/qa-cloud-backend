@@ -24,7 +24,7 @@ def query_element_list():
     req = JsonParser(
         Argument('elementNo'),
         Argument('elementName'),
-        Argument('elementComments'),
+        Argument('elementRemark'),
         Argument('elementType'),
         Argument('enabled'),
         Argument('workspaceNo'),
@@ -82,7 +82,7 @@ def create_element():
     """
     req = JsonParser(
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
-        Argument('elementComments'),
+        Argument('elementRemark'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
@@ -101,7 +101,7 @@ def modify_element():
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('elementName'),
-        Argument('elementComments'),
+        Argument('elementRemark'),
         Argument('enabled'),
         Argument('propertys'),
         Argument('children'),

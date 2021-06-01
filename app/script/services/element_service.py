@@ -31,8 +31,8 @@ def query_element_list(req: RequestDTO):
         conditions.append(TTestElement.ELEMENT_NO == req.attr.elementNo)
     if req.attr.elementName:
         conditions.append(TTestElement.ELEMENT_NAME.like(f'%{req.attr.elementName}%'))
-    if req.attr.elementComments:
-        conditions.append(TTestElement.ELEMENT_REMARK.like(f'%{req.attr.elementComments}%'))
+    if req.attr.elementRemark:
+        conditions.append(TTestElement.ELEMENT_REMARK.like(f'%{req.attr.elementRemark}%'))
     if req.attr.elementType:
         conditions.append(TTestElement.ELEMENT_TYPE.like(f'%{req.attr.elementType}%'))
     if req.attr.enabled:
@@ -118,7 +118,7 @@ def query_element_info(req: RequestDTO):
     return {
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
-        'elementComments': element.ELEMENT_REMARK,
+        'elementRemark': element.ELEMENT_REMARK,
         'elementType': element.ELEMENT_TYPE,
         'enabled': element.ENABLED,
         'propertys': propertys,
@@ -136,7 +136,7 @@ def query_element_children(req: RequestDTO):
 def create_element(req: RequestDTO):
     element_no = helper.create_element(
         element_name=req.attr.elementName,
-        element_comments=req.attr.elementComments,
+        element_remark=req.attr.elementRemark,
         element_type=req.attr.elementType,
         element_class=req.attr.elementClass,
         propertys=req.attr.propertys,
@@ -162,7 +162,7 @@ def modify_element(req: RequestDTO):
     helper.modify_element(
         element_no=req.attr.elementNo,
         element_name=req.attr.elementName,
-        element_comments=req.attr.elementComments,
+        element_remark=req.attr.elementRemark,
         propertys=req.attr.propertys,
         children=req.attr.children
     )

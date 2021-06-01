@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 import traceback
 
-from sendanywhere.runner import Runner
+from pymeter.runner import Runner
 
 from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
@@ -25,7 +25,7 @@ def execute_script(req: RequestDTO):
     # TODO: 增加脚本完整性校验，例如脚本下是否有内容
 
     if req.attr.sid:
-        add_flask_socketio_result_collector_component(collection, req.attr.sid)
+        add_flask_socketio_result_collector(collection, req.attr.sid)
 
     script = [collection]
     # 新增线程执行脚本
@@ -41,7 +41,7 @@ def execute_script(req: RequestDTO):
     return None
 
 
-def add_flask_socketio_result_collector_component(script: dict, sid: str):
+def add_flask_socketio_result_collector(script: dict, sid: str):
     script['child'].insert(0, {
         'name': 'FlaskSocketIOResultCollector',
         'comments': None,
