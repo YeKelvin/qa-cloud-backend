@@ -30,21 +30,6 @@ class TWorkspace(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TWorkspaceTopicRel(DBModel):
-    """工作空间主题关联表
-    """
-    __tablename__ = 'WORKSPACE_TOPIC_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
-    TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
 class TWorkspaceCollectionRel(DBModel):
     """工作空间集合关联表
     """
@@ -68,37 +53,6 @@ class TWorkspaceUserRel(DBModel):
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TTestTopic(DBModel):
-    """测试主题表
-    """
-    __tablename__ = 'TEST_TOPIC'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    TOPIC_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='主题编号')
-    TOPIC_NAME = db.Column(db.String(128), nullable=False, comment='主题名称')
-    TOPIC_DESC = db.Column(db.String(256), comment='主题描述')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TTopicCollectionRel(DBModel):
-    """主题集合关联表
-    """
-    __tablename__ = 'TOPIC_COLLECTION_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    TOPIC_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
-    COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='测试集合编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

@@ -16,5 +16,4 @@ from . import env_var_controller  # noqa
 from . import execution_controller  # noqa
 from . import http_header_controller  # noqa
 from . import test_controller  # noqa
-from . import topic_controller  # noqa
 from . import workspace_controller  # noqa
