@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : global_helper
+# @File    : flask_helper.py
 # @Time    : 2020/1/8 10:56
 # @Author  : Kelvin.Ye
 from flask import g

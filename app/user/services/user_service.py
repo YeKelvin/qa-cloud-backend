@@ -9,7 +9,7 @@ from datetime import timedelta
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import db_transaction
 from app.common.exceptions import ServiceError
-from app.common.helpers.global_helper import Global
+from app.common.flask_helper import Global
 from app.common.id_generator import new_id
 from app.common.request import RequestDTO
 from app.common.validator import assert_blank

@@ -10,7 +10,7 @@ from flask import g
 from flask import request
 
 from app.common.exceptions import ErrorCode
-from app.common.helpers.global_helper import Global
+from app.common.flask_helper import Global
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.user.models import TPermission
