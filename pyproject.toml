@@ -25,7 +25,7 @@ gevent = "^21.1.2"
 gevent-websocket = "^0.10.1"
 gunicorn = { version = "*", markers = "platform_system == 'Linux'" }
 uwsgi = { version = "*", markers = "platform_system == 'Linux'" }
-send-anywhere = {path = "../send-anywhere", develop = true}
+pymeter = {path = "../pymeter", develop = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
