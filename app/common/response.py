@@ -14,15 +14,16 @@ from app.utils.json_util import to_json
 
 
 class ResponseDTO:
-    """请求响应对象
-    """
+    """请求响应对象"""
 
-    def __init__(self,
-                 result: any = None,
-                 success: bool = True,
-                 error: ErrorCode = None,
-                 errorCode: str = None,
-                 errorMsg: str = None):
+    def __init__(
+        self,
+        result: any = None,
+        success: bool = True,
+        error: ErrorCode = None,
+        errorCode: str = None,
+        errorMsg: str = None
+    ):
         self.result = result
         self.success = success
         if error is None:
@@ -53,6 +54,7 @@ class ResponseDTO:
 def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, **kwargs):
     if not res:
         res = ResponseDTO(**kwargs)
+
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'

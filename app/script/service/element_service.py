@@ -13,9 +13,9 @@ from app.script.enum import ElementStatus
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
 from app.script.model import TTestElement
-from app.script.model import TWorkspace
 from app.script.model import TWorkspaceCollectionRel
 from app.script.service import element_helper as helper
+from app.system.model import TWorkspace
 from app.utils.log_util import get_logger
 
 

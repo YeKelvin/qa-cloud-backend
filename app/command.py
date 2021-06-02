@@ -19,17 +19,16 @@ from app.user.model import TUserRoleRel
 from app.utils.log_util import get_logger
 from app.utils.security import encrypt_password
 
+from app.script.model import *  # noqa isort:skip
+from app.system.model import *  # noqa isort:skip
+from app.user.model import *  # noqa isort:skip
+
 
 log = get_logger(__name__)
 
 
 @click.command()
-@click.option(
-    '-d',
-    '--drop',
-    default=False,
-    help='初始化数据库前是否先删除所有表，默认False'
-)
+@click.option('-d', '--drop', default=False, help='初始化数据库前是否先删除所有表，默认False')
 @with_appcontext
 def initdb(drop):
     """创建表
@@ -59,17 +58,9 @@ def init_user():
     """初始化用户
     """
     user_no = new_id()
-    TUser.create(
-        USER_NO=user_no,
-        USER_NAME='超级管理员',
-        STATE='ENABLE'
-    )
+    TUser.create(USER_NO=user_no, USER_NAME='超级管理员', STATE='ENABLE')
 
-    TUserLoginInfo.create(
-        USER_NO=user_no,
-        LOGIN_NAME='admin',
-        LOGIN_TYPE='ACCOUNT'
-    )
+    TUserLoginInfo.create(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
 
     TUserPassword.create(
         USER_NO=user_no,
@@ -205,19 +196,8 @@ def init_action_log():
 
 
 def __create_role(name, role_desc):
-    TRole.create(
-        ROLE_NO=new_id(),
-        ROLE_NAME=name,
-        ROLE_DESC=role_desc,
-        STATE='ENABLE'
-    )
+    TRole.create(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
 
 
 def __create_permission(name, method, endpoint):
-    TPermission.create(
-        PERMISSION_NO=new_id(),
-        PERMISSION_NAME=name,
-        METHOD=method,
-        ENDPOINT=endpoint,
-        STATE='ENABLE'
-    )
+    TPermission.create(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')

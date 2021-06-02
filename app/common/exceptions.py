@@ -7,8 +7,7 @@ from enum import Enum, unique
 
 
 class ServiceError(Exception):
-    """业务异常类
-    """
+    """业务异常类"""
 
     def __init__(self, msg=None, code=None, error: 'ErrorCode' = None):
         super().__init__(self)
@@ -21,8 +20,7 @@ class ServiceError(Exception):
 
 
 class ParseError(Exception):
-    """请求参数解析异常类
-    """
+    """请求参数解析异常类"""
 
     def __init__(self, msg=None):
         self.message = msg

@@ -24,9 +24,9 @@ log = get_logger(__name__)
 
 
 def set_logid():
-    """before_request
-
-    设置单次请求的全局 logid
+    """
+    before_request
+    设置当前请求的全局logId
     """
     g.logid = (
         f'{threading.current_thread().ident}'
@@ -36,9 +36,9 @@ def set_logid():
 
 
 def set_user():
-    """before_request
-
-    设置单次请求的全局 user信息
+    """
+    before_request
+    设置当前请求的全局user信息
     """
     # 排除指定的请求
     if ('/user/login' in request.path) and ('POST' in request.method):
@@ -74,9 +74,9 @@ def set_user():
 
 
 def record_action(response):
-    """after_request
-
-    记录请求日志，只记录成功的非 GET请求
+    """
+    after_request
+    记录请求日志，只记录成功的非GET请求
     """
     success = Global.success
     if success and 'GET' not in request.method:

@@ -27,8 +27,7 @@ log = get_logger(__name__)
 
 
 def require_login(func):
-    """登录校验装饰器
-    """
+    """登录校验装饰器"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -85,8 +84,7 @@ def require_login(func):
 
 
 def require_permission(func):
-    """权限校验装饰器
-    """
+    """权限校验装饰器"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):

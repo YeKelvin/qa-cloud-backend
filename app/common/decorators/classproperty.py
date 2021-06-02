@@ -10,8 +10,7 @@ log = get_logger(__name__)
 
 
 class __ClassProperty(property):
-    """类属性装饰器
-    """
+    """类属性装饰器"""
 
     def __get__(self, cls, owner):
         return classmethod(self.fget).__get__(None, owner)()

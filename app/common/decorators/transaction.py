@@ -16,8 +16,7 @@ log = get_logger(__name__)
 
 
 def db_transaction(func):
-    """DB事务装饰器
-    """
+    """DB事务装饰器"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):

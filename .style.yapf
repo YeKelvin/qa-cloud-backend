@@ -17,12 +17,6 @@ DEDENT_CLOSING_BRACKETS = True
 # 不拆分连续括号
 COALESCE_BRACKETS = True
 
-# 如果逗号分隔的列表（dict，list，tuple或function def）是在一个太长的行上，拆分使所有元素都在单独的行上
-SPLIT_ALL_COMMA_SEPARATED_VALUES = True
-
-# 不拆分子表达式
-SPLIT_ALL_TOP_LEVEL_COMMA_SEPARATED_VALUES = True
-
 # * 和 / 运算法左右不加空格
 ARITHMETIC_PRECEDENCE_INDICATION = True
 
@@ -31,12 +25,6 @@ BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = True
 
 # 导入和变量定义之间所需的空行数
 BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
-
-# 换行对齐的风格
-CONTINUATION_ALIGN_STYLE = VALIGN-RIGHT
-
-# 换行后的缩进空格数
-CONTINUATION_INDENT_WIDTH = 0
 
 # 将多行表达式格式化为单行表达式，例如，单行if语句
 JOIN_MULTIPLE_LINES = True

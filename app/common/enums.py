@@ -8,15 +8,13 @@ from enum import Enum, unique
 
 @unique
 class State(Enum):
-    """状态间有迁移关系
-    """
+    """状态间有迁移关系"""
     ...
 
 
 @unique
 class Status(Enum):
-    """状态码没有互相迁移关系
-    """
+    """状态码没有互相迁移关系"""
     ...
 
 

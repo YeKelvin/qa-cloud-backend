@@ -8,7 +8,7 @@ from app.common.id_generator import new_id
 from app.common.request import RequestDTO
 from app.common.validator import assert_blank
 from app.common.validator import assert_not_blank
-from app.script.model import TWorkspace
+from app.system.model import TWorkspace
 from app.utils.log_util import get_logger
 
 

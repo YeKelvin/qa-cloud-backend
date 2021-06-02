@@ -22,8 +22,7 @@ log = get_logger(__name__)
 
 
 def http_service(func):
-    """service层装饰器，主要用于记录日志和捕获异常
-    """
+    """service层装饰器，主要用于记录日志和捕获异常"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):

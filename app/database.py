@@ -22,8 +22,22 @@ class CRUDMixin:
         return instance.save(commit)
 
     @classmethod
+    def insert(cls, commit=True, **kwargs):
+        """Create a new record and save it the database"""
+        instance = cls(**kwargs)
+        return instance.save(commit)
+
+    @classmethod
     def query_by(cls, DEL_STATE=0, **kwargs):
         return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs)
+
+    @classmethod
+    def select_one(cls, DEL_STATE=0, **kwargs):
+        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).first()
+
+    @classmethod
+    def select_list(cls, DEL_STATE=0, **kwargs):
+        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).all()
 
     def update(self, commit=True, **kwargs):
         """Update specific fields of a record"""
