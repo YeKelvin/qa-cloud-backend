@@ -67,9 +67,9 @@ def register_socketio(app):
 
 def register_blueprints(app):
     """Register Flask blueprints"""
-    from app.script.controllers import blueprint as script_blueprint
-    from app.system.controllers import blueprint as system_blueprint
-    from app.user.controllers import blueprint as user_blueprint
+    from app.script.controller import blueprint as script_blueprint
+    from app.system.controller import blueprint as system_blueprint
+    from app.user.controller import blueprint as user_blueprint
 
     app.register_blueprint(script_blueprint)
     app.register_blueprint(system_blueprint)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : service
+# @File    : service.py
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
 import traceback
@@ -33,23 +33,22 @@ def http_service(func):
         starttime = timestamp_as_ms()
         log.info(
             f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-            f'header:[ {dict(request.headers)} ] request:[ {req.attr} ]'
+            f'header:[ {dict(request.headers)} ] request:[ {req} ]'
         )
         res = None
         try:
-            # 判断 request参数解析是否有异常
-            if req.error is None:
-                # 函数调用
+            # 判断request参数解析是否有异常
+            if hasattr(req, 'error'):
+                res = ResponseDTO(errorMsg=req.error)
+            else:
+                # 调用service
                 result = func(*args, **kwargs)
                 res = ResponseDTO(result)
                 log.info(
-                    f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                    f'result:[ {result} ]'
+                    f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] result:[ {result} ]'
                 )
-            else:
-                res = ResponseDTO(errorMsg=req.error)
         except ServiceError as err:
-            # 捕获 service层的业务异常
+            # 捕获service层的业务异常
             res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
         except Exception:
             # 捕获所有异常

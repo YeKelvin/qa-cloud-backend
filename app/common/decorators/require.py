@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : require
+# @File    : require.py
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
 from datetime import datetime
@@ -13,13 +13,13 @@ from app.common.exceptions import ErrorCode
 from app.common.flask_helper import Global
 from app.common.response import ResponseDTO
 from app.common.response import http_response
-from app.user.models import TPermission
-from app.user.models import TRole
-from app.user.models import TRolePermissionRel
-from app.user.models import TUser
-from app.user.models import TUserAccessToken
-from app.user.models import TUserPassword
-from app.user.models import TUserRoleRel
+from app.user.model import TPermission
+from app.user.model import TRole
+from app.user.model import TRolePermissionRel
+from app.user.model import TUser
+from app.user.model import TUserAccessToken
+from app.user.model import TUserPassword
+from app.user.model import TUserRoleRel
 from app.utils.log_util import get_logger
 
 

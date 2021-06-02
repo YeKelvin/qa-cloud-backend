@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : dto.py
+# @File    : response.py
 # @Time    : 2019/11/7 11:52
 # @Author  : Kelvin.Ye
 from enum import Enum

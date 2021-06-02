@@ -14,6 +14,7 @@ from app.common.request import RequestDTO
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 
+
 log = get_logger(__name__)
 
 
@@ -31,21 +32,21 @@ class Argument:
         enum: Enum = None,
         help: str = None
     ):
-        self.name = name  # 参数名称
-        self.type = type  # 参数类型
-        self.default = default  # 参数默认值
-        self.required = required  # 参数是否要求必传
-        self.nullable = nullable  # 参数是否允许为空
-        self.min = min  # 参数允许的最小值或最小长度 TODO
-        self.max = max  # 参数允许的最大值或最大长度 TODO
-        self.enum = enum  # 参数枚举校验 TODO
-        self.help = help  # 参数不符合要求时的提示语
+        self.name = name            # 参数名称
+        self.type = type            # 参数类型
+        self.default = default      # 参数默认值
+        self.required = required    # 参数是否要求必传
+        self.nullable = nullable    # 参数是否允许为空
+        self.min = min              # 参数允许的最小值或最小长度 TODO
+        self.max = max              # 参数允许的最大值或最大长度 TODO
+        self.enum = enum            # 参数枚举校验 TODO
+        self.help = help            # 参数不符合要求时的提示语
 
         if not isinstance(self.name, str):
             raise TypeError('argument name must be string')
 
     def parse(self, has_key, value):
-        """解析 HTTP参数
+        """解析HTTP参数
 
         Args:
             has_key:    key是否存在
@@ -100,35 +101,26 @@ class BaseParser:
             self.args.append(arg)
 
     def get(self, key):
-        """通过 keyName获取 key是否存在和 keyValue的 tuple
-
-        Args:
-            key:    键名
-
-        Returns:    (bool, obj)
-
-        """
+        """通过key获取value"""
         raise NotImplementedError
 
     def initialize(self, data):
-        """把 HTTP请求参数转换为 Json对象
-        """
+        """把HTTP请求参数转换为Json对象"""
         raise NotImplementedError
 
     def parse(self, data=None) -> RequestDTO:
-        """解析 HTTP请求参数
-        """
+        """解析HTTP请求参数"""
         request_dto = RequestDTO()
         try:
             if not self.args:
                 raise ParseError('arguments are not allowed to be empty')
             self.initialize(data)
             for arg in self.args:
-                request_dto.attr[arg.name] = arg.parse(*self.get(arg.name))
+                request_dto[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
-            request_dto.error = err.message
+            request_dto['error'] = err.message
         except Exception as ex:
-            request_dto.error = ex
+            request_dto['error'] = ex
             log.error(traceback.format_exc())
         return request_dto
 

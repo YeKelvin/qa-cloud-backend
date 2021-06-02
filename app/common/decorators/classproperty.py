@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : classpro
+# @File    : classproperty.py
 # @Time    : 2020/1/14 10:50
 # @Author  : Kelvin.Ye
 from app.utils.log_util import get_logger

@@ -1,25 +1,45 @@
 [style]
-based_on_style = google
-spaces_before_comment = 2
+# 默认风格
+BASED_ON_STYLE = google
 
-# The column limit (or max line-length)
+# 行尾注释前的空格
+SPACES_BEFORE_COMMENT = 2
+
+# 限制单行字符长度
 COLUMN_LIMIT = 120
 
-# The number of columns to use for indentation.
+# 缩进空格数
 INDENT_WIDTH = 4
 
-# Put closing brackets on a separate line, dedented, if the bracketed expression can't fit in a single line.
-# Applies to all kinds of brackets, including function definitions and calls
+# 关闭括号放在单独的行上
 DEDENT_CLOSING_BRACKETS = True
 
-# Do not split consecutive brackets. Only relevant when DEDENT_CLOSING_BRACKETS or INDENT_CLOSING_BRACKETS is set.
+# 不拆分连续括号
 COALESCE_BRACKETS = True
 
-# If a comma separated list (dict, list, tuple, or function def) is on a line that is too long,
-# split such that all elements are on a single line.
+# 如果逗号分隔的列表（dict，list，tuple或function def）是在一个太长的行上，拆分使所有元素都在单独的行上
 SPLIT_ALL_COMMA_SEPARATED_VALUES = True
 
-# Variation on SPLIT_ALL_COMMA_SEPARATED_VALUES in which,
-# if a subexpression with a comma fits in its starting line,
-# then the subexpression is not split.
+# 不拆分子表达式
 SPLIT_ALL_TOP_LEVEL_COMMA_SEPARATED_VALUES = True
+
+# * 和 / 运算法左右不加空格
+ARITHMETIC_PRECEDENCE_INDICATION = True
+
+# 在def或class之间，插入一个空行
+BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = True
+
+# 导入和变量定义之间所需的空行数
+BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
+
+# 换行对齐的风格
+CONTINUATION_ALIGN_STYLE = VALIGN-RIGHT
+
+# 换行后的缩进空格数
+CONTINUATION_INDENT_WIDTH = 0
+
+# 将多行表达式格式化为单行表达式，例如，单行if语句
+JOIN_MULTIPLE_LINES = True
+
+# 单行超长时，在 . 前换行
+SPLIT_BEFORE_DOT = True

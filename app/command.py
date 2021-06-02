@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : commands.py
+# @File    : command.py
 # @Time    : 2019/11/7 10:55
 # @Author  : Kelvin.Ye
 import click
@@ -8,14 +8,14 @@ from flask.cli import with_appcontext
 
 from app.common.id_generator import new_id
 from app.extension import db
-from app.system.models import TActionLog
-from app.user.models import TPermission
-from app.user.models import TRole
-from app.user.models import TRolePermissionRel
-from app.user.models import TUser
-from app.user.models import TUserLoginInfo
-from app.user.models import TUserPassword
-from app.user.models import TUserRoleRel
+from app.system.model import TActionLog
+from app.user.model import TPermission
+from app.user.model import TRole
+from app.user.model import TRolePermissionRel
+from app.user.model import TUser
+from app.user.model import TUserLoginInfo
+from app.user.model import TUserPassword
+from app.user.model import TUserRoleRel
 from app.utils.log_util import get_logger
 from app.utils.security import encrypt_password
 

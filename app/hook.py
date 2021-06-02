@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : hooks.py
+# @File    : hook.py
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
 import threading
@@ -13,8 +13,8 @@ from flask import request
 
 from app.common.flask_helper import Global
 from app.common.response import http_response
-from app.system.models import TActionLog
-from app.user.models import TPermission
+from app.system.model import TActionLog
+from app.user.model import TPermission
 from app.utils import randoms
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
@@ -55,7 +55,7 @@ def set_user():
 
         auth_schema, auth_token = auth_array
         if auth_schema != 'Bearer':
-            log.info(f'logId:[ {g.logid} ] 请使用Bearer Schema')
+            log.info(f'logId:[ {g.logid} ] 暂不支持的schema')
             return
 
         try:
@@ -66,7 +66,7 @@ def set_user():
             Global.set('auth_token', auth_token)
             Global.set('auth_login_time', payload['data']['loginTime'])
         except jwt.ExpiredSignatureError:
-            log.info(f'logId:[ {g.logid} ] token 已失效')
+            log.info(f'logId:[ {g.logid} ] token已失效')
         except jwt.InvalidTokenError:
             log.info(f'logId:[ {g.logid} ] 无效的token')
         except Exception:

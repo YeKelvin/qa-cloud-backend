@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : verify
+# @File    : validator.py
 # @Time    : 2019/11/21 15:04
 # @Author  : Kelvin.Ye
 from app.common.exceptions import ErrorCode
