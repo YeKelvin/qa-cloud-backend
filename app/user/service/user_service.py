@@ -14,6 +14,11 @@ from app.common.id_generator import new_id
 from app.common.request import RequestDTO
 from app.common.validator import assert_blank
 from app.common.validator import assert_not_blank
+from app.user.dao import user_access_token_dao as UserAccessTokenDao
+from app.user.dao import user_dao as UserDao
+from app.user.dao import user_login_info_dao as UserLoginInfoDao
+from app.user.dao import user_password_dao as UserPasswordDao
+from app.user.dao import user_password_key_dao as UserPasswordKeyDao
 from app.user.model import TRole
 from app.user.model import TUser
 from app.user.model import TUserAccessToken
@@ -35,11 +40,13 @@ log = get_logger(__name__)
 @http_service
 def login(req: RequestDTO):
     # 查询用户登录信息
-    user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.loginName).first()
-    assert_not_blank(user_login_info, '账号或密码不正确')
+    # login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.loginName).first()
+    login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
+    assert_not_blank(login_info, '账号或密码不正确')
 
     # 查询用户信息
-    user = TUser.query_by(USER_NO=user_login_info.USER_NO).first()
+    # user = TUser.query_by(USER_NO=login_info.USER_NO).first()
+    user = UserDao.select_by_userno(login_info.USER_NO)
     assert_not_blank(user, '账号或密码不正确')
 
     # 校验用户状态
@@ -47,16 +54,21 @@ def login(req: RequestDTO):
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    user_password = TUserPassword.query_by(USER_NO=user.USER_NO, PASSWORD_TYPE='LOGIN').first()
+    # user_password = TUserPassword.query_by(USER_NO=user.USER_NO, PASSWORD_TYPE='LOGIN').first()
+    user_password = UserPasswordDao.select_loginpwd_by_userno(user.USER_NO)
     assert_not_blank(user_password, '账号或密码不正确')
 
     # 密码RSA解密
-    user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=req.loginName).first()
+    # user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=req.loginName).first()
+    user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
     rsa_private_key = user_password_key.PASSWORD_KEY
-    ras_decrypted_password = decrypt_by_rsa_private_key(req['password'], rsa_private_key)
+    ras_decrypted_password = decrypt_by_rsa_private_key(req.password, rsa_private_key)
+
+    # 校验密码是否正确
+    check_pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
 
     # 密码校验失败
-    if not check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password):
+    if not check_pwd_success:
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
@@ -64,7 +76,8 @@ def login(req: RequestDTO):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成access token
-    user_token = TUserAccessToken.query_by(USER_NO=user.USER_NO).first()
+    # user_token = TUserAccessToken.query_by(USER_NO=user.USER_NO).first()
+    user_token = UserAccessTokenDao.select_by_userno(user.USER_NO)
     login_time = datetime.utcnow()
     access_token = JWTAuth.encode_auth_token(user.USER_NO, login_time.timestamp())
     expire_in = login_time + timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME)
@@ -92,9 +105,9 @@ def login(req: RequestDTO):
 
     # 记录用户登录日志
     TUserLoginLog.create(
-        USER_NO=user_login_info.USER_NO,
-        LOGIN_NAME=user_login_info.LOGIN_NAME,
-        LOGIN_TYPE=user_login_info.LOGIN_TYPE,
+        USER_NO=login_info.USER_NO,
+        LOGIN_NAME=login_info.LOGIN_NAME,
+        LOGIN_TYPE=login_info.LOGIN_TYPE,
         IP=''
     )
 
