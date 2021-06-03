@@ -57,7 +57,7 @@ def query_element_list(req: RequestDTO):
         TTestElement.ENABLED
     ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-        data_set = []
+    data_set = []
     for item in pagination.items:
         data_set.append({
             'elementNo': item.ELEMENT_NO,

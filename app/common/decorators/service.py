@@ -30,6 +30,7 @@ def http_service(func):
         req: RequestDTO = (args[0] if args else None) or kwargs.get('req', RequestDTO())
         # 记录开始时间
         starttime = timestamp_as_ms()
+        error = req.pop('error', None)
         log.info(
             f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
             f'header:[ {dict(request.headers)} ] request:[ {req} ]'
@@ -37,8 +38,8 @@ def http_service(func):
         res = None
         try:
             # 判断request参数解析是否有异常
-            if 'error' in req:
-                res = ResponseDTO(errorMsg=req.error)
+            if error is not None:
+                res = ResponseDTO(errorMsg=error)
             else:
                 # 调用service
                 result = func(*args, **kwargs)

@@ -32,7 +32,7 @@ def query_workspace_list(req: RequestDTO):
     pagination = TWorkspace.query.filter(
         *conditions).order_by(TWorkspace.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-        data_set = []
+    data_set = []
     for item in pagination.items:
         data_set.append({
             'workspaceNo': item.WORKSPACE_NO,

@@ -7,9 +7,15 @@ from typing import List
 from app.user.model import TUserRoleRel
 
 
-def select_by_userno(userno) -> TUserRoleRel:
-    return TUserRoleRel.query_by(USER_NO=userno).first()
+def select_by_userno(user_no) -> TUserRoleRel:
+    return TUserRoleRel.query_by(USER_NO=user_no).first()
 
 
-def select_all_by_userno(userno) -> List[TUserRoleRel]:
-    return TUserRoleRel.query_by(USER_NO=userno).all()
+def select_all_by_userno(user_no) -> List[TUserRoleRel]:
+    return TUserRoleRel.query_by(USER_NO=user_no).all()
+
+
+def delete_all_by_userno(user_no):
+    entities = TUserRoleRel.query_by(USER_NO=user_no).all()
+    for entity in entities:
+        entity.delete(commit=False)

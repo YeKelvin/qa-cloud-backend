@@ -34,7 +34,7 @@ def query_role_list(req: RequestDTO):
     pagination = TRole.query.filter(
         *conditions).order_by(TRole.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-        data_set = []
+    data_set = []
     for item in pagination.items:
         data_set.append({
             'roleNo': item.ROLE_NO,

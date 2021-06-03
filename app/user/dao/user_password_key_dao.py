@@ -6,5 +6,11 @@
 from app.user.model import TUserPasswordKey
 
 
-def select_by_loginname(loginname):
-    return TUserPasswordKey.query_by(LOGIN_NAME=loginname).first()
+def select_by_loginname(login_name):
+    return TUserPasswordKey.query_by(LOGIN_NAME=login_name).first()
+
+
+def delete_by_loginname(login_name):
+    entity = TUserPasswordKey.query_by(LOGIN_NAME=login_name).first()
+    if entity:
+        entity.delete(commit=False)

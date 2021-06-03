@@ -6,5 +6,5 @@
 from app.user.model import TRole
 
 
-def select_by_roleno(roleno) -> TRole:
-    return TRole.query_by(ROLE_NO=roleno).first()
+def select_by_roleno(role_no) -> TRole:
+    return TRole.query_by(ROLE_NO=role_no).first()

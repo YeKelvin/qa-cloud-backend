@@ -36,7 +36,7 @@ def query_permission_list(req: RequestDTO):
     pagination = TPermission.query.filter(
         *conditions).order_by(TPermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-        data_set = []
+    data_set = []
     for item in pagination.items:
         data_set.append({
             'permissionNo': item.PERMISSION_NO,

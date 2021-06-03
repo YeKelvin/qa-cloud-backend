@@ -6,11 +6,17 @@
 from app.user.model import TUserAccessToken
 
 
-def select_by_userno(userno):
-    return TUserAccessToken.query_by(USER_NO=userno).first()
+def select_by_userno(user_no) -> TUserAccessToken:
+    return TUserAccessToken.query_by(USER_NO=user_no).first()
 
 
-def update_state_by_userno(state, userno):
-    entity = TUserAccessToken.query_by(USER_NO=userno).first()
+def update_state_by_userno(state, user_no):
+    entity = TUserAccessToken.query_by(USER_NO=user_no).first()
     entity.STATE = state
     entity.save()
+
+
+def delete_by_userno(user_no):
+    entity = TUserAccessToken.query_by(USER_NO=user_no).first()
+    if entity:
+        entity.delete(commit=False)

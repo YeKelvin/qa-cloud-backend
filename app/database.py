@@ -42,7 +42,8 @@ class CRUDMixin:
     def update(self, commit=True, **kwargs):
         """Update specific fields of a record"""
         for attr, value in kwargs.items():
-            setattr(self, attr, value)
+            if value is not None:
+                setattr(self, attr, value)
         return commit and self.save() or self
 
     def update_with_time(self, commit=True, **kwargs):

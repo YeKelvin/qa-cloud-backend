@@ -18,17 +18,15 @@ from app.user.dao import role_dao as RoleDao
 from app.user.dao import user_access_token_dao as UserAccessTokenDao
 from app.user.dao import user_dao as UserDao
 from app.user.dao import user_login_info_dao as UserLoginInfoDao
+from app.user.dao import user_login_log_dao as UserLoginLogDao
 from app.user.dao import user_password_dao as UserPasswordDao
 from app.user.dao import user_password_key_dao as UserPasswordKeyDao
 from app.user.dao import user_role_rel_dao as UserRoleRelDao
-from app.user.model import TRole
 from app.user.model import TUser
 from app.user.model import TUserAccessToken
 from app.user.model import TUserLoginInfo
 from app.user.model import TUserLoginLog
 from app.user.model import TUserPassword
-from app.user.model import TUserPasswordKey
-from app.user.model import TUserRoleRel
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
@@ -115,7 +113,6 @@ def login(req: RequestDTO):
 @http_service
 def logout():
     UserAccessTokenDao.update_state_by_userno('INVALID', GlobalVars.user_no)
-    return None
 
 
 @http_service
@@ -156,8 +153,6 @@ def register(req: RequestDTO):
         CREATE_TYPE='CUSTOMER'
     )
 
-    return None
-
 
 @http_service
 def reset_login_password(req: RequestDTO):
@@ -170,7 +165,6 @@ def reset_login_password(req: RequestDTO):
     user_password.update(
         PASSWORD=encrypt_password(req.loginName, req.password)
     )
-    return None
 
 
 @http_service
@@ -209,6 +203,7 @@ def query_user_list(req: RequestDTO):
 @http_service
 def query_user_all():
     users = UserDao.select_all()
+
     result = []
     for user in users:
         result.append({
@@ -223,12 +218,14 @@ def query_user_info():
     user_no = GlobalVars.user_no
     user = UserDao.select_by_userno(user_no)
     user_roles = UserRoleRelDao.select_all_by_userno(user_no)
+
     roles = []
     for user_role in user_roles:
         role = RoleDao.select_by_roleno(user_role.ROLE_NO)
         if not role:
             continue
         roles.append(role.ROLE_NAME)
+
     return {
         'userNo': user_no,
         'userName': user.USER_NAME,
@@ -244,15 +241,11 @@ def modify_user(req: RequestDTO):
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    if req.userName is not None:
-        user.USER_NAME = req.userName
-    if req.mobileNo is not None:
-        user.MOBILE_NO = req.mobileNo
-    if req.email is not None:
-        user.EMAIL = req.email
-
-    user.save()
-    return None
+    user.update(
+        USER_NAME=req.userName,
+        MOBILE_NO=req.mobileNo,
+        EMAIL=req.email
+    )
 
 
 @http_service
@@ -260,43 +253,35 @@ def modify_user_state(req: RequestDTO):
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    user.update(STATE=req.state)
-    return None
+    user.update(
+        STATE=req.state
+    )
 
 
 @http_service
 @db_transaction
 def delete_user(req: RequestDTO):
-    user_no = req.userNo
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    # 删除用户
-    user.update(commit=False, DEL_STATE=1)
     # 删除用户角色关联关系
-    user_roles = TUserRoleRel.query_by(USER_NO=user_no).all()
-    for user_role in user_roles:
-        user_role.update(commit=False, DEL_STATE=1)
-    # 删除用户登录信息
-    user_login_infos = TUserLoginInfo.query_by(USER_NO=user_no).all()
-    for user_login_info in user_login_infos:
-        user_login_info.update(commit=False, DEL_STATE=1)
-    # 删除用户登录历史记录
-    user_login_logs = TUserLoginLog.query_by(USER_NO=user_no).all()
-    for user_login_log in user_login_logs:
-        user_login_log.update(commit=False, DEL_STATE=1)
-    # 删除用户密码
-    user_passwords = TUserPassword.query_by(USER_NO=user_no).all()
-    for user_password in user_passwords:
-        user_password.update(commit=False, DEL_STATE=1)
-    # 删除用户密码秘钥
-    for user_login_info in user_login_infos:
-        user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=user_login_info.LOGIN_NAME).first()
-        if user_password_key:
-            user_password_key.update(commit=False, DEL_STATE=1)
-    # 删除用户令牌
-    user_access_token = TUserAccessToken.query_by(USER_NO=user_no).first()
-    if user_access_token:
-        user_access_token.update(commit=False, DEL_STATE=1)
+    UserRoleRelDao.delete_all_by_userno(req.userNo)
 
-    return None
+    # 删除用户密码
+    UserPasswordDao.delete_all_by_user_no(req.userNo)
+
+    # 删除用户密码秘钥
+    for login_info in UserLoginInfoDao.select_all_by_userno(req.userNo):
+        UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
+
+    # 删除用户令牌
+    UserAccessTokenDao.delete_by_userno(req.userNo)
+
+    # 删除用户登录历史记录
+    UserLoginLogDao.delete_all_by_userno(req.userNo)
+
+    # 删除用户登录信息
+    UserLoginInfoDao.delete_all_by_userno(req.userNo)
+
+    # 删除用户
+    user.delete(commit=False)

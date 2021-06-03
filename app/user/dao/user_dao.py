@@ -8,8 +8,8 @@ from typing import List
 from app.user.model import TUser
 
 
-def select_by_userno(userno) -> TUser:
-    return TUser.query_by(USER_NO=userno).first()
+def select_by_userno(user_no) -> TUser:
+    return TUser.query_by(USER_NO=user_no).first()
 
 
 def select_one(**kwargs) -> TUser:

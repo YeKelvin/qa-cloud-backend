@@ -5,9 +5,6 @@
 # @Author  : Kelvin.Ye
 
 
-from app.user.model import TUser
-
-
 def paginate(page, page_size):
     offset = (int(page) - 1) * int(page_size)
     limit = int(page_size)

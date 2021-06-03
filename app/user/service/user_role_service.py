@@ -45,7 +45,7 @@ def query_user_role_rel_list(req: RequestDTO):
         TUserRoleRel.CREATED_TIME
     ).filter(*conditions).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-        data_set = []
+    data_set = []
     for item in pagination.items:
         data_set.append({
             'userNo': item.USER_NO,
