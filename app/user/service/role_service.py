@@ -6,8 +6,8 @@
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.user.model import TRole
 from app.user.model import TRolePermissionRel
 from app.user.model import TUserRoleRel
@@ -34,8 +34,7 @@ def query_role_list(req: RequestDTO):
     pagination = TRole.query.filter(
         *conditions).order_by(TRole.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'roleNo': item.ROLE_NO,
@@ -63,7 +62,7 @@ def query_role_all():
 @http_service
 def create_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NAME=req.roleName).first()
-    assert_blank(role, '角色已存在')
+    check_is_blank(role, '角色已存在')
 
     TRole.create(
         ROLE_NO=new_id(),
@@ -77,7 +76,7 @@ def create_role(req: RequestDTO):
 @http_service
 def modify_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.roleNo).first()
-    assert_not_blank(role, '角色不存在')
+    check_is_not_blank(role, '角色不存在')
 
     if req.roleName is not None:
         role.ROLE_NAME = req.roleName
@@ -91,7 +90,7 @@ def modify_role(req: RequestDTO):
 @http_service
 def modify_role_state(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.roleNo).first()
-    assert_not_blank(role, '角色不存在')
+    check_is_not_blank(role, '角色不存在')
 
     role.update(STATE=req.state)
     return None
@@ -100,10 +99,10 @@ def modify_role_state(req: RequestDTO):
 @http_service
 def delete_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NO=req.roleNo).first()
-    assert_not_blank(role, '角色不存在')
+    check_is_not_blank(role, '角色不存在')
 
     user_roles = TUserRoleRel.query_by(ROLE_NO=req.roleNo).all()
-    assert_blank(user_roles, '角色与用户存在关联关系，请先解除关联')
+    check_is_blank(user_roles, '角色与用户存在关联关系，请先解除关联')
 
     # 删除角色权限关联关系
     role_permissions = TRolePermissionRel.query_by(ROLE_NO=req.roleNo).all()

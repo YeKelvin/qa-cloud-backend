@@ -6,8 +6,8 @@
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.system.model import TWorkspace
 from app.utils.log_util import get_logger
 
@@ -32,8 +32,7 @@ def query_workspace_list(req: RequestDTO):
     pagination = TWorkspace.query.filter(
         *conditions).order_by(TWorkspace.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'workspaceNo': item.WORKSPACE_NO,
@@ -61,7 +60,7 @@ def query_workspace_all():
 @http_service
 def create_workspace(req: RequestDTO):
     project = TWorkspace.query_by(WORKSPACE_NAME=req.workspaceName).first()
-    assert_blank(project, '工作空间已存在')
+    check_is_blank(project, '工作空间已存在')
 
     TWorkspace.create(
         WORKSPACE_NO=new_id(),
@@ -75,7 +74,7 @@ def create_workspace(req: RequestDTO):
 @http_service
 def modify_workspace(req: RequestDTO):
     workspace = TWorkspace.query_by(WORKSPACE_NO=req.workspaceNo).first()
-    assert_not_blank(workspace, '工作空间不存在')
+    check_is_not_blank(workspace, '工作空间不存在')
 
     if req.workspaceName is not None:
         workspace.WORKSPACE_NAME = req.workspaceName
@@ -91,7 +90,7 @@ def modify_workspace(req: RequestDTO):
 @http_service
 def delete_workspace(req: RequestDTO):
     workspace = TWorkspace.query_by(WORKSPACE_NO=req.workspaceNo).first()
-    assert_not_blank(workspace, '工作空间不存在')
+    check_is_not_blank(workspace, '工作空间不存在')
 
     workspace.update(DEL_STATE=1)
     return None

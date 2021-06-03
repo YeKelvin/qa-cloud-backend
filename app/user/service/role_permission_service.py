@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.user.model import TPermission
 from app.user.model import TRole
@@ -51,8 +51,7 @@ def query_role_permission_rel_list(req: RequestDTO):
         TRolePermissionRel.CREATED_TIME
     ).filter(*conditions).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'roleNo': item.ROLE_NO,
@@ -69,7 +68,7 @@ def query_role_permission_rel_list(req: RequestDTO):
 @http_service
 def create_role_permission_rel(req: RequestDTO):
     role_permission = TRolePermissionRel.query_by(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo).first()
-    assert_blank(role_permission, '角色权限关联关系已存在')
+    check_is_blank(role_permission, '角色权限关联关系已存在')
 
     TRolePermissionRel.create(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
     return None
@@ -78,7 +77,7 @@ def create_role_permission_rel(req: RequestDTO):
 @http_service
 def delete_role_permission_rel(req: RequestDTO):
     role_permission = TRolePermissionRel.query_by(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo).first()
-    assert_not_blank(role_permission, '角色权限关联关系不存在')
+    check_is_not_blank(role_permission, '角色权限关联关系不存在')
 
     role_permission.update(DEL_STATE=1)
     return None

@@ -73,7 +73,7 @@ for handler in sqlalchemy_logger.handlers:
     sqlalchemy_logger.removeHandler(handler)
 sqlalchemy_logger.addHandler(CONSOLE_HANDLER)
 sqlalchemy_logger.addHandler(FILE_HANDLER)
-# logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.orm').setLevel(logging.ERROR)

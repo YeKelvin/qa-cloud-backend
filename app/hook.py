@@ -11,7 +11,7 @@ import jwt
 from flask import g
 from flask import request
 
-from app.common.flask_helper import Global
+from app.common.flask_helper import GlobalVars
 from app.common.response import http_response
 from app.system.model import TActionLog
 from app.user.model import TPermission
@@ -62,9 +62,9 @@ def set_user():
             # 解析token，获取payload
             payload = JWTAuth.decode_auth_token(auth_token)
             # 设置全局属性
-            Global.set('user_no', payload['data']['id'])
-            Global.set('auth_token', auth_token)
-            Global.set('auth_login_time', payload['data']['loginTime'])
+            GlobalVars.put('user_no', payload['data']['id'])
+            GlobalVars.put('auth_token', auth_token)
+            GlobalVars.put('auth_login_time', payload['data']['loginTime'])
         except jwt.ExpiredSignatureError:
             log.info(f'logId:[ {g.logid} ] token已失效')
         except jwt.InvalidTokenError:
@@ -78,7 +78,7 @@ def record_action(response):
     after_request
     记录请求日志，只记录成功的非GET请求
     """
-    success = Global.success
+    success = GlobalVars.success
     if success and 'GET' not in request.method:
         permission = TPermission.query.filter_by(ENDPOINT=request.path).first()
         TActionLog.create(

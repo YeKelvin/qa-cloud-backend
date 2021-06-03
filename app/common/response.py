@@ -9,7 +9,7 @@ from flask import make_response
 
 from app.common.enums import HttpStatus
 from app.common.exceptions import ErrorCode
-from app.common.flask_helper import Global
+from app.common.flask_helper import GlobalVars
 from app.utils.json_util import to_json
 
 
@@ -58,5 +58,5 @@ def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, *
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    Global.set('success', res.success)
+    GlobalVars.put('success', res.success)
     return response

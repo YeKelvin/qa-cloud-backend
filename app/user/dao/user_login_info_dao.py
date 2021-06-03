@@ -6,5 +6,5 @@
 from app.user.model import TUserLoginInfo
 
 
-def select_by_loginname(loginname):
+def select_by_loginname(loginname) -> TUserLoginInfo:
     return TUserLoginInfo.query_by(LOGIN_NAME=loginname).first()

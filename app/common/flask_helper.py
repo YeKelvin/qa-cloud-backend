@@ -8,7 +8,7 @@ from flask import g
 from app.common.decorators.classproperty import classproperty
 
 
-class Global:
+class GlobalVars:
     @classproperty
     def logid(cls):
         return getattr(g, 'logid', None)
@@ -34,5 +34,5 @@ class Global:
         return getattr(g, 'success', None)
 
     @staticmethod
-    def set(key, value):
+    def put(key, value):
         g.setdefault(key, value)

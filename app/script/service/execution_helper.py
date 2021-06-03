@@ -3,7 +3,7 @@
 # @File    : execution_helper.py
 # @Time    : 2021/1/22 23:41
 # @Author  : Kelvin.Ye
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_not_blank
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
 from app.script.model import TTestElement
@@ -16,7 +16,7 @@ log = get_logger(__name__)
 def element_to_dict(element_no):
     # 查询元素
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     # 递归查询元素子代
     # 查询时根据order asc排序

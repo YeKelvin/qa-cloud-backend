@@ -6,8 +6,8 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import db_transaction
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.script.enum import ElementStatus
 from app.script.model import TElementChildRel
@@ -57,8 +57,7 @@ def query_element_list(req: RequestDTO):
         TTestElement.ENABLED
     ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'elementNo': item.ELEMENT_NO,
@@ -107,7 +106,7 @@ def query_element_all(req: RequestDTO):
 @http_service
 def query_element_info(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     el_props = TElementProperty.query_by(ELEMENT_NO=req.elementNo).all()
     has_children = TElementChildRel.query_by(PARENT_NO=req.elementNo).count() > 0
@@ -145,7 +144,7 @@ def create_element(req: RequestDTO):
 
     if req.workspaceNo:
         workspace = TWorkspace.query_by(WORKSPACE_NO=req.workspaceNo).first()
-        assert_not_blank(workspace, '测试项目不存在')
+        check_is_not_blank(workspace, '测试项目不存在')
 
         TWorkspaceCollectionRel.create(
             commit=False,
@@ -178,7 +177,7 @@ def delete_element(req: RequestDTO):
 @http_service
 def enable_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.ENABLE.value
     element.save()
@@ -188,7 +187,7 @@ def enable_element(req: RequestDTO):
 @http_service
 def disable_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.DISABLE.value
     element.save()
@@ -198,7 +197,7 @@ def disable_element(req: RequestDTO):
 @http_service
 def add_element_property(req: RequestDTO):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName).first()
-    assert_blank(el_prop, '元素属性已存在')
+    check_is_blank(el_prop, '元素属性已存在')
 
     TElementProperty.create(
         ELEMENT_NO=req.elementNo,
@@ -211,7 +210,7 @@ def add_element_property(req: RequestDTO):
 @http_service
 def modify_element_property(req: RequestDTO):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName).first()
-    assert_not_blank(el_prop, '元素属性不存在')
+    check_is_not_blank(el_prop, '元素属性不存在')
 
     el_prop.property_value = req.propertyValue
     el_prop.save()
@@ -237,7 +236,7 @@ def modify_element_children(req: RequestDTO):
 @http_service
 def move_up_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.parentNo, CHILD_NO=req.childNo).first()
-    assert_not_blank(child_rel, '子元素不存在')
+    check_is_not_blank(child_rel, '子元素不存在')
 
     children_length = TElementChildRel.query_by(PARENT_NO=req.parentNo).count()
     child_current_order = child_rel.CHILD_ORDER
@@ -257,7 +256,7 @@ def move_up_child_order(req: RequestDTO):
 @http_service
 def move_down_child_order(req: RequestDTO):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.parentNo, CHILD_NO=req.childNo).first()
-    assert_not_blank(child_rel, '子元素不存在')
+    check_is_not_blank(child_rel, '子元素不存在')
 
     children_length = TElementChildRel.query_by(PARENT_NO=req.parentNo).count()
     current_child_order = child_rel.CHILD_ORDER
@@ -277,7 +276,7 @@ def move_down_child_order(req: RequestDTO):
 @http_service
 def duplicate_element(req: RequestDTO):
     element = TTestElement.query_by(ELEMENT_NO=req.element_no).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     # todo 复制元素
     return None

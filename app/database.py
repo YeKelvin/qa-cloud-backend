@@ -48,16 +48,16 @@ class CRUDMixin:
     def update_with_time(self, commit=True, **kwargs):
         return self.update(commit=commit, UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
 
+    def delete(self, commit=True):
+        """Remove the record from the database"""
+        return self.update(commit=commit, DEL_STATE=1)
+
     def save(self, commit=True):
         """Save the record"""
         db.session.add(self)
         if commit:
             db.session.commit()
         return self
-
-    def delete(self, commit=True):
-        """Remove the record from the database"""
-        return self.update(commit=commit, DEL_STATE=1)
 
 
 class DBModel(CRUDMixin, db.Model):

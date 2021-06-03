@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.user.model import TRole
 from app.user.model import TUser
@@ -45,8 +45,7 @@ def query_user_role_rel_list(req: RequestDTO):
         TUserRoleRel.CREATED_TIME
     ).filter(*conditions).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'userNo': item.USER_NO,
@@ -61,7 +60,7 @@ def query_user_role_rel_list(req: RequestDTO):
 @http_service
 def create_user_role_rel(req: RequestDTO):
     user_role = TUserRoleRel.query_by(USER_NO=req.userNo, ROLE_NO=req.roleNo).first()
-    assert_blank(user_role, '用户角色关联关系已存在')
+    check_is_blank(user_role, '用户角色关联关系已存在')
 
     TUserRoleRel.create(USER_NO=req.userNo, ROLE_NO=req.roleNo)
     return None
@@ -70,7 +69,7 @@ def create_user_role_rel(req: RequestDTO):
 @http_service
 def delete_user_role_rel(req: RequestDTO):
     user_role = TUserRoleRel.query_by(USER_NO=req.userNo, ROLE_NO=req.roleNo).first()
-    assert_not_blank(user_role, '用户角色关联关系不存在')
+    check_is_not_blank(user_role, '用户角色关联关系不存在')
 
     user_role.update(DEL_STATE=1)
     return None

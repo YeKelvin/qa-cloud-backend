@@ -9,16 +9,18 @@ from datetime import timedelta
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import db_transaction
 from app.common.exceptions import ServiceError
-from app.common.flask_helper import Global
+from app.common.flask_helper import GlobalVars
 from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
+from app.user.dao import role_dao as RoleDao
 from app.user.dao import user_access_token_dao as UserAccessTokenDao
 from app.user.dao import user_dao as UserDao
 from app.user.dao import user_login_info_dao as UserLoginInfoDao
 from app.user.dao import user_password_dao as UserPasswordDao
 from app.user.dao import user_password_key_dao as UserPasswordKeyDao
+from app.user.dao import user_role_rel_dao as UserRoleRelDao
 from app.user.model import TRole
 from app.user.model import TUser
 from app.user.model import TUserAccessToken
@@ -40,29 +42,24 @@ log = get_logger(__name__)
 @http_service
 def login(req: RequestDTO):
     # 查询用户登录信息
-    # login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.loginName).first()
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    assert_not_blank(login_info, '账号或密码不正确')
+    check_is_not_blank(login_info, '账号或密码不正确')
 
     # 查询用户信息
-    # user = TUser.query_by(USER_NO=login_info.USER_NO).first()
     user = UserDao.select_by_userno(login_info.USER_NO)
-    assert_not_blank(user, '账号或密码不正确')
+    check_is_not_blank(user, '账号或密码不正确')
 
     # 校验用户状态
     if user.STATE != 'ENABLE':
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    # user_password = TUserPassword.query_by(USER_NO=user.USER_NO, PASSWORD_TYPE='LOGIN').first()
     user_password = UserPasswordDao.select_loginpwd_by_userno(user.USER_NO)
-    assert_not_blank(user_password, '账号或密码不正确')
+    check_is_not_blank(user_password, '账号或密码不正确')
 
     # 密码RSA解密
-    # user_password_key = TUserPasswordKey.query_by(LOGIN_NAME=req.loginName).first()
     user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
-    rsa_private_key = user_password_key.PASSWORD_KEY
-    ras_decrypted_password = decrypt_by_rsa_private_key(req.password, rsa_private_key)
+    ras_decrypted_password = decrypt_by_rsa_private_key(req.password, user_password_key.PASSWORD_KEY)
 
     # 校验密码是否正确
     check_pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
@@ -76,7 +73,6 @@ def login(req: RequestDTO):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成access token
-    # user_token = TUserAccessToken.query_by(USER_NO=user.USER_NO).first()
     user_token = UserAccessTokenDao.select_by_userno(user.USER_NO)
     login_time = datetime.utcnow()
     access_token = JWTAuth.encode_auth_token(user.USER_NO, login_time.timestamp())
@@ -112,15 +108,13 @@ def login(req: RequestDTO):
     )
 
     # 设置全局操作员
-    Global.set('operator', user.USER_NAME)
+    GlobalVars.put('operator', user.USER_NAME)
     return {'accessToken': access_token}
 
 
 @http_service
 def logout():
-    user_token = TUserAccessToken.query_by(USER_NO=Global.user_no).first()
-    user_token.STATE = 'INVALID'
-    user_token.save()
+    UserAccessTokenDao.update_state_by_userno('INVALID', GlobalVars.user_no)
     return None
 
 
@@ -128,11 +122,11 @@ def logout():
 @db_transaction
 def register(req: RequestDTO):
     # 查询用户登录信息
-    user_login_info = TUserLoginInfo.query_by(LOGIN_NAME=req.loginName).first()
-    assert_blank(user_login_info, '登录账号已存在')
+    login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
+    check_is_blank(login_info, '登录账号已存在')
 
-    user = TUser.query_by(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email).first()
-    assert_blank(user, '用户已存在')
+    user = UserDao.select_one(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
+    check_is_blank(user, '用户已存在')
 
     # 创建用户信息
     user_no = new_id()
@@ -167,60 +161,54 @@ def register(req: RequestDTO):
 
 @http_service
 def reset_login_password(req: RequestDTO):
-    user = TUser.query_by(USER_NO=req.userNo).first()
-    assert_not_blank(user, '用户不存在')
+    user = UserDao.select_by_userno(req.userNo)
+    check_is_not_blank(user, '用户不存在')
 
-    user_password = TUserPassword.query_by(USER_NO=req.userNo, PASSWORD_TYPE='LOGIN').first()
-    assert_not_blank(user_password, '用户登录密码不存在')
+    user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
+    check_is_not_blank(user_password, '用户登录密码不存在')
 
-    user_password.update(PASSWORD=encrypt_password(req.loginName, req.password))
+    user_password.update(
+        PASSWORD=encrypt_password(req.loginName, req.password)
+    )
     return None
 
 
 @http_service
 def query_user_list(req: RequestDTO):
-    # 查询条件
-    conditions = [TUser.DEL_STATE == 0]
+    users = UserDao.select_list(
+        userNo=req.userNo,
+        userName=req.userName,
+        mobileNo=req.mobileNo,
+        email=req.email,
+        state=req.state,
+        page=req.page,
+        pageSize=req.pageSize
+    )
 
-    if req.userNo:
-        conditions.append(TUser.USER_NO.like(f'%{req.userNo}%'))
-    if req.userName:
-        conditions.append(TUser.USER_NAME.like(f'%{req.userName}%'))
-    if req.mobileNo:
-        conditions.append(TUser.MOBILE_NO.like(f'%{req.mobileNo}%'))
-    if req.email:
-        conditions.append(TUser.EMAIL.like(f'%{req.email}%'))
-    if req.state:
-        conditions.append(TUser.STATE.like(f'%{req.state}%'))
-
-    pagination = TUser.query.filter(
-        *conditions).order_by(TUser.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
-
-    # 组装数据
-    data_set = []
-    for item in pagination.items:
-        user_roles = TUserRoleRel.query_by(USER_NO=item.USER_NO).all()
+    data = []
+    for user in users.items:
+        user_roles = UserRoleRelDao.select_all_by_userno(user.USER_NO)
         roles = []
         for user_role in user_roles:
-            role = TRole.query_by(ROLE_NO=user_role.ROLE_NO).first()
+            role = RoleDao.select_by_roleno(user_role.ROLE_NO)
             if not role:
                 continue
             roles.append(role.ROLE_NAME)
-        data_set.append({
-            'userNo': item.USER_NO,
-            'userName': item.USER_NAME,
-            'mobileNo': item.MOBILE_NO,
-            'email': item.EMAIL,
-            'avatar': item.AVATAR,
-            'state': item.STATE,
+        data.append({
+            'userNo': user.USER_NO,
+            'userName': user.USER_NAME,
+            'mobileNo': user.MOBILE_NO,
+            'email': user.EMAIL,
+            'avatar': user.AVATAR,
+            'state': user.STATE,
             'roles': roles
         })
-    return {'dataSet': data_set, 'totalSize': pagination.total}
+    return {'data': data, 'total': users.total}
 
 
 @http_service
 def query_user_all():
-    users = TUser.query_by().order_by(TUser.CREATED_TIME.desc()).all()
+    users = UserDao.select_all()
     result = []
     for user in users:
         result.append({
@@ -232,12 +220,12 @@ def query_user_all():
 
 @http_service
 def query_user_info():
-    user_no = Global.user_no
-    user = TUser.query_by(USER_NO=user_no).first()
-    user_roles = TUserRoleRel.query_by(USER_NO=user_no).all()
+    user_no = GlobalVars.user_no
+    user = UserDao.select_by_userno(user_no)
+    user_roles = UserRoleRelDao.select_all_by_userno(user_no)
     roles = []
     for user_role in user_roles:
-        role = TRole.query_by(ROLE_NO=user_role.ROLE_NO).first()
+        role = RoleDao.select_by_roleno(user_role.ROLE_NO)
         if not role:
             continue
         roles.append(role.ROLE_NAME)
@@ -253,8 +241,8 @@ def query_user_info():
 
 @http_service
 def modify_user(req: RequestDTO):
-    user = TUser.query_by(USER_NO=req.userNo).first()
-    assert_not_blank(user, '用户不存在')
+    user = UserDao.select_by_userno(req.userNo)
+    check_is_not_blank(user, '用户不存在')
 
     if req.userName is not None:
         user.USER_NAME = req.userName
@@ -269,8 +257,8 @@ def modify_user(req: RequestDTO):
 
 @http_service
 def modify_user_state(req: RequestDTO):
-    user = TUser.query_by(USER_NO=req.userNo).first()
-    assert_not_blank(user, '用户不存在')
+    user = UserDao.select_by_userno(req.userNo)
+    check_is_not_blank(user, '用户不存在')
 
     user.update(STATE=req.state)
     return None
@@ -280,8 +268,8 @@ def modify_user_state(req: RequestDTO):
 @db_transaction
 def delete_user(req: RequestDTO):
     user_no = req.userNo
-    user = TUser.query_by(USER_NO=user_no).first()
-    assert_not_blank(user, '用户不存在')
+    user = UserDao.select_by_userno(req.userNo)
+    check_is_not_blank(user, '用户不存在')
 
     # 删除用户
     user.update(commit=False, DEL_STATE=1)

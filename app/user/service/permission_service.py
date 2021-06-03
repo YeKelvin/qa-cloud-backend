@@ -6,8 +6,8 @@
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.request import RequestDTO
-from app.common.validator import assert_blank
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
 from app.user.model import TPermission
 from app.utils.log_util import get_logger
 
@@ -36,8 +36,7 @@ def query_permission_list(req: RequestDTO):
     pagination = TPermission.query.filter(
         *conditions).order_by(TPermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'permissionNo': item.PERMISSION_NO,
@@ -70,7 +69,7 @@ def query_permission_all():
 @http_service
 def create_permission(req: RequestDTO):
     permission = TPermission.query_by(ENDPOINT=req.endpoint, METHOD=req.method).first()
-    assert_blank(permission, '权限已存在')
+    check_is_blank(permission, '权限已存在')
 
     TPermission.create(
         PERMISSION_NO=new_id(),
@@ -86,7 +85,7 @@ def create_permission(req: RequestDTO):
 @http_service
 def modify_permission(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.permissionNo).first()
-    assert_not_blank(permission, '权限不存在')
+    check_is_not_blank(permission, '权限不存在')
 
     if req.permissionNo is not None:
         permission.PERMISSION_NO = req.permissionNo
@@ -106,7 +105,7 @@ def modify_permission(req: RequestDTO):
 @http_service
 def modify_permission_state(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.permissionNo).first()
-    assert_not_blank(permission, '权限不存在')
+    check_is_not_blank(permission, '权限不存在')
 
     permission.update(STATE=req.state)
     return None
@@ -115,7 +114,7 @@ def modify_permission_state(req: RequestDTO):
 @http_service
 def delete_permission(req: RequestDTO):
     permission = TPermission.query_by(PERMISSION_NO=req.permissionNo).first()
-    assert_not_blank(permission, '权限不存在')
+    check_is_not_blank(permission, '权限不存在')
 
     permission.update(DEL_STATE=1)
     return None

@@ -7,7 +7,7 @@ from typing import Iterable
 
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import assert_not_blank
+from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.script.enum import ElementStatus
 from app.script.model import TElementChildRel
@@ -105,7 +105,7 @@ def modify_element(element_no, element_name, element_remark, propertys, children
     """递归修改元素
     """
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     if element_name is not None:
         element.ELEMENT_NAME = element_name
@@ -153,7 +153,7 @@ def delete_element(element_no):
     """递归删除元素
     """
     element = TTestElement.query_by(ELEMENT_NO=element_no).first()
-    assert_not_blank(element, '测试元素不存在')
+    check_is_not_blank(element, '测试元素不存在')
 
     result = [{
         'elementNo': element.ELEMENT_NO,

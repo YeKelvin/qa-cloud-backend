@@ -7,8 +7,8 @@ from app.common.exceptions import ErrorCode
 from app.common.exceptions import ServiceError
 
 
-def assert_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
-    """验证 obj对象为空，不为空则抛异常
+def check_is_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
+    """检查obj对象是否为空，不为空则抛异常
 
     :param obj:         对象
     :param errorMsg:    错误提示
@@ -20,8 +20,8 @@ def assert_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = No
         raise ServiceError(errorMsg, error)
 
 
-def assert_not_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
-    """验证 obj对象非空，为空则抛异常
+def check_is_not_blank(obj: any, errorMsg: str = 'verify error', error: ErrorCode = None) -> None:
+    """检查obj对象是否不为空，为空则抛异常
 
     :param obj:         对象
     :param errorMsg:    错误提示

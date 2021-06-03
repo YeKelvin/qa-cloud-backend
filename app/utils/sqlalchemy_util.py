@@ -5,7 +5,23 @@
 # @Author  : Kelvin.Ye
 
 
+from app.user.model import TUser
+
+
 def paginate(page, page_size):
     offset = (int(page) - 1) * int(page_size)
     limit = int(page_size)
     return offset, limit
+
+
+class QueryCondition(list):
+
+    def add_fuzzy_match(self, column, value):
+        if value is None:
+            return
+        self.append(column.like(f'%{value}%'))
+
+    def add_fully_match(self, column, value):
+        if value is None:
+            return
+        self.append(column == value)

@@ -33,8 +33,7 @@ def query_action_log_list(req: RequestDTO):
     pagination = TActionLog.query.filter(
         *conditions).order_by(TActionLog.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
-    # 组装数据
-    data_set = []
+        data_set = []
     for item in pagination.items:
         data_set.append({
             'actionDesc': item.ACTION_DESC,
