@@ -16,9 +16,8 @@ class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
 
     @classmethod
-    def insert(cls, commit=True, **kwargs):
+    def insert(cls, **kwargs):
         entity = cls(**kwargs)
-        # return instance.save(commit)
         entity.submit()
 
     @classmethod
@@ -33,25 +32,18 @@ class CRUDMixin:
     def select_list(cls, DEL_STATE=0, **kwargs):
         return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).all()
 
-    def update(self, commit=True, **kwargs):
+    def update(self, **kwargs):
         for attr, value in kwargs.items():
             if value is not None:
                 setattr(self, attr, value)
-        # return commit and self.save() or self
         self.submit()
 
-    def update_with_time(self, commit=True, **kwargs):
-        return self.update(commit=commit, UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
+    def update_with_time(self, **kwargs):
+        return self.update(UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
 
-    def delete(self, commit=True):
+    def delete(self):
         """软删除"""
-        return self.update(commit=commit, DEL_STATE=1)
-
-    def save(self, commit=True):
-        db.session.add(self)
-        if commit:
-            db.session.commit()
-        return self
+        return self.update(DEL_STATE=1)
 
     def submit(self):
         """写入数据库但不提交"""

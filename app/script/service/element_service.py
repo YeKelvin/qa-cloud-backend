@@ -147,7 +147,6 @@ def create_element(req: RequestDTO):
         check_is_not_blank(workspace, '测试项目不存在')
 
         TWorkspaceCollectionRel.insert(
-            commit=False,
             WORKSPACE_NO=req.workspaceNo,
             COLLECTION_NO=element_no
         )
@@ -180,7 +179,7 @@ def enable_element(req: RequestDTO):
     check_is_not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.ENABLE.value
-    element.save()
+    element.submit()
     return None
 
 
@@ -190,7 +189,7 @@ def disable_element(req: RequestDTO):
     check_is_not_blank(element, '测试元素不存在')
 
     element.enabled = ElementStatus.DISABLE.value
-    element.save()
+    element.submit()
     return None
 
 
@@ -213,7 +212,7 @@ def modify_element_property(req: RequestDTO):
     check_is_not_blank(el_prop, '元素属性不存在')
 
     el_prop.property_value = req.propertyValue
-    el_prop.save()
+    el_prop.submit()
     return None
 
 

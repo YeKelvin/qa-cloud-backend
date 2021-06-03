@@ -98,7 +98,7 @@ def modify_permission(req: RequestDTO):
     if req.method is not None:
         permission.METHOD = req.method
 
-    permission.save()
+    permission.submit()
     return None
 
 

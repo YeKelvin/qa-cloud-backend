@@ -83,7 +83,7 @@ def modify_workspace(req: RequestDTO):
     if req.workspaceDesc is not None:
         workspace.WORKSPACE_DESC = req.workspaceDesc
 
-    workspace.save()
+    workspace.submit()
     return None
 
 

@@ -67,7 +67,7 @@ def login(req: RequestDTO):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
-        user_password.save()
+        user_password.submit()
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成access token
@@ -128,7 +128,6 @@ def register(req: RequestDTO):
     # 创建用户信息
     user_no = new_id()
     TUser.insert(
-        commit=False,
         USER_NO=user_no,
         USER_NAME=req.userName,
         MOBILE_NO=req.mobileNo,
@@ -138,7 +137,6 @@ def register(req: RequestDTO):
 
     # 创建用户登录信息
     TUserLoginInfo.insert(
-        commit=False,
         USER_NO=user_no,
         LOGIN_NAME=req.loginName,
         LOGIN_TYPE='ACCOUNT'
@@ -146,7 +144,6 @@ def register(req: RequestDTO):
 
     # 创建用户登录密码
     TUserPassword.insert(
-        commit=False,
         USER_NO=user_no,
         PASSWORD=encrypt_password(req.loginName, req.password),
         PASSWORD_TYPE='LOGIN',
@@ -284,4 +281,4 @@ def delete_user(req: RequestDTO):
     UserLoginInfoDao.delete_all_by_userno(req.userNo)
 
     # 删除用户
-    user.delete(commit=False)
+    user.delete()

@@ -3,9 +3,10 @@
 # @File    : user_dao.py
 # @Time    : 2021/6/2 14:05
 # @Author  : Kelvin.Ye
-from app.utils.sqlalchemy_util import QueryCondition
 from typing import List
+
 from app.user.model import TUser
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_userno(user_no) -> TUser:

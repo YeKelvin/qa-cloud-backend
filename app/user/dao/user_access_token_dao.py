@@ -13,10 +13,8 @@ def select_by_userno(user_no) -> TUserAccessToken:
 def update_state_by_userno(state, user_no):
     entity = TUserAccessToken.query_by(USER_NO=user_no).first()
     entity.STATE = state
-    entity.save()
+    entity.submit()
 
 
 def delete_by_userno(user_no):
-    entity = TUserAccessToken.query_by(USER_NO=user_no).first()
-    if entity:
-        entity.delete(commit=False)
+    TUserAccessToken.query_by(USER_NO=user_no).delete()

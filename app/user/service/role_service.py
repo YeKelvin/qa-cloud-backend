@@ -8,9 +8,10 @@ from app.common.id_generator import new_id
 from app.common.request import RequestDTO
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
+from app.user.dao import role_dao as RoleDao
+from app.user.dao import role_permission_rel_dao as RolePermissionRelDao
+from app.user.dao import user_role_rel_dao as UserRoleRelDao
 from app.user.model import TRole
-from app.user.model import TRolePermissionRel
-from app.user.model import TUserRoleRel
 from app.utils.log_util import get_logger
 
 
@@ -19,35 +20,27 @@ log = get_logger(__name__)
 
 @http_service
 def query_role_list(req: RequestDTO):
-    # 查询条件
-    conditions = [TRole.DEL_STATE == 0]
+    roles = RoleDao.select_all(
+        roleNo=req.roleNo,
+        roleName=req.roleName,
+        roleDesc=req.roleDesc,
+        state=req.state
+    )
 
-    if req.roleNo:
-        conditions.append(TRole.ROLE_NO.like(f'%{req.roleNo}%'))
-    if req.roleName:
-        conditions.append(TRole.ROLE_NAME.like(f'%{req.roleName}%'))
-    if req.roleDesc:
-        conditions.append(TRole.ROLE_DESC.like(f'%{req.roleDesc}%'))
-    if req.state:
-        conditions.append(TRole.STATE.like(f'%{req.state}%'))
-
-    pagination = TRole.query.filter(
-        *conditions).order_by(TRole.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
-
-    data_set = []
-    for item in pagination.items:
-        data_set.append({
-            'roleNo': item.ROLE_NO,
-            'roleName': item.ROLE_NAME,
-            'roleDesc': item.ROLE_DESC,
-            'state': item.STATE
+    data = []
+    for role in roles.items:
+        data.append({
+            'roleNo': role.ROLE_NO,
+            'roleName': role.ROLE_NAME,
+            'roleDesc': role.ROLE_DESC,
+            'state': role.STATE
         })
-    return {'dataSet': data_set, 'totalSize': pagination.total}
+    return {'data': data, 'total': roles.total}
 
 
 @http_service
 def query_role_all():
-    roles = TRole.query_by().order_by(TRole.CREATED_TIME.desc()).all()
+    roles = RoleDao.select_all()
     result = []
     for role in roles:
         result.append({
@@ -61,7 +54,7 @@ def query_role_all():
 
 @http_service
 def create_role(req: RequestDTO):
-    role = TRole.query_by(ROLE_NAME=req.roleName).first()
+    role = RoleDao.select_by_rolename(req.roleName)
     check_is_blank(role, '角色已存在')
 
     TRole.insert(
@@ -70,45 +63,37 @@ def create_role(req: RequestDTO):
         ROLE_DESC=req.roleDesc,
         STATE='ENABLE'
     )
-    return None
 
 
 @http_service
 def modify_role(req: RequestDTO):
-    role = TRole.query_by(ROLE_NO=req.roleNo).first()
+    role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
-    if req.roleName is not None:
-        role.ROLE_NAME = req.roleName
-    if req.roleDesc is not None:
-        role.ROLE_DESC = req.roleDesc
-
-    role.save()
-    return None
+    role.update(
+        ROLE_NAME=req.roleName,
+        ROLE_DESC=req.roleDesc
+    )
 
 
 @http_service
 def modify_role_state(req: RequestDTO):
-    role = TRole.query_by(ROLE_NO=req.roleNo).first()
+    role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
     role.update(STATE=req.state)
-    return None
 
 
 @http_service
 def delete_role(req: RequestDTO):
-    role = TRole.query_by(ROLE_NO=req.roleNo).first()
+    role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
-    user_roles = TUserRoleRel.query_by(ROLE_NO=req.roleNo).all()
+    user_roles = UserRoleRelDao.select_all_by_roleno(req.roleNo)
     check_is_blank(user_roles, '角色与用户存在关联关系，请先解除关联')
 
     # 删除角色权限关联关系
-    role_permissions = TRolePermissionRel.query_by(ROLE_NO=req.roleNo).all()
-    for role_permission in role_permissions:
-        role_permission.update(DEL_STATE=1)
+    RolePermissionRelDao.delete_by_roleno(req.roleNo)
 
     # 删除角色
-    role.update(DEL_STATE=1)
-    return None
+    role.delete()

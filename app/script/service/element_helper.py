@@ -49,7 +49,6 @@ def create_element(element_name, element_remark, element_type, element_class,
     """
     element_no = new_id()
     TTestElement.insert(
-        commit=False,
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
         ELEMENT_REMARK=element_remark,
@@ -70,7 +69,6 @@ def create_element(element_name, element_remark, element_type, element_class,
 def add_element_property(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         TElementProperty.insert(
-            commit=False,
             ELEMENT_NO=element_no,
             PROPERTY_NAME=prop_name,
             PROPERTY_VALUE=prop_value
@@ -92,7 +90,6 @@ def add_element_child(parent_no, children: Iterable[dict]):
             children=child.get('children')
         )
         TElementChildRel.insert(
-            commit=False,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
             CHILD_ORDER=next_child_order(parent_no)
@@ -112,7 +109,7 @@ def modify_element(element_no, element_name, element_remark, propertys, children
     if element_remark is not None:
         element.ELEMENT_REMARK = element_remark
 
-    element.save(commit=False)
+    element.submit()
     db.session.flush()
 
     if propertys is not None:
@@ -127,7 +124,7 @@ def modify_element_property(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
         el_prop = TElementProperty.query_by(ELEMENT_NO=element_no, PROPERTY_NAME=prop_name).first()
         el_prop.PROPERTY_VALUE = prop_value
-        el_prop.save(commit=False)
+        el_prop.submit()
 
     db.session.flush()
 
@@ -171,12 +168,12 @@ def delete_element(element_no):
             TElementChildRel.CHILD_ORDER > child_rel.CHILD_ORDER
         ).update({TElementChildRel.CHILD_ORDER: TElementChildRel.CHILD_ORDER - 1})
         # 删除父辈关联
-        child_rel.update(commit=False, DEL_STATE=1)
+        child_rel.update(DEL_STATE=1)
 
     # 删除元素属性
     delete_property(element_no)
     # 删除元素
-    element.update(commit=False, DEL_STATE=1)
+    element.delete()
 
     db.session.flush()
     return result
@@ -193,11 +190,11 @@ def delete_child(element_no):
 
         result.extend(delete_child(child_rel.child_no))  # 递归删除子代元素的子代和关联关系
         # 删除父子关联关系
-        child_rel.update(commit=False, DEL_STATE=1)
+        child_rel.delete()
         # 删除子代元素属性
         delete_property(child_rel.child_no)
         # 删除子代元素
-        child.update(commit=False, DEL_STATE=1)
+        child.delete()
 
     db.session.flush()
     return result
@@ -206,7 +203,7 @@ def delete_child(element_no):
 def delete_property(element_no):
     props = TElementProperty.query_by(ELEMENT_NO=element_no).all()
     for prop in props:
-        prop.update(commit=False, DEL_STATE=1)
+        prop.delete()
 
     db.session.flush()
 

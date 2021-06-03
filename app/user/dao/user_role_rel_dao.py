@@ -15,7 +15,11 @@ def select_all_by_userno(user_no) -> List[TUserRoleRel]:
     return TUserRoleRel.query_by(USER_NO=user_no).all()
 
 
+def select_all_by_roleno(role_no) -> List[TUserRoleRel]:
+    return TUserRoleRel.query_by(ROLE_NO=role_no).all()
+
+
 def delete_all_by_userno(user_no):
     entities = TUserRoleRel.query_by(USER_NO=user_no).all()
     for entity in entities:
-        entity.delete(commit=False)
+        entity.delete()

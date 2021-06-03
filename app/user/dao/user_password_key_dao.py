@@ -11,6 +11,4 @@ def select_by_loginname(login_name):
 
 
 def delete_by_loginname(login_name):
-    entity = TUserPasswordKey.query_by(LOGIN_NAME=login_name).first()
-    if entity:
-        entity.delete(commit=False)
+    TUserPasswordKey.query_by(LOGIN_NAME=login_name).delete()

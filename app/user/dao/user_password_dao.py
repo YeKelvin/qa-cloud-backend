@@ -18,4 +18,4 @@ def select_all_by_userno(user_no) -> List[TUserPassword]:
 def delete_all_by_user_no(user_no):
     entities = TUserPassword.query_by(USER_NO=user_no).all()
     for entity in entities:
-        entity.delete(commit=False)
+        entity.delete()
