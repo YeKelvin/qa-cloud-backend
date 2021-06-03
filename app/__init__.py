@@ -48,7 +48,7 @@ def configure_flask(app):
         SQLALCHEMY_DATABASE_URI=get_db_url(),
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_ECHO=True,
+        SQLALCHEMY_ECHO=False,
     )
 
 

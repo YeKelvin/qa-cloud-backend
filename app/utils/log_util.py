@@ -16,15 +16,14 @@ LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s
 dictConfig({
     'version': 1,
     'root': {
-        'propagate': 0,
+        'propagate': False,
         'level': config.get('log', 'level'),  # handler的level会覆盖掉这里的level
         'handlers': ['console', 'file']
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'default',
-            'stream': 'ext://flask.logging.wsgi_errors_stream'
+            'formatter': 'default'
         },
         'file': {
             'class': 'logging.FileHandler',
@@ -57,6 +56,28 @@ CONSOLE_HANDLER.setFormatter(FORMATTER)
 FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
 
+# 配置werkzeug日志
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.propagate = False
+werkzeug_logger.setLevel(logging.INFO)
+for handler in werkzeug_logger.handlers:
+    werkzeug_logger.removeHandler(handler)
+werkzeug_logger.addHandler(CONSOLE_HANDLER)
+werkzeug_logger.addHandler(FILE_HANDLER)
+
+# 配置sqlalchemy日志
+sqlalchemy_logger = logging.getLogger('sqlalchemy')
+sqlalchemy_logger.propagate = False
+sqlalchemy_logger.setLevel(logging.INFO)
+for handler in sqlalchemy_logger.handlers:
+    sqlalchemy_logger.removeHandler(handler)
+sqlalchemy_logger.addHandler(CONSOLE_HANDLER)
+sqlalchemy_logger.addHandler(FILE_HANDLER)
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.orm').setLevel(logging.ERROR)
+
 
 def get_logger(name) -> logging.Logger:
     logger = logging.getLogger(name)
@@ -68,17 +89,13 @@ def get_logger(name) -> logging.Logger:
 
 
 class WerkzeugLogFilter(logging.Filter):
-    def __init__(self):
-        super(WerkzeugLogFilter, self).__init__()
 
     def filter(self, record):
         print(record.__dict__)
         return True
 
 
-class SendAnywhereLogFilter(logging.Filter):
-    def __init__(self):
-        super(WerkzeugLogFilter, self).__init__()
+class PyMeterLogFilter(logging.Filter):
 
     def filter(self, record):
         print(record.__dict__)
