@@ -37,7 +37,7 @@ def http_service(func):
         res = None
         try:
             # 判断request参数解析是否有异常
-            if hasattr(req, 'error'):
+            if 'error' in req:
                 res = ResponseDTO(errorMsg=req.error)
             else:
                 # 调用service
