@@ -15,19 +15,24 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-def db_transaction(func):
+def transactional(func):
     """DB事务装饰器"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
         result = None
         try:
+            # 开始db事务，因为flask-sqlalchemy默认开启了事务，所以这里不用显示声明开始事务了
+            # 调用service
             result = func(*args, **kwargs)
+            # 提交db事务
             db.session.commit()
             return result
         except Exception:
-            log.error(f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] database rollback')
+            log.error(
+                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] database session rollback'
+            )
             db.session.rollback()
-            raise  # 重新抛出给 @http_service
+            raise  # 重新抛出异常给@http_service
 
     return wrapper

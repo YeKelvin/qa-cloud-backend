@@ -58,11 +58,11 @@ def init_user():
     """初始化用户
     """
     user_no = new_id()
-    TUser.create(USER_NO=user_no, USER_NAME='超级管理员', STATE='ENABLE')
+    TUser.insert(USER_NO=user_no, USER_NAME='超级管理员', STATE='ENABLE')
 
-    TUserLoginInfo.create(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
+    TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
 
-    TUserPassword.create(
+    TUserPassword.insert(
         USER_NO=user_no,
         PASSWORD=encrypt_password('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
@@ -174,7 +174,7 @@ def init_user_role_rel():
     """
     user = TUser.query.filter_by(USER_NAME='超级管理员').first()
     role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
-    TUserRoleRel.create(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
+    TUserRoleRel.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联关系成功')
 
 
@@ -185,19 +185,19 @@ def init_role_permission_rel():
     permissions = TPermission.query.all()
     role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
     for permission in permissions:
-        TRolePermissionRel.create(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
+        TRolePermissionRel.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联关系成功')
 
 
 @with_appcontext
 def init_action_log():
-    TActionLog.create(ACTION_DESC='INIT DB')
+    TActionLog.insert(ACTION_DESC='INIT DB')
     click.echo('初始化操作日志数据成功')
 
 
 def __create_role(name, role_desc):
-    TRole.create(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
+    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
 
 
 def __create_permission(name, method, endpoint):
-    TPermission.create(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')
+    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')

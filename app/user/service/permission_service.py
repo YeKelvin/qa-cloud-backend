@@ -71,7 +71,7 @@ def create_permission(req: RequestDTO):
     permission = TPermission.query_by(ENDPOINT=req.endpoint, METHOD=req.method).first()
     check_is_blank(permission, '权限已存在')
 
-    TPermission.create(
+    TPermission.insert(
         PERMISSION_NO=new_id(),
         PERMISSION_NAME=req.permissionName,
         PERMISSION_DESC=req.permissionDesc,

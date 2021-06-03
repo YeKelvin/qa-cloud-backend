@@ -70,7 +70,7 @@ def create_role_permission_rel(req: RequestDTO):
     role_permission = TRolePermissionRel.query_by(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo).first()
     check_is_blank(role_permission, '角色权限关联关系已存在')
 
-    TRolePermissionRel.create(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
+    TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
     return None
 
 

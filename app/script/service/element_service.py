@@ -4,7 +4,7 @@
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.common.decorators.transaction import db_transaction
+from app.common.decorators.transaction import transactional
 from app.common.request import RequestDTO
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
@@ -131,7 +131,7 @@ def query_element_children(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def create_element(req: RequestDTO):
     element_no = helper.create_element(
         element_name=req.elementName,
@@ -146,7 +146,7 @@ def create_element(req: RequestDTO):
         workspace = TWorkspace.query_by(WORKSPACE_NO=req.workspaceNo).first()
         check_is_not_blank(workspace, '测试项目不存在')
 
-        TWorkspaceCollectionRel.create(
+        TWorkspaceCollectionRel.insert(
             commit=False,
             WORKSPACE_NO=req.workspaceNo,
             COLLECTION_NO=element_no
@@ -156,7 +156,7 @@ def create_element(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def modify_element(req: RequestDTO):
     helper.modify_element(
         element_no=req.elementNo,
@@ -169,7 +169,7 @@ def modify_element(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def delete_element(req: RequestDTO):
     return helper.delete_element(element_no=req.elementNo)
 
@@ -199,7 +199,7 @@ def add_element_property(req: RequestDTO):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName).first()
     check_is_blank(el_prop, '元素属性已存在')
 
-    TElementProperty.create(
+    TElementProperty.insert(
         ELEMENT_NO=req.elementNo,
         PROPERTY_NAME=req.propertyName,
         PROPERTY_VALUE=req.propertyValue
@@ -218,7 +218,7 @@ def modify_element_property(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def add_element_children(req: RequestDTO):
     helper.add_element_child(
         parent_no=req.parentNo,
@@ -228,7 +228,7 @@ def add_element_children(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def modify_element_children(req: RequestDTO):
     helper.modify_element_child(children=req.children)
 

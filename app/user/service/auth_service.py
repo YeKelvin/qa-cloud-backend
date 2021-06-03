@@ -20,7 +20,7 @@ def create_rsa_public_key(req: RequestDTO):
     if user_password_key:
         user_password_key.update(PASSWORD_KEY=str(rsa_private_key, encoding='utf8'))
     else:
-        TUserPasswordKey.create(
+        TUserPasswordKey.insert(
             LOGIN_NAME=req.loginName,
             PASSWORD_KEY=str(rsa_private_key, encoding='utf8')
         )

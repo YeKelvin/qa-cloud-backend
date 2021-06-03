@@ -16,16 +16,10 @@ class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
 
     @classmethod
-    def create(cls, commit=True, **kwargs):
-        """Create a new record and save it the database"""
-        instance = cls(**kwargs)
-        return instance.save(commit)
-
-    @classmethod
     def insert(cls, commit=True, **kwargs):
-        """Create a new record and save it the database"""
-        instance = cls(**kwargs)
-        return instance.save(commit)
+        entity = cls(**kwargs)
+        # return instance.save(commit)
+        entity.submit()
 
     @classmethod
     def query_by(cls, DEL_STATE=0, **kwargs):
@@ -40,25 +34,29 @@ class CRUDMixin:
         return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).all()
 
     def update(self, commit=True, **kwargs):
-        """Update specific fields of a record"""
         for attr, value in kwargs.items():
             if value is not None:
                 setattr(self, attr, value)
-        return commit and self.save() or self
+        # return commit and self.save() or self
+        self.submit()
 
     def update_with_time(self, commit=True, **kwargs):
         return self.update(commit=commit, UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
 
     def delete(self, commit=True):
-        """Remove the record from the database"""
+        """软删除"""
         return self.update(commit=commit, DEL_STATE=1)
 
     def save(self, commit=True):
-        """Save the record"""
         db.session.add(self)
         if commit:
             db.session.commit()
         return self
+
+    def submit(self):
+        """写入数据库但不提交"""
+        db.session.add(self)
+        db.session.flush()
 
 
 class DBModel(CRUDMixin, db.Model):

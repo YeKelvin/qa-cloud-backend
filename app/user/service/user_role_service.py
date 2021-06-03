@@ -62,7 +62,7 @@ def create_user_role_rel(req: RequestDTO):
     user_role = TUserRoleRel.query_by(USER_NO=req.userNo, ROLE_NO=req.roleNo).first()
     check_is_blank(user_role, '用户角色关联关系已存在')
 
-    TUserRoleRel.create(USER_NO=req.userNo, ROLE_NO=req.roleNo)
+    TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=req.roleNo)
     return None
 
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from app.common.decorators.service import http_service
-from app.common.decorators.transaction import db_transaction
+from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.flask_helper import GlobalVars
 from app.common.id_generator import new_id
@@ -84,7 +84,7 @@ def login(req: RequestDTO):
             EXPIRE_IN=expire_in,
         )
     else:
-        TUserAccessToken.create(
+        TUserAccessToken.insert(
             USER_NO=user.USER_NO,
             ACCESS_TOKEN=access_token,
             EXPIRE_IN=expire_in,
@@ -98,7 +98,7 @@ def login(req: RequestDTO):
     )
 
     # 记录用户登录日志
-    TUserLoginLog.create(
+    TUserLoginLog.insert(
         USER_NO=login_info.USER_NO,
         LOGIN_NAME=login_info.LOGIN_NAME,
         LOGIN_TYPE=login_info.LOGIN_TYPE,
@@ -116,7 +116,7 @@ def logout():
 
 
 @http_service
-@db_transaction
+@transactional
 def register(req: RequestDTO):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
@@ -127,7 +127,7 @@ def register(req: RequestDTO):
 
     # 创建用户信息
     user_no = new_id()
-    TUser.create(
+    TUser.insert(
         commit=False,
         USER_NO=user_no,
         USER_NAME=req.userName,
@@ -137,7 +137,7 @@ def register(req: RequestDTO):
     )
 
     # 创建用户登录信息
-    TUserLoginInfo.create(
+    TUserLoginInfo.insert(
         commit=False,
         USER_NO=user_no,
         LOGIN_NAME=req.loginName,
@@ -145,7 +145,7 @@ def register(req: RequestDTO):
     )
 
     # 创建用户登录密码
-    TUserPassword.create(
+    TUserPassword.insert(
         commit=False,
         USER_NO=user_no,
         PASSWORD=encrypt_password(req.loginName, req.password),
@@ -259,7 +259,7 @@ def modify_user_state(req: RequestDTO):
 
 
 @http_service
-@db_transaction
+@transactional
 def delete_user(req: RequestDTO):
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')

@@ -81,7 +81,7 @@ def record_action(response):
     success = GlobalVars.success
     if success and 'GET' not in request.method:
         permission = TPermission.query.filter_by(ENDPOINT=request.path).first()
-        TActionLog.create(
+        TActionLog.insert(
             ACTION_DESC=permission.PERMISSION_NAME if permission else None,
             ACTION_METHOD=request.method,
             ACTION_ENDPOINT=request.path

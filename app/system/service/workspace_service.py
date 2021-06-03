@@ -62,7 +62,7 @@ def create_workspace(req: RequestDTO):
     project = TWorkspace.query_by(WORKSPACE_NAME=req.workspaceName).first()
     check_is_blank(project, '工作空间已存在')
 
-    TWorkspace.create(
+    TWorkspace.insert(
         WORKSPACE_NO=new_id(),
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_TYPE=req.workspaceType,

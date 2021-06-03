@@ -64,7 +64,7 @@ def create_role(req: RequestDTO):
     role = TRole.query_by(ROLE_NAME=req.roleName).first()
     check_is_blank(role, '角色已存在')
 
-    TRole.create(
+    TRole.insert(
         ROLE_NO=new_id(),
         ROLE_NAME=req.roleName,
         ROLE_DESC=req.roleDesc,

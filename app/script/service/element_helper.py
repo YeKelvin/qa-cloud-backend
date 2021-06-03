@@ -48,7 +48,7 @@ def create_element(element_name, element_remark, element_type, element_class,
     """递归创建元素
     """
     element_no = new_id()
-    TTestElement.create(
+    TTestElement.insert(
         commit=False,
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
@@ -69,7 +69,7 @@ def create_element(element_name, element_remark, element_type, element_class,
 
 def add_element_property(element_no, propertys: dict):
     for prop_name, prop_value in propertys.items():
-        TElementProperty.create(
+        TElementProperty.insert(
             commit=False,
             ELEMENT_NO=element_no,
             PROPERTY_NAME=prop_name,
@@ -91,7 +91,7 @@ def add_element_child(parent_no, children: Iterable[dict]):
             propertys=child.get('propertys'),
             children=child.get('children')
         )
-        TElementChildRel.create(
+        TElementChildRel.insert(
             commit=False,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
