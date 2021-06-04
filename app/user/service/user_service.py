@@ -3,6 +3,7 @@
 # @File    : user_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
+from app.user.enum import UserState
 from datetime import datetime
 from datetime import timedelta
 
@@ -23,7 +24,6 @@ from app.user.dao import user_password_dao as UserPasswordDao
 from app.user.dao import user_password_key_dao as UserPasswordKeyDao
 from app.user.dao import user_role_rel_dao as UserRoleRelDao
 from app.user.model import TUser
-from app.user.model import TUserAccessToken
 from app.user.model import TUserLoginInfo
 from app.user.model import TUserLoginLog
 from app.user.model import TUserPassword
@@ -48,7 +48,7 @@ def login(req: RequestDTO):
     check_is_not_blank(user, '账号或密码不正确')
 
     # 校验用户状态
-    if user.STATE != 'ENABLE':
+    if user.STATE != UserState.ENABLE.value:
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
@@ -70,26 +70,18 @@ def login(req: RequestDTO):
         user_password.submit()
         raise ServiceError('账号或密码不正确')
 
-    # 密码校验通过后生成access token
-    user_token = UserAccessTokenDao.select_by_userno(user.USER_NO)
+    # 密码校验通过后生成token
     login_time = datetime.utcnow()
     access_token = JWTAuth.encode_auth_token(user.USER_NO, login_time.timestamp())
     expire_in = login_time + timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME)
 
-    # 更新用户access token
-    if user_token:
-        user_token.update(
-            ACCESS_TOKEN=access_token,
-            STATE='VALID',
-            EXPIRE_IN=expire_in,
-        )
-    else:
-        TUserAccessToken.insert(
-            USER_NO=user.USER_NO,
-            ACCESS_TOKEN=access_token,
-            EXPIRE_IN=expire_in,
-            STATE='VALID'
-        )
+    # 更新用户token
+    UserAccessTokenDao.update_or_insert_by_userno(
+        user.USER_NO,
+        ACCESS_TOKEN=access_token,
+        EXPIRE_IN=expire_in,
+        STATE='VALID'
+    )
 
     # 更新用户登录时间息
     user_password.update(
@@ -122,6 +114,7 @@ def register(req: RequestDTO):
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
     check_is_blank(login_info, '登录账号已存在')
 
+    # 查询用户信息
     user = UserDao.select_one(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
     check_is_blank(user, '用户已存在')
 
@@ -153,19 +146,21 @@ def register(req: RequestDTO):
 
 @http_service
 def reset_login_password(req: RequestDTO):
+    # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
+    # 查询用户密码信息
     user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
     check_is_not_blank(user_password, '用户登录密码不存在')
 
-    user_password.update(
-        PASSWORD=encrypt_password(req.loginName, req.password)
-    )
+    # 更新用户密码
+    user_password.update(PASSWORD=encrypt_password(req.loginName, req.password))
 
 
 @http_service
 def query_user_list(req: RequestDTO):
+    # 条件查询用户列表
     users = UserDao.select_list(
         userNo=req.userNo,
         userName=req.userName,
@@ -178,13 +173,16 @@ def query_user_list(req: RequestDTO):
 
     data = []
     for user in users.items:
+        # 查询用户绑定的所有角色
         user_roles = UserRoleRelDao.select_all_by_userno(user.USER_NO)
         roles = []
         for user_role in user_roles:
+            # 查询角色信息
             role = RoleDao.select_by_roleno(user_role.ROLE_NO)
             if not role:
                 continue
             roles.append(role.ROLE_NAME)
+
         data.append({
             'userNo': user.USER_NO,
             'userName': user.USER_NAME,
@@ -199,6 +197,7 @@ def query_user_list(req: RequestDTO):
 
 @http_service
 def query_user_all():
+    # 查询所有用户
     users = UserDao.select_all()
 
     result = []
@@ -213,11 +212,15 @@ def query_user_all():
 @http_service
 def query_user_info():
     user_no = GlobalVars.user_no
+
+    # 查询用户信息
     user = UserDao.select_by_userno(user_no)
+    # 查询用户绑定的所有角色
     user_roles = UserRoleRelDao.select_all_by_userno(user_no)
 
     roles = []
     for user_role in user_roles:
+        # 查询角色信息
         role = RoleDao.select_by_roleno(user_role.ROLE_NO)
         if not role:
             continue
@@ -235,9 +238,11 @@ def query_user_info():
 
 @http_service
 def modify_user(req: RequestDTO):
+    # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
+    # 更新用户信息
     user.update(
         USER_NAME=req.userName,
         MOBILE_NO=req.mobileNo,
@@ -247,17 +252,18 @@ def modify_user(req: RequestDTO):
 
 @http_service
 def modify_user_state(req: RequestDTO):
+    # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    user.update(
-        STATE=req.state
-    )
+    # 更新用户状态
+    user.update(STATE=req.state)
 
 
 @http_service
 @transactional
 def delete_user(req: RequestDTO):
+    # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
@@ -267,7 +273,7 @@ def delete_user(req: RequestDTO):
     # 删除用户密码
     UserPasswordDao.delete_all_by_user_no(req.userNo)
 
-    # 删除用户密码秘钥
+    # 删除用户密码秘钥 TODO: 优化删除逻辑
     for login_info in UserLoginInfoDao.select_all_by_userno(req.userNo):
         UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
 

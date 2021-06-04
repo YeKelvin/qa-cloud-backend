@@ -7,15 +7,24 @@ from enum import Enum
 
 
 class UserState(Enum):
+    # 启用
     ENABLE = 'ENABLE'
+
+    # 禁用
     DISABLE = 'DISABLE'
 
 
 class RoleState(Enum):
+    # 启用
     ENABLE = 'ENABLE'
+
+    # 禁用
     DISABLE = 'DISABLE'
 
 
 class PermissionState(Enum):
+    # 启用
     ENABLE = 'ENABLE'
+
+    # 禁用
     DISABLE = 'DISABLE'

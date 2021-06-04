@@ -16,5 +16,17 @@ def update_state_by_userno(state, user_no):
     entity.submit()
 
 
+def update_or_insert_by_userno(user_no, **kwargs):
+    entity = TUserAccessToken.query_by(USER_NO=user_no).first()
+
+    if entity:
+        entity.update(**kwargs)
+    else:
+        TUserAccessToken.insert(
+            USER_NO=user_no,
+            **kwargs
+        )
+
+
 def delete_by_userno(user_no):
     TUserAccessToken.query_by(USER_NO=user_no).delete()
