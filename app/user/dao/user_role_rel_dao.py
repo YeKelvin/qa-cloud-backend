@@ -11,6 +11,10 @@ def select_by_userno(user_no) -> TUserRoleRel:
     return TUserRoleRel.query_by(USER_NO=user_no).first()
 
 
+def select_by_userno_and_roleno(user_no, role_no) -> TUserRoleRel:
+    return TUserRoleRel.query_by(USER_NO=user_no, ROLE_NO=role_no).first()
+
+
 def select_all_by_userno(user_no) -> List[TUserRoleRel]:
     return TUserRoleRel.query_by(USER_NO=user_no).all()
 

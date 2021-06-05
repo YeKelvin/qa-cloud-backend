@@ -11,7 +11,6 @@ from flask import request
 
 from app.common.exceptions import ErrorCode
 from app.common.exceptions import ServiceError
-from app.common.request import RequestDTO
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.utils.log_util import get_logger

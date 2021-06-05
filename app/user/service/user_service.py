@@ -3,7 +3,6 @@
 # @File    : user_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from app.user.enum import UserState
 from datetime import datetime
 from datetime import timedelta
 
@@ -12,7 +11,6 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.flask_helper import GlobalVars
 from app.common.id_generator import new_id
-from app.common.request import RequestDTO
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.user.dao import role_dao as RoleDao
@@ -23,6 +21,7 @@ from app.user.dao import user_login_log_dao as UserLoginLogDao
 from app.user.dao import user_password_dao as UserPasswordDao
 from app.user.dao import user_password_key_dao as UserPasswordKeyDao
 from app.user.dao import user_role_rel_dao as UserRoleRelDao
+from app.user.enum import UserState
 from app.user.model import TUser
 from app.user.model import TUserLoginInfo
 from app.user.model import TUserLoginLog
@@ -38,7 +37,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def login(req: RequestDTO):
+def login(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
     check_is_not_blank(login_info, '账号或密码不正确')
@@ -109,7 +108,7 @@ def logout():
 
 @http_service
 @transactional
-def register(req: RequestDTO):
+def register(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
     check_is_blank(login_info, '登录账号已存在')
@@ -145,7 +144,7 @@ def register(req: RequestDTO):
 
 
 @http_service
-def reset_login_password(req: RequestDTO):
+def reset_login_password(req):
     # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
@@ -159,7 +158,7 @@ def reset_login_password(req: RequestDTO):
 
 
 @http_service
-def query_user_list(req: RequestDTO):
+def query_user_list(req):
     # 条件查询用户列表
     users = UserDao.select_list(
         userNo=req.userNo,
@@ -237,7 +236,7 @@ def query_user_info():
 
 
 @http_service
-def modify_user(req: RequestDTO):
+def modify_user(req):
     # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
@@ -251,7 +250,7 @@ def modify_user(req: RequestDTO):
 
 
 @http_service
-def modify_user_state(req: RequestDTO):
+def modify_user_state(req):
     # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
@@ -262,7 +261,7 @@ def modify_user_state(req: RequestDTO):
 
 @http_service
 @transactional
-def delete_user(req: RequestDTO):
+def delete_user(req):
     # 查询用户信息
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')

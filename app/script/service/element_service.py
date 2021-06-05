@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
-from app.common.request import RequestDTO
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
@@ -23,7 +22,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_element_list(req: RequestDTO):
+def query_element_list(req):
     # 查询条件
     conditions = [TTestElement.DEL_STATE == 0]
 
@@ -69,7 +68,7 @@ def query_element_list(req: RequestDTO):
 
 
 @http_service
-def query_element_all(req: RequestDTO):
+def query_element_all(req):
     # 查询条件
     conditions = [
         TTestElement.DEL_STATE == 0,
@@ -104,7 +103,7 @@ def query_element_all(req: RequestDTO):
 
 
 @http_service
-def query_element_info(req: RequestDTO):
+def query_element_info(req):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
     check_is_not_blank(element, '测试元素不存在')
 
@@ -126,13 +125,13 @@ def query_element_info(req: RequestDTO):
 
 
 @http_service
-def query_element_children(req: RequestDTO):
+def query_element_children(req):
     return helper.depth_query_element_children(req.elementNo, req.depth)
 
 
 @http_service
 @transactional
-def create_element(req: RequestDTO):
+def create_element(req):
     element_no = helper.create_element(
         element_name=req.elementName,
         element_remark=req.elementRemark,
@@ -156,7 +155,7 @@ def create_element(req: RequestDTO):
 
 @http_service
 @transactional
-def modify_element(req: RequestDTO):
+def modify_element(req):
     helper.modify_element(
         element_no=req.elementNo,
         element_name=req.elementName,
@@ -169,12 +168,12 @@ def modify_element(req: RequestDTO):
 
 @http_service
 @transactional
-def delete_element(req: RequestDTO):
+def delete_element(req):
     return helper.delete_element(element_no=req.elementNo)
 
 
 @http_service
-def enable_element(req: RequestDTO):
+def enable_element(req):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
     check_is_not_blank(element, '测试元素不存在')
 
@@ -184,7 +183,7 @@ def enable_element(req: RequestDTO):
 
 
 @http_service
-def disable_element(req: RequestDTO):
+def disable_element(req):
     element = TTestElement.query_by(ELEMENT_NO=req.elementNo).first()
     check_is_not_blank(element, '测试元素不存在')
 
@@ -194,7 +193,7 @@ def disable_element(req: RequestDTO):
 
 
 @http_service
-def add_element_property(req: RequestDTO):
+def add_element_property(req):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName).first()
     check_is_blank(el_prop, '元素属性已存在')
 
@@ -207,7 +206,7 @@ def add_element_property(req: RequestDTO):
 
 
 @http_service
-def modify_element_property(req: RequestDTO):
+def modify_element_property(req):
     el_prop = TElementProperty.query_by(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName).first()
     check_is_not_blank(el_prop, '元素属性不存在')
 
@@ -218,7 +217,7 @@ def modify_element_property(req: RequestDTO):
 
 @http_service
 @transactional
-def add_element_children(req: RequestDTO):
+def add_element_children(req):
     helper.add_element_child(
         parent_no=req.parentNo,
         children=req.children
@@ -228,12 +227,12 @@ def add_element_children(req: RequestDTO):
 
 @http_service
 @transactional
-def modify_element_children(req: RequestDTO):
+def modify_element_children(req):
     helper.modify_element_child(children=req.children)
 
 
 @http_service
-def move_up_child_order(req: RequestDTO):
+def move_up_child_order(req):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.parentNo, CHILD_NO=req.childNo).first()
     check_is_not_blank(child_rel, '子元素不存在')
 
@@ -253,7 +252,7 @@ def move_up_child_order(req: RequestDTO):
 
 
 @http_service
-def move_down_child_order(req: RequestDTO):
+def move_down_child_order(req):
     child_rel = TElementChildRel.query_by(PARENT_NO=req.parentNo, CHILD_NO=req.childNo).first()
     check_is_not_blank(child_rel, '子元素不存在')
 
@@ -273,7 +272,7 @@ def move_down_child_order(req: RequestDTO):
 
 
 @http_service
-def duplicate_element(req: RequestDTO):
+def duplicate_element(req):
     element = TTestElement.query_by(ELEMENT_NO=req.element_no).first()
     check_is_not_blank(element, '测试元素不存在')
 

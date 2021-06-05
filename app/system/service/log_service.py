@@ -4,7 +4,6 @@
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.common.request import RequestDTO
 from app.system.model import TActionLog
 from app.utils.log_util import get_logger
 from app.utils.time_util import STRFTIME_FORMAT
@@ -14,7 +13,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_action_log_list(req: RequestDTO):
+def query_action_log_list(req):
     # 查询条件
     conditions = []
     if req.actionDesc:

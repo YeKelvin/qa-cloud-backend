@@ -8,7 +8,6 @@ import traceback
 from pymeter.runner import Runner
 
 from app.common.decorators.service import http_service
-from app.common.request import RequestDTO
 from app.extension import executor
 from app.script.service import execution_helper as helper
 from app.utils.log_util import get_logger
@@ -18,7 +17,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def execute_script(req: RequestDTO):
+def execute_script(req):
     # 根据collectionNo递归查询脚本数据并转换成dict
     collection = helper.element_to_dict(req.collectionNo)
 

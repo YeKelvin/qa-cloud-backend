@@ -6,5 +6,9 @@
 from app.user.model import TRolePermissionRel
 
 
+def select_by_roleno_and_permissionno(role_no, permission_no) -> TRolePermissionRel:
+    return TRolePermissionRel.query_by(ROLE_NO=role_no, PERMISSION_NO=permission_no).first()
+
+
 def delete_by_roleno(role_no):
     TRolePermissionRel.query_by(ROLE_NO=role_no).delete()

@@ -14,8 +14,7 @@ log = get_logger(__name__)
 
 
 class TActionLog(DBModel):
-    """系统操作日志表
-    """
+    """系统操作日志表"""
     __tablename__ = 'ACTION_LOG'
     ID = db.Column(db.Integer, primary_key=True)
     ACTION_DESC = db.Column(db.String(256), comment='操作描述')
@@ -31,8 +30,7 @@ class TActionLog(DBModel):
 
 
 class TSystemOperationLog(DBModel):
-    """操作日志记录表
-    """
+    """操作日志记录表"""
     __tablename__ = 'SYSTEM_OPERATION_LOG'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
