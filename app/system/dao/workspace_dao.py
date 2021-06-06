@@ -5,19 +5,21 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from flask_sqlalchemy import Pagination
+
 from app.system.model import TWorkspace
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_no(no) -> TWorkspace:
-    return TWorkspace.query_by(WORKSPACE_NO=no).first()
+def select_by_workspaceno(workspace_no) -> TWorkspace:
+    return TWorkspace.query_by(WORKSPACE_NO=workspace_no).first()
 
 
-def select_by_name(name) -> TWorkspace:
-    return TWorkspace.query_by(WORKSPACE_NAME=name).first()
+def select_by_workspacename(workspace_name) -> TWorkspace:
+    return TWorkspace.query_by(WORKSPACE_NAME=workspace_name).first()
 
 
-def select_list(**kwargs) -> List[TWorkspace]:
+def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
     conditions.add_fully_match(TWorkspace.DEL_STATE, 0)
     if kwargs:

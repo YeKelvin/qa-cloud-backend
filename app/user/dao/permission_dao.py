@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from flask_sqlalchemy import Pagination
+
 from app.user.model import TPermission
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -17,7 +19,7 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
     return TPermission.query_by(ENDPOINT=endpoint, METHOD=method).first()
 
 
-def select_list(**kwargs) -> List[TPermission]:
+def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
     conditions.add_fully_match(TPermission.DEL_STATE, 0)
     if kwargs:

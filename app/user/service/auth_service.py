@@ -15,7 +15,10 @@ log = get_logger(__name__)
 
 @http_service
 def create_rsa_public_key(req):
+    # 生成RSA的公钥和秘钥
     rsa_public_key, rsa_private_key = generate_rsa_key()
+
+    # 更新用户私钥
     user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
     if user_password_key:
         user_password_key.update(

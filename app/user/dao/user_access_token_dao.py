@@ -12,8 +12,7 @@ def select_by_userno(user_no) -> TUserAccessToken:
 
 def update_state_by_userno(state, user_no):
     entity = TUserAccessToken.query_by(USER_NO=user_no).first()
-    entity.STATE = state
-    entity.submit()
+    entity.update(STATE=state)
 
 
 def update_or_insert_by_userno(user_no, **kwargs):

@@ -42,7 +42,7 @@ def login(req):
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
     check_is_not_blank(login_info, '账号或密码不正确')
 
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(login_info.USER_NO)
     check_is_not_blank(user, '账号或密码不正确')
 
@@ -66,7 +66,6 @@ def login(req):
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
-        user_password.submit()
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成token
@@ -82,7 +81,8 @@ def login(req):
         STATE='VALID'
     )
 
-    # 更新用户登录时间息
+    # 更新用户登录时间
+    # 清空用户登录失败次数
     user_password.update(
         LAST_SUCCESS_TIME=login_time,
         ERROR_TIMES=0
@@ -103,6 +103,7 @@ def login(req):
 
 @http_service
 def logout():
+    # 更新用户accessToken状态为无效
     UserAccessTokenDao.update_state_by_userno('INVALID', GlobalVars.user_no)
 
 
@@ -113,11 +114,11 @@ def register(req):
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
     check_is_blank(login_info, '登录账号已存在')
 
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_one(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
     check_is_blank(user, '用户已存在')
 
-    # 创建用户信息
+    # 创建用户
     user_no = new_id()
     TUser.insert(
         USER_NO=user_no,
@@ -145,11 +146,11 @@ def register(req):
 
 @http_service
 def reset_login_password(req):
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    # 查询用户密码信息
+    # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
     check_is_not_blank(user_password, '用户登录密码不存在')
 
@@ -159,8 +160,8 @@ def reset_login_password(req):
 
 @http_service
 def query_user_list(req):
-    # 条件查询用户列表
-    users = UserDao.select_list(
+    # 查询用户列表
+    pagination = UserDao.select_list(
         userNo=req.userNo,
         userName=req.userName,
         mobileNo=req.mobileNo,
@@ -171,12 +172,12 @@ def query_user_list(req):
     )
 
     data = []
-    for user in users.items:
-        # 查询用户绑定的所有角色
-        user_roles = UserRoleRelDao.select_all_by_userno(user.USER_NO)
+    for user in pagination.items:
+        # 查询用户绑定的角色列表
+        user_role_list = UserRoleRelDao.select_all_by_userno(user.USER_NO)
         roles = []
-        for user_role in user_roles:
-            # 查询角色信息
+        for user_role in user_role_list:
+            # 查询角色
             role = RoleDao.select_by_roleno(user_role.ROLE_NO)
             if not role:
                 continue
@@ -191,7 +192,7 @@ def query_user_list(req):
             'state': user.STATE,
             'roles': roles
         })
-    return {'data': data, 'total': users.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
@@ -212,14 +213,14 @@ def query_user_all():
 def query_user_info():
     user_no = GlobalVars.user_no
 
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(user_no)
-    # 查询用户绑定的所有角色
-    user_roles = UserRoleRelDao.select_all_by_userno(user_no)
+    # 查询用户绑定的角色列表
+    user_role_list = UserRoleRelDao.select_all_by_userno(user_no)
 
     roles = []
-    for user_role in user_roles:
-        # 查询角色信息
+    for user_role in user_role_list:
+        # 查询角色
         role = RoleDao.select_by_roleno(user_role.ROLE_NO)
         if not role:
             continue
@@ -237,7 +238,7 @@ def query_user_info():
 
 @http_service
 def modify_user(req):
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
@@ -251,7 +252,7 @@ def modify_user(req):
 
 @http_service
 def modify_user_state(req):
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
@@ -262,11 +263,11 @@ def modify_user_state(req):
 @http_service
 @transactional
 def delete_user(req):
-    # 查询用户信息
+    # 查询用户
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
-    # 删除用户角色关联关系
+    # 解绑用户和角色
     UserRoleRelDao.delete_all_by_userno(req.userNo)
 
     # 删除用户密码

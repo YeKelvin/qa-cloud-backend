@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from flask_sqlalchemy import Pagination
+
 from app.user.model import TRole
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -21,7 +23,7 @@ def select_all() -> List[TRole]:
     return TRole.query_by().order_by(TRole.CREATED_TIME.desc()).all()
 
 
-def select_list(**kwargs) -> List[TRole]:
+def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
     conditions.add_fully_match(TRole.DEL_STATE, 0)
     if kwargs:

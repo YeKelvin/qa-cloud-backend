@@ -32,37 +32,42 @@ def query_user_role_rel_list(req):
     conditions.add_fuzzy_match(TRole.ROLE_NAME, req.roleName)
     conditions.add_fuzzy_match(TUser.USER_NAME, req.userName)
 
-    results = db.session.query(
+    # TUser，TRole，TUserRoleRel连表查询
+    pagination = db.session.query(
+        TUser.USER_NAME,
+        TRole.ROLE_NAME,
         TUserRoleRel.USER_NO,
         TUserRoleRel.ROLE_NO,
-        TRole.ROLE_NAME,
-        TUser.USER_NAME,
         TUserRoleRel.CREATED_TIME
     ).filter(*conditions).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
-    for result in results.items:
+    for item in pagination.items:
         data.append({
-            'userNo': result.USER_NO,
-            'roleNo': result.ROLE_NO,
-            'userName': result.USER_NAME,
-            'roleName': result.ROLE_NAME,
+            'userNo': item.USER_NO,
+            'roleNo': item.ROLE_NO,
+            'userName': item.USER_NAME,
+            'roleName': item.ROLE_NAME,
         })
 
-    return {'data': data, 'total': results.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def create_user_role_rel(req):
+    # 查询用户角色
     user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
     check_is_blank(user_role, '用户角色关联关系已存在')
 
+    # 绑定用户和角色
     TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=req.roleNo)
 
 
 @http_service
 def delete_user_role_rel(req):
+    # 查询用户角色
     user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
     check_is_not_blank(user_role, '用户角色关联关系不存在')
 
-    user_role.update(DEL_STATE=1)
+    # 解绑用户和角色
+    user_role.delete()

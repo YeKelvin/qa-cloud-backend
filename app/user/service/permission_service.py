@@ -18,7 +18,8 @@ log = get_logger(__name__)
 
 @http_service
 def query_permission_list(req):
-    permissions = PermissionDao.select_list(
+    # 查询权限列表
+    pagination = PermissionDao.select_list(
         permissionNo=req.permissionNo,
         permissionName=req.permissionName,
         permissionDesc=req.permissionDesc,
@@ -30,7 +31,7 @@ def query_permission_list(req):
     )
 
     data = []
-    for permission in permissions.items:
+    for permission in pagination.items:
         data.append({
             'permissionNo': permission.PERMISSION_NO,
             'permissionName': permission.PERMISSION_NAME,
@@ -40,11 +41,12 @@ def query_permission_list(req):
             'state': permission.STATE
         })
 
-    return {'data': data, 'total': permissions.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_permission_all():
+    # 查询所有权限
     permissions = PermissionDao.select_all()
     result = []
     for permission in permissions:
@@ -61,6 +63,7 @@ def query_permission_all():
 
 @http_service
 def create_permission(req):
+    # 查询权限
     permission = PermissionDao.select_by_endpoint_and_method(req.endpoint, req.method)
     check_is_blank(permission, '权限已存在')
 
@@ -76,9 +79,11 @@ def create_permission(req):
 
 @http_service
 def modify_permission(req):
+    # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
     check_is_not_blank(permission, '权限不存在')
 
+    # 更新权限信息
     permission.update(
         PERMISSION_NO=req.permissionNo,
         PERMISSION_NAME=req.permissionName,
@@ -87,20 +92,22 @@ def modify_permission(req):
         METHOD=req.method
     )
 
-    permission.submit()
-
 
 @http_service
 def modify_permission_state(req):
+    # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
     check_is_not_blank(permission, '权限不存在')
 
+    # 更新权限状态
     permission.update(STATE=req.state)
 
 
 @http_service
 def delete_permission(req):
+    # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
     check_is_not_blank(permission, '权限不存在')
 
+    # 删除权限
     permission.delete()

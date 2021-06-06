@@ -51,7 +51,7 @@ def query_workspace_all():
 
 @http_service
 def create_workspace(req):
-    workspace = WorkspaceDao.select_by_name(req.workspaceName)
+    workspace = WorkspaceDao.select_by_workspacename(req.workspaceName)
     check_is_blank(workspace, '工作空间已存在')
 
     TWorkspace.insert(
@@ -64,7 +64,7 @@ def create_workspace(req):
 
 @http_service
 def modify_workspace(req):
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = WorkspaceDao.select_by_workspaceno(req.workspaceNo)
     check_is_not_blank(workspace, '工作空间不存在')
 
     workspace.update(
@@ -73,12 +73,10 @@ def modify_workspace(req):
         WORKSPACE_DESC=req.workspaceDesc
     )
 
-    workspace.submit()
-
 
 @http_service
 def delete_workspace(req):
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = WorkspaceDao.select_by_workspaceno(req.workspaceNo)
     check_is_not_blank(workspace, '工作空间不存在')
 
     workspace.delete()

@@ -20,7 +20,8 @@ log = get_logger(__name__)
 
 @http_service
 def query_role_list(req):
-    roles = RoleDao.select_list(
+    # 查询角色列表
+    pagination = RoleDao.select_list(
         roleNo=req.roleNo,
         roleName=req.roleName,
         roleDesc=req.roleDesc,
@@ -30,18 +31,19 @@ def query_role_list(req):
     )
 
     data = []
-    for role in roles.items:
+    for role in pagination.items:
         data.append({
             'roleNo': role.ROLE_NO,
             'roleName': role.ROLE_NAME,
             'roleDesc': role.ROLE_DESC,
             'state': role.STATE
         })
-    return {'data': data, 'total': roles.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_role_all():
+    # 查询所有角色
     roles = RoleDao.select_all()
     result = []
     for role in roles:
@@ -56,9 +58,11 @@ def query_role_all():
 
 @http_service
 def create_role(req):
+    # 查询角色
     role = RoleDao.select_by_rolename(req.roleName)
     check_is_blank(role, '角色已存在')
 
+    # 创建角色
     TRole.insert(
         ROLE_NO=new_id(),
         ROLE_NAME=req.roleName,
@@ -69,9 +73,11 @@ def create_role(req):
 
 @http_service
 def modify_role(req):
+    # 查询角色
     role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
+    # 更新角色信息
     role.update(
         ROLE_NAME=req.roleName,
         ROLE_DESC=req.roleDesc
@@ -80,21 +86,25 @@ def modify_role(req):
 
 @http_service
 def modify_role_state(req):
+    # 查询角色
     role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
+    # 更新角色状态
     role.update(STATE=req.state)
 
 
 @http_service
 def delete_role(req):
+    # 查询角色
     role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
-    user_roles = UserRoleRelDao.select_all_by_roleno(req.roleNo)
-    check_is_blank(user_roles, '角色与用户存在关联关系，请先解除关联')
+    # 查询用户角色列表
+    user_role_list = UserRoleRelDao.select_all_by_roleno(req.roleNo)
+    check_is_blank(user_role_list, '角色与用户存在关联关系，请先解除关联')
 
-    # 删除角色权限关联关系
+    # 解绑角色和权限
     RolePermissionRelDao.delete_by_roleno(req.roleNo)
 
     # 删除角色

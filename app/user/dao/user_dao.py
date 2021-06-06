@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from flask_sqlalchemy import Pagination
+
 from app.user.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -17,7 +19,7 @@ def select_one(**kwargs) -> TUser:
     return TUser.select_one(**kwargs)
 
 
-def select_list(**kwargs) -> List[TUser]:
+def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
     conditions.add_fully_match(TUser.DEL_STATE, 0)
     if kwargs:

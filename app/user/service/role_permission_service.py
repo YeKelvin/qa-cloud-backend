@@ -34,36 +34,46 @@ def query_role_permission_rel_list(req):
     conditions.add_fuzzy_match(TPermission.ENDPOINT, req.endpoint)
     conditions.add_fuzzy_match(TPermission.METHOD, req.method)
 
-    results = db.session.query(
-        TRolePermissionRel.ROLE_NO, TRolePermissionRel.PERMISSION_NO, TRole.ROLE_NAME, TPermission.PERMISSION_NAME,
-        TPermission.ENDPOINT, TPermission.METHOD, TRolePermissionRel.CREATED_TIME
+    # TRole，TPermission，TRolePermissionRel连表查询
+    pagination = db.session.query(
+        TRole.ROLE_NAME,
+        TPermission.PERMISSION_NAME,
+        TPermission.ENDPOINT,
+        TPermission.METHOD,
+        TRolePermissionRel.ROLE_NO,
+        TRolePermissionRel.PERMISSION_NO,
+        TRolePermissionRel.CREATED_TIME
     ).filter(*conditions).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
-    for result in results.items:
+    for item in pagination.items:
         data.append({
-            'roleNo': result.ROLE_NO,
-            'roleName': result.ROLE_NAME,
-            'permissionNo': result.PERMISSION_NO,
-            'permissionName': result.PERMISSION_NAME,
-            'endpoint': result.ENDPOINT,
-            'method': result.METHOD
+            'roleNo': item.ROLE_NO,
+            'roleName': item.ROLE_NAME,
+            'permissionNo': item.PERMISSION_NO,
+            'permissionName': item.PERMISSION_NAME,
+            'endpoint': item.ENDPOINT,
+            'method': item.METHOD
         })
 
-    return {'data': data, 'total': results.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def create_role_permission_rel(req):
+    # 查询角色权限
     role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo).first()
     check_is_blank(role_permission, '角色权限关联关系已存在')
 
+    # 绑定角色和权限
     TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
 
 
 @http_service
 def delete_role_permission_rel(req):
+    # 查询角色权限
     role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo).first()
     check_is_not_blank(role_permission, '角色权限关联关系不存在')
 
+    # 解绑角色和权限
     role_permission.delete()
