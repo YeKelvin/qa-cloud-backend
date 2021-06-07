@@ -342,7 +342,8 @@ def add_element_propertys(element_no, propertys: dict):
         TElementProperty.insert(
             ELEMENT_NO=element_no,
             PROPERTY_NAME=name,
-            PROPERTY_VALUE=value
+            PROPERTY_VALUE=value,
+            PROPERTY_TYPE=str(type(value)).upper()
         )
 
 
