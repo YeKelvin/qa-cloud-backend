@@ -8,8 +8,11 @@ import traceback
 from pymeter.runner import Runner
 
 from app.common.decorators.service import http_service
+from app.common.validator import check_is_not_blank
 from app.extension import executor
-from app.script.service import execution_helper as helper
+from app.script.model import TElementChildRel
+from app.script.model import TElementProperty
+from app.script.model import TTestElement
 from app.utils.log_util import get_logger
 
 
@@ -19,7 +22,7 @@ log = get_logger(__name__)
 @http_service
 def execute_script(req):
     # 根据collectionNo递归查询脚本数据并转换成dict
-    collection = helper.element_to_dict(req.collectionNo)
+    collection = load_element(req.collectionNo)
 
     # TODO: 增加脚本完整性校验，例如脚本下是否有内容
 
@@ -41,9 +44,9 @@ def execute_script(req):
 
 
 def add_flask_socketio_result_collector(script: dict, sid: str):
-    script['child'].insert(0, {
+    script['children'].insert(0, {
         'name': 'FlaskSocketIOResultCollector',
-        'comments': None,
+        'remark': None,
         'class': 'FlaskSocketIOResultCollector',
         'enabled': True,
         'property': {
@@ -53,5 +56,42 @@ def add_flask_socketio_result_collector(script: dict, sid: str):
             'FlaskSocketIOResultCollector__flask_sio_instance_module': 'server.extension',
             'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
         },
-        'child': None
+        'children': None
     })
+
+
+def load_element(element_no):
+    # 查询元素
+    element = TTestElement.query_by(ELEMENT_NO=element_no).first()
+    check_is_not_blank(element, '测试元素不存在')
+
+    # 递归查询元素子代
+    # 查询时根据order asc排序
+    element_child_rel_list = TElementChildRel.query_by(PARENT_NO=element_no).order_by(TElementChildRel.CHILD_ORDER).all()
+    children = []
+    if element_child_rel_list:
+        for element_child_rel in element_child_rel_list:
+            children.append(load_element(element_child_rel.CHILD_NO))
+
+    # 组装dict返回
+    el_dict = {
+        'name': element.ELEMENT_NAME,
+        'remark ': element.ELEMENT_REMARK,
+        'class': element.ELEMENT_CLASS,
+        'enabled': element.ENABLED,
+        'property': load_element_property(element_no),
+        'children': children
+    }
+    return el_dict
+
+
+def load_element_property(element_no):
+    # 查询元素属性，只查询enabled的属性
+    props = TElementProperty.query_by(ELEMENT_NO=element_no, ENABLED=True).all()
+
+    # 组装dict返回
+    property = {}
+    for prop in props:
+        property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+
+    return property

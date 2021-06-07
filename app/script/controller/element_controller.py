@@ -78,7 +78,8 @@ def create_element():
     req = JsonParser(
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementRemark'),
-        Argument('elementClass', required=True, nullable=False, help='元素类型不能为空'),
+        Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
+        Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
         Argument('children'),
         Argument('workspaceNo'),

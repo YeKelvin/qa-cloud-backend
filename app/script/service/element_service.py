@@ -187,7 +187,9 @@ def create_element(req):
     return {'elementNo': element_no}
 
 
-def add_element(element_name, element_remark, element_class, propertys: dict = None, children: Iterable[dict] = None):
+def add_element(
+    element_name, element_remark, element_type, element_class, propertys: dict = None, children: Iterable[dict] = None
+):
     """创建元素并递归创建元素属性和元素子代"""
     # 创建元素
     element_no = new_id()
@@ -195,6 +197,7 @@ def add_element(element_name, element_remark, element_class, propertys: dict = N
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
         ELEMENT_REMARK=element_remark,
+        ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
         ENABLED=ElementStatus.ENABLE.value
     )
@@ -375,12 +378,12 @@ def add_element_children(parent_no, children: Iterable[dict]):
     """添加元素子代"""
     for child in children:
         child_no = add_element(
-            element_name=child['elementName'],
-            element_remark=child['elementRemark'],
-            element_type=child['elementType'],
-            element_class=child['elementClass'],
-            propertys=child['propertys'],
-            children=child['children']
+            element_name=child.get('elementName'),
+            element_remark=child.get('elementRemark'),
+            element_type=child.get('elementType'),
+            element_class=child.get('elementClass'),
+            propertys=child.get('propertys', None),
+            children=child.get('children', None)
         )
         TElementChildRel.insert(
             PARENT_NO=parent_no,
@@ -402,12 +405,12 @@ def update_element_children(children: Iterable[dict]):
             raise ServiceError('子代元素编号不能为空')
 
         update_element(
-            element_no=child['elementNo'],
-            element_name=child['elementName'],
-            element_remark=child['elementRemark'],
-            element_type=child['elementType'],
-            propertys=child['propertys'],
-            children=child['children']
+            element_no=child.get('elementNo'),
+            element_name=child.get('elementName'),
+            element_remark=child.get('elementRemark'),
+            element_type=child.get('elementType'),
+            propertys=child.get('propertys', None),
+            children=child.get('children', None)
         )
 
 

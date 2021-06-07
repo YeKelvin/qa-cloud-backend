@@ -21,7 +21,9 @@ def query_workspace_list(req):
         workspaceNo=req.workspaceNo,
         workspaceName=req.workspaceName,
         workspaceType=req.workspaceType,
-        workspaceDesc=req.workspaceDesc
+        workspaceDesc=req.workspaceDesc,
+        page=req.page,
+        pageSize=req.pageSize
     )
 
     data = []
