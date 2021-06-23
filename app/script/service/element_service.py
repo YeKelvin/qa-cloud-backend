@@ -14,15 +14,16 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
-from app.script.dao import element_property_rel_dao as ElementPropertyRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementStatus
-from app.script.model import TElementChildRel, TElementPropertyRel
+from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollectionRel
 from app.system.dao import workspace_dao as WorkspaceDao
 from app.system.model import TWorkspace
+from app.utils.json_util import from_json
+from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -126,45 +127,21 @@ def query_element_info(req):
     }
 
 
-def query_element_propertys(parent_no):
-    """递归查询元素属性"""
+def query_element_propertys(element_no):
+    """查询元素属性"""
     propertys = {}
-    prop_rel_list = ElementPropertyRelDao.select_all_by_parentno(parent_no)
-    for rel in prop_rel_list:
-        prop = ElementPropertyDao.select_by_propertyno(rel.CHILD_NO)
+    props = ElementPropertyDao.select_all_by_elementno(element_no)
+    for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
             propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
             continue
         if prop.PROPERTY_TYPE == 'DICT':
-            propertys[prop.PROPERTY_NAME] = query_dict_property(prop.PROPERTY_NO, rel.CHILD_CLASS)
+            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
         if prop.PROPERTY_TYPE == 'LIST':
-            propertys[prop.PROPERTY_NAME] = query_list_property(prop.PROPERTY_NO)
+            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
     return propertys
-
-
-def query_dict_property(parent_no, class_name):
-    """递归查询dict类型的属性"""
-    props = query_element_propertys(parent_no)
-    if class_name:
-        return {'class': class_name, 'propertys': props}
-    return {'propertys': props}
-
-
-def query_list_property(parent_no):
-    """递归查询list类型的属性"""
-    props = []
-    prop_rel_list = ElementPropertyRelDao.select_all_by_parentno(parent_no)
-    for rel in prop_rel_list:
-        prop = ElementPropertyDao.select_by_propertyno(rel.CHILD_NO)
-        if prop.PROPERTY_TYPE == 'STR':
-            props.append(prop.PROPERTY_VALUE)
-        if prop.PROPERTY_TYPE == 'DICT':
-            props.append(query_element_propertys(prop.PROPERTY_NO))
-        if prop.PROPERTY_TYPE == 'LIST':
-            props.append(query_list_property(prop.PROPERTY_NO))
-    return props
 
 
 @http_service
@@ -242,7 +219,7 @@ def add_element(
 
     if propertys:
         # 创建元素属性
-        add_element_propertys(element_no=element_no, parent_no=element_no, propertys=propertys)
+        add_element_propertys(element_no, propertys)
 
     if children:
         # 创建元素子代
@@ -374,83 +351,24 @@ def create_element_property(req):
     )
 
 
-def add_element_propertys(element_no, parent_no, propertys: dict):
+def add_element_propertys(element_no, propertys: dict):
     """遍历添加元素属性"""
     for name, value in propertys.items():
-        if isinstance(value, str):
-            add_str_property(parent_no, name, value)
-            continue
+        value_type = 'STR'
+
         if isinstance(value, dict):
-            add_dict_property(parent_no, name, value)
-            continue
+            value_type = 'DICT'
+            value = to_json(value)
         if isinstance(value, list):
-            add_list_property(parent_no, name, value)
-            continue
+            value_type = 'LIST'
+            value = to_json(value)
 
-
-def add_str_property(parent_no: str, name: str, value: str):
-    """添加字符类型的元素属性"""
-    # 创建属性
-    property_no = new_id()
-    TElementProperty.insert(
-        PROPERTY_NO=property_no,
-        PROPERTY_NAME=name,
-        PROPERTY_VALUE=value,
-        PROPERTY_TYPE='STR'
-    )
-    # 创建元素属性关系
-    TElementPropertyRel.insert(
-        PARENT_NO=parent_no,
-        CHILD_NO=property_no,
-    )
-
-
-def add_dict_property(parent_no: str, name: str, value: dict):
-    """添加字典类型的元素属性"""
-    # 创建属性
-    property_no = new_id()
-    TElementProperty.insert(
-        PROPERTY_NO=property_no,
-        PROPERTY_NAME=name,
-        PROPERTY_TYPE='DICT'
-    )
-    # 创建元素属性关系
-    TElementPropertyRel.insert(
-        PARENT_NO=parent_no,
-        CHILD_NO=property_no,
-        CHILD_CLASS=value.get('class', None)
-    )
-    # 递归创建dict类型的子孙属性
-    innerPropertys = value.get('propertys', None)
-    if innerPropertys:
-        add_element_propertys(property_no, innerPropertys)
-
-
-def add_list_property(parent_no: str, name: str, value: list):
-    """添加列表类型的元素属性"""
-    # 创建属性
-    property_no = new_id()
-    TElementProperty.insert(
-        PROPERTY_NO=property_no,
-        PROPERTY_NAME=name,
-        PROPERTY_TYPE='LIST'
-    )
-    # 创建元素属性关系
-    TElementPropertyRel.insert(
-        PARENT_NO=parent_no,
-        CHILD_NO=property_no
-    )
-    # 遍历递归创建list类型的子孙属性
-    for item in value:
-        if isinstance(item, str):
-            add_str_property(property_no, '', item)
-            continue
-        if isinstance(item, dict):
-            add_dict_property(property_no, '', item)
-            continue
-        if isinstance(item, list):
-            add_list_property(property_no, '', item)
-            continue
+        TElementProperty.insert(
+            ELEMENT_NO=element_no,
+            PROPERTY_NAME=name,
+            PROPERTY_VALUE=value,
+            PROPERTY_TYPE=value_type
+        )
 
 
 @http_service
@@ -464,15 +382,20 @@ def modify_element_property(req):
 
 
 def update_element_propertys(element_no, propertys: dict):
-    """遍历修改元素属性TODO: fix"""
+    """遍历修改元素属性"""
     for name, value in propertys.items():
-        prop_rel_list = ElementPropertyRelDao.select_all_by_parentno(element_no)
-        for rel in prop_rel_list:
-            prop = ElementPropertyDao.select_by_propertyno(rel.CHILD_NO)
         # 查询元素属性
-        el_prop = ElementPropertyDao.select_by_propertyno(element_no)
+        prop = ElementPropertyDao.select_by_elementno_and_name(element_no, name)
         # 更新元素属性值
-        el_prop.update(PROPERTY_VALUE=value)
+        if isinstance(value, str):
+            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE='STR')
+            continue
+        if isinstance(value, dict):
+            prop.update(PROPERTY_VALUE=to_json(value), PROPERTY_TYPE='DICT')
+            continue
+        if isinstance(value, list):
+            prop.update(PROPERTY_VALUE=to_json(value), PROPERTY_TYPE='LIST')
+            continue
 
 
 @http_service

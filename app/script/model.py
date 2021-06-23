@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from sqlalchemy import UniqueConstraint
+
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
@@ -50,32 +52,17 @@ class TElementProperty(DBModel):
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
-    PROPERTY_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
+    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.String(4096), comment='属性值')
-    PROPERTY_TYPE = db.Column(db.String(4096), nullable=False, comment='属性类型', default='STR')
+    PROPERTY_TYPE = db.Column(db.String(32), nullable=False, comment='属性类型', default='STR')
     ENABLED = db.Column(db.Boolean, nullable=False, comment='是否启用', default=True)
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TPropertyRel(DBModel):
-    """元素属性关系表"""
-    __tablename__ = 'PROPERTY_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号或父属性编号')
-    CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子属性编号')
-    CHILD_CLASS = db.Column(db.String(32), comment='子属性类')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', name='idx_elementno_propertyno')
 
 
 class TElementChildRel(DBModel):
