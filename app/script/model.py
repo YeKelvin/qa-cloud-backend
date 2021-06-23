@@ -50,6 +50,7 @@ class TElementProperty(DBModel):
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     PROPERTY_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.String(4096), comment='属性值')
@@ -62,9 +63,9 @@ class TElementProperty(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TElementPropertyRel(DBModel):
+class TPropertyRel(DBModel):
     """元素属性关系表"""
-    __tablename__ = 'ELEMENT_PROPERTY_REL'
+    __tablename__ = 'PROPERTY_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号或父属性编号')
