@@ -9,8 +9,8 @@ from functools import wraps
 from flask import g
 from flask import request
 
+from app.common import global_variables as gvars
 from app.common.exceptions import ErrorCode
-from app.common.flask_helper import GlobalVars
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.user.model import TPermission
@@ -31,9 +31,9 @@ def require_login(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        auth_token = GlobalVars.auth_token
-        auth_login_time = GlobalVars.auth_login_time
-        user_no = GlobalVars.user_no
+        auth_token = gvars.get_auth_token()
+        auth_login_time = gvars.get_auth_login_time()
+        user_no = gvars.get_userno()
         # JWT解析 payload失败
         if not auth_token or not auth_login_time:
             log.info(f'logId:[ {g.logid} ] msg:[ JWT解析 payload失败 ]')
@@ -77,7 +77,7 @@ def require_login(func):
             )
             return __auth_fail_response(ErrorCode.E401001)
 
-        GlobalVars.put('operator', user.USER_NAME)
+        gvars.put('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -89,7 +89,7 @@ def require_permission(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # 获取登录用户
-        user_no = GlobalVars.user_no
+        user_no = gvars.get_userno()
         if not user_no:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -160,7 +160,7 @@ def require_permission(func):
 
 
 def __auth_fail_response(error: ErrorCode):
-    user_no = GlobalVars.user_no
+    user_no = gvars.get_userno()
     log.info(
         f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
         f'header:[ {dict(request.headers)} ] userNo:[ {user_no} ]'

@@ -6,10 +6,10 @@
 from datetime import datetime
 from datetime import timedelta
 
+from app.common import global_variables as gvars
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
-from app.common.flask_helper import GlobalVars
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
@@ -97,14 +97,14 @@ def login(req):
     )
 
     # 设置全局操作员
-    GlobalVars.put('operator', user.USER_NAME)
+    gvars.put('operator', user.USER_NAME)
     return {'accessToken': access_token}
 
 
 @http_service
 def logout():
     # 更新用户accessToken状态为无效
-    UserAccessTokenDao.update_state_by_userno('INVALID', GlobalVars.user_no)
+    UserAccessTokenDao.update_state_by_userno('INVALID', gvars.get_userno())
 
 
 @http_service
@@ -211,7 +211,7 @@ def query_user_all():
 
 @http_service
 def query_user_info():
-    user_no = GlobalVars.user_no
+    user_no = gvars.get_userno()
 
     # 查询用户
     user = UserDao.select_by_userno(user_no)
