@@ -1,33 +1,12 @@
 [style]
-# 默认风格
 BASED_ON_STYLE = google
-
-# 行尾注释前的空格
-SPACES_BEFORE_COMMENT = 2
-
-# 限制单行字符长度
-COLUMN_LIMIT = 120
-
-# 缩进空格数
-INDENT_WIDTH = 4
-
-# 关闭括号放在单独的行上
-DEDENT_CLOSING_BRACKETS = True
-
-# 不拆分连续括号
-COALESCE_BRACKETS = True
-
-# * 和 / 运算法左右不加空格
 ARITHMETIC_PRECEDENCE_INDICATION = True
-
-# 在def或class之间，插入一个空行
 BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = True
-
-# 导入和变量定义之间所需的空行数
 BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
-
-# 将多行表达式格式化为单行表达式，例如，单行if语句
+COLUMN_LIMIT = 120
+COALESCE_BRACKETS = True
+DEDENT_CLOSING_BRACKETS = True
+INDENT_WIDTH = 4
 JOIN_MULTIPLE_LINES = True
-
-# 单行超长时，在 . 前换行
+SPACES_BEFORE_COMMENT = 2
 SPLIT_BEFORE_DOT = True
