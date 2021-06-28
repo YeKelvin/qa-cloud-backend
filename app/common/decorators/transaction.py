@@ -3,20 +3,18 @@
 # @File    : transaction.py
 # @Time    : 2020/3/20 15:50
 # @Author  : Kelvin.Ye
+import inspect
 from functools import wraps
 
 from flask import g
 from flask import request
 
 from app.extension import db
-from app.utils.log_util import get_logger
-
-
-log = get_logger(__name__)
 
 
 def transactional(func):
     """DB事务装饰器"""
+    log = inspect.getmodule(func).log
 
     @wraps(func)
     def wrapper(*args, **kwargs):

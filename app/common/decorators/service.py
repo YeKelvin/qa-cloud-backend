@@ -3,6 +3,7 @@
 # @File    : service.py
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
+import inspect
 import traceback
 from functools import wraps
 
@@ -14,15 +15,12 @@ from app.common.exceptions import ServiceError
 from app.common.request import RequestDTO
 from app.common.response import ResponseDTO
 from app.common.response import http_response
-from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_as_ms
-
-
-log = get_logger(__name__)
 
 
 def http_service(func):
     """service层装饰器，主要用于记录日志和捕获异常"""
+    log = inspect.getmodule(func).log
 
     @wraps(func)
     def wrapper(*args, **kwargs):
