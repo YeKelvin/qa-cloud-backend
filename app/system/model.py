@@ -61,6 +61,7 @@ class TWorkspace(DBModel):
     WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='工作空间编号')
     WORKSPACE_NAME = db.Column(db.String(128), nullable=False, comment='工作空间名称')
     WORKSPACE_TYPE = db.Column(db.String(128), nullable=False, comment='工作空间类型')
+    WORKSPACE_SCOPE = db.Column(db.String(128), nullable=False, comment='工作空间作用域')
     WORKSPACE_DESC = db.Column(db.String(256), comment='工作空间描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')

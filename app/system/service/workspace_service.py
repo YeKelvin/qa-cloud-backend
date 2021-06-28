@@ -21,6 +21,7 @@ def query_workspace_list(req):
         workspaceNo=req.workspaceNo,
         workspaceName=req.workspaceName,
         workspaceType=req.workspaceType,
+        workspaceScope=req.workspaceScope,
         workspaceDesc=req.workspaceDesc,
         page=req.page,
         pageSize=req.pageSize
@@ -32,6 +33,7 @@ def query_workspace_list(req):
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
             'workspaceType': workspace.WORKSPACE_TYPE,
+            'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
         })
     return {'data': data, 'total': workspaces.total}
@@ -46,6 +48,7 @@ def query_workspace_all():
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
             'workspaceType': workspace.WORKSPACE_TYPE,
+            'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
         })
     return result
@@ -60,6 +63,7 @@ def create_workspace(req):
         WORKSPACE_NO=new_id(),
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_TYPE=req.workspaceType,
+        WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
     )
 
@@ -72,6 +76,7 @@ def modify_workspace(req):
     workspace.update(
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_TYPE=req.workspaceType,
+        WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
     )
 

@@ -37,9 +37,9 @@ class Argument:
         self.default = default      # 参数默认值
         self.required = required    # 参数是否要求必传
         self.nullable = nullable    # 参数是否允许为空
-        self.min = min              # 参数允许的最小值或最小长度 TODO
-        self.max = max              # 参数允许的最大值或最大长度 TODO
-        self.enum = enum            # 参数枚举校验 TODO
+        self.min = min              # 参数允许的最小值或最小长度 TODO:
+        self.max = max              # 参数允许的最大值或最大长度 TODO:
+        self.enum = enum            # 参数枚举校验 TODO:
         self.help = help            # 参数不符合要求时的提示语
 
         if not isinstance(self.name, str):

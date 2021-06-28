@@ -24,6 +24,7 @@ def query_workspace_list():
         Argument('workspaceNo'),
         Argument('workspaceName'),
         Argument('workspaceType'),
+        Argument('workspaceScope'),
         Argument('workspaceDesc'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
@@ -47,6 +48,7 @@ def create_workspace():
     req = JsonParser(
         Argument('workspaceName', required=True, nullable=False, help='工作空间名称不能为空'),
         Argument('workspaceType', required=True, nullable=False, help='工作空间类型不能为空'),
+        Argument('workspaceScope', required=True, nullable=False, help='工作空间作用域不能为空'),
         Argument('workspaceDesc'),
     ).parse()
     return service.create_workspace(req)
@@ -61,6 +63,7 @@ def modify_workspace():
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
         Argument('workspaceName', required=True, nullable=False, help='工作空间名称不能为空'),
         Argument('workspaceType', required=True, nullable=False, help='工作空间类型不能为空'),
+        Argument('workspaceScope', required=True, nullable=False, help='工作空间作用域不能为空'),
         Argument('workspaceDesc'),
     ).parse()
     return service.modify_workspace(req)
@@ -84,7 +87,7 @@ def add_workspace_user():
     """添加工作空间成员"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
     ).parse()
     return service.add_workspace_user(req)
 
@@ -96,7 +99,7 @@ def modify_workspace_user():
     """修改工作空间成员"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
     ).parse()
     return service.modify_workspace_user(req)
 
@@ -108,6 +111,6 @@ def remove_workspace_user():
     """移除工作空间成员"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userNoList', required=True, nullable=False, help='用户编号列表不能为空'),
+        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
     ).parse()
     return service.remove_workspace_user(req)
