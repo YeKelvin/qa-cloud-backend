@@ -10,7 +10,8 @@
             "console": "internalConsole",
             "justMyCode": false,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONIOENCODING": "UTF8"
             }
         },
         {
@@ -23,15 +24,11 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
-                // "FLASK_APP": "main:app",
-                // "FLASK_ENV": "development",
-                // "FLASK_DEBUG": "1"
+                "PYTHONIOENCODING": "UTF8"
             },
             "args": [
                 "run",
-                "--no-reload",
-                // "--host", "0.0.0.0",
-                // "--port", "5000"
+                "--no-reload"
             ]
         },
         {
@@ -48,7 +45,8 @@
                 "--html=report.html"
             ],
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONIOENCODING": "UTF8"
             }
         }
     ]
