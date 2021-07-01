@@ -13,7 +13,7 @@ def select_by_childno(child_no) -> TElementChildRel:
 
 
 def select_all_by_parentno(parent_no) -> List[TElementChildRel]:
-    return TElementChildRel.query_by(PARENT_NO=parent_no).all()
+    return TElementChildRel.query_by(PARENT_NO=parent_no).order_by(TElementChildRel.CHILD_ORDER).all()
 
 
 def select_by_parentno_and_childno(parent_no, child_no) -> TElementChildRel:

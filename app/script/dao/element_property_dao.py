@@ -18,3 +18,7 @@ def select_by_elementno_and_name(element_no, property_name) -> TElementProperty:
 
 def select_all_by_elementno(element_no) -> List[TElementProperty]:
     return TElementProperty.query_by(ELEMENT_NO=element_no).all()
+
+
+def select_all_by_elementno_with_enable(element_no) -> List[TElementProperty]:
+    return TElementProperty.query_by(ELEMENT_NO=element_no, ENABLED=True).all()

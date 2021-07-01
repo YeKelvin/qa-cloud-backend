@@ -10,9 +10,10 @@ from pymeter.runner import Runner
 from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import executor
-from app.script.model import TElementChildRel
-from app.script.model import TElementProperty
+from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.model import TTestElement
+from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 
 
@@ -67,7 +68,8 @@ def load_element(element_no):
 
     # 递归查询元素子代
     # 查询时根据order asc排序
-    element_child_rel_list = TElementChildRel.query_by(PARENT_NO=element_no).order_by(TElementChildRel.CHILD_ORDER).all()
+    element_child_rel_list = ElementChildRelDao.select_all_by_parentno(element_no)
+
     children = []
     if element_child_rel_list:
         for element_child_rel in element_child_rel_list:
@@ -87,11 +89,19 @@ def load_element(element_no):
 
 def load_element_property(element_no):
     # 查询元素属性，只查询enabled的属性
-    props = TElementProperty.query_by(ELEMENT_NO=element_no, ENABLED=True).all()
+    props = ElementPropertyDao.select_all_by_elementno_with_enable(element_no)
 
     # 组装dict返回
-    property = {}
+    propertys = {}
     for prop in props:
-        property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+        if prop.PROPERTY_TYPE == 'STR':
+            propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+            continue
+        if prop.PROPERTY_TYPE == 'DICT':
+            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            continue
+        if prop.PROPERTY_TYPE == 'LIST':
+            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            continue
 
-    return property
+    return propertys

@@ -1,6 +1,5 @@
 {
     /* vscode */
-    "files.insertFinalNewline": true,
     "files.exclude": {
         "**/.idea": true,
         "**/.pytest_cache": true,
