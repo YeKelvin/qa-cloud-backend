@@ -50,11 +50,11 @@ def add_flask_socketio_result_collector(script: dict, sid: str):
         'remark': None,
         'class': 'FlaskSocketIOResultCollector',
         'enabled': True,
-        'property': {
+        'propertys': {
             'FlaskSocketIOResultCollector__namespace': '/',
-            'FlaskSocketIOResultCollector__event_name': 'execution_result',
+            'FlaskSocketIOResultCollector__event_name': 'pymeter_result',
             'FlaskSocketIOResultCollector__target_sid': sid,
-            'FlaskSocketIOResultCollector__flask_sio_instance_module': 'server.extension',
+            'FlaskSocketIOResultCollector__flask_sio_instance_module': 'app.extension',
             'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
         },
         'children': None
@@ -78,10 +78,10 @@ def load_element(element_no):
     # 组装dict返回
     el_dict = {
         'name': element.ELEMENT_NAME,
-        'remark ': element.ELEMENT_REMARK,
+        'remark': element.ELEMENT_REMARK,
         'class': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
-        'property': load_element_property(element_no),
+        'propertys': load_element_property(element_no),
         'children': children
     }
     return el_dict
