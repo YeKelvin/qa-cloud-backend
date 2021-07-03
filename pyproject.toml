@@ -11,18 +11,18 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
-flask = "^2.0.1"
-flask-socketio = "^5.0.3"
-flask-sqlalchemy = "^2.5.1"
-flask-migrate = "^3.0.0"
-orjson = "^3.5.2"
-jsonpath = "^0.82"
-pydantic = "^1.8.2"
-pyjwt = { version = "^2.1.0", extras=["crypto"] }
-pycryptodome = "^3.10.1"
-python-dotenv = "^0.17.1"
-gevent = "^21.1.2"
-gevent-websocket = "^0.10.1"
+flask = "2.0.1"
+flask-socketio = "5.1.0"
+flask-sqlalchemy = "2.5.1"
+flask-migrate = "3.0.1"
+orjson = "3.5.4"
+jsonpath = "0.82"
+pydantic = "1.8.2"
+pyjwt = { version = "2.1.0", extras=["crypto"] }
+pycryptodome = "3.10.1"
+python-dotenv = "0.18.0"
+gevent = "21.1.2"
+gevent-websocket = "0.10.1"
 gunicorn = { version = "*", markers = "platform_system == 'Linux'" }
 uwsgi = { version = "*", markers = "platform_system == 'Linux'" }
 pymeter = {path = "../pymeter", develop = true}
