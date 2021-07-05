@@ -10,6 +10,7 @@ from pymeter.runner import Runner
 from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import executor
+from app.extension import socketio
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.model import TTestElement
@@ -31,34 +32,38 @@ def execute_script(req):
         add_flask_socketio_result_collector(collection, req.sid)
 
     script = [collection]
-    # 新增线程执行脚本
-    # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
 
+    # 新增线程执行脚本
     def start():
+        sid = req.sid
         try:
-            Runner.start(script)
+            Runner.start(script, throw_ex=True)
         except Exception:
             log.error(traceback.format_exc())
+            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
 
+    # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
     executor.submit(start)
     return None
 
 
 def add_flask_socketio_result_collector(script: dict, sid: str):
-    script['children'].insert(0, {
-        'name': 'FlaskSocketIOResultCollector',
-        'remark': None,
-        'class': 'FlaskSocketIOResultCollector',
-        'enabled': True,
-        'propertys': {
-            'FlaskSocketIOResultCollector__namespace': '/',
-            'FlaskSocketIOResultCollector__event_name': 'pymeter_result',
-            'FlaskSocketIOResultCollector__target_sid': sid,
-            'FlaskSocketIOResultCollector__flask_sio_instance_module': 'app.extension',
-            'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
-        },
-        'children': None
-    })
+    script['children'].insert(
+        0, {
+            'name': 'FlaskSocketIOResultCollector',
+            'remark': None,
+            'class': 'FlaskSocketIOResultCollector',
+            'enabled': True,
+            'propertys': {
+                'FlaskSocketIOResultCollector__namespace': '/',
+                'FlaskSocketIOResultCollector__event_name': 'pymeter_result',
+                'FlaskSocketIOResultCollector__target_sid': sid,
+                'FlaskSocketIOResultCollector__flask_sio_instance_module': 'app.extension',
+                'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
+            },
+            'children': None
+        }
+    )
 
 
 def load_element(element_no):
