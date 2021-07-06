@@ -28,5 +28,9 @@ def count_by_parentno(parent_no) -> int:
     return TElementChildRel.query_by(PARENT_NO=parent_no).count()
 
 
+def count_by_parentno_and_childtype(parent_no, child_type) -> int:
+    return TElementChildRel.query_by(PARENT_NO=parent_no, CHILD_TYPE=child_type).count()
+
+
 def next_order_by_parentno(parent_no) -> int:
     return TElementChildRel.query_by(PARENT_NO=parent_no).count() + 1

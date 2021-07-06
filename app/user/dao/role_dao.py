@@ -25,7 +25,7 @@ def select_all() -> List[TRole]:
 
 def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
-    conditions.add_fully_match(TRole.DEL_STATE, 0)
+    conditions.add_exact_match(TRole.DEL_STATE, 0)
     if kwargs:
         conditions.add_fuzzy_match(TRole.ROLE_NO, kwargs.pop('roleNo', None))
         conditions.add_fuzzy_match(TRole.ROLE_NAME, kwargs.pop('roleName', None))

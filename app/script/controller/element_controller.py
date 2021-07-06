@@ -74,7 +74,7 @@ def query_element_children():
 @require_login
 @require_permission
 def create_element():
-    """新增测试元素（支持新增子代，子代必须包含 order属性）"""
+    """新增测试元素（支持新增子代，子代必须包含order属性）"""
     req = JsonParser(
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementRemark'),

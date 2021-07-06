@@ -35,7 +35,7 @@ log = get_logger(__name__)
 def query_element_list(req):
     # 查询条件
     conditions = QueryCondition()
-    conditions.add_fully_match(TTestElement.DEL_STATE, 0)
+    conditions.add_exact_match(TTestElement.DEL_STATE, 0)
     conditions.add_fuzzy_match(TTestElement.ELEMENT_NO, req.elementNo)
     conditions.add_fuzzy_match(TTestElement.ELEMENT_NAME, req.elementName)
     conditions.add_fuzzy_match(TTestElement.ELEMENT_REMARK, req.elementRemark)
@@ -43,15 +43,15 @@ def query_element_list(req):
     conditions.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo:
-        conditions.add_fully_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-        conditions.add_fully_match(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
+        conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
+        conditions.add_exact_match(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
         conditions.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
 
     if req.workspaceName:
-        conditions.add_fully_match(TWorkspace.DEL_STATE, 0)
-        conditions.add_fully_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-        conditions.add_fully_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-        conditions.add_fully_match(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conditions.add_exact_match(TWorkspace.DEL_STATE, 0)
+        conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
+        conditions.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+        conditions.add_exact_match(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, req.workspaceName)
 
     # TTestElement，TWorkspace，TWorkspaceCollectionRel连表查询
@@ -78,9 +78,9 @@ def query_element_list(req):
 def query_element_all(req):
     # 查询条件
     conditions = QueryCondition()
-    conditions.add_fully_match(TTestElement.DEL_STATE, 0)
-    conditions.add_fully_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-    conditions.add_fully_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    conditions.add_exact_match(TTestElement.DEL_STATE, 0)
+    conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
+    conditions.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
     conditions.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
     conditions.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
     conditions.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
@@ -149,28 +149,38 @@ def query_element_children(req):
     return get_element_children(req.elementNo, req.depth)
 
 
-def get_element_children(element_no, depth):
+def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
-    elchild_rel_list = ElementChildRelDao.select_all_by_parentno(element_no)
-    if not elchild_rel_list:
+
+    # 查询元素所有子代关系
+    el_child_rel_list = ElementChildRelDao.select_all_by_parentno(parent_no)
+    if not el_child_rel_list:
         return result
 
-    # 根据 child_order排序
-    elchild_rel_list.sort(key=lambda k: k.CHILD_ORDER)
-    for elchild_rel in elchild_rel_list:
-        element = TestElementDao.select_by_elementno(elchild_rel.CHILD_NO)
+    # 根据child-order排序
+    el_child_rel_list.sort(key=lambda k: k.CHILD_ORDER)
+    for el_child_rel in el_child_rel_list:
+        if el_child_rel.INSIDE:
+            child_type_total = ElementChildRelDao.count_by_parentno_and_childtype(parent_no, el_child_rel.CHILD_TYPE)
+            if child_type_total <= 1:
+                continue
+
+        # 查询子代元素信息
+        element = TestElementDao.select_by_elementno(el_child_rel.CHILD_NO)
         if element:
-            children = depth and get_element_children(elchild_rel.CHILD_NO, depth) or []
+            # 递归查询子代
+            children = depth and get_element_children(el_child_rel.CHILD_NO, depth) or []
             result.append({
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
-                'order': elchild_rel.CHILD_ORDER,
+                'order': el_child_rel.CHILD_ORDER,
                 'children': children
             })
+
     return result
 
 
@@ -421,7 +431,9 @@ def add_element_children(parent_no, children: Iterable[dict]):
         TElementChildRel.insert(
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            CHILD_ORDER=ElementChildRelDao.next_order_by_parentno(parent_no)
+            CHILD_ORDER=ElementChildRelDao.next_order_by_parentno(parent_no),
+            CHILD_TYPE=child.get('elementType'),
+            INSIDE=child.get('inside', False)
         )
 
 

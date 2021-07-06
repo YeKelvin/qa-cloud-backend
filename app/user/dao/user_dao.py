@@ -21,7 +21,7 @@ def select_one(**kwargs) -> TUser:
 
 def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
-    conditions.add_fully_match(TUser.DEL_STATE, 0)
+    conditions.add_exact_match(TUser.DEL_STATE, 0)
     if kwargs:
         conditions.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
         conditions.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
@@ -37,7 +37,7 @@ def select_list(**kwargs) -> Pagination:
 
 def select_all(**kwargs) -> List[TUser]:
     conditions = QueryCondition()
-    conditions.add_fully_match(TUser.DEL_STATE, 0)
+    conditions.add_exact_match(TUser.DEL_STATE, 0)
     if kwargs:
         conditions.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
         conditions.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))

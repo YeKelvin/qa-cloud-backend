@@ -21,7 +21,7 @@ def select_by_workspacename(workspace_name) -> TWorkspace:
 
 def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
-    conditions.add_fully_match(TWorkspace.DEL_STATE, 0)
+    conditions.add_exact_match(TWorkspace.DEL_STATE, 0)
     if kwargs:
         conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
         conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, kwargs.pop('workspaceName', None))

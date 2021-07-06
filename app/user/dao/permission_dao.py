@@ -21,7 +21,7 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
 
 def select_list(**kwargs) -> Pagination:
     conditions = QueryCondition()
-    conditions.add_fully_match(TPermission.DEL_STATE, 0)
+    conditions.add_exact_match(TPermission.DEL_STATE, 0)
     if kwargs:
         conditions.add_fuzzy_match(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
         conditions.add_fuzzy_match(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
