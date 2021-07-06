@@ -54,7 +54,7 @@ def add_flask_socketio_result_collector(script: dict, sid: str):
             'remark': None,
             'class': 'FlaskSocketIOResultCollector',
             'enabled': True,
-            'propertys': {
+            'property': {
                 'FlaskSocketIOResultCollector__namespace': '/',
                 'FlaskSocketIOResultCollector__event_name': 'pymeter_result',
                 'FlaskSocketIOResultCollector__target_sid': sid,
@@ -86,7 +86,7 @@ def load_element(element_no):
         'remark': element.ELEMENT_REMARK,
         'class': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
-        'propertys': load_element_property(element_no),
+        'property': load_element_property(element_no),
         'children': children
     }
     return el_dict
@@ -97,16 +97,16 @@ def load_element_property(element_no):
     props = ElementPropertyDao.select_all_by_elementno_with_enable(element_no)
 
     # 组装dict返回
-    propertys = {}
+    property = {}
     for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
-            propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
             continue
         if prop.PROPERTY_TYPE == 'DICT':
-            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
         if prop.PROPERTY_TYPE == 'LIST':
-            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
 
-    return propertys
+    return property

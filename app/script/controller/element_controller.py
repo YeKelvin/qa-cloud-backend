@@ -80,7 +80,7 @@ def create_element():
         Argument('elementRemark'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
-        Argument('propertys', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
         Argument('children'),
         Argument('workspaceNo'),
     ).parse()
@@ -97,7 +97,7 @@ def modify_element():
         Argument('elementName'),
         Argument('elementRemark'),
         Argument('enabled'),
-        Argument('propertys'),
+        Argument('property'),
         Argument('children'),
     ).parse()
     return service.modify_element(req)

@@ -112,7 +112,7 @@ def query_element_info(req):
     check_is_not_blank(element, '测试元素不存在')
 
     # 查询元素属性
-    propertys = query_element_propertys(req.elementNo)
+    property = query_element_property(req.elementNo)
     # 查询元素是否有子代
     has_children = ElementChildRelDao.count_by_parentno(req.elementNo) > 0
 
@@ -122,26 +122,26 @@ def query_element_info(req):
         'elementRemark': element.ELEMENT_REMARK,
         'elementType': element.ELEMENT_TYPE,
         'enabled': element.ENABLED,
-        'propertys': propertys,
+        'property': property,
         'hasChildren': has_children
     }
 
 
-def query_element_propertys(element_no):
+def query_element_property(element_no):
     """查询元素属性"""
-    propertys = {}
+    property = {}
     props = ElementPropertyDao.select_all_by_elementno(element_no)
     for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
-            propertys[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
             continue
         if prop.PROPERTY_TYPE == 'DICT':
-            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
         if prop.PROPERTY_TYPE == 'LIST':
-            propertys[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
-    return propertys
+    return property
 
 
 @http_service
@@ -185,7 +185,7 @@ def create_element(req):
         element_remark=req.elementRemark,
         element_type=req.elementType,
         element_class=req.elementClass,
-        propertys=req.propertys,
+        property=req.property,
         children=req.children
     )
 
@@ -203,7 +203,7 @@ def create_element(req):
 
 
 def add_element(
-    element_name, element_remark, element_type, element_class, propertys: dict = None, children: Iterable[dict] = None
+    element_name, element_remark, element_type, element_class, property: dict = None, children: Iterable[dict] = None
 ):
     """创建元素并递归创建元素属性和元素子代"""
     # 创建元素
@@ -217,9 +217,9 @@ def add_element(
         ENABLED=ElementStatus.ENABLE.value
     )
 
-    if propertys:
+    if property:
         # 创建元素属性
-        add_element_propertys(element_no, propertys)
+        add_element_property(element_no, property)
 
     if children:
         # 创建元素子代
@@ -235,12 +235,12 @@ def modify_element(req):
         element_no=req.elementNo,
         element_name=req.elementName,
         element_remark=req.elementRemark,
-        propertys=req.propertys,
+        property=req.property,
         children=req.children
     )
 
 
-def update_element(element_no, element_name, element_remark, propertys: dict = None, children: Iterable[dict] = None):
+def update_element(element_no, element_name, element_remark, property: dict = None, children: Iterable[dict] = None):
     """递归修改元素"""
     # 查询元素
     element = TestElementDao.select_by_elementno(element_no)
@@ -252,9 +252,9 @@ def update_element(element_no, element_name, element_remark, propertys: dict = N
         ELEMENT_REMARK=element_remark
     )
 
-    if propertys:
+    if property:
         # 更新元素属性信息
-        update_element_propertys(element_no, propertys)
+        update_element_property(element_no, property)
 
     if children:
         # 更新元素子代
@@ -351,9 +351,9 @@ def create_element_property(req):
     )
 
 
-def add_element_propertys(element_no, propertys: dict):
+def add_element_property(element_no, property: dict):
     """遍历添加元素属性"""
-    for name, value in propertys.items():
+    for name, value in property.items():
         value_type = 'STR'
 
         if isinstance(value, dict):
@@ -381,9 +381,9 @@ def modify_element_property(req):
     el_prop.update(property_value=req.propertyValue)
 
 
-def update_element_propertys(element_no, propertys: dict):
+def update_element_property(element_no, property: dict):
     """遍历修改元素属性"""
-    for name, value in propertys.items():
+    for name, value in property.items():
         # 查询元素属性
         prop = ElementPropertyDao.select_by_elementno_and_name(element_no, name)
         # 更新元素属性值
@@ -415,7 +415,7 @@ def add_element_children(parent_no, children: Iterable[dict]):
             element_remark=child.get('elementRemark'),
             element_type=child.get('elementType'),
             element_class=child.get('elementClass'),
-            propertys=child.get('propertys', None),
+            property=child.get('property', None),
             children=child.get('children', None)
         )
         TElementChildRel.insert(
@@ -442,7 +442,7 @@ def update_element_children(children: Iterable[dict]):
             element_name=child.get('elementName'),
             element_remark=child.get('elementRemark'),
             element_type=child.get('elementType'),
-            propertys=child.get('propertys', None),
+            property=child.get('property', None),
             children=child.get('children', None)
         )
 
