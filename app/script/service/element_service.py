@@ -55,10 +55,7 @@ def query_element_list(req):
 
     # TTestElement，TWorkspace，TWorkspaceCollectionRel连表查询
     pagination = db.session.query(
-        TTestElement.ELEMENT_NO,
-        TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_REMARK,
-        TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_NO, TTestElement.ELEMENT_NAME, TTestElement.ELEMENT_REMARK, TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
@@ -84,10 +81,7 @@ def query_element_all(req):
 
     # TTestElement，TWorkspaceCollectionRel连表查询
     items = db.session.query(
-        TTestElement.ELEMENT_NO,
-        TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_REMARK,
-        TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_NO, TTestElement.ELEMENT_NAME, TTestElement.ELEMENT_REMARK, TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
 
@@ -122,6 +116,31 @@ def query_element_info(req):
         'property': property,
         'hasChildren': has_children
     }
+
+
+@http_service
+def query_inside_element_info(req):
+    # 查询元素
+    element = TestElementDao.select_by_elementno(req.parentNo)
+    check_is_not_blank(element, '测试元素不存在')
+
+    inside_element = {}
+    for element_type in req.elementTypeList:
+        rel = ElementChildRelDao.select_by_type_and_inside(req.parentNo, element_type)
+        element = TestElementDao.select_by_elementno(rel.CHILD_NO)
+        check_is_not_blank(element, '测试元素不存在')
+        # 查询元素属性
+        property = query_element_property(rel.CHILD_NO)
+        inside_element[element_type] = {
+            'elementNo': element.ELEMENT_NO,
+            'elementName': element.ELEMENT_NAME,
+            'elementRemark': element.ELEMENT_REMARK,
+            'elementType': element.ELEMENT_TYPE,
+            'enabled': element.ENABLED,
+            'property': property
+        }
+
+    return inside_element
 
 
 def query_element_property(element_no):
@@ -201,10 +220,7 @@ def create_element(req):
         workspace = WorkspaceDao.select_by_workspaceno(req.workspaceNo)
         check_is_not_blank(workspace, '测试项目不存在')
 
-        TWorkspaceCollectionRel.insert(
-            WORKSPACE_NO=req.workspaceNo,
-            COLLECTION_NO=element_no
-        )
+        TWorkspaceCollectionRel.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
 
     return {'elementNo': element_no}
 
@@ -254,10 +270,7 @@ def update_element(element_no, element_name, element_remark, property: dict = No
     check_is_not_blank(element, '测试元素不存在')
 
     # 更新元素信息
-    element.update(
-        ELEMENT_NAME=element_name,
-        ELEMENT_REMARK=element_remark
-    )
+    element.update(ELEMENT_NAME=element_name, ELEMENT_REMARK=element_remark)
 
     if property:
         # 更新元素属性信息
@@ -287,8 +300,7 @@ def remove_element(element_no):
     if child_rel:
         # 重新排序父辈子代
         TElementChildRel.query.filter(
-            TElementChildRel.PARENT_NO == child_rel.PARENT_NO,
-            TElementChildRel.CHILD_ORDER > child_rel.CHILD_ORDER
+            TElementChildRel.PARENT_NO == child_rel.PARENT_NO, TElementChildRel.CHILD_ORDER > child_rel.CHILD_ORDER
         ).update({TElementChildRel.CHILD_ORDER: TElementChildRel.CHILD_ORDER - 1})
         # 删除父辈关联
         child_rel.delete()
@@ -351,11 +363,7 @@ def create_element_property(req):
     check_is_blank(el_prop, '元素属性已存在')
 
     # 创建元素属性
-    TElementProperty.insert(
-        ELEMENT_NO=req.elementNo,
-        PROPERTY_NAME=req.propertyName,
-        PROPERTY_VALUE=req.propertyValue
-    )
+    TElementProperty.insert(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName, PROPERTY_VALUE=req.propertyValue)
 
 
 def add_element_property(element_no, property: dict):
@@ -371,10 +379,7 @@ def add_element_property(element_no, property: dict):
             value = to_json(value)
 
         TElementProperty.insert(
-            ELEMENT_NO=element_no,
-            PROPERTY_NAME=name,
-            PROPERTY_VALUE=value,
-            PROPERTY_TYPE=value_type
+            ELEMENT_NO=element_no, PROPERTY_NAME=name, PROPERTY_VALUE=value, PROPERTY_TYPE=value_type
         )
 
 
@@ -408,10 +413,7 @@ def update_element_property(element_no, property: dict):
 @http_service
 @transactional
 def create_element_children(req):
-    add_element_children(
-        parent_no=req.parentNo,
-        children=req.children
-    )
+    add_element_children(parent_no=req.parentNo, children=req.children)
 
 
 def add_element_children(parent_no, children: Iterable[dict]):
