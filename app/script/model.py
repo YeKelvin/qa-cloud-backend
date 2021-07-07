@@ -74,8 +74,6 @@ class TElementChildRel(DBModel):
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     CHILD_ORDER = db.Column(db.Integer, nullable=False, comment='子元素序号')
-    CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
-    INSIDE = db.Column(db.Boolean, nullable=False, default=False, comment='是否父级的内部元素')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

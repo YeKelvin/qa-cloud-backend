@@ -118,31 +118,6 @@ def query_element_info(req):
     }
 
 
-@http_service
-def query_inside_element_info(req):
-    # 查询元素
-    element = TestElementDao.select_by_elementno(req.parentNo)
-    check_is_not_blank(element, '测试元素不存在')
-
-    inside_element = {}
-    for element_type in req.elementTypeList:
-        rel = ElementChildRelDao.select_by_type_and_inside(req.parentNo, element_type)
-        element = TestElementDao.select_by_elementno(rel.CHILD_NO)
-        check_is_not_blank(element, '测试元素不存在')
-        # 查询元素属性
-        property = query_element_property(rel.CHILD_NO)
-        inside_element[element_type] = {
-            'elementNo': element.ELEMENT_NO,
-            'elementName': element.ELEMENT_NAME,
-            'elementRemark': element.ELEMENT_REMARK,
-            'elementType': element.ELEMENT_TYPE,
-            'enabled': element.ENABLED,
-            'property': property
-        }
-
-    return inside_element
-
-
 def query_element_property(element_no):
     """查询元素属性"""
     property = {}
@@ -177,11 +152,6 @@ def get_element_children(parent_no, depth):
     # 根据child-order排序
     el_child_rel_list.sort(key=lambda k: k.CHILD_ORDER)
     for el_child_rel in el_child_rel_list:
-        if el_child_rel.INSIDE:
-            child_type_total = ElementChildRelDao.count_by_parentno_and_childtype(parent_no, el_child_rel.CHILD_TYPE)
-            if child_type_total <= 1:
-                continue
-
         # 查询子代元素信息
         element = TestElementDao.select_by_elementno(el_child_rel.CHILD_NO)
         if element:
@@ -430,9 +400,7 @@ def add_element_children(parent_no, children: Iterable[dict]):
         TElementChildRel.insert(
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            CHILD_ORDER=ElementChildRelDao.next_order_by_parentno(parent_no),
-            CHILD_TYPE=child.get('elementType'),
-            INSIDE=child.get('inside', False)
+            CHILD_ORDER=ElementChildRelDao.next_order_by_parentno(parent_no)
         )
 
 
