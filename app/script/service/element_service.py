@@ -34,25 +34,24 @@ log = get_logger(__name__)
 @http_service
 def query_element_list(req):
     # 查询条件
-    conditions = QueryCondition()
-    conditions.add_exact_match(TTestElement.DEL_STATE, 0)
-    conditions.add_fuzzy_match(TTestElement.ELEMENT_NO, req.elementNo)
-    conditions.add_fuzzy_match(TTestElement.ELEMENT_NAME, req.elementName)
-    conditions.add_fuzzy_match(TTestElement.ELEMENT_REMARK, req.elementRemark)
-    conditions.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
-    conditions.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
+    conds = QueryCondition(TTestElement)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_NO, req.elementNo)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_NAME, req.elementName)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_REMARK, req.elementRemark)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo:
-        conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-        conditions.add_exact_match(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
-        conditions.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+        conds.add_table(TWorkspaceCollectionRel)
+        conds.add_exact_match(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
+        conds.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
 
     if req.workspaceName:
-        conditions.add_exact_match(TWorkspace.DEL_STATE, 0)
-        conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-        conditions.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-        conditions.add_exact_match(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
-        conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, req.workspaceName)
+        conds.add_table(TWorkspace)
+        conds.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
+        conds.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+        conds.add_exact_match(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, req.workspaceName)
 
     # TTestElement，TWorkspace，TWorkspaceCollectionRel连表查询
     pagination = db.session.query(
@@ -61,7 +60,7 @@ def query_element_list(req):
         TTestElement.ELEMENT_REMARK,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
-    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:
@@ -77,13 +76,11 @@ def query_element_list(req):
 @http_service
 def query_element_all(req):
     # 查询条件
-    conditions = QueryCondition()
-    conditions.add_exact_match(TTestElement.DEL_STATE, 0)
-    conditions.add_exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-    conditions.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conditions.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
-    conditions.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
-    conditions.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
+    conds = QueryCondition(TTestElement, TWorkspaceCollectionRel)
+    conds.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    conds.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
 
     # TTestElement，TWorkspaceCollectionRel连表查询
     items = db.session.query(
@@ -92,7 +89,7 @@ def query_element_all(req):
         TTestElement.ELEMENT_REMARK,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
-    ).filter(*conditions).order_by(TTestElement.CREATED_TIME.desc()).all()
+    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
 
     result = []
     for item in items:

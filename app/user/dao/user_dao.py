@@ -20,29 +20,27 @@ def select_one(**kwargs) -> TUser:
 
 
 def select_list(**kwargs) -> Pagination:
-    conditions = QueryCondition()
-    conditions.add_exact_match(TUser.DEL_STATE, 0)
+    conds = QueryCondition(TUser)
     if kwargs:
-        conditions.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
-        conditions.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
-        conditions.add_fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
-        conditions.add_fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
-        conditions.add_fuzzy_match(TUser.STATE, kwargs.pop('state', None))
+        conds.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
+        conds.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
+        conds.add_fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
+        conds.add_fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
+        conds.add_fuzzy_match(TUser.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
 
-    return TUser.query.filter(*conditions).order_by(TUser.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page, pageSize)
 
 
 def select_all(**kwargs) -> List[TUser]:
-    conditions = QueryCondition()
-    conditions.add_exact_match(TUser.DEL_STATE, 0)
+    conds = QueryCondition(TUser)
     if kwargs:
-        conditions.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
-        conditions.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
-        conditions.add_fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
-        conditions.add_fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
-        conditions.add_fuzzy_match(TUser.STATE, kwargs.pop('state', None))
+        conds.add_fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
+        conds.add_fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
+        conds.add_fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
+        conds.add_fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
+        conds.add_fuzzy_match(TUser.STATE, kwargs.pop('state', None))
 
-    return TUser.query.filter(*conditions).order_by(TUser.CREATED_TIME.desc()).all()
+    return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()

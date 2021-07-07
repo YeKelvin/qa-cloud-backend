@@ -21,18 +21,15 @@ log = get_logger(__name__)
 @http_service
 def query_role_permission_rel_list(req):
     # 查询条件
-    conditions = QueryCondition()
-    conditions.add_exact_match(TRole.DEL_STATE, 0)
-    conditions.add_exact_match(TPermission.DEL_STATE, 0)
-    conditions.add_exact_match(TRolePermissionRel.DEL_STATE, 0)
-    conditions.add_exact_match(TRolePermissionRel.ROLE_NO, TRole.ROLE_NO)
-    conditions.add_exact_match(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
-    conditions.add_fuzzy_match(TRolePermissionRel.ROLE_NO, req.roleNo)
-    conditions.add_fuzzy_match(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
-    conditions.add_fuzzy_match(TRole.ROLE_NAME, req.roleName)
-    conditions.add_fuzzy_match(TPermission.PERMISSION_NAME, req.permissionName)
-    conditions.add_fuzzy_match(TPermission.ENDPOINT, req.endpoint)
-    conditions.add_fuzzy_match(TPermission.METHOD, req.method)
+    conds = QueryCondition(TRole, TPermission, TRolePermissionRel)
+    conds.add_fuzzy_match(TRole.ROLE_NAME, req.roleName)
+    conds.add_fuzzy_match(TPermission.PERMISSION_NAME, req.permissionName)
+    conds.add_fuzzy_match(TPermission.ENDPOINT, req.endpoint)
+    conds.add_fuzzy_match(TPermission.METHOD, req.method)
+    conds.add_exact_match(TRolePermissionRel.ROLE_NO, TRole.ROLE_NO)
+    conds.add_exact_match(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
+    conds.add_fuzzy_match(TRolePermissionRel.ROLE_NO, req.roleNo)
+    conds.add_fuzzy_match(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
 
     # TRole，TPermission，TRolePermissionRel连表查询
     pagination = db.session.query(
@@ -43,7 +40,7 @@ def query_role_permission_rel_list(req):
         TRolePermissionRel.ROLE_NO,
         TRolePermissionRel.PERMISSION_NO,
         TRolePermissionRel.CREATED_TIME
-    ).filter(*conditions).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:

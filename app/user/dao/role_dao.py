@@ -24,15 +24,14 @@ def select_all() -> List[TRole]:
 
 
 def select_list(**kwargs) -> Pagination:
-    conditions = QueryCondition()
-    conditions.add_exact_match(TRole.DEL_STATE, 0)
+    conds = QueryCondition(TRole)
     if kwargs:
-        conditions.add_fuzzy_match(TRole.ROLE_NO, kwargs.pop('roleNo', None))
-        conditions.add_fuzzy_match(TRole.ROLE_NAME, kwargs.pop('roleName', None))
-        conditions.add_fuzzy_match(TRole.ROLE_DESC, kwargs.pop('roleDesc', None))
-        conditions.add_fuzzy_match(TRole.STATE, kwargs.pop('state', None))
+        conds.add_fuzzy_match(TRole.ROLE_NO, kwargs.pop('roleNo', None))
+        conds.add_fuzzy_match(TRole.ROLE_NAME, kwargs.pop('roleName', None))
+        conds.add_fuzzy_match(TRole.ROLE_DESC, kwargs.pop('roleDesc', None))
+        conds.add_fuzzy_match(TRole.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
 
-    return TRole.query.filter(*conditions).order_by(TRole.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TRole.query.filter(*conds).order_by(TRole.CREATED_TIME.desc()).paginate(page, pageSize)

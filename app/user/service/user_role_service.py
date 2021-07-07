@@ -21,16 +21,13 @@ log = get_logger(__name__)
 @http_service
 def query_user_role_rel_list(req):
     # 查询条件
-    conditions = QueryCondition()
-    conditions.add_exact_match(TUser.DEL_STATE, 0)
-    conditions.add_exact_match(TRole.DEL_STATE, 0)
-    conditions.add_exact_match(TUserRoleRel.DEL_STATE, 0)
-    conditions.add_exact_match(TUser.USER_NO, TUserRoleRel.USER_NO)
-    conditions.add_exact_match(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
-    conditions.add_fuzzy_match(TUserRoleRel.USER_NO, req.userNo)
-    conditions.add_fuzzy_match(TUserRoleRel.ROLE_NO, req.roleNo)
-    conditions.add_fuzzy_match(TRole.ROLE_NAME, req.roleName)
-    conditions.add_fuzzy_match(TUser.USER_NAME, req.userName)
+    conds = QueryCondition(TUser, TRole, TUserRoleRel)
+    conds.add_exact_match(TUser.USER_NO, TUserRoleRel.USER_NO)
+    conds.add_fuzzy_match(TUser.USER_NAME, req.userName)
+    conds.add_exact_match(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
+    conds.add_fuzzy_match(TRole.ROLE_NAME, req.roleName)
+    conds.add_fuzzy_match(TUserRoleRel.USER_NO, req.userNo)
+    conds.add_fuzzy_match(TUserRoleRel.ROLE_NO, req.roleNo)
 
     # TUser，TRole，TUserRoleRel连表查询
     pagination = db.session.query(
@@ -39,7 +36,7 @@ def query_user_role_rel_list(req):
         TUserRoleRel.USER_NO,
         TUserRoleRel.ROLE_NO,
         TUserRoleRel.CREATED_TIME
-    ).filter(*conditions).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:

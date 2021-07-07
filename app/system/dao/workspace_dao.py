@@ -20,18 +20,17 @@ def select_by_workspacename(workspace_name) -> TWorkspace:
 
 
 def select_list(**kwargs) -> Pagination:
-    conditions = QueryCondition()
-    conditions.add_exact_match(TWorkspace.DEL_STATE, 0)
+    conds = QueryCondition(TWorkspace)
     if kwargs:
-        conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conditions.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, kwargs.pop('workspaceName', None))
-        conditions.add_fuzzy_match(TWorkspace.WORKSPACE_TYPE, kwargs.pop('workspaceType', None))
-        conditions.add_fuzzy_match(TWorkspace.WORKSPACE_DESC, kwargs.pop('workspaceDesc', None))
+        conds.add_fuzzy_match(TWorkspace.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+        conds.add_fuzzy_match(TWorkspace.WORKSPACE_NAME, kwargs.pop('workspaceName', None))
+        conds.add_fuzzy_match(TWorkspace.WORKSPACE_TYPE, kwargs.pop('workspaceType', None))
+        conds.add_fuzzy_match(TWorkspace.WORKSPACE_DESC, kwargs.pop('workspaceDesc', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
 
-    return TWorkspace.query.filter(*conditions).order_by(TWorkspace.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TWorkspace.query.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc()).paginate(page, pageSize)
 
 
 def select_all() -> List[TWorkspace]:

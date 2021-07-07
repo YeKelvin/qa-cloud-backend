@@ -20,20 +20,19 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
 
 
 def select_list(**kwargs) -> Pagination:
-    conditions = QueryCondition()
-    conditions.add_exact_match(TPermission.DEL_STATE, 0)
+    conds = QueryCondition(TPermission)
     if kwargs:
-        conditions.add_fuzzy_match(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
-        conditions.add_fuzzy_match(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
-        conditions.add_fuzzy_match(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
-        conditions.add_fuzzy_match(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
-        conditions.add_fuzzy_match(TPermission.METHOD, kwargs.pop('method', None))
-        conditions.add_fuzzy_match(TPermission.STATE, kwargs.pop('state', None))
+        conds.add_fuzzy_match(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
+        conds.add_fuzzy_match(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
+        conds.add_fuzzy_match(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
+        conds.add_fuzzy_match(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
+        conds.add_fuzzy_match(TPermission.METHOD, kwargs.pop('method', None))
+        conds.add_fuzzy_match(TPermission.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
 
-    return TPermission.query.filter(*conditions).order_by(TPermission.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TPermission.query.filter(*conds).order_by(TPermission.CREATED_TIME.desc()).paginate(page, pageSize)
 
 
 def select_all() -> List[TPermission]:

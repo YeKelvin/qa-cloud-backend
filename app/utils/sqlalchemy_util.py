@@ -13,14 +13,21 @@ def paginate(page, page_size):
 
 class QueryCondition(list):
 
+    def __init__(self, *agrs):
+        super().__init__()
+        for arg in agrs:
+            self.add_table(arg)
+
+    def add_table(self, table):
+        if table:
+            self.append(table.DEL_STATE == 0)
+
     def add_fuzzy_match(self, column, value):
         """模糊匹配"""
-        if value is None:
-            return
-        self.append(column.like(f'%{value}%'))
+        if value:
+            self.append(column.like(f'%{value}%'))
 
     def add_exact_match(self, column, value):
         """完全匹配"""
-        if value is None:
-            return
-        self.append(column == value)
+        if value:
+            self.append(column == value)
