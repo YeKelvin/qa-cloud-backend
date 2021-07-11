@@ -81,14 +81,14 @@ class TElementChildRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariableCollection(DBModel):
-    """环境变量集合表"""
-    __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION'
+class TSamplerRuntimePackage(DBModel):
+    """取样器运行时表"""
+    __tablename__ = 'SAMPLER_RUNTIME_PACKAGE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境集合编号')
-    COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='环境集合名称')
-    COLLECTION_DESC = db.Column(db.String(256), comment='环境集合描述')
+    SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='取样器元素编号')
+    RUNTIME_NO = db.Column(db.String(32), nullable=False, comment='运行时元素编号')
+    RUNTIME_TYPE = db.Column(db.String(32), nullable=False, comment='运行时类型')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -96,13 +96,14 @@ class TEnvironmentVariableCollection(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariableCollectionRel(DBModel):
-    """环境变量集合关联表"""
-    __tablename__ = 'ENVIRONMENT_VARIABLE_COLLECTION_REL'
+class TEnvironment(DBModel):
+    """环境变量集合表"""
+    __tablename__ = 'ENVIRONMENT'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='环境集合编号')
-    ENV_NO = db.Column(db.String(32), nullable=False, comment='环境变量编号')
+    ENV_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境编号')
+    ENV_NAME = db.Column(db.String(128), nullable=False, comment='环境名称')
+    ENV_DESC = db.Column(db.String(256), comment='环境描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -115,10 +116,11 @@ class TEnvironmentVariable(DBModel):
     __tablename__ = 'ENVIRONMENT_VARIABLE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    ENV_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境变量编号')
-    ENV_KEY = db.Column(db.String(256), nullable=False, comment='环境变量名称')
-    ENV_VALUE = db.Column(db.String(512), nullable=False, comment='环境变量值')
-    ENV_DESC = db.Column(db.String(256), comment='环境变量描述')
+    ENV_NO = db.Column(db.String(32), index=True, nullable=False, comment='环境编号')
+    VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
+    VAR_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
+    VAR_VALUE = db.Column(db.String(512), nullable=False, comment='变量值')
+    VAR_DESC = db.Column(db.String(256), comment='变量描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -134,20 +136,6 @@ class THTTPHeaderCollection:
     COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集合编号')
     COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='头部集合名称')
     COLLECTION_DESC = db.Column(db.String(256), comment='头部集合描述')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class THTTPHeaderCollectionRel:
-    """HTTP头部集合关联表"""
-    __tablename__ = 'HTTP_HEADER_COLLECTION_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='头部集合编号')
-    HEADER_NO = db.Column(db.String(32), nullable=False, comment='头部编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -183,52 +171,6 @@ class TSQLConfiguration(DBModel):
     DB_URL = db.Column(db.String(256), nullable=False, comment='数据库地址')
     USER_NAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库密码')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TElementPackage(DBModel):
-    """元素封装表"""
-    __tablename__ = 'ELEMENT_PACKAGE'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
-    PACKAGE_DESC = db.Column(db.String(256), nullable=False, comment='封装描述')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TPackageElementRel(DBModel):
-    """封装元素关联表"""
-    __tablename__ = 'PACKAGE_ELEMENT_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    PACKAGE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='封装编号')
-    ELEMENT_NO = db.Column(db.String(256), nullable=False, comment='元素编号')
-    ELEMENT_ORDER = db.Column(db.Integer, nullable=False, comment='元素序号')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
-class TScriptActivityLog(DBModel):
-    """脚本活动日志表"""
-    __tablename__ = 'SCRIPT_ACTIVITY_LOG'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
-    COLLECTION_NO = db.Column(db.String(32), nullable=False, comment='主题编号')
-    GROUP_NO = db.Column(db.String(32), nullable=False, comment='案例编号')
-    ACTIVITY_TYPE = db.Column(db.String(32), nullable=False, comment='活动类型')
-    ACTIVITY_DESC = db.Column(db.String(256), nullable=False, comment='活动描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

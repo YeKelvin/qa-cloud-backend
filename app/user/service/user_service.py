@@ -115,7 +115,7 @@ def register(req):
     check_is_blank(login_info, '登录账号已存在')
 
     # 查询用户
-    user = UserDao.select_one(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
+    user = UserDao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
     check_is_blank(user, '用户已存在')
 
     # 创建用户

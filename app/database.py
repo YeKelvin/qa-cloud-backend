@@ -21,25 +21,22 @@ class CRUDMixin:
         entity.submit()
 
     @classmethod
-    def query_by(cls, DEL_STATE=0, **kwargs):
-        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs)
+    def query_by(cls, **kwargs):
+        return cls.query.filter_by(DEL_STATE=0, **kwargs)
 
     @classmethod
-    def select_one(cls, DEL_STATE=0, **kwargs):
-        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).first()
+    def select_first(cls, **kwargs):
+        return cls.query_by(**kwargs).first()
 
     @classmethod
-    def select_list(cls, DEL_STATE=0, **kwargs):
-        return cls.query.filter_by(DEL_STATE=DEL_STATE, **kwargs).all()
+    def select_all(cls, **kwargs):
+        return cls.query_by(**kwargs).all()
 
     def update(self, **kwargs):
         for attr, value in kwargs.items():
             if value is not None:
                 setattr(self, attr, value)
         self.submit()
-
-    def update_with_time(self, **kwargs):
-        return self.update(UPDATED_TIME=getattr(self, 'UPDATED_TIME'), **kwargs)
 
     def delete(self):
         """软删除"""

@@ -64,18 +64,6 @@ class Argument:
                 # 返回默认值
                 return self.default
 
-        # 请求中存在该参数，但值为空
-        if not value:
-            if self.default:
-                # 返回默认值
-                return self.default
-            elif not self.nullable and self.required:
-                # 若该参数必须、不能为空且没有定义默认值则抛异常
-                raise ParseError(self.help or f'value error: {self.name} must not be null')
-            else:
-                # 若该参数可为空时，返回None
-                return None
-
         # 类型转换
         try:
             if self.type == int:
@@ -87,6 +75,18 @@ class Argument:
                 value = from_json(value)
         except (ValueError, AssertionError):
             raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
+
+        # 请求中存在该参数，但值为空
+        if not value:
+            if self.default:
+                # 返回默认值
+                return self.default
+            elif not self.nullable and self.required:
+                # 若该参数必须、不能为空且没有定义默认值则抛异常
+                raise ParseError(self.help or f'value error: {self.name} must not be null')
+            else:
+                # 若该参数可为空时，返回None
+                return None
 
         return value
 

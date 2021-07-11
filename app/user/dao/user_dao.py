@@ -15,8 +15,8 @@ def select_by_userno(user_no) -> TUser:
     return TUser.query_by(USER_NO=user_no).first()
 
 
-def select_one(**kwargs) -> TUser:
-    return TUser.select_one(**kwargs)
+def select_first(**kwargs) -> TUser:
+    return TUser.select_first(**kwargs)
 
 
 def select_list(**kwargs) -> Pagination:

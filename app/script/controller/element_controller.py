@@ -52,9 +52,7 @@ def query_element_all():
 @require_permission
 def query_element_info():
     """查询测试元素信息"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-    ).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
     return service.query_element_info(req)
 
 
@@ -108,9 +106,7 @@ def modify_element():
 @require_permission
 def delete_element():
     """删除测试元素"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
-    ).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.delete_element(req)
 
 
@@ -119,9 +115,7 @@ def delete_element():
 @require_permission
 def enable_element():
     """启用元素"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-    ).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
     return service.enable_element(req)
 
 
@@ -130,9 +124,7 @@ def enable_element():
 @require_permission
 def disable_element():
     """禁用元素"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-    ).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
     return service.disable_element(req)
 
 
@@ -217,7 +209,36 @@ def move_down_element_child_order():
 @require_permission
 def duplicate_element():
     """复制测试元素及其子代"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-    ).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
     return service.duplicate_element(req)
+
+
+@blueprint.get('/sampler/runtime/package')
+@require_login
+@require_permission
+def query_sampler_runtime_package():
+    req = JsonParser(Argument('samplerNo', required=True, nullable=False, help='sampler编号不能为空')).parse()
+    return service.query_sampler_runtime_package(req)
+
+
+@blueprint.post('/sampler/runtime/package')
+@require_login
+@require_permission
+def create_sampler_runtime_package():
+    """创建sampler运行时组件"""
+    req = JsonParser(
+        Argument('samplerNo', required=True, nullable=False, help='sampler编号不能为空'),
+        Argument('runtimePackage', type=list, required=True, nullable=False, help='runtimePackage不能为空'),
+    ).parse()
+    return service.create_sampler_runtime_package(req)
+
+
+@blueprint.put('/sampler/runtime/package')
+@require_login
+@require_permission
+def modify_sampler_runtime_package():
+    """创建sampler运行时组件"""
+    req = JsonParser(
+        Argument('runtimePackage', type=list, required=True, nullable=False, help='runtimePackage不能为空'),
+    ).parse()
+    return service.modify_sampler_runtime_package(req)
