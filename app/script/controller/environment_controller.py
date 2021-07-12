@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : env_var_controller.py
+# @File    : environment_controller.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
@@ -8,7 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
-from app.script.service import env_var_service as service
+from app.script.service import environment_service as service
 from app.utils.log_util import get_logger
 
 

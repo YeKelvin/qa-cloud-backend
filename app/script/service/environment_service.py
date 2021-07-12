@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : env_var_service.py
+# @File    : environment_service.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service

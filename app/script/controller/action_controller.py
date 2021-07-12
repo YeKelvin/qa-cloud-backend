@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : element_package_controller.py
+# @File    : action_controller.py
 # @Time    : 2020/3/17 14:31
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
@@ -8,7 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
-from app.script.service import element_package_service as service
+from app.script.service import action_service as service
 from app.utils.log_util import get_logger
 
 

@@ -10,9 +10,8 @@ from flask import Blueprint
 # TODO: 响应报文的Header添加名为 API-Version 的头，值为 day-month-year 格式的日期
 blueprint = Blueprint('script', __name__, url_prefix='/script')
 
+from . import action_controller  # noqa
 from . import element_controller  # noqa
-from . import element_package_controller  # noqa
-from . import env_var_controller  # noqa
+from . import environment_controller  # noqa
 from . import execution_controller  # noqa
 from . import http_header_controller  # noqa
-from . import test_controller  # noqa

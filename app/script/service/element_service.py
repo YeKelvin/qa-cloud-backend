@@ -12,7 +12,7 @@ from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
-from app.script.dao import element_child_rel_dao as ElementChildRelDao, sampler_runtime_package_dao
+from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import sampler_runtime_package_dao as SamplerRuntimePackageDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -539,4 +539,4 @@ def modify_sampler_runtime_package(req):
 
 def remove_sampler_runtime_package(sampler_no):
     log.info(f'删除SamplerRuntimePackage, samplerNo:[ {sampler_no} ]')
-    sampler_runtime_package_dao.delete_all_by_samplerno(sampler_no)
+    SamplerRuntimePackageDao.delete_all_by_samplerno(sampler_no)

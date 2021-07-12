@@ -72,7 +72,7 @@ def load_element(element_no):
     check_is_not_blank(element, '测试元素不存在')
 
     # 递归查询元素子代
-    # 查询时根据order asc排序
+    # 查询时根据 order asc 排序
     element_child_rel_list = ElementChildRelDao.select_all_by_parentno(element_no)
 
     children = []
@@ -80,8 +80,7 @@ def load_element(element_no):
         for element_child_rel in element_child_rel_list:
             children.append(load_element(element_child_rel.CHILD_NO))
 
-    # 组装dict返回
-    el_dict = {
+    info = {
         'name': element.ELEMENT_NAME,
         'remark': element.ELEMENT_REMARK,
         'class': element.ELEMENT_CLASS,
@@ -89,14 +88,13 @@ def load_element(element_no):
         'property': load_element_property(element_no),
         'children': children
     }
-    return el_dict
+    return info
 
 
 def load_element_property(element_no):
     # 查询元素属性，只查询enabled的属性
     props = ElementPropertyDao.select_all_by_elementno_with_enable(element_no)
 
-    # 组装dict返回
     property = {}
     for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
