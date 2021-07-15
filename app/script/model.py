@@ -81,14 +81,16 @@ class TElementChildRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironment(DBModel):
-    """环境变量集合表"""
-    __tablename__ = 'ENVIRONMENT'
+class TVariableSet(DBModel):
+    """变量集表"""
+    __tablename__ = 'VARIABLE_SET'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    ENV_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='环境编号')
-    ENV_NAME = db.Column(db.String(128), nullable=False, comment='环境名称')
-    ENV_DESC = db.Column(db.String(256), comment='环境描述')
+    WORKSPACE_NO = db.Column(db.String(32), comment='工作空间编号')
+    SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
+    SET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
+    SET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
+    SET_DESC = db.Column(db.String(256), comment='变量集描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -96,16 +98,18 @@ class TEnvironment(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TEnvironmentVariable(DBModel):
-    """环境变量表"""
-    __tablename__ = 'ENVIRONMENT_VARIABLE'
+class TVariable(DBModel):
+    """变量表"""
+    __tablename__ = 'VARIABLE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    ENV_NO = db.Column(db.String(32), index=True, nullable=False, comment='环境编号')
+    SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
     VAR_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
-    VAR_VALUE = db.Column(db.String(512), nullable=False, comment='变量值')
     VAR_DESC = db.Column(db.String(256), comment='变量描述')
+    INITIAL_VALUE = db.Column(db.String(512), nullable=False, comment='变量值')
+    CURRENT_VALUE = db.Column(db.String(512), nullable=False, comment='当前值')
+    ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -113,14 +117,14 @@ class TEnvironmentVariable(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class THTTPHeaderCollection:
+class THTTPHeaderSet:
     """HTTP头部集合表"""
-    __tablename__ = 'HTTP_HEADER_COLLECTION'
+    __tablename__ = 'HTTP_HEADER_SET'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    COLLECTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集合编号')
-    COLLECTION_NAME = db.Column(db.String(128), nullable=False, comment='头部集合名称')
-    COLLECTION_DESC = db.Column(db.String(256), comment='头部集合描述')
+    SET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集编号')
+    SET_NAME = db.Column(db.String(128), nullable=False, comment='头部集名称')
+    SET_DESC = db.Column(db.String(256), comment='头部集描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -136,6 +140,7 @@ class THTTPHeader(DBModel):
     HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部编号')
     HEADER_KEY = db.Column(db.String(256), nullable=False, comment='头部名称')
     HEADER_VALUE = db.Column(db.String(1024), nullable=False, comment='头部值')
+    ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

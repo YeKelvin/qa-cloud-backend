@@ -148,6 +148,17 @@ def init_permission():
     # execution
     _create_permission(name='执行脚本', method='POST', endpoint='/script/execute')
 
+    # variables
+    _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/set/list')
+    _create_permission(name='查询所有变量集', method='GET', endpoint='/script/variable/set/all')
+    _create_permission(name='查询变量集下的所有变量', method='GET', endpoint='/script/variable/set')
+    _create_permission(name='新增变量集', method='POST', endpoint='/script/variable/set')
+    _create_permission(name='修改变量集', method='PUT', endpoint='/script/variable/set')
+    _create_permission(name='删除变量集', method='DELETE', endpoint='/script/variable/set')
+    _create_permission(name='新增变量', method='POST', endpoint='/script/variable')
+    _create_permission(name='修改变量', method='PUT', endpoint='/script/variable')
+    _create_permission(name='删除变量', method='DELETE', endpoint='/script/variable')
+
     click.echo('创建权限成功')
 
 

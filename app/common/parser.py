@@ -88,6 +88,14 @@ class Argument:
                 # 若该参数可为空时，返回None
                 return None
 
+        # 值不为空时开始各种校验
+        else:
+            # 枚举校验
+            if self.enum:
+                if value not in self.enum.__members__:
+                    # 参数值不在枚举中则抛异常
+                    raise ParseError(self.help or f'value error: {self.name} invalid enumeration')
+
         return value
 
 

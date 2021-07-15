@@ -12,6 +12,6 @@ blueprint = Blueprint('script', __name__, url_prefix='/script')
 
 from . import action_controller  # noqa
 from . import element_controller  # noqa
-from . import environment_controller  # noqa
 from . import execution_controller  # noqa
 from . import http_header_controller  # noqa
+from . import variables_controller  # noqa
