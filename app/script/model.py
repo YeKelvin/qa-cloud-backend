@@ -81,21 +81,6 @@ class TElementChildRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class TSamplerRuntimePackage(DBModel):
-    """取样器运行时表"""
-    __tablename__ = 'SAMPLER_RUNTIME_PACKAGE'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='取样器元素编号')
-    RUNTIME_NO = db.Column(db.String(32), nullable=False, comment='运行时元素编号')
-    RUNTIME_TYPE = db.Column(db.String(32), nullable=False, comment='运行时类型')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-
-
 class TEnvironment(DBModel):
     """环境变量集合表"""
     __tablename__ = 'ENVIRONMENT'

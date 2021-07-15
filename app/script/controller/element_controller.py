@@ -211,34 +211,3 @@ def duplicate_element():
     """复制测试元素及其子代"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
     return service.duplicate_element(req)
-
-
-@blueprint.get('/sampler/runtime/package')
-@require_login
-@require_permission
-def query_sampler_runtime_package():
-    req = JsonParser(Argument('samplerNo', required=True, nullable=False, help='sampler编号不能为空')).parse()
-    return service.query_sampler_runtime_package(req)
-
-
-@blueprint.post('/sampler/runtime/package')
-@require_login
-@require_permission
-def create_sampler_runtime_package():
-    """创建sampler运行时组件"""
-    req = JsonParser(
-        Argument('samplerNo', required=True, nullable=False, help='sampler编号不能为空'),
-        Argument('runtimePackage', type=list, required=True, nullable=False, help='runtimePackage不能为空'),
-    ).parse()
-    return service.create_sampler_runtime_package(req)
-
-
-@blueprint.put('/sampler/runtime/package')
-@require_login
-@require_permission
-def modify_sampler_runtime_package():
-    """创建sampler运行时组件"""
-    req = JsonParser(
-        Argument('runtimePackage', type=list, required=True, nullable=False, help='runtimePackage不能为空'),
-    ).parse()
-    return service.modify_sampler_runtime_package(req)

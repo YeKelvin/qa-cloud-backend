@@ -144,9 +144,6 @@ def init_permission():
     _create_permission(name='根据父元素编号和子元素编号上移序号', method='PATCH', endpoint='/script/element/child/order/up')
     _create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
     _create_permission(name='复制测试元素及其子代', method='POST', endpoint='/script/element/duplicate')
-    _create_permission(name='查询取样器运行时组件', method='GET', endpoint='/script/sampler/runtime/package')
-    _create_permission(name='新增取样器运行时组件', method='POST', endpoint='/script/sampler/runtime/package')
-    _create_permission(name='修改取样器运行时组件', method='PUT', endpoint='/script/sampler/runtime/package')
 
     # execution
     _create_permission(name='执行脚本', method='POST', endpoint='/script/execute')

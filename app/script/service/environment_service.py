@@ -11,12 +11,27 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_environment_variable_list(req):
+def query_environment_list(req):
     pass
 
 
 @http_service
-def query_environment_variable_all(req):
+def query_environment_all(req):
+    pass
+
+
+@http_service
+def create_environment(req):
+    pass
+
+
+@http_service
+def modify_environment(req):
+    pass
+
+
+@http_service
+def delete_environment(req):
     pass
 
 

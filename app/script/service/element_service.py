@@ -14,12 +14,10 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
-from app.script.dao import sampler_runtime_package_dao as SamplerRuntimePackageDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementStatus
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
-from app.script.model import TSamplerRuntimePackage
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollectionRel
 from app.system.dao import workspace_dao as WorkspaceDao
@@ -478,71 +476,3 @@ def duplicate_element(req):
     element = TestElementDao.select_by_elementno(req.elementNo)
     check_is_not_blank(element, '元素不存在')
     # todo 复制元素
-
-
-@http_service
-def query_sampler_runtime_package(req):
-    result = []
-    package = SamplerRuntimePackageDao.select_all_by_samplerno(req.samplerNo)
-    for component in package:
-        # 查询元素信息
-        element = TestElementDao.select_by_elementno(component.RUNTIME_NO)
-        # 查询元素属性
-        property = query_element_property(component.RUNTIME_NO)
-        result.append({
-            'elementNo': element.ELEMENT_NO,
-            'elementType': element.ELEMENT_TYPE,
-            'elementClass': element.ELEMENT_CLASS,
-            'enabled': element.ENABLED,
-            'property': property
-        })
-    return result
-
-
-@http_service
-@transactional
-def create_sampler_runtime_package(req):
-    # 查询元素
-    sampler = TestElementDao.select_by_elementno(req.samplerNo)
-    check_is_not_blank(sampler, '元素不存在')
-
-    for component in req.runtimePackage:
-        # 脚本内容不为空时才新增
-        if component.property.values()[0]:
-            # 创建元素
-            runtime_no = add_element(
-                element_name='',
-                element_remark='',
-                element_type=component.elementType,
-                element_class=component.elementClass,
-                property=component.property
-            )
-
-            # 创建SamplerPackage
-            TSamplerRuntimePackage.insert(
-                SAMPLER_NO=req.samplerNo,
-                RUNTIME_NO=runtime_no,
-                RUNTIME_TYPE=component.elementType
-            )
-
-
-@http_service
-@transactional
-def modify_sampler_runtime_package(req):
-    for component in req.runtimePackage:
-        # 判断脚本内容是否为空，为空则禁用元素
-        enabled = bool(component.property.values()[0])
-        # 查询元素
-        element = TestElementDao.select_by_elementno(component.elementNo)
-
-        if enabled:
-            # 更新脚本内容
-            update_element_property(component.elementNo, component.property)
-        else:
-            # 脚本内容为空时禁用元素
-            element.update(ENABLED=False)
-
-
-def remove_sampler_runtime_package(sampler_no):
-    log.info(f'删除SamplerRuntimePackage, samplerNo:[ {sampler_no} ]')
-    SamplerRuntimePackageDao.delete_all_by_samplerno(sampler_no)
