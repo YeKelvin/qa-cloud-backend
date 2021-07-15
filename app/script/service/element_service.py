@@ -83,7 +83,11 @@ def query_element_all(req):
 
     # TTestElement，TWorkspaceCollectionRel连表查询
     items = db.session.query(
-        TTestElement.ELEMENT_NO, TTestElement.ELEMENT_NAME, TTestElement.ELEMENT_REMARK, TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_NO,
+        TTestElement.ELEMENT_NAME,
+        TTestElement.ELEMENT_REMARK,
+        TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_CLASS,
         TTestElement.ENABLED
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
 
@@ -93,6 +97,7 @@ def query_element_all(req):
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
             'elementType': item.ELEMENT_TYPE,
+            'elementClass': item.ELEMENT_CLASS,
             'enabled': item.ENABLED
         })
     return result
@@ -114,6 +119,7 @@ def query_element_info(req):
         'elementName': element.ELEMENT_NAME,
         'elementRemark': element.ELEMENT_REMARK,
         'elementType': element.ELEMENT_TYPE,
+        'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
         'property': property,
         'hasChildren': has_children
