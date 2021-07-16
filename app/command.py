@@ -158,6 +158,9 @@ def init_permission():
     _create_permission(name='新增变量', method='POST', endpoint='/script/variable')
     _create_permission(name='修改变量', method='PUT', endpoint='/script/variable')
     _create_permission(name='删除变量', method='DELETE', endpoint='/script/variable')
+    _create_permission(name='启用变量', method='PATCH', endpoint='/script/variable/enable')
+    _create_permission(name='禁用变量', method='PATCH', endpoint='/script/variable/disable')
+    _create_permission(name='更新变量当前值', method='PATCH', endpoint='/script/variable/current/value')
 
     click.echo('创建权限成功')
 

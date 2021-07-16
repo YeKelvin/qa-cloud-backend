@@ -65,7 +65,19 @@ def query_variable_set_all(req):
 
 @http_service
 def query_variable_set(req):
-    ...
+    variables = VariableDao.select_list_by_setno(req.setNo)
+
+    result = []
+    for variable in variables:
+        result.append({
+            'varNo': variable.VAR_NO,
+            'varName': variable.VAR_NAME,
+            'initialValue': variable.INITIAL_VALUE,
+            'currentValue': variable.CURRENT_VALUE,
+            'varDesc': variable.VAR_DESC,
+            'enabled': variable.ENABLED
+        })
+    return result
 
 
 @http_service
@@ -126,9 +138,9 @@ def create_variable(req):
         SET_NO=req.setNo,
         VAR_NO=new_id(),
         VAR_NAME=req.varName,
-        VAR_DESC=req.varDesc,
         INITIAL_VALUE=req.initialValue,
         CURRENT_VALUE=req.currentValue,
+        VAR_DESC=req.varDesc,
         ENABLED=True
     )
 
@@ -142,9 +154,9 @@ def modify_variable(req):
     # 更新变量信息
     variable.update(
         VAR_NAME=req.varName,
-        VAR_DESC=req.varDesc,
         INITIAL_VALUE=req.initialValue,
-        CURRENT_VALUE=req.currentValue
+        CURRENT_VALUE=req.currentValue,
+        VAR_DESC=req.varDesc
     )
 
 
@@ -156,3 +168,39 @@ def delete_variable(req):
 
     # 删除变量
     variable.delete()
+
+
+@http_service
+def enable_variable(req):
+    # 查询变量信息
+    variable = VariableDao.select_by_varno(req.varNo)
+    check_is_not_blank(variable, '变量不存在')
+
+    # 启用变量
+    variable.update(
+        ENABLED=True
+    )
+
+
+@http_service
+def disable_variable(req):
+    # 查询变量信息
+    variable = VariableDao.select_by_varno(req.varNo)
+    check_is_not_blank(variable, '变量不存在')
+
+    # 禁用变量
+    variable.update(
+        ENABLED=False
+    )
+
+
+@http_service
+def update_current_value(req):
+    # 查询变量信息
+    variable = VariableDao.select_by_varno(req.varNo)
+    check_is_not_blank(variable, '变量不存在')
+
+    # 更新当前值
+    variable.update(
+        CURRENT_VALUE=req.currentValue
+    )

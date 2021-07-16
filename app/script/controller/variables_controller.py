@@ -105,9 +105,9 @@ def create_variable():
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
-        Argument('varDesc'),
         Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
-        Argument('currentValue')
+        Argument('currentValue'),
+        Argument('varDesc')
     ).parse()
     return service.create_variable(req)
 
@@ -120,9 +120,9 @@ def modify_variable():
     req = JsonParser(
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
-        Argument('varDesc'),
         Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
-        Argument('currentValue')
+        Argument('currentValue'),
+        Argument('varDesc')
     ).parse()
     return service.modify_variable(req)
 
@@ -136,3 +136,37 @@ def delete_variable():
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
     ).parse()
     return service.delete_variable(req)
+
+
+@blueprint.patch('/variable/enable')
+@require_login
+@require_permission
+def enable_variable():
+    """启用变量"""
+    req = JsonParser(
+        Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
+    ).parse()
+    return service.enable_variable(req)
+
+
+@blueprint.patch('/variable/disable')
+@require_login
+@require_permission
+def disable_variable():
+    """禁用变量"""
+    req = JsonParser(
+        Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
+    ).parse()
+    return service.disable_variable(req)
+
+
+@blueprint.patch('/variable/current/value')
+@require_login
+@require_permission
+def update_current_value():
+    """更新变量当前值"""
+    req = JsonParser(
+        Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
+        Argument('currentValue')
+    ).parse()
+    return service.update_current_value(req)
