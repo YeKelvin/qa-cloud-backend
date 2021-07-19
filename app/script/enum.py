@@ -92,11 +92,12 @@ class ElementStatus(Enum):
 
 @unique
 class VariableSetType(Enum):
-    # 环境变量：与环境相关，与工作空间相关
-    ENVIRONMENT = 'ENVIRONMENT'
 
     # 全局变量：与环境无关，与工作空间无关
     GLOBAL = 'GLOBAL'
+
+    # 环境变量：与环境相关，与工作空间相关
+    ENVIRONMENT = 'ENVIRONMENT'
 
     # 自定义变量：与环境无关，与工作空间相关
     CUSTOM = 'CUSTOM'

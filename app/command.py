@@ -8,7 +8,10 @@ from flask.cli import with_appcontext
 
 from app.common.id_generator import new_id
 from app.extension import db
+from app.script.model import TVariableSet
 from app.system.model import TActionLog
+from app.system.model import TWorkspace
+from app.system.model import TWorkspaceUserRel
 from app.user.model import TPermission
 from app.user.model import TRole
 from app.user.model import TRolePermissionRel
@@ -18,6 +21,7 @@ from app.user.model import TUserPassword
 from app.user.model import TUserRoleRel
 from app.utils.log_util import get_logger
 from app.utils.security import encrypt_password
+
 
 from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
@@ -47,6 +51,7 @@ def initdata():
     init_permission()
     init_user_role_rel()
     init_role_permission_rel()
+    init_script_global_variable_set()
     init_action_log()
     click.echo('初始化数据成功')
 
@@ -56,9 +61,7 @@ def init_user():
     """初始化用户"""
     user_no = new_id()
     TUser.insert(USER_NO=user_no, USER_NAME='超级管理员', STATE='ENABLE')
-
     TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
-
     TUserPassword.insert(
         USER_NO=user_no,
         PASSWORD=encrypt_password('admin', 'admin'),
@@ -66,6 +69,16 @@ def init_user():
         ERROR_TIMES=0,
         CREATE_TYPE='CUSTOMER'
     )
+
+    worksapce_no = new_id()
+    TWorkspace.insert(
+        WORKSPACE_NO=worksapce_no,
+        WORKSPACE_NAME='超级管理员的私人空间',
+        WORKSPACE_TYPE='PUBLIC',
+        WORKSPACE_SCOPE='PERSONAL'
+    )
+    TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+
     click.echo('创建 admin用户成功')
 
 
@@ -161,6 +174,9 @@ def init_permission():
     _create_permission(name='启用变量', method='PATCH', endpoint='/script/variable/enable')
     _create_permission(name='禁用变量', method='PATCH', endpoint='/script/variable/disable')
     _create_permission(name='更新变量当前值', method='PATCH', endpoint='/script/variable/current/value')
+    _create_permission(name='批量新增变量', method='POST', endpoint='/script/variables')
+    _create_permission(name='批量修改变量', method='PUT', endpoint='/script/variables')
+    _create_permission(name='批量删除变量', method='DELETE', endpoint='/script/variables')
 
     click.echo('创建权限成功')
 
@@ -182,6 +198,12 @@ def init_role_permission_rel():
     for permission in permissions:
         TRolePermissionRel.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联关系成功')
+
+
+@with_appcontext
+def init_script_global_variable_set():
+    TVariableSet.insert(SET_NO=new_id(), SET_NAME='globals', SET_TYPE='GLOBAL')
+    click.echo('初始化PyMeter全局变量成功')
 
 
 @with_appcontext

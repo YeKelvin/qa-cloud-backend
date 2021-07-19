@@ -6,6 +6,7 @@
 from app.common.validator import check_is_blank, check_is_not_blank
 from app.script.enum import VariableSetType
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.script.model import TVariable
 from app.script.model import TVariableSet
@@ -204,3 +205,50 @@ def update_current_value(req):
     variable.update(
         CURRENT_VALUE=req.currentValue
     )
+
+
+@http_service
+@transactional
+def create_variables(req):
+    # 查询变量集信息
+    varset = VariableSetDao.select_by_setno(req.setNo)
+    check_is_not_blank(varset, '变量集不存在')
+
+    for vari in req.varList:
+        # 查询变量信息
+        variable = VariableDao.select_by_name(vari.varName)
+        check_is_blank(variable, '变量已存在')
+
+        # 新增变量
+        TVariable.insert(
+            SET_NO=req.setNo,
+            VAR_NO=new_id(),
+            VAR_NAME=vari.varName,
+            INITIAL_VALUE=vari.initialValue,
+            CURRENT_VALUE=vari.currentValue,
+            VAR_DESC=vari.varDesc,
+            ENABLED=True
+        )
+
+
+@http_service
+@transactional
+def modify_variables(req):
+    for vari in req.varList:
+        # 查询变量信息
+        variable = VariableDao.select_by_varno(vari.varNo)
+        check_is_not_blank(variable, '变量不存在')
+
+        # 更新变量信息
+        variable.update(
+            VAR_NAME=vari.varName,
+            INITIAL_VALUE=vari.initialValue,
+            CURRENT_VALUE=vari.currentValue,
+            VAR_DESC=vari.varDesc
+        )
+
+
+@http_service
+def delete_variables(req):
+    # 批量删除变量
+    VariableDao.delete_in_varno(req.varNoList)

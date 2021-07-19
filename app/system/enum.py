@@ -10,6 +10,9 @@ class WorkspaceType(Enum):
     # 公共
     PUBLIC = 'PUBLIC'
 
+    # 接口
+    INTERFACE = 'INTERFACE'
+
 
 class WorkspaceScope(Enum):
     # 个人

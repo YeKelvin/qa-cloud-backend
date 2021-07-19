@@ -170,3 +170,70 @@ def update_current_value():
         Argument('currentValue')
     ).parse()
     return service.update_current_value(req)
+
+
+@blueprint.post('/variables')
+@require_login
+@require_permission
+def create_variables():
+    """
+    根据列表批量新增变量
+
+    example:
+    {
+        "setNo": "",
+        "varList": [
+            "varName": "",
+            "initialValue": "",
+            "currentValue": "",
+            "varDesc": ""
+        ]
+    }
+    """
+    req = JsonParser(
+        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
+        Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
+    ).parse()
+    return service.create_variables(req)
+
+
+@blueprint.put('/variables')
+@require_login
+@require_permission
+def modify_variables():
+    """
+    根据列表批量修改变量
+
+    example:
+    {
+        "varList": [
+            "varNo": "",
+            "varName": "",
+            "initialValue": "",
+            "currentValue": "",
+            "varDesc": ""
+        ]
+    }
+    """
+    req = JsonParser(
+        Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
+    ).parse()
+    return service.modify_variables(req)
+
+
+@blueprint.delete('/variables')
+@require_login
+@require_permission
+def delete_variables():
+    """
+    根据列表批量删除变量
+
+    example:
+    {
+        "varNoList": [1, 2, 3]
+    }
+    """
+    req = JsonParser(
+        Argument('varNoList', type=list, required=True, nullable=False, help='变量编号列表不能为空')
+    ).parse()
+    return service.delete_variables(req)
