@@ -62,7 +62,7 @@ class TElementProperty(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-    UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', name='idx_elementno_propertyno')
+    UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', name='unique_elementno_propertyno')
 
 
 class TElementChildRel(DBModel):
@@ -96,6 +96,7 @@ class TVariableSet(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('WORKSPACE_NO', 'SET_NAME', 'SET_TYPE', name='unique_workspaceno_setname_settype')
 
 
 class TVariable(DBModel):
@@ -106,15 +107,16 @@ class TVariable(DBModel):
     SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
     VAR_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
-    INITIAL_VALUE = db.Column(db.String(512), nullable=False, comment='变量值')
-    CURRENT_VALUE = db.Column(db.String(512), nullable=False, comment='当前值')
     VAR_DESC = db.Column(db.String(256), comment='变量描述')
+    INITIAL_VALUE = db.Column(db.String(2048), nullable=False, comment='变量值')
+    CURRENT_VALUE = db.Column(db.String(2048), comment='当前值')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('SET_NO', 'VAR_NAME', name='unique_setno_varname')
 
 
 class THTTPHeaderSet:

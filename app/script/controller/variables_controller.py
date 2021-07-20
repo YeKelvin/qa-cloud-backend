@@ -105,9 +105,9 @@ def create_variable():
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
+        Argument('varDesc'),
         Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
-        Argument('currentValue'),
-        Argument('varDesc')
+        Argument('currentValue')
     ).parse()
     return service.create_variable(req)
 
@@ -120,9 +120,9 @@ def modify_variable():
     req = JsonParser(
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
+        Argument('varDesc'),
         Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
-        Argument('currentValue'),
-        Argument('varDesc')
+        Argument('currentValue')
     ).parse()
     return service.modify_variable(req)
 
@@ -184,9 +184,9 @@ def create_variables():
         "setNo": "",
         "varList": [
             "varName": "",
+            "varDesc": "",
             "initialValue": "",
-            "currentValue": "",
-            "varDesc": ""
+            "currentValue": ""
         ]
     }
     """
@@ -209,9 +209,9 @@ def modify_variables():
         "varList": [
             "varNo": "",
             "varName": "",
+            "varDesc": "",
             "initialValue": "",
-            "currentValue": "",
-            "varDesc": ""
+            "currentValue": ""
         ]
     }
     """

@@ -73,9 +73,9 @@ def query_variable_set(req):
         result.append({
             'varNo': variable.VAR_NO,
             'varName': variable.VAR_NAME,
+            'varDesc': variable.VAR_DESC,
             'initialValue': variable.INITIAL_VALUE,
             'currentValue': variable.CURRENT_VALUE,
-            'varDesc': variable.VAR_DESC,
             'enabled': variable.ENABLED
         })
     return result
@@ -92,13 +92,16 @@ def create_variable_set(req):
         check_is_not_blank(req.workspaceNo, '工作空间编号不能为空')
 
     # 新增变量集
+    set_no = new_id()
     TVariableSet.insert(
         WORKSPACE_NO=req.workspaceNo,
-        SET_NO=new_id(),
+        SET_NO=set_no,
         SET_NAME=req.setName,
         SET_TYPE=req.setType,
         SET_DESC=req.setDesc
     )
+
+    return set_no
 
 
 @http_service
@@ -135,15 +138,18 @@ def create_variable(req):
     check_is_not_blank(varset, '变量集不存在')
 
     # 新增变量
+    var_no = new_id()
     TVariable.insert(
         SET_NO=req.setNo,
-        VAR_NO=new_id(),
+        VAR_NO=var_no,
         VAR_NAME=req.varName,
+        VAR_DESC=req.varDesc,
         INITIAL_VALUE=req.initialValue,
         CURRENT_VALUE=req.currentValue,
-        VAR_DESC=req.varDesc,
         ENABLED=True
     )
+
+    return var_no
 
 
 @http_service
@@ -155,9 +161,9 @@ def modify_variable(req):
     # 更新变量信息
     variable.update(
         VAR_NAME=req.varName,
+        VAR_DESC=req.varDesc,
         INITIAL_VALUE=req.initialValue,
-        CURRENT_VALUE=req.currentValue,
-        VAR_DESC=req.varDesc
+        CURRENT_VALUE=req.currentValue
     )
 
 
@@ -224,9 +230,9 @@ def create_variables(req):
             SET_NO=req.setNo,
             VAR_NO=new_id(),
             VAR_NAME=vari.varName,
+            VAR_DESC=vari.varDesc,
             INITIAL_VALUE=vari.initialValue,
             CURRENT_VALUE=vari.currentValue,
-            VAR_DESC=vari.varDesc,
             ENABLED=True
         )
 
@@ -242,9 +248,9 @@ def modify_variables(req):
         # 更新变量信息
         variable.update(
             VAR_NAME=vari.varName,
+            VAR_DESC=vari.varDesc,
             INITIAL_VALUE=vari.initialValue,
-            CURRENT_VALUE=vari.currentValue,
-            VAR_DESC=vari.varDesc
+            CURRENT_VALUE=vari.currentValue
         )
 
 

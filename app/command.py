@@ -73,7 +73,7 @@ def init_user():
     worksapce_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
-        WORKSPACE_NAME='超级管理员的私人空间',
+        WORKSPACE_NAME='超级管理员的私有空间',
         WORKSPACE_TYPE='PUBLIC',
         WORKSPACE_SCOPE='PERSONAL'
     )
@@ -202,7 +202,7 @@ def init_role_permission_rel():
 
 @with_appcontext
 def init_script_global_variable_set():
-    TVariableSet.insert(SET_NO=new_id(), SET_NAME='globals', SET_TYPE='GLOBAL')
+    TVariableSet.insert(SET_NO=new_id(), SET_NAME='public', SET_TYPE='GLOBAL')
     click.echo('初始化PyMeter全局变量成功')
 
 
