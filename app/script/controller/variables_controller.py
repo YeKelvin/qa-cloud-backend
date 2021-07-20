@@ -206,6 +206,7 @@ def modify_variables():
 
     example:
     {
+        "setNo": "",
         "varList": [
             "varNo": "",
             "varName": "",
@@ -216,6 +217,7 @@ def modify_variables():
     }
     """
     req = JsonParser(
+        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.modify_variables(req)

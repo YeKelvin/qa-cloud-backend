@@ -229,10 +229,10 @@ def create_variables(req):
         TVariable.insert(
             SET_NO=req.setNo,
             VAR_NO=new_id(),
-            VAR_NAME=vari.varName,
-            VAR_DESC=vari.varDesc,
-            INITIAL_VALUE=vari.initialValue,
-            CURRENT_VALUE=vari.currentValue,
+            VAR_NAME=vari['varName'],
+            VAR_DESC=vari['varDesc'],
+            INITIAL_VALUE=vari['initialValue'],
+            CURRENT_VALUE=vari['currentValue'],
             ENABLED=True
         )
 
@@ -241,17 +241,29 @@ def create_variables(req):
 @transactional
 def modify_variables(req):
     for vari in req.varList:
-        # 查询变量信息
-        variable = VariableDao.select_by_varno(vari.varNo)
-        check_is_not_blank(variable, '变量不存在')
+        if hasattr(vari, 'varNo'):
+            # 查询变量信息
+            variable = VariableDao.select_by_varno(vari.varNo)
+            check_is_not_blank(variable, '变量不存在')
 
-        # 更新变量信息
-        variable.update(
-            VAR_NAME=vari.varName,
-            VAR_DESC=vari.varDesc,
-            INITIAL_VALUE=vari.initialValue,
-            CURRENT_VALUE=vari.currentValue
-        )
+            # 更新变量信息
+            variable.update(
+                VAR_NAME=vari['varName'],
+                VAR_DESC=vari['varDesc'],
+                INITIAL_VALUE=vari['initialValue'],
+                CURRENT_VALUE=vari['currentValue']
+            )
+        else:
+            # 新增变量
+            TVariable.insert(
+                SET_NO=req.setNo,
+                VAR_NO=new_id(),
+                VAR_NAME=vari['varName'],
+                VAR_DESC=vari['varDesc'],
+                INITIAL_VALUE=vari['initialValue'],
+                CURRENT_VALUE=vari['currentValue'],
+                ENABLED=True
+            )
 
 
 @http_service

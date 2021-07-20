@@ -71,8 +71,12 @@ class Argument:
             elif self.type == bool:
                 assert str(value).lower() in ['true', 'false']
                 value = str(value).lower() == 'true'
-            elif self.type == dict or self.type == list:
-                value = from_json(value)
+            elif self.type == list:
+                if not isinstance(value, list):
+                    value = from_json(value)
+            elif self.type == dict:
+                if not isinstance(value, dict):
+                    value = from_json(value)
         except (ValueError, AssertionError):
             raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
 
@@ -127,8 +131,8 @@ class BaseParser:
                 request_dto[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
             request_dto['error'] = err.message
-        except Exception as ex:
-            request_dto['error'] = ex
+        except Exception:
+            request_dto['error'] = '内部错误'
             log.error(traceback.format_exc())
         return request_dto
 
