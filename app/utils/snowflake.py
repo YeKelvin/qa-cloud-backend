@@ -45,9 +45,8 @@ TWEPOCH = 1288834974657
 
 
 class InvalidSystemClock(Exception):
-    """时钟回拨异常
-    """
-    pass
+    """时钟回拨异常"""
+    ...
 
 
 class IdWorker:
@@ -73,8 +72,7 @@ class IdWorker:
         self.last_timestamp = -1  # 上次计算的时间戳
 
     def new_id(self):
-        """获取新ID
-        """
+        """获取新ID"""
         timestamp = int(time.time() * 1000)
 
         # 时钟回拨
@@ -94,10 +92,10 @@ class IdWorker:
         self.last_timestamp = timestamp
 
         new_id = (
-                ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) |
-                (self.datacenter_id << DATACENTER_ID_SHIFT) |
-                (self.worker_id << WOKER_ID_SHIFT) |
-                self.sequence
+            ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) |
+            (self.datacenter_id << DATACENTER_ID_SHIFT) |
+            (self.worker_id << WOKER_ID_SHIFT) |
+            self.sequence
         )
         return new_id
 
