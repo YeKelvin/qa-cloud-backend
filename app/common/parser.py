@@ -10,6 +10,7 @@ from typing import List
 from flask import request
 
 from app.common.exceptions import ParseError
+from app.common.request import AttributeDict
 from app.common.request import RequestDTO
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -45,6 +46,26 @@ class Argument:
         if not isinstance(self.name, str):
             raise TypeError('argument name must be string')
 
+    def transform(self, value: list or dict):
+        """将dict或list对象转换为AttributeDict对象"""
+        if isinstance(value, list):
+            attrs = []
+            for item in value:
+                if isinstance(item, dict) or isinstance(item, list):
+                    attrs.append(self.transform(item))
+                else:
+                    attrs.append(item)
+            return attrs
+
+        if isinstance(value, dict):
+            attrs = {}
+            for key, val in value.items():
+                if isinstance(val, dict) or isinstance(val, list):
+                    attrs[key] = self.transform(val)
+                else:
+                    attrs[key] = val
+            return AttributeDict(attrs)
+
     def parse(self, has_key, value):
         """解析HTTP参数
 
@@ -74,9 +95,11 @@ class Argument:
             elif self.type == list:
                 if not isinstance(value, list):
                     value = from_json(value)
+                value = self.transform(value)
             elif self.type == dict:
                 if not isinstance(value, dict):
                     value = from_json(value)
+                value = self.transform(value)
         except (ValueError, AssertionError):
             raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
 

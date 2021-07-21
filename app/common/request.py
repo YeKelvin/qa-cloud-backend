@@ -12,6 +12,9 @@ class AttributeDict(dict):
     def __getattr__(self, item):
         return self.__getitem__(item)
 
+    # def __missing__(self, key):
+    #     return
+
     def __delattr__(self, item):
         self.__delitem__(item)
 
