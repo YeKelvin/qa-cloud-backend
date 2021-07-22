@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
-from app.common.parser import Argument
+from app.common.parser import Argument, ListParser
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
 from app.script.enum import VariableSetType
@@ -235,7 +235,8 @@ def delete_variables():
         "varNoList": [1, 2, 3]
     }
     """
-    req = JsonParser(
-        Argument('varNoList', type=list, required=True, nullable=False, help='变量编号列表不能为空')
-    ).parse()
+    # req = JsonParser(
+    #     Argument('varNoList', type=list, required=True, nullable=False, help='变量编号列表不能为空')
+    # ).parse()
+    req = ListParser().parse()
     return service.delete_variables(req)

@@ -12,16 +12,30 @@ class AttributeDict(dict):
     def __getattr__(self, item):
         return self.__getitem__(item)
 
-    # def __missing__(self, key):
-    #     return
-
     def __delattr__(self, item):
         self.__delitem__(item)
 
+    # def __missing__(self, key):
+    #     return
 
-class RequestDTO(AttributeDict):
+
+class RequestDTO:
     """请求对象"""
-    ...
+    def __init__(self, data_type=dict) -> None:
+        super().__init__()
+        self.__type__ = data_type
+        self.__attrs__ = {}
+        self.__list__ = None
+        self.__error__ = None
+
+    def __setattr__(self, key, value):
+        self.__attrs__.__setitem__(key, value)
+
+    def __getattr__(self, item):
+        return self.__attrs__.__getitem__(item)
+
+    def __delattr__(self, item):
+        self.__attrs__.__delitem__(item)
 
 
 def transform(value: list or dict):
