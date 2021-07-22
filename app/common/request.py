@@ -22,3 +22,23 @@ class AttributeDict(dict):
 class RequestDTO(AttributeDict):
     """请求对象"""
     ...
+
+
+def transform(value: list or dict):
+    """将dict或list对象转换为AttributeDict对象"""
+    if isinstance(value, list):
+        attrs = []
+        for item in value:
+            if isinstance(item, dict) or isinstance(item, list):
+                attrs.append(transform(item))
+            else:
+                attrs.append(item)
+        return attrs
+    if isinstance(value, dict):
+        attrs = {}
+        for key, val in value.items():
+            if isinstance(val, dict) or isinstance(val, list):
+                attrs[key] = transform(val)
+            else:
+                attrs[key] = val
+        return AttributeDict(attrs)

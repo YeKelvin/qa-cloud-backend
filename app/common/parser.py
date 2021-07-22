@@ -6,12 +6,13 @@
 import traceback
 from enum import Enum
 from typing import List
+from typing import Tuple
 
 from flask import request
 
 from app.common.exceptions import ParseError
-from app.common.request import AttributeDict
 from app.common.request import RequestDTO
+from app.common.request import transform
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 
@@ -46,26 +47,6 @@ class Argument:
         if not isinstance(self.name, str):
             raise TypeError('argument name must be string')
 
-    def transform(self, value: list or dict):
-        """将dict或list对象转换为AttributeDict对象"""
-        if isinstance(value, list):
-            attrs = []
-            for item in value:
-                if isinstance(item, dict) or isinstance(item, list):
-                    attrs.append(self.transform(item))
-                else:
-                    attrs.append(item)
-            return attrs
-
-        if isinstance(value, dict):
-            attrs = {}
-            for key, val in value.items():
-                if isinstance(val, dict) or isinstance(val, list):
-                    attrs[key] = self.transform(val)
-                else:
-                    attrs[key] = val
-            return AttributeDict(attrs)
-
     def parse(self, has_key, value):
         """解析HTTP参数
 
@@ -95,11 +76,11 @@ class Argument:
             elif self.type == list:
                 if not isinstance(value, list):
                     value = from_json(value)
-                value = self.transform(value)
+                value = transform(value)
             elif self.type == dict:
                 if not isinstance(value, dict):
                     value = from_json(value)
-                value = self.transform(value)
+                value = transform(value)
         except (ValueError, AssertionError):
             raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
 
@@ -126,59 +107,83 @@ class Argument:
         return value
 
 
-class BaseParser:
+class JsonParser:
 
     def __init__(self, *args):
+        self.data = None
         self.args: List[Argument] = []
         for arg in args:
             if not isinstance(arg, Argument):
                 raise TypeError(f'{arg} is not instance of Argument class')
             self.args.append(arg)
 
-    def get(self, key):
+    def get(self, key) -> Tuple[bool, any]:
         """通过key获取value"""
-        raise NotImplementedError
+        return key in self.data, self.data.get(key)
 
-    def initialize(self, data):
+    def initialize(self, data) -> None:
         """把HTTP请求参数转换为Json对象"""
-        raise NotImplementedError
+        if not data:
+            if request.is_json:
+                self.data = request.json
+            else:
+                self.data = request.values.to_dict()
+        else:
+            if isinstance(data, str):
+                self.data = from_json(data)
+            elif isinstance(data, dict):
+                self.data = data
+            else:
+                raise ParseError('invalid data type for parse')
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
-        request_dto = RequestDTO()
+        dto = RequestDTO()
         try:
             if not self.args:
                 raise ParseError('arguments are not allowed to be empty')
             self.initialize(data)
             for arg in self.args:
-                request_dto[arg.name] = arg.parse(*self.get(arg.name))
+                dto[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
-            request_dto['error'] = err.message
+            dto.error = err.message
         except Exception:
-            request_dto['error'] = '内部错误'
+            dto.error = '内部错误'
             log.error(traceback.format_exc())
-        return request_dto
+        return dto
 
 
-class JsonParser(BaseParser):
+class ListParser:
 
-    def __init__(self, *args):
-        super().__init__(*args)
-        self._data = None
+    def __init__(self):
+        self.data = None
 
-    def get(self, key):
-        return key in self._data, self._data.get(key)
-
-    def initialize(self, data):
+    def initialize(self, data) -> None:
         if not data:
             if request.is_json:
-                self._data = request.json
-            else:
-                self._data = request.values.to_dict()
-        else:
-            if isinstance(data, str):
-                self._data = from_json(data)
-            elif isinstance(data, dict):
-                self._data = data
+                self.data = request.json
+            elif isinstance(data, str):
+                self.data = from_json(data)
             else:
                 raise ParseError('invalid data type for parse')
+        else:
+            if isinstance(data, str):
+                self.data = from_json(data)
+            elif isinstance(data, list):
+                self.data = data
+            else:
+                raise ParseError('invalid data type for parse')
+
+    def parse(self, data=None) -> RequestDTO:
+        """解析HTTP请求参数"""
+        dto = RequestDTO()
+        try:
+
+            self.initialize(data)
+            dto.list = transform(self.data)
+        except ParseError as err:
+            dto.error = err.message
+        except Exception:
+            dto.error = '内部错误'
+            log.error(traceback.format_exc())
+        return dto
