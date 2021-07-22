@@ -25,7 +25,6 @@ class RequestDTO:
         super().__init__()
         self.__type__ = data_type
         self.__attrs__ = {}
-        self.__list__ = None
         self.__error__ = None
 
     def __setattr__(self, key, value):
@@ -36,6 +35,23 @@ class RequestDTO:
 
     def __delattr__(self, item):
         self.__attrs__.__delitem__(item)
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __str__(self) -> str:
+        if self.__type__ == dict:
+            return self.__attrs__.__str__()
+        if self.__type__ == list:
+            return self.__attrs__.list.__str__()
+        if self.__type__ == str:
+            return self.__attrs__.str.__str__()
+        if self.__type__ == bool:
+            return self.__attrs__.bool.__str__()
+        if self.__type__ == int:
+            return self.__attrs__.int.__str__()
+        if self.__type__ == float:
+            return self.__attrs__.float.__str__()
 
 
 def transform(value: list or dict):

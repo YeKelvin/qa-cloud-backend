@@ -138,7 +138,7 @@ class JsonParser:
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
-        dto = RequestDTO()
+        dto = RequestDTO(dict)
         try:
             if not self.args:
                 raise ParseError('arguments are not allowed to be empty')
@@ -146,9 +146,9 @@ class JsonParser:
             for arg in self.args:
                 dto[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
-            dto.error = err.message
+            dto.__error__ = err.message
         except Exception:
-            dto.error = '内部错误'
+            dto.__error__ = '内部错误'
             log.error(traceback.format_exc())
         return dto
 
@@ -176,14 +176,14 @@ class ListParser:
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
-        dto = RequestDTO()
+        dto = RequestDTO(list)
         try:
 
             self.initialize(data)
             dto.list = transform(self.data)
         except ParseError as err:
-            dto.error = err.message
+            dto.__error__ = err.message
         except Exception:
-            dto.error = '内部错误'
+            dto.__error__ = '内部错误'
             log.error(traceback.format_exc())
         return dto
