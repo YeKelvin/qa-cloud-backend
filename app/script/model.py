@@ -108,7 +108,7 @@ class TVariable(DBModel):
     VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
     VAR_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
     VAR_DESC = db.Column(db.String(256), comment='变量描述')
-    INITIAL_VALUE = db.Column(db.String(2048), nullable=False, comment='变量值')
+    INITIAL_VALUE = db.Column(db.String(2048), comment='变量值')
     CURRENT_VALUE = db.Column(db.String(2048), comment='当前值')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')

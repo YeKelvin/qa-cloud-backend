@@ -221,8 +221,12 @@ def create_variables(req):
     check_is_not_blank(varset, '变量集不存在')
 
     for vari in req.varList:
+        # 跳过变量名为空的数据
+        if not vari.varName:
+            continue
+
         # 查询变量信息
-        variable = VariableDao.select_by_name(vari.varName)
+        variable = VariableDao.select_by_setno_and_varname(req.setNo, vari.varName)
         check_is_blank(variable, '变量已存在')
 
         # 新增变量
@@ -241,11 +245,14 @@ def create_variables(req):
 @transactional
 def modify_variables(req):
     for vari in req.varList:
+        # 跳过变量名为空的数据
+        if not vari.varName:
+            continue
+
         if 'varNo' in vari:
             # 查询变量信息
             variable = VariableDao.select_by_varno(vari.varNo)
             check_is_not_blank(variable, '变量不存在')
-
             # 更新变量信息
             variable.update(
                 VAR_NAME=vari.varName,
@@ -254,6 +261,9 @@ def modify_variables(req):
                 CURRENT_VALUE=vari.currentValue
             )
         else:
+            # 查询变量信息
+            variable = VariableDao.select_by_setno_and_varname(req.setNo, vari.varName)
+            check_is_blank(variable, '变量已存在')
             # 新增变量
             TVariable.insert(
                 SET_NO=req.setNo,

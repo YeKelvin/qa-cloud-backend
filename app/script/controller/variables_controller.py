@@ -106,7 +106,7 @@ def create_variable():
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
         Argument('varDesc'),
-        Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
+        Argument('initialValue'),
         Argument('currentValue')
     ).parse()
     return service.create_variable(req)
@@ -121,7 +121,7 @@ def modify_variable():
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
         Argument('varDesc'),
-        Argument('initialValue', required=True, nullable=False, help='变量值不能为空'),
+        Argument('initialValue'),
         Argument('currentValue')
     ).parse()
     return service.modify_variable(req)

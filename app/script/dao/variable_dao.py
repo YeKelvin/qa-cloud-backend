@@ -16,6 +16,10 @@ def select_by_name(var_name) -> TVariable:
     return TVariable.query_by(VAR_NAME=var_name).first()
 
 
+def select_by_setno_and_varname(set_no, var_name) -> TVariable:
+    return TVariable.query_by(SET_NO=set_no, VAR_NAME=var_name).first()
+
+
 def select_list_by_setno(set_no) -> List[TVariable]:
     return TVariable.query_by(SET_NO=set_no).all()
 
