@@ -25,4 +25,4 @@ def select_list_by_setno(set_no) -> List[TVariable]:
 
 
 def delete_in_varno(*args):
-    TVariable.query.filter(TVariable.VAR_NO.in_(*args)).update(DEL_STATE=1)
+    TVariable.query.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DEL_STATE: 1})
