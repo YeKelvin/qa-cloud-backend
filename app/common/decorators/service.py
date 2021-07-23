@@ -28,6 +28,7 @@ def http_service(func):
         req: RequestDTO = (args[0] if args else None) or kwargs.get('req', RequestDTO())
         # 记录开始时间
         starttime = timestamp_as_ms()
+        # 输出http请求日志
         log.info(
             f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
             f'header:[ {dict(request.headers)} ] request:[ {req} ]'
@@ -41,8 +42,9 @@ def http_service(func):
                 # 调用service
                 result = func(*args, **kwargs)
                 res = ResponseDTO(result)
+                # 输出service执行结果
                 log.info(
-                    f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] result:[ {result} ]'
+                    f'logId:[ {g.logid} ] service:[ {func.__name__} ] result:[ {result} ]'
                 )
         except ServiceError as err:
             # 捕获service层的业务异常
@@ -59,6 +61,7 @@ def http_service(func):
             elapsed_time = timestamp_as_ms() - starttime
             # 包装http响应
             http_res = http_response(res)
+            # 输出http响应日志
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'header:[ {dict(http_res.headers)}] response:[ {res} ] '
