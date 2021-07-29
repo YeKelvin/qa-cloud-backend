@@ -167,7 +167,7 @@ def update_current_value():
     """更新变量当前值"""
     req = JsonParser(
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
-        Argument('currentValue')
+        Argument('value')
     ).parse()
     return service.update_current_value(req)
 

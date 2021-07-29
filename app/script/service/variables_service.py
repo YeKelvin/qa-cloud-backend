@@ -209,7 +209,7 @@ def update_current_value(req):
 
     # 更新当前值
     variable.update(
-        CURRENT_VALUE=req.currentValue
+        CURRENT_VALUE=req.value
     )
 
 
