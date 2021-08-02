@@ -162,15 +162,15 @@ class ListParser:
         if not data:
             if request.is_json:
                 self.data = request.json
-            elif isinstance(data, str):
-                self.data = from_json(data)
             else:
-                raise ParseError('invalid data type for parse')
+                self.data = list(request.values.values())
         else:
             if isinstance(data, str):
                 self.data = from_json(data)
             elif isinstance(data, list):
                 self.data = data
+            elif isinstance(data, dict):
+                raise ParseError('data type is a dict, please use JsonParser')
             else:
                 raise ParseError('invalid data type for parse')
 
@@ -178,7 +178,6 @@ class ListParser:
         """解析HTTP请求参数"""
         dto = RequestDTO(list)
         try:
-
             self.initialize(data)
             dto.list = transform(self.data)
         except ParseError as err:
