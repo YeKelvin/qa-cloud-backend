@@ -203,7 +203,7 @@ def init_role_permission_rel():
 
 @with_appcontext
 def init_script_global_variable_set():
-    TVariableSet.insert(SET_NO=new_id(), SET_NAME='public', SET_TYPE='GLOBAL')
+    TVariableSet.insert(SET_NO=new_id(), SET_NAME='public', SET_TYPE='GLOBAL', WEIGHT=1)
     click.echo('初始化PyMeter全局变量成功')
 
 

@@ -11,7 +11,7 @@ from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import executor
 from app.extension import socketio
-from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import element_child_rel_dao as ElementChildRelDao, variable_dao, variable_set_dao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
@@ -30,6 +30,9 @@ def execute_script(req):
 
     if req.sid:
         add_flask_socketio_result_collector(collection, req.sid)
+
+    if req.variableSet:
+        add_variable_data_set(collection, req.variableSet)
 
     script = [collection]
 
@@ -108,3 +111,39 @@ def load_element_property(element_no):
             continue
 
     return property
+
+
+def get_variables_by_setlist(set_list, use_current_value):
+    result = {}
+    for set_no in set_list:
+        # 查询变量列表
+        variables = variable_dao.select_list_by_setno(set_no)
+
+        for variable in variables:
+            if not variable.ENABLED:
+                continue
+            if use_current_value and variable.CURRENT_VALUE:
+                result[variable.VAR_NAME] = variable.CURRENT_VALUE
+            else:
+                result[variable.VAR_NAME] = variable.INITIAL_VALUE
+
+    return result
+
+
+def add_variable_data_set(script: dict, variable_set):
+    variables = get_variables_by_setlist(variable_set.list, variable_set.use_current_value)
+    arguments = []
+    for name, value in variables.items():
+        arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})
+
+    script['children'].insert(
+        0, {
+            'name': '变量配置器',
+            'remark': '',
+            'class': 'VariableDataSet',
+            'enabled': True,
+            'property': {
+                'Arguments__arguments': arguments
+            }
+        }
+    )

@@ -19,10 +19,22 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def execute_script():
-    """运行脚本"""
+    """
+    运行脚本
+
+    example:
+    {
+        "collectionNo": "",
+        "variableSet": {
+            "useCurrentValue": true,
+            "list": []
+        },
+        "sid": ""
+    }
+    """
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('variableSetList', type=list),
+        Argument('variableSet', type=dict),
         Argument('sid')
     ).parse()
     return service.execute_script(req)
