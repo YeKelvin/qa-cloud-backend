@@ -19,10 +19,30 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def execute_script():
-    """运行脚本
-    """
+    """运行脚本"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('variableSetList', type=list),
         Argument('sid')
     ).parse()
     return service.execute_script(req)
+
+
+# @blueprint.post('/execute/group')
+# @require_login
+# @require_permission
+# def execute_group():
+#     req = JsonParser(
+#         Argument('groupNo', required=True, nullable=False, help='集合编号不能为空')
+#     ).parse()
+#     return service.execute_group(req)
+
+
+# @blueprint.post('/execute/sampler')
+# @require_login
+# @require_permission
+# def execute_sampler():
+#     req = JsonParser(
+#         Argument('samplerNo', required=True, nullable=False, help='集合编号不能为空')
+#     ).parse()
+#     return service.execute_sampler(req)
