@@ -101,3 +101,16 @@ class VariableSetType(Enum):
 
     # 自定义变量：与环境无关，与工作空间相关
     CUSTOM = 'CUSTOM'
+
+
+@unique
+class VariableSetWeight(Enum):
+
+    # 全局变量
+    GLOBAL = 1
+
+    # 环境变量
+    ENVIRONMENT = 2
+
+    # 自定义变量
+    CUSTOM = 3

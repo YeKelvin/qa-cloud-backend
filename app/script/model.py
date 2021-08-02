@@ -91,6 +91,7 @@ class TVariableSet(DBModel):
     SET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
     SET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
     SET_DESC = db.Column(db.String(256), comment='变量集描述')
+    WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

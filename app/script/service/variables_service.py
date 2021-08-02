@@ -3,16 +3,18 @@
 # @File    : variables_service.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
-from app.common.validator import check_is_blank, check_is_not_blank
-from app.script.enum import VariableSetType
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
+from app.common.validator import check_is_blank
+from app.common.validator import check_is_not_blank
+from app.script.dao import variable_dao as VariableDao
+from app.script.dao import variable_set_dao as VariableSetDao
+from app.script.enum import VariableSetType
+from app.script.enum import VariableSetWeight
 from app.script.model import TVariable
 from app.script.model import TVariableSet
 from app.utils.log_util import get_logger
-from app.script.dao import variable_set_dao as VariableSetDao
-from app.script.dao import variable_dao as VariableDao
 
 
 log = get_logger(__name__)
@@ -98,7 +100,8 @@ def create_variable_set(req):
         SET_NO=set_no,
         SET_NAME=req.setName,
         SET_TYPE=req.setType,
-        SET_DESC=req.setDesc
+        SET_DESC=req.setDesc,
+        WEIGHT=VariableSetWeight[req.setType].value
     )
 
     return set_no
