@@ -172,6 +172,15 @@ def update_current_value():
     return service.update_current_value(req)
 
 
+@blueprint.get('/variables')
+@require_login
+@require_permission
+def query_variables():
+    """根据变量集编号列表查询变量"""
+    req = ListParser().parse()
+    return service.query_variables(req)
+
+
 @blueprint.post('/variables')
 @require_login
 @require_permission
@@ -230,13 +239,7 @@ def delete_variables():
     """
     根据列表批量删除变量
 
-    example:
-    {
-        "varNoList": [1, 2, 3]
-    }
+    example: [1, 2, 3]
     """
-    # req = JsonParser(
-    #     Argument('varNoList', type=list, required=True, nullable=False, help='变量编号列表不能为空')
-    # ).parse()
     req = ListParser().parse()
     return service.delete_variables(req)

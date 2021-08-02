@@ -174,9 +174,10 @@ def init_permission():
     _create_permission(name='启用变量', method='PATCH', endpoint='/script/variable/enable')
     _create_permission(name='禁用变量', method='PATCH', endpoint='/script/variable/disable')
     _create_permission(name='更新变量当前值', method='PATCH', endpoint='/script/variable/current/value')
-    _create_permission(name='批量新增变量', method='POST', endpoint='/script/variables')
-    _create_permission(name='批量修改变量', method='PUT', endpoint='/script/variables')
-    _create_permission(name='批量删除变量', method='DELETE', endpoint='/script/variables')
+    _create_permission(name='根据变量集编号列表查询变量', method='GET', endpoint='/script/variables')
+    _create_permission(name='根据列表批量新增变量', method='POST', endpoint='/script/variables')
+    _create_permission(name='根据列表批量修改变量', method='PUT', endpoint='/script/variables')
+    _create_permission(name='根据列表批量删除变量', method='DELETE', endpoint='/script/variables')
 
     click.echo('创建权限成功')
 

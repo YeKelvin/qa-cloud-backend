@@ -214,6 +214,32 @@ def update_current_value(req):
 
 
 @http_service
+def query_variables(req):
+    result = []
+    for set_no in req.list:
+        # 查询变量集信息
+        set = VariableSetDao.select_by_setno(set_no)
+        if not set:
+            continue
+
+        # 查询变量列表
+        variables = VariableDao.select_list_by_setno(set_no)
+
+        for variable in variables:
+            result.append({
+                'setNo': set.SET_NO,
+                'setName': set.SET_NAME,
+                'varNo': variable.VAR_NO,
+                'varName': variable.VAR_NAME,
+                'varDesc': variable.VAR_DESC,
+                'initialValue': variable.INITIAL_VALUE,
+                'currentValue': variable.CURRENT_VALUE,
+                'enabled': variable.ENABLED
+            })
+    return result
+
+
+@http_service
 @transactional
 def create_variables(req):
     # 查询变量集信息
