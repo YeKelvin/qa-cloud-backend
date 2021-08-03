@@ -11,8 +11,10 @@ from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import executor
 from app.extension import socketio
-from app.script.dao import element_child_rel_dao as ElementChildRelDao, variable_dao, variable_set_dao
+from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
+from app.script.dao import variable_dao as VariableDao
+from app.script.dao import variable_set_dao as VariableSetDao
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -113,13 +115,19 @@ def load_element_property(element_no):
     return property
 
 
-def get_variables_by_setlist(set_list, use_current_value):
+def get_variables_by_setlist(set_no_list, use_current_value):
     result = {}
-    for set_no in set_list:
+    # 根据列表查询变量集，并根据权重从小到大排序
+    set_list = VariableSetDao.select_list_in_setno_orderby_weight(*set_no_list)
+    if not set_list:
+        return result
+
+    for set in set_list:
         # 查询变量列表
-        variables = variable_dao.select_list_by_setno(set_no)
+        variables = VariableDao.select_list_by_setno(set.SET_NO)
 
         for variable in variables:
+            # 过滤非启用状态的变量
             if not variable.ENABLED:
                 continue
             if use_current_value and variable.CURRENT_VALUE:
@@ -131,7 +139,7 @@ def get_variables_by_setlist(set_list, use_current_value):
 
 
 def add_variable_data_set(script: dict, variable_set):
-    variables = get_variables_by_setlist(variable_set.list, variable_set.use_current_value)
+    variables = get_variables_by_setlist(variable_set.list, variable_set.useCurrentValue)
     arguments = []
     for name, value in variables.items():
         arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})

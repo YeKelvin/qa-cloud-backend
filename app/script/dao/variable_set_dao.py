@@ -34,6 +34,10 @@ def select_list(**kwargs) -> Pagination:
     return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).paginate(page, pageSize)
 
 
+def select_list_in_setno_orderby_weight(*set_no) -> List[TVariableSet]:
+    return TVariableSet.query.filter(TVariableSet.SET_NO.in_(set_no)).order_by(TVariableSet.WEIGHT.asc()).all()
+
+
 def select_all(**kwargs) -> List[TVariableSet]:
     conds = QueryCondition(TVariableSet)
     if kwargs:
