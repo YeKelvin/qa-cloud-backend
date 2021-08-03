@@ -38,7 +38,7 @@ class Argument:
         self.type = type            # 参数类型
         self.default = default      # 参数默认值
         self.required = required    # 参数是否要求必传
-        self.nullable = nullable    # 参数是否允许为空
+        self.nullable = nullable    # 参数是否允许为null
         self.min = min              # 参数允许的最小值或最小长度 TODO:
         self.max = max              # 参数允许的最大值或最大长度 TODO:
         self.enum = enum            # 参数枚举校验
@@ -84,8 +84,8 @@ class Argument:
         except (ValueError, AssertionError):
             raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
 
-        # 请求中存在该参数，但值为空
-        if not value:
+        # 请求中存在该参数，但值为null
+        if value is None:
             if self.default:
                 # 返回默认值
                 return self.default
