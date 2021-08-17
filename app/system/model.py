@@ -82,3 +82,18 @@ class TWorkspaceUserRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TTag(DBModel):
+    """标签表"""
+    __tablename__ = 'TAG'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    TAG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='标签编号')
+    TAG_NAME = db.Column(db.String(256), nullable=False, comment='标签名称')
+    TAG_DESC = db.Column(db.String(256), nullable=False, comment='标签描述')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')

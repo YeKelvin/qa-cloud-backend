@@ -40,6 +40,7 @@ class TTestElement(DBModel):
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素类')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
+    # META_DATA = db.Column(db.String(512), comment='元数据')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -164,6 +165,20 @@ class TSQLConfiguration(DBModel):
     DB_URL = db.Column(db.String(256), nullable=False, comment='数据库地址')
     USER_NAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库密码')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TElementTagRel(DBModel):
+    """元素子代关联表"""
+    __tablename__ = 'ELEMENT_TAG_REL'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    ELEMENT_NO = db.Column(db.String(32), comment='元素编号')
+    TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

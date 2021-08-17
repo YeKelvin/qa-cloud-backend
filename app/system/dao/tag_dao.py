@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @File    : tag_dao.py
+# @Time    : 2021-08-17 11:02:04
+# @Author  : Kelvin.Ye
+from typing import List
+
+from flask_sqlalchemy import Pagination
+
+from app.system.model import TTag
+from app.utils.sqlalchemy_util import QueryCondition
+
+
+def select_by_tagno(tag_no) -> TTag:
+    return TTag.query_by(TAG_NO=tag_no).first()
+
+
+def select_by_tagname(tag_name) -> TTag:
+    return TTag.query_by(TAG_NAME=tag_name).first()
+
+
+def select_list(**kwargs) -> Pagination:
+    conds = QueryCondition(TTag)
+    if kwargs:
+        conds.add_fuzzy_match(TTag.TAG_NO, kwargs.pop('tagNo', None))
+        conds.add_fuzzy_match(TTag.TAG_NAME, kwargs.pop('tagName', None))
+        conds.add_fuzzy_match(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
+
+    page = kwargs.pop('page')
+    pageSize = kwargs.pop('pageSize')
+
+    return TTag.query.filter(*conds).order_by(TTag.CREATED_TIME.desc()).paginate(page, pageSize)
+
+
+def select_all() -> List[TTag]:
+    return TTag.query_by().order_by(TTag.CREATED_TIME.desc()).all()
