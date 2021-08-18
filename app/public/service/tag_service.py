@@ -7,8 +7,8 @@ from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
-from app.system.dao import tag_dao as TagDao
-from app.system.model import TTag
+from app.public.dao import tag_dao as TagDao
+from app.public.model import TTag
 from app.utils.log_util import get_logger
 
 

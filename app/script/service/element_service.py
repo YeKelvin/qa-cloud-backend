@@ -12,6 +12,8 @@ from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
+from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.model import TWorkspace
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -20,8 +22,6 @@ from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollectionRel
-from app.system.dao import workspace_dao as WorkspaceDao
-from app.system.model import TWorkspace
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.log_util import get_logger

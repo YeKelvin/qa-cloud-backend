@@ -10,8 +10,8 @@ from app.common.id_generator import new_id
 from app.extension import db
 from app.script.model import TVariableSet
 from app.system.model import TActionLog
-from app.system.model import TWorkspace
-from app.system.model import TWorkspaceUserRel
+from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUserRel
 from app.user.model import TPermission
 from app.user.model import TRole
 from app.user.model import TRolePermissionRel
@@ -25,6 +25,7 @@ from app.utils.security import encrypt_password
 
 from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
+from app.public.model import *  # noqa isort:skip
 from app.user.model import *  # noqa isort:skip
 
 
@@ -129,15 +130,24 @@ def init_permission():
     # system模块路由
     # log
     _create_permission(name='分页查询操作日志列表', method='GET', endpoint='/system/action/log/list')
+
+    # public模块路由
     # workspace
-    _create_permission(name='分页查询工作空间列表', method='GET', endpoint='/system/workspace/list')
-    _create_permission(name='查询所有工作空间', method='GET', endpoint='/system/workspace/all')
-    _create_permission(name='新增工作空间', method='POST', endpoint='/system/workspace')
-    _create_permission(name='修改工作空间', method='PUT', endpoint='/system/workspace')
-    _create_permission(name='删除工作空间', method='DELETE', endpoint='/system/workspace')
-    _create_permission(name='添加工作空间成员', method='POST', endpoint='/system/workspace/user')
-    _create_permission(name='修改工作空间成员', method='PUT', endpoint='/system/workspace/user')
-    _create_permission(name='删除工作空间成员', method='DELETE', endpoint='/system/workspace/user')
+    _create_permission(name='分页查询工作空间列表', method='GET', endpoint='/public/workspace/list')
+    _create_permission(name='查询所有工作空间', method='GET', endpoint='/public/workspace/all')
+    _create_permission(name='新增工作空间', method='POST', endpoint='/public/workspace')
+    _create_permission(name='修改工作空间', method='PUT', endpoint='/public/workspace')
+    _create_permission(name='删除工作空间', method='DELETE', endpoint='/public/workspace')
+    _create_permission(name='添加工作空间成员', method='POST', endpoint='/public/workspace/user')
+    _create_permission(name='修改工作空间成员', method='PUT', endpoint='/public/workspace/user')
+    _create_permission(name='删除工作空间成员', method='DELETE', endpoint='/public/workspace/user')
+
+    # tag
+    _create_permission(name='分页查询标签列表', method='GET', endpoint='/public/tag/list')
+    _create_permission(name='查询所有标签', method='GET', endpoint='/public/tag/all')
+    _create_permission(name='新增标签', method='POST', endpoint='/public/tag')
+    _create_permission(name='修改标签', method='PUT', endpoint='/public/tag')
+    _create_permission(name='删除标签', method='DELETE', endpoint='/public/tag')
 
     # script模块路由
     # element

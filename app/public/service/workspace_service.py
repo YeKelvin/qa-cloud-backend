@@ -7,8 +7,8 @@ from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
-from app.system.dao import workspace_dao as WorkspaceDao
-from app.system.model import TWorkspace
+from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.model import TWorkspace
 from app.utils.log_util import get_logger
 
 

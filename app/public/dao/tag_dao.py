@@ -7,7 +7,7 @@ from typing import List
 
 from flask_sqlalchemy import Pagination
 
-from app.system.model import TTag
+from app.public.model import TTag
 from app.utils.sqlalchemy_util import QueryCondition
 
 

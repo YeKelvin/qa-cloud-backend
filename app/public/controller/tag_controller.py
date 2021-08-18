@@ -7,8 +7,8 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.system.controller import blueprint
-from app.system.service import tag_service as service
+from app.public.controller import blueprint
+from app.public.service import tag_service as service
 from app.utils.log_util import get_logger
 
 

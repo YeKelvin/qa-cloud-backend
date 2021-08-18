@@ -6,8 +6,8 @@
 from app.common.decorators.service import http_service
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
-from app.system.dao import workspace_user_rel_dao as WorkspaceUserRelDao
-from app.system.model import TWorkspaceUserRel
+from app.public.dao import workspace_user_rel_dao as WorkspaceUserRelDao
+from app.public.model import TWorkspaceUserRel
 from app.utils.log_util import get_logger
 
 
