@@ -121,14 +121,13 @@ class TVariable(DBModel):
     UniqueConstraint('SET_NO', 'VAR_NAME', name='unique_setno_varname')
 
 
-class THTTPHeaderSet:
-    """HTTP头部集合表"""
-    __tablename__ = 'HTTP_HEADER_SET'
+class THttpSamplerHeadersRel:
+    """元素请求头模板关联表"""
+    __tablename__ = 'HTTP_SAMPLER_TEMPLATE_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    SET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部集编号')
-    SET_NAME = db.Column(db.String(128), nullable=False, comment='头部集名称')
-    SET_DESC = db.Column(db.String(256), comment='头部集描述')
+    SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
+    TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -136,14 +135,31 @@ class THTTPHeaderSet:
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class THTTPHeader(DBModel):
+class THttpHeadersTemplate:
+    """请求头模板表"""
+    __tablename__ = 'HTTP_HEADERS_TEMPLATE'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    TEMPLATE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模板编号')
+    TEMPLATE_NAME = db.Column(db.String(128), nullable=False, comment='模板名称')
+    TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class THttpHeader(DBModel):
     """HTTP头部表"""
     __tablename__ = 'HTTP_HEADER'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='头部编号')
-    HEADER_KEY = db.Column(db.String(256), nullable=False, comment='头部名称')
-    HEADER_VALUE = db.Column(db.String(1024), nullable=False, comment='头部值')
+    TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
+    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')
+    HEADER_NAME = db.Column(db.String(256), nullable=False, comment='请求头名称')
+    HEADER_VALUE = db.Column(db.String(1024), nullable=False, comment='请求头值')
+    HEADER_DESC = db.Column(db.String(256), comment='请求头描述')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')

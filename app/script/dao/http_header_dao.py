@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @File    : http_header_dao.py
+# @Time    : 2021-08-20 13:16:20
+# @Author  : Kelvin.Ye
+from typing import List
+
+from app.script.model import THttpHeader
+
+
+def select_by_no(header_no) -> THttpHeader:
+    return THttpHeader.query_by(HEADER_NO=header_no).first()
+
+
+def select_by_name(header_name) -> THttpHeader:
+    return THttpHeader.query_by(HEADER_NAME=header_name).first()
+
+
+def select_list_by_template(template_no) -> List[THttpHeader]:
+    return THttpHeader.query_by(TEMPLATE_NO=template_no).all()
+
+
+def delete_in_no(*args):
+    THttpHeader.query.filter(THttpHeader.HEADER_NO.in_(*args)).update({THttpHeader.DEL_STATE: 1})
