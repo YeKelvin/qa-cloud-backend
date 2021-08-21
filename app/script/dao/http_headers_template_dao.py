@@ -15,6 +15,10 @@ def select_by_no(template_no) -> THttpHeadersTemplate:
     return THttpHeadersTemplate.query_by(TEMPLATE_NO=template_no).first()
 
 
+def select_by_name(template_name) -> THttpHeadersTemplate:
+    return THttpHeadersTemplate.query_by(TEMPLATE_NAME=template_name).first()
+
+
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(THttpHeadersTemplate)
     if kwargs:

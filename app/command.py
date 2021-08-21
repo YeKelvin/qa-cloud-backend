@@ -167,6 +167,8 @@ def init_permission():
     _create_permission(name='根据父元素编号和子元素编号上移序号', method='PATCH', endpoint='/script/element/child/order/up')
     _create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
     _create_permission(name='复制测试元素及其子代', method='POST', endpoint='/script/element/duplicate')
+    _create_permission(name='添加HTTP请求头模板', method='PUT', endpoint='/script/element/http/headers/template')
+    _create_permission(name='删除HTTP请求头模板', method='DELETE', endpoint='/script/element/http/headers/template')
 
     # execution
     _create_permission(name='执行脚本', method='POST', endpoint='/script/execute')
@@ -199,6 +201,9 @@ def init_permission():
     _create_permission(name='新增请求头', method='POST', endpoint='/script/http/header')
     _create_permission(name='修改请求头', method='PUT', endpoint='/script/http/header')
     _create_permission(name='删除请求头', method='DELETE', endpoint='/script/http/header')
+    _create_permission(name='根据列表批量新增请求头', method='POST', endpoint='/script/http/headers')
+    _create_permission(name='根据列表批量修改请求头', method='PUT', endpoint='/script/http/headers')
+    _create_permission(name='根据列表批量删除请求头', method='DELETE', endpoint='/script/http/headers')
 
     click.echo('创建权限成功')
 

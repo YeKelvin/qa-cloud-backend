@@ -52,7 +52,7 @@ def query_element_all():
 @require_permission
 def query_element_info():
     """查询测试元素信息"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.query_element_info(req)
 
 
@@ -115,7 +115,7 @@ def delete_element():
 @require_permission
 def enable_element():
     """启用元素"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.enable_element(req)
 
 
@@ -209,5 +209,29 @@ def move_down_element_child_order():
 @require_permission
 def duplicate_element():
     """复制测试元素及其子代"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),).parse()
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.duplicate_element(req)
+
+
+@blueprint.post('/element/http/headers/template')
+@require_login
+@require_permission
+def add_http_header_template():
+    """添加HTTP请求头模板"""
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.add_http_header_template(req)
+
+
+@blueprint.delete('/element/http/headers/template')
+@require_login
+@require_permission
+def remove_http_header_template():
+    """删除HTTP请求头模板"""
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.remove_http_header_template(req)

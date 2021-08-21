@@ -476,3 +476,13 @@ def duplicate_element(req):
     element = TestElementDao.select_by_elementno(req.elementNo)
     check_is_not_blank(element, '元素不存在')
     # todo 复制元素
+
+
+@http_service
+def add_http_header_template(req):
+    ...
+
+
+@http_service
+def remove_http_header_template(req):
+    ...

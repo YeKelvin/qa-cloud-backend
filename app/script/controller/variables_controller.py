@@ -192,10 +192,13 @@ def create_variables():
     {
         "setNo": "",
         "varList": [
-            "varName": "",
-            "varDesc": "",
-            "initialValue": "",
-            "currentValue": ""
+            {
+                "varName": "",
+                "varDesc": "",
+                "initialValue": "",
+                "currentValue": ""
+            }
+            ...
         ]
     }
     """
@@ -217,11 +220,14 @@ def modify_variables():
     {
         "setNo": "",
         "varList": [
-            "varNo": "",
-            "varName": "",
-            "varDesc": "",
-            "initialValue": "",
-            "currentValue": ""
+            {
+                "varNo": "",
+                "varName": "",
+                "varDesc": "",
+                "initialValue": "",
+                "currentValue": ""
+            }
+            ...
         ]
     }
     """

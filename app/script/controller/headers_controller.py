@@ -7,6 +7,7 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
+from app.common.parser import ListParser
 from app.script.controller import blueprint
 from app.script.service import headers_service as service
 from app.utils.log_util import get_logger
@@ -126,3 +127,70 @@ def delete_http_header():
         Argument('headerNo', required=True, nullable=False, help='请求头编号不能为空')
     ).parse()
     return service.delete_http_header(req)
+
+
+@blueprint.post('/http/headers')
+@require_login
+@require_permission
+def create_headers():
+    """
+    根据列表批量新增请求头
+
+    example:
+    {
+        "templateNo": "",
+        "headerList": [
+            {
+                "headerName": "",
+                "headerValue": "",
+                "headerDesc": ""
+            }
+            ...
+        ]
+    }
+    """
+    req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
+        Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
+    ).parse()
+    return service.create_variables(req)
+
+
+@blueprint.put('/http/headers')
+@require_login
+@require_permission
+def modify_headers():
+    """
+    根据列表批量修改请求头
+
+    example:
+    {
+        "templateNo": "",
+        "headerList": [
+            {
+                "headerName": "",
+                "headerValue": "",
+                "headerDesc": ""
+            }
+            ...
+        ]
+    }
+    """
+    req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
+        Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
+    ).parse()
+    return service.modify_variables(req)
+
+
+@blueprint.delete('/http/headers')
+@require_login
+@require_permission
+def delete_headers():
+    """
+    根据列表批量删除请求头
+
+    example: [1, 2, 3]
+    """
+    req = ListParser().parse()
+    return service.delete_variables(req)

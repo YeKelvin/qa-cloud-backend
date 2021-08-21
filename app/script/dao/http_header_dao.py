@@ -16,6 +16,10 @@ def select_by_name(header_name) -> THttpHeader:
     return THttpHeader.query_by(HEADER_NAME=header_name).first()
 
 
+def select_by_template_and_name(template_no, header_name) -> THttpHeader:
+    return THttpHeader.query_by(TEMPLATE_NO=template_no, HEADER_NAME=header_name).first()
+
+
 def select_list_by_template(template_no) -> List[THttpHeader]:
     return THttpHeader.query_by(TEMPLATE_NO=template_no).all()
 

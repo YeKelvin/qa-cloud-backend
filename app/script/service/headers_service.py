@@ -22,9 +22,9 @@ log = get_logger(__name__)
 def query_http_headers_template_list(req):
     # 条件分页查询
     pagination = HttpHeadersTemplateDao.select_list(
-        templateNo=req.setNo,
-        templateName=req.setName,
-        templateDesc=req.setDesc,
+        templateNo=req.templateNo,
+        templateName=req.templateName,
+        templateDesc=req.templateDesc,
         page=req.page,
         pageSize=req.pageSize
     )
@@ -32,48 +32,193 @@ def query_http_headers_template_list(req):
     data = []
     for item in pagination.items:
         data.append({
-            'templateNo': item.SET_NO,
-            'templateName': item.SET_NAME,
-            'templateDesc': item.SET_DESC
+            'templateNo': item.TEMPLATE_NO,
+            'templateName': item.TEMPLATE_NAME,
+            'templateDesc': item.TEMPLATE_DESC
         })
     return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_http_headers_template_all(req):
-    pass
+    # 条件查询
+    items = HttpHeadersTemplateDao.select_all(
+        templateNo=req.templateNo,
+        templateName=req.templateName,
+        templateDesc=req.templateDesc
+    )
+
+    result = []
+    for item in items:
+        result.append({
+            'templateNo': item.TEMPLATE_NO,
+            'templateName': item.TEMPLATE_NAME,
+            'templateDesc': item.TEMPLATE_DESC
+        })
+    return result
 
 
 @http_service
 def create_http_headers_template(req):
-    pass
+    # 查询模板信息
+    template = HttpHeadersTemplateDao.select_by_name(req.templateName)
+    check_is_blank(template, '模板已存在')
+
+    # 新增模板
+    template_no = new_id()
+    THttpHeadersTemplate.insert(
+        TEMPLATE_NO=template_no,
+        TEMPLATE_NAME=req.templateName,
+        TEMPLATE_DESC=req.templateDesc
+    )
+
+    return template_no
 
 
 @http_service
 def modify_http_headers_template(req):
-    pass
+    # 查询模板信息
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '模板不存在')
+
+    # 更新模板信息
+    template.update(
+        TEMPLATE_NAME=req.templateName,
+        TEMPLATE_DESC=req.templateDesc
+    )
 
 
 @http_service
 def delete_http_headers_template(req):
-    pass
+    # 查询模板信息
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '模板不存在')
+
+    # 删除变量集，TODO: 还要删除模板下的请求头
+    template.delete()
 
 
 @http_service
 def query_http_headers(req):
-    pass
+    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+
+    result = []
+    for header in headers:
+        result.append({
+            'headerNo': header.HEADER_NO,
+            'headerName': header.HEADER_NAME,
+            'headerValue': header.HEADER_VALUE,
+            'headerDesc': header.HEADER_DESC
+        })
+    return result
 
 
 @http_service
 def create_http_header(req):
-    pass
+    # 查询请求头信息
+    header = HttpHeaderDao.select_by_name(req.headerName)
+    check_is_blank(header, '请求头已存在')
+
+    # 查询模板信息
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '模板不存在')
+
+    # 新增请求头
+    header_no = new_id()
+    THttpHeader.insert(
+        TEMPLATE_NO=req.templateNo,
+        HEADER_NO=header_no,
+        HEADER_NAME=req.headerName,
+        HEADER_VALUE=req.headerValue,
+        HEADER_DESC=req.headerDesc
+    )
+
+    return header_no
 
 
 @http_service
 def modify_http_header(req):
-    pass
+    # 查询请求头信息
+    header = HttpHeaderDao.select_by_varno(req.headerNo)
+    check_is_not_blank(header, '请求头不存在')
+
+    # 更新请求头信息
+    header.update(
+        HEADER_NAME=req.headerName,
+        HEADER_VALUE=req.headerValue,
+        HEADER_DESC=req.headerDesc
+    )
 
 
 @http_service
 def delete_http_header(req):
-    pass
+    # 查询请求头信息
+    header = HttpHeaderDao.select_by_varno(req.headerNo)
+    check_is_not_blank(header, '请求头不存在')
+
+    # 删除请求头
+    header.delete()
+
+
+@http_service
+@transactional
+def create_headers(req):
+    # 查询模板信息
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '模板不存在')
+
+    for header in req.headerList:
+        # 跳过请求头为空的数据
+        if not header.headerName:
+            continue
+
+        # 查询请求头信息
+        entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.varName)
+        check_is_blank(entity, '请求头已存在')
+
+        # 新增请求头
+        THttpHeader.insert(
+            TEMPLATE_NO=req.templateNo,
+            HEADER_NO=new_id(),
+            HEADER_NAME=req.headerName,
+            HEADER_VALUE=req.headerValue,
+            HEADER_DESC=req.headerDesc
+        )
+
+
+@http_service
+@transactional
+def modify_variables(req):
+    for header in req.headerList:
+        # 跳过请求头为空的数据
+        if not header.headerName:
+            continue
+
+        if 'headerNo' in header:
+            # 查询请求头信息
+            entity = HttpHeaderDao.select_by_no(header.headerNo)
+            check_is_not_blank(entity, '请求头不存在')
+            # 更新请求头信息
+            entity.update(
+                HEADER_NAME=req.headerName,
+                HEADER_VALUE=req.headerValue,
+                HEADER_DESC=req.headerDesc
+            )
+        else:
+            # 查询请求头信息
+            entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.varName)
+            check_is_blank(entity, '请求头已存在')
+            # 新增请求头
+            THttpHeader.insert(
+                TEMPLATE_NO=req.templateNo,
+                HEADER_NO=new_id(),
+                HEADER_NAME=req.headerName,
+                HEADER_VALUE=req.headerValue,
+                HEADER_DESC=req.headerDesc
+            )
+
+
+@http_service
+def delete_variables(req):
+    # 批量删除请求头
+    HttpHeaderDao.delete_in_no(req.list)

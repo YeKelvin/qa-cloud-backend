@@ -126,7 +126,7 @@ def delete_variable_set(req):
     varset = VariableSetDao.select_by_setno(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
 
-    # 删除变量集
+    # 删除变量集，TODO: 还要删除变量集下的变量
     varset.delete()
 
 
