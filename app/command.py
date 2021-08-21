@@ -189,6 +189,17 @@ def init_permission():
     _create_permission(name='根据列表批量修改变量', method='PUT', endpoint='/script/variables')
     _create_permission(name='根据列表批量删除变量', method='DELETE', endpoint='/script/variables')
 
+    # headers
+    _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/headers/template/list')
+    _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/http/headers/template/all')
+    _create_permission(name='新增请求头模板', method='POST', endpoint='/script/http/headers/template')
+    _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/http/headers/template')
+    _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/http/headers/template')
+    _create_permission(name='查询模板下的所有请求头', method='GET', endpoint='/script/http/headers')
+    _create_permission(name='新增请求头', method='POST', endpoint='/script/http/header')
+    _create_permission(name='修改请求头', method='PUT', endpoint='/script/http/header')
+    _create_permission(name='删除请求头', method='DELETE', endpoint='/script/http/header')
+
     click.echo('创建权限成功')
 
 

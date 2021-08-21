@@ -83,7 +83,7 @@ def delete_http_headers_template():
 @require_login
 @require_permission
 def query_http_headers():
-    """查询变量集下的所有变量"""
+    """查询模板下的所有请求头"""
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
     ).parse()
