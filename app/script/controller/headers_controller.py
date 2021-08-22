@@ -22,6 +22,7 @@ log = get_logger(__name__)
 def query_http_headers_template_list():
     """分页查询请求头模板列表"""
     req = JsonParser(
+        Argument('workspaceNo'),
         Argument('templateNo'),
         Argument('templateName'),
         Argument('templateDesc'),
@@ -37,6 +38,7 @@ def query_http_headers_template_list():
 def query_http_headers_template_all():
     """查询所有请求头模板"""
     req = JsonParser(
+        Argument('workspaceNo'),
         Argument('templateNo'),
         Argument('templateName'),
         Argument('templateDesc')
@@ -50,6 +52,7 @@ def query_http_headers_template_all():
 def create_http_headers_template():
     """新增请求头模板"""
     req = JsonParser(
+        Argument('workspaceNo'),
         Argument('templateName', required=True, nullable=False, help='模板名称不能为空'),
         Argument('templateDesc')
     ).parse()

@@ -22,6 +22,7 @@ log = get_logger(__name__)
 def query_http_headers_template_list(req):
     # 条件分页查询
     pagination = HttpHeadersTemplateDao.select_list(
+        workspaceNo=req.workspaceNo,
         templateNo=req.templateNo,
         templateName=req.templateName,
         templateDesc=req.templateDesc,
@@ -43,6 +44,7 @@ def query_http_headers_template_list(req):
 def query_http_headers_template_all(req):
     # 条件查询
     items = HttpHeadersTemplateDao.select_all(
+        workspaceNo=req.workspaceNo,
         templateNo=req.templateNo,
         templateName=req.templateName,
         templateDesc=req.templateDesc
@@ -61,12 +63,13 @@ def query_http_headers_template_all(req):
 @http_service
 def create_http_headers_template(req):
     # 查询模板信息
-    template = HttpHeadersTemplateDao.select_by_name(req.templateName)
+    template = HttpHeadersTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
     check_is_blank(template, '模板已存在')
 
     # 新增模板
     template_no = new_id()
     THttpHeadersTemplate.insert(
+        WORKSPACE_NO=req.workspaceNo,
         TEMPLATE_NO=template_no,
         TEMPLATE_NAME=req.templateName,
         TEMPLATE_DESC=req.templateDesc

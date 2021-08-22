@@ -308,5 +308,4 @@ def modify_variables(req):
 @http_service
 def delete_variables(req):
     # 批量删除变量
-    # VariableDao.delete_in_varno(req.varNoList)
     VariableDao.delete_in_no(req.list)

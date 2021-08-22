@@ -16,11 +16,11 @@ log = get_logger(__name__)
 
 
 class TWorkspaceCollectionRel(DBModel):
-    """工作空间集合关联表"""
+    """空间集合关联表"""
     __tablename__ = 'WORKSPACE_COLLECTION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='工作空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -87,7 +87,7 @@ class TVariableSet(DBModel):
     __tablename__ = 'VARIABLE_SET'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    WORKSPACE_NO = db.Column(db.String(32), comment='工作空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
     SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     SET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
     SET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
@@ -140,6 +140,7 @@ class THttpHeadersTemplate:
     __tablename__ = 'HTTP_HEADERS_TEMPLATE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
     TEMPLATE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模板编号')
     TEMPLATE_NAME = db.Column(db.String(128), nullable=False, comment='模板名称')
     TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
