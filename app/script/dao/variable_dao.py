@@ -8,7 +8,7 @@ from typing import List
 from app.script.model import TVariable
 
 
-def select_by_varno(var_no) -> TVariable:
+def select_by_no(var_no) -> TVariable:
     return TVariable.query_by(VAR_NO=var_no).first()
 
 
@@ -16,17 +16,17 @@ def select_by_name(var_name) -> TVariable:
     return TVariable.query_by(VAR_NAME=var_name).first()
 
 
-def select_by_setno_and_varname(set_no, var_name) -> TVariable:
+def select_by_set_and_name(set_no, var_name) -> TVariable:
     return TVariable.query_by(SET_NO=set_no, VAR_NAME=var_name).first()
 
 
-def select_list_by_setno(set_no) -> List[TVariable]:
+def select_list_by_set(set_no) -> List[TVariable]:
     return TVariable.query_by(SET_NO=set_no).all()
 
 
-def select_list_in_setno(*set_no) -> List[TVariable]:
+def select_list_in_set(*set_no) -> List[TVariable]:
     return TVariable.query.filter(TVariable.SET_NO.in_(*set_no)).all()
 
 
-def delete_in_varno(*args):
+def delete_in_no(*args):
     TVariable.query.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DEL_STATE: 1})

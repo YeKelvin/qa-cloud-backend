@@ -11,7 +11,7 @@ from app.script.model import TVariableSet
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_setno(set_no) -> TVariableSet:
+def select_by_no(set_no) -> TVariableSet:
     return TVariableSet.query_by(SET_NO=set_no).first()
 
 

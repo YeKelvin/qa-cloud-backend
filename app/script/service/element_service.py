@@ -16,10 +16,14 @@ from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
+from app.script.dao import http_header_dao as HttpHeaderDao
+from app.script.dao import http_headers_template_dao as HttpHeadersTemplateDao
+from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementStatus
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
+from app.script.model import THttpSamplerHeadersRel
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollectionRel
 from app.utils.json_util import from_json
@@ -104,13 +108,13 @@ def query_element_all(req):
 @http_service
 def query_element_info(req):
     # 查询元素
-    element = TestElementDao.select_by_elementno(req.elementNo)
+    element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
     # 查询元素属性
     property = query_element_property(req.elementNo)
     # 查询元素是否有子代
-    has_children = ElementChildRelDao.count_by_parentno(req.elementNo) > 0
+    has_children = ElementChildRelDao.count_by_parent(req.elementNo) > 0
 
     return {
         'elementNo': element.ELEMENT_NO,
@@ -127,7 +131,7 @@ def query_element_info(req):
 def query_element_property(element_no):
     """查询元素属性"""
     property = {}
-    props = ElementPropertyDao.select_all_by_elementno(element_no)
+    props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
             property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
@@ -151,7 +155,7 @@ def get_element_children(parent_no, depth):
     result = []
 
     # 查询元素所有子代关系
-    el_child_rel_list = ElementChildRelDao.select_all_by_parentno(parent_no)
+    el_child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     if not el_child_rel_list:
         return result
 
@@ -159,7 +163,7 @@ def get_element_children(parent_no, depth):
     el_child_rel_list.sort(key=lambda k: k.CHILD_ORDER)
     for el_child_rel in el_child_rel_list:
         # 查询子代元素信息
-        element = TestElementDao.select_by_elementno(el_child_rel.CHILD_NO)
+        element = TestElementDao.select_by_element(el_child_rel.CHILD_NO)
         if element:
             # 递归查询子代
             children = depth and get_element_children(el_child_rel.CHILD_NO, depth) or []
@@ -193,7 +197,7 @@ def create_element(req):
 
     # 如果元素类型为TestCollection时，需要绑定WorkspaceNo
     if req.workspaceNo:
-        workspace = WorkspaceDao.select_by_workspaceno(req.workspaceNo)
+        workspace = WorkspaceDao.select_by_no(req.workspaceNo)
         check_is_not_blank(workspace, '测试项目不存在')
 
         TWorkspaceCollectionRel.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
@@ -242,7 +246,7 @@ def modify_element(req):
 def update_element(element_no, element_name, element_remark, property: dict = None, children: Iterable[dict] = None):
     """递归修改元素"""
     # 查询元素
-    element = TestElementDao.select_by_elementno(element_no)
+    element = TestElementDao.select_by_element(element_no)
     check_is_not_blank(element, '元素不存在')
 
     # 更新元素信息
@@ -266,13 +270,13 @@ def delete_element(req):
 def remove_element(element_no):
     """递归删除元素"""
     # 查询元素
-    element = TestElementDao.select_by_elementno(element_no)
+    element = TestElementDao.select_by_element(element_no)
     check_is_not_blank(element, '元素不存在')
 
     # 递归删除元素子代和关联关系
     remove_element_children(element_no)
     # 如存在父辈关联关系，则删除关联并重新排序父辈子代
-    child_rel = ElementChildRelDao.select_by_childno(element_no)
+    child_rel = ElementChildRelDao.select_by_child(element_no)
     if child_rel:
         # 重新排序父辈子代
         TElementChildRel.query.filter(
@@ -290,10 +294,10 @@ def remove_element(element_no):
 def remove_element_children(parent_no):
     """递归删除子代元素"""
     # 查询所有子代关联关系列表
-    child_rel_list = ElementChildRelDao.select_all_by_parentno(parent_no)
+    child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     for child_rel in child_rel_list:
         # 查询子代元素信息
-        child = TestElementDao.select_by_elementno(child_rel.child_no)
+        child = TestElementDao.select_by_element(child_rel.child_no)
         # 递归删除子代元素的子代和关联关系
         remove_element_children(child_rel.child_no)
         # 删除子代元素属性
@@ -307,7 +311,7 @@ def remove_element_children(parent_no):
 def remove_element_property(element_no):
     """遍历删除元素属性"""
     # 查询元素所有属性
-    props = ElementPropertyDao.select_all_by_elementno(element_no)
+    props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
         prop.delete()
 
@@ -315,7 +319,7 @@ def remove_element_property(element_no):
 @http_service
 def enable_element(req):
     # 查询元素
-    element = TestElementDao.select_by_elementno(req.elementNo)
+    element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
     # 更新元素状态为启用
@@ -325,7 +329,7 @@ def enable_element(req):
 @http_service
 def disable_element(req):
     # 查询元素
-    element = TestElementDao.select_by_elementno(req.elementNo)
+    element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
     # 更新元素状态为禁用
@@ -373,7 +377,7 @@ def update_element_property(element_no, property: dict):
     """遍历修改元素属性"""
     for name, value in property.items():
         # 查询元素属性
-        prop = ElementPropertyDao.select_by_elementno_and_name(element_no, name)
+        prop = ElementPropertyDao.select_by_element_and_name(element_no, name)
         # 更新元素属性值
         if isinstance(value, str):
             prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE='STR')
@@ -406,7 +410,7 @@ def add_element_children(parent_no, children: Iterable[dict]):
         TElementChildRel.insert(
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            CHILD_ORDER=ElementChildRelDao.next_order_by_parentno(parent_no)
+            CHILD_ORDER=ElementChildRelDao.next_order_by_parent(parent_no)
         )
 
 
@@ -435,18 +439,18 @@ def update_element_children(children: Iterable[dict]):
 @http_service
 def move_up_child_order(req):
     # 查询元素子代关联关系
-    child_rel = ElementChildRelDao.select_by_parentno_and_childno(req.parentNo, req.childNo)
+    child_rel = ElementChildRelDao.select_by_parent_and_child(req.parentNo, req.childNo)
     check_is_not_blank(child_rel, '子元素不存在')
 
     # 统计元素子代个数
-    children_length = ElementChildRelDao.count_by_parentno(req.parentNo)
+    children_length = ElementChildRelDao.count_by_parent(req.parentNo)
     child_order = child_rel.CHILD_ORDER
 
     # 如果元素只有一个子代或该子代元素排第一位则无需上移
     if children_length == 1 or child_order == 1:
         return
 
-    upper_child_rel = ElementChildRelDao.select_by_parentno_and_childorder(req.parentNo, child_order - 1)
+    upper_child_rel = ElementChildRelDao.select_by_parent_and_childorder(req.parentNo, child_order - 1)
     upper_child_rel.update(CHILD_ORDER=upper_child_rel.CHILD_ORDER + 1)
     child_rel.update(CHILD_ORDER=child_rel.CHILD_ORDER - 1)
 
@@ -454,18 +458,18 @@ def move_up_child_order(req):
 @http_service
 def move_down_child_order(req):
     # 查询元素子代关联关系
-    child_rel = ElementChildRelDao.select_by_parentno_and_childno(req.parentNo, req.childNo)
+    child_rel = ElementChildRelDao.select_by_parent_and_child(req.parentNo, req.childNo)
     check_is_not_blank(child_rel, '子元素不存在')
 
     # 统计元素子代个数
-    children_length = ElementChildRelDao.count_by_parentno(req.parentNo)
+    children_length = ElementChildRelDao.count_by_parent(req.parentNo)
     child_order = child_rel.CHILD_ORDER
 
     # 如果元素只有一个子代或该子代元素排最后一位则无需下移
     if children_length == 1 or children_length == child_order:
         return
 
-    lower_child_rel = ElementChildRelDao.select_by_parentno_and_childorder(req.parentNo, child_order + 1)
+    lower_child_rel = ElementChildRelDao.select_by_parent_and_childorder(req.parentNo, child_order + 1)
     lower_child_rel.update(CHILD_ORDER=lower_child_rel.CHILD_ORDER - 1)
     child_rel.update(CHILD_ORDER=child_rel.CHILD_ORDER + 1)
 
@@ -473,16 +477,56 @@ def move_down_child_order(req):
 @http_service
 def duplicate_element(req):
     # 查询元素
-    element = TestElementDao.select_by_elementno(req.elementNo)
+    element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
     # todo 复制元素
 
 
 @http_service
+def query_http_header_template(req):
+    # 查询元素
+    element = TestElementDao.select_by_element(req.elementNo)
+    check_is_not_blank(element, '元素不存在')
+
+    # 查询所有关联的模板
+    rels = HttpSamplerHeadersRelDao.select_all_by_sampler(req.elementNo)
+
+    # 查询模版下的请求头
+    result = []
+    for rel in rels:
+        headers = HttpHeaderDao.select_list_by_template(rel.TEMPLATE_NO)
+        for header in headers:
+            result.append({
+                'headerNo': header.HEADER_NO,
+                'headerName': header.HEADER_NAME,
+                'headerValue': header.HEADER_VALUE,
+                'headerDesc': header.HEADER_DESC
+            })
+
+    return result
+
+
+@http_service
 def add_http_header_template(req):
-    ...
+    # 查询元素
+    element = TestElementDao.select_by_element(req.elementNo)
+    check_is_not_blank(element, '元素不存在')
+
+    # 查询模板
+    element = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(element, '模板不存在')
+
+    # 添加模板
+    THttpSamplerHeadersRel.insert(
+        SAMPLER_NO=req.elementNo,
+        TEMPLATE_NO=req.templateNo
+    )
 
 
 @http_service
 def remove_http_header_template(req):
-    ...
+    # 查询元素请求头模板关联
+    rel = HttpSamplerHeadersRelDao.select_by_sampler_and_template(req.elementNo, req.templateNo)
+    check_is_not_blank(rel, '元素请求头模板关联不存在')
+
+    rel.delete()

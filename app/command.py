@@ -167,6 +167,7 @@ def init_permission():
     _create_permission(name='根据父元素编号和子元素编号上移序号', method='PATCH', endpoint='/script/element/child/order/up')
     _create_permission(name='根据父元素编号和子元素编号下移序号', method='PATCH', endpoint='/script/element/child/order/down')
     _create_permission(name='复制测试元素及其子代', method='POST', endpoint='/script/element/duplicate')
+    _create_permission(name='查询HTTP请求头模板', method='GET', endpoint='/script/element/http/headers/template')
     _create_permission(name='添加HTTP请求头模板', method='PUT', endpoint='/script/element/http/headers/template')
     _create_permission(name='删除HTTP请求头模板', method='DELETE', endpoint='/script/element/http/headers/template')
 

@@ -78,7 +78,7 @@ def load_element(element_no):
 
     # 递归查询元素子代
     # 查询时根据 order asc 排序
-    element_child_rel_list = ElementChildRelDao.select_all_by_parentno(element_no)
+    element_child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
 
     children = []
     if element_child_rel_list:
@@ -98,7 +98,7 @@ def load_element(element_no):
 
 def load_element_property(element_no):
     # 查询元素属性，只查询enabled的属性
-    props = ElementPropertyDao.select_all_by_elementno_with_enable(element_no)
+    props = ElementPropertyDao.select_all_by_enable_element(element_no)
 
     property = {}
     for prop in props:
@@ -124,7 +124,7 @@ def get_variables_by_setlist(set_no_list, use_current_value):
 
     for set in set_list:
         # 查询变量列表
-        variables = VariableDao.select_list_by_setno(set.SET_NO)
+        variables = VariableDao.select_list_by_set(set.SET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量

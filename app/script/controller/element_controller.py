@@ -213,6 +213,15 @@ def duplicate_element():
     return service.duplicate_element(req)
 
 
+@blueprint.get('/element/http/headers/template')
+@require_login
+@require_permission
+def query_http_header_template():
+    """查询HTTP请求头模板"""
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    return service.query_http_header_template(req)
+
+
 @blueprint.post('/element/http/headers/template')
 @require_login
 @require_permission

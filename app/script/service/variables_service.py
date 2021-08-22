@@ -68,7 +68,7 @@ def query_variable_set_all(req):
 
 @http_service
 def query_variable_set(req):
-    variables = VariableDao.select_list_by_setno(req.setNo)
+    variables = VariableDao.select_list_by_set(req.setNo)
 
     result = []
     for variable in variables:
@@ -110,7 +110,7 @@ def create_variable_set(req):
 @http_service
 def modify_variable_set(req):
     # 查询变量集信息
-    varset = VariableSetDao.select_by_setno(req.setNo)
+    varset = VariableSetDao.select_by_no(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
 
     # 更新变量集信息
@@ -123,7 +123,7 @@ def modify_variable_set(req):
 @http_service
 def delete_variable_set(req):
     # 查询变量集信息
-    varset = VariableSetDao.select_by_setno(req.setNo)
+    varset = VariableSetDao.select_by_no(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
 
     # 删除变量集，TODO: 还要删除变量集下的变量
@@ -137,7 +137,7 @@ def create_variable(req):
     check_is_blank(variable, '变量集已存在')
 
     # 查询变量集信息
-    varset = VariableSetDao.select_by_setno(req.setNo)
+    varset = VariableSetDao.select_by_no(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
 
     # 新增变量
@@ -158,7 +158,7 @@ def create_variable(req):
 @http_service
 def modify_variable(req):
     # 查询变量信息
-    variable = VariableDao.select_by_varno(req.varNo)
+    variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
 
     # 更新变量信息
@@ -173,7 +173,7 @@ def modify_variable(req):
 @http_service
 def delete_variable(req):
     # 查询变量信息
-    variable = VariableDao.select_by_varno(req.varNo)
+    variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
 
     # 删除变量
@@ -183,7 +183,7 @@ def delete_variable(req):
 @http_service
 def enable_variable(req):
     # 查询变量信息
-    variable = VariableDao.select_by_varno(req.varNo)
+    variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
 
     # 启用变量
@@ -195,7 +195,7 @@ def enable_variable(req):
 @http_service
 def disable_variable(req):
     # 查询变量信息
-    variable = VariableDao.select_by_varno(req.varNo)
+    variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
 
     # 禁用变量
@@ -207,7 +207,7 @@ def disable_variable(req):
 @http_service
 def update_current_value(req):
     # 查询变量信息
-    variable = VariableDao.select_by_varno(req.varNo)
+    variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
 
     # 更新当前值
@@ -221,12 +221,12 @@ def query_variables(req):
     result = []
     for set_no in req.list:
         # 查询变量集信息
-        set = VariableSetDao.select_by_setno(set_no)
+        set = VariableSetDao.select_by_no(set_no)
         if not set:
             continue
 
         # 查询变量列表
-        variables = VariableDao.select_list_by_setno(set_no)
+        variables = VariableDao.select_list_by_set(set_no)
 
         for variable in variables:
             result.append({
@@ -246,7 +246,7 @@ def query_variables(req):
 @transactional
 def create_variables(req):
     # 查询变量集信息
-    varset = VariableSetDao.select_by_setno(req.setNo)
+    varset = VariableSetDao.select_by_no(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
 
     for vari in req.varList:
@@ -255,7 +255,7 @@ def create_variables(req):
             continue
 
         # 查询变量信息
-        variable = VariableDao.select_by_setno_and_varname(req.setNo, vari.varName)
+        variable = VariableDao.select_by_set_and_name(req.setNo, vari.varName)
         check_is_blank(variable, '变量已存在')
 
         # 新增变量
@@ -280,7 +280,7 @@ def modify_variables(req):
 
         if 'varNo' in vari:
             # 查询变量信息
-            variable = VariableDao.select_by_varno(vari.varNo)
+            variable = VariableDao.select_by_no(vari.varNo)
             check_is_not_blank(variable, '变量不存在')
             # 更新变量信息
             variable.update(
@@ -291,7 +291,7 @@ def modify_variables(req):
             )
         else:
             # 查询变量信息
-            variable = VariableDao.select_by_setno_and_varname(req.setNo, vari.varName)
+            variable = VariableDao.select_by_set_and_name(req.setNo, vari.varName)
             check_is_blank(variable, '变量已存在')
             # 新增变量
             TVariable.insert(
@@ -309,4 +309,4 @@ def modify_variables(req):
 def delete_variables(req):
     # 批量删除变量
     # VariableDao.delete_in_varno(req.varNoList)
-    VariableDao.delete_in_varno(req.list)
+    VariableDao.delete_in_no(req.list)

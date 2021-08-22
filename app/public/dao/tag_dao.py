@@ -11,11 +11,11 @@ from app.public.model import TTag
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_tagno(tag_no) -> TTag:
+def select_by_no(tag_no) -> TTag:
     return TTag.query_by(TAG_NO=tag_no).first()
 
 
-def select_by_tagname(tag_name) -> TTag:
+def select_by_name(tag_name) -> TTag:
     return TTag.query_by(TAG_NAME=tag_name).first()
 
 

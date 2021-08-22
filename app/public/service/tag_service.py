@@ -50,7 +50,7 @@ def query_tag_all():
 
 @http_service
 def create_tag(req):
-    tag = TagDao.select_by_tagname(req.tagName)
+    tag = TagDao.select_by_name(req.tagName)
     check_is_blank(tag, '标签已存在')
 
     TTag.insert(
@@ -62,7 +62,7 @@ def create_tag(req):
 
 @http_service
 def modify_tag(req):
-    tag = TagDao.select_by_tagno(req.tagNo)
+    tag = TagDao.select_by_no(req.tagNo)
     check_is_not_blank(tag, '标签不存在')
 
     tag.update(
@@ -73,7 +73,7 @@ def modify_tag(req):
 
 @http_service
 def delete_tag(req):
-    tag = TagDao.select_by_tagno(req.tagNo)
+    tag = TagDao.select_by_no(req.tagNo)
     check_is_not_blank(tag, '标签不存在')
 
     tag.delete()
