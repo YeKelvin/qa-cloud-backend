@@ -83,17 +83,6 @@ def delete_http_headers_template():
     return service.delete_http_headers_template(req)
 
 
-@blueprint.get('/http/headers')
-@require_login
-@require_permission
-def query_http_headers():
-    """查询模板下的所有请求头"""
-    req = JsonParser(
-        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
-    ).parse()
-    return service.query_http_headers(req)
-
-
 @blueprint.post('/http/header')
 @require_login
 @require_permission
@@ -132,10 +121,43 @@ def delete_http_header():
     return service.delete_http_header(req)
 
 
+@blueprint.patch('/http/header/enable')
+@require_login
+@require_permission
+def enable_http_header():
+    """启用变量"""
+    req = JsonParser(
+        Argument('headerNo', required=True, nullable=False, help='请求头编号不能为空')
+    ).parse()
+    return service.enable_http_header(req)
+
+
+@blueprint.patch('/http/header/disable')
+@require_login
+@require_permission
+def disable_http_header():
+    """禁用变量"""
+    req = JsonParser(
+        Argument('headerNo', required=True, nullable=False, help='请求头编号不能为空')
+    ).parse()
+    return service.disable_http_header(req)
+
+
+@blueprint.get('/http/headers')
+@require_login
+@require_permission
+def query_http_headers():
+    """查询模板下的所有请求头"""
+    req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.query_http_headers(req)
+
+
 @blueprint.post('/http/headers')
 @require_login
 @require_permission
-def create_headers():
+def create_http_headers():
     """
     根据列表批量新增请求头
 
@@ -156,13 +178,13 @@ def create_headers():
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
         Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
     ).parse()
-    return service.create_variables(req)
+    return service.create_http_headers(req)
 
 
 @blueprint.put('/http/headers')
 @require_login
 @require_permission
-def modify_headers():
+def modify_http_headers():
     """
     根据列表批量修改请求头
 
@@ -183,17 +205,17 @@ def modify_headers():
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
         Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
     ).parse()
-    return service.modify_variables(req)
+    return service.modify_http_headers(req)
 
 
 @blueprint.delete('/http/headers')
 @require_login
 @require_permission
-def delete_headers():
+def delete_http_headers():
     """
     根据列表批量删除请求头
 
     example: [1, 2, 3]
     """
     req = ListParser().parse()
-    return service.delete_variables(req)
+    return service.delete_http_headers(req)
