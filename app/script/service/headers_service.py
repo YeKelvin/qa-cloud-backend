@@ -128,7 +128,7 @@ def create_http_header(req):
 @http_service
 def modify_http_header(req):
     # 查询请求头
-    header = HttpHeaderDao.select_by_varno(req.headerNo)
+    header = HttpHeaderDao.select_by_no(req.headerNo)
     check_is_not_blank(header, '请求头不存在')
 
     # 更新请求头
@@ -142,7 +142,7 @@ def modify_http_header(req):
 @http_service
 def delete_http_header(req):
     # 查询请求头
-    header = HttpHeaderDao.select_by_varno(req.headerNo)
+    header = HttpHeaderDao.select_by_no(req.headerNo)
     check_is_not_blank(header, '请求头不存在')
 
     # 删除请求头
@@ -202,16 +202,16 @@ def create_http_headers(req):
             continue
 
         # 查询请求头
-        entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.varName)
+        entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
         check_is_blank(entity, '请求头已存在')
 
         # 新增请求头
         THttpHeader.insert(
             TEMPLATE_NO=req.templateNo,
             HEADER_NO=new_id(),
-            HEADER_NAME=req.headerName,
-            HEADER_VALUE=req.headerValue,
-            HEADER_DESC=req.headerDesc,
+            HEADER_NAME=header.headerName,
+            HEADER_VALUE=header.headerValue,
+            HEADER_DESC=header.headerDesc,
             ENABLED=True
         )
 
@@ -230,21 +230,21 @@ def modify_http_headers(req):
             check_is_not_blank(entity, '请求头不存在')
             # 更新请求头
             entity.update(
-                HEADER_NAME=req.headerName,
-                HEADER_VALUE=req.headerValue,
-                HEADER_DESC=req.headerDesc
+                HEADER_NAME=header.headerName,
+                HEADER_VALUE=header.headerValue,
+                HEADER_DESC=header.headerDesc
             )
         else:
             # 查询请求头
-            entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.varName)
+            entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
             check_is_blank(entity, '请求头已存在')
             # 新增请求头
             THttpHeader.insert(
                 TEMPLATE_NO=req.templateNo,
                 HEADER_NO=new_id(),
-                HEADER_NAME=req.headerName,
-                HEADER_VALUE=req.headerValue,
-                HEADER_DESC=req.headerDesc,
+                HEADER_NAME=header.headerName,
+                HEADER_VALUE=header.headerValue,
+                HEADER_DESC=header.headerDesc,
                 ENABLED=True
             )
 
