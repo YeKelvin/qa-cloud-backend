@@ -121,7 +121,7 @@ class TVariable(DBModel):
     UniqueConstraint('SET_NO', 'VAR_NAME', name='unique_setno_varname')
 
 
-class THttpSamplerHeadersRel:
+class THttpSamplerHeadersRel(DBModel):
     """元素请求头模板关联表"""
     __tablename__ = 'HTTP_SAMPLER_TEMPLATE_REL'
     ID = db.Column(db.Integer, primary_key=True)
@@ -135,7 +135,7 @@ class THttpSamplerHeadersRel:
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-class THttpHeadersTemplate:
+class THttpHeadersTemplate(DBModel):
     """请求头模板表"""
     __tablename__ = 'HTTP_HEADERS_TEMPLATE'
     ID = db.Column(db.Integer, primary_key=True)
