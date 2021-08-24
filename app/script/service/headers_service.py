@@ -174,7 +174,7 @@ def disable_http_header(req):
 
 
 @http_service
-def query_http_headers(req):
+def query_http_headers_in_template(req):
     headers = HttpHeaderDao.select_list_by_template(req.templateNo)
 
     result = []
@@ -186,6 +186,30 @@ def query_http_headers(req):
             'headerDesc': header.HEADER_DESC,
             'enabled': header.ENABLED
         })
+    return result
+
+
+@http_service
+def query_http_headers(req):
+    result = []
+    for template_no in req.list:
+        # 查询模板
+        template = HttpHeadersTemplateDao.select_by_no(template_no)
+        if not template:
+            continue
+
+        # 查询请求头列表
+        headers = HttpHeaderDao.select_list_by_template(template_no)
+
+        for header in headers:
+            result.append({
+                'headerNo': header.HEADER_NO,
+                'headerName': header.HEADER_NAME,
+                'headerValue': header.HEADER_VALUE,
+                'headerDesc': header.HEADER_DESC,
+                'enabled': header.ENABLED
+            })
+
     return result
 
 

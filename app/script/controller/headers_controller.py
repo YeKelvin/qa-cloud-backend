@@ -143,14 +143,23 @@ def disable_http_header():
     return service.disable_http_header(req)
 
 
+@blueprint.get('/http/headers/in/template')
+@require_login
+@require_permission
+def query_http_headers_in_template():
+    """查询模板下的请求头"""
+    req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.query_http_headers_in_template(req)
+
+
 @blueprint.get('/http/headers')
 @require_login
 @require_permission
 def query_http_headers():
-    """查询模板下的所有请求头"""
-    req = JsonParser(
-        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
-    ).parse()
+    """根据列表查询请求头"""
+    req = ListParser().parse()
     return service.query_http_headers(req)
 
 

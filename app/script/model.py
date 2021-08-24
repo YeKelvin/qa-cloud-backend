@@ -40,7 +40,7 @@ class TTestElement(DBModel):
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素类')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
-    # META_DATA = db.Column(db.String(512), comment='元数据')
+    META_DATA = db.Column(db.String(512), comment='元数据')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

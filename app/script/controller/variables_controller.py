@@ -48,17 +48,6 @@ def query_variable_set_all():
     return service.query_variable_set_all(req)
 
 
-@blueprint.get('/variable/set')
-@require_login
-@require_permission
-def query_variable_set():
-    """查询变量集下的所有变量"""
-    req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
-    ).parse()
-    return service.query_variable_set(req)
-
-
 @blueprint.post('/variable/set')
 @require_login
 @require_permission
@@ -172,11 +161,22 @@ def update_current_value():
     return service.update_current_value(req)
 
 
+@blueprint.get('/variables/in/set')
+@require_login
+@require_permission
+def query_variable_in_set():
+    """查询变量集下的变量"""
+    req = JsonParser(
+        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
+    ).parse()
+    return service.query_variable_in_set(req)
+
+
 @blueprint.get('/variables')
 @require_login
 @require_permission
 def query_variables():
-    """根据变量集编号列表查询变量"""
+    """根据列表查询变量"""
     req = ListParser().parse()
     return service.query_variables(req)
 

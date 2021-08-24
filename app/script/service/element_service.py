@@ -16,7 +16,6 @@ from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
-from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_headers_template_dao as HttpHeadersTemplateDao
 from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRelDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -393,11 +392,12 @@ def update_element_property(element_no, property: dict):
 @http_service
 @transactional
 def create_element_children(req):
-    add_element_children(parent_no=req.parentNo, children=req.children)
+    return add_element_children(parent_no=req.parentNo, children=req.children)
 
 
 def add_element_children(parent_no, children: Iterable[dict]):
     """添加元素子代"""
+    result = []
     for child in children:
         child_no = add_element(
             element_name=child.get('elementName'),
@@ -412,6 +412,8 @@ def add_element_children(parent_no, children: Iterable[dict]):
             CHILD_NO=child_no,
             CHILD_ORDER=ElementChildRelDao.next_order_by_parent(parent_no)
         )
+        result.append(child_no)
+    return result
 
 
 @http_service
@@ -483,7 +485,7 @@ def duplicate_element(req):
 
 
 @http_service
-def query_http_header_template(req):
+def query_element_http_headers_template_list(req):
     # 查询元素
     element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
@@ -491,42 +493,47 @@ def query_http_header_template(req):
     # 查询所有关联的模板
     rels = HttpSamplerHeadersRelDao.select_all_by_sampler(req.elementNo)
 
-    # 查询模版下的请求头
-    result = []
-    for rel in rels:
-        headers = HttpHeaderDao.select_list_by_template(rel.TEMPLATE_NO)
-        for header in headers:
-            result.append({
-                'headerNo': header.HEADER_NO,
-                'headerName': header.HEADER_NAME,
-                'headerValue': header.HEADER_VALUE,
-                'headerDesc': header.HEADER_DESC
-            })
-
-    return result
+    return [rel.TEMPLATE_NO for rel in rels]
 
 
 @http_service
-def add_http_header_template(req):
+def create_element_http_headers_template_list(req):
     # 查询元素
     element = TestElementDao.select_by_element(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
-    # 查询模板
-    element = HttpHeadersTemplateDao.select_by_no(req.templateNo)
-    check_is_not_blank(element, '模板不存在')
+    for template_no in req.templateNoList:
+        # 查询模板
+        template = HttpHeadersTemplateDao.select_by_no(template_no)
+        if not template:
+            continue
 
-    # 添加模板
-    THttpSamplerHeadersRel.insert(
-        SAMPLER_NO=req.elementNo,
-        TEMPLATE_NO=req.templateNo
-    )
+        # 添加模板关联
+        THttpSamplerHeadersRel.insert(SAMPLER_NO=req.elementNo, TEMPLATE_NO=template_no)
 
 
 @http_service
-def remove_http_header_template(req):
-    # 查询元素请求头模板关联
-    rel = HttpSamplerHeadersRelDao.select_by_sampler_and_template(req.elementNo, req.templateNo)
-    check_is_not_blank(rel, '元素请求头模板关联不存在')
+def modify_element_http_headers_template_list(req):
+    # 查询元素
+    element = TestElementDao.select_by_element(req.elementNo)
+    check_is_not_blank(element, '元素不存在')
 
-    rel.delete()
+    for template_no in req.templateNoList:
+        # 查询模板
+        template = HttpHeadersTemplateDao.select_by_no(template_no)
+        if not template:
+            continue
+
+        # 查询模板关联
+        rel = HttpSamplerHeadersRelDao.select_by_sampler_and_template(req.elementNo, template_no)
+        if rel:
+            continue
+        else:
+            # 添加模板关联
+            THttpSamplerHeadersRel.insert(
+                SAMPLER_NO=req.elementNo,
+                TEMPLATE_NO=template_no
+            )
+
+    # 删除不在请求中的模板
+    HttpSamplerHeadersRelDao.delete_not_in_template(req.templateNoList)

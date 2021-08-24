@@ -38,6 +38,9 @@ class ElementType(Enum):
     # 监听器
     LISTENER = 'LISTENER'
 
+    # 片段
+    SNIPPET = 'SNIPPET'
+
 
 @unique
 class ElementClass(Enum):

@@ -213,34 +213,34 @@ def duplicate_element():
     return service.duplicate_element(req)
 
 
-@blueprint.get('/element/http/headers/template')
+@blueprint.get('/element/http/headers/template/list')
 @require_login
 @require_permission
-def query_http_header_template():
-    """查询HTTP请求头模板"""
+def query_element_http_headers_template_list():
+    """查询元素关联的HTTP请求头模板列表"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
-    return service.query_http_header_template(req)
+    return service.query_element_http_headers_template_list(req)
 
 
-@blueprint.post('/element/http/headers/template')
+@blueprint.post('/element/http/headers/template/list')
 @require_login
 @require_permission
-def add_http_header_template():
-    """添加HTTP请求头模板"""
+def create_element_http_headers_template_list():
+    """新增元素和HTTP请求头模板列表的关联"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+        Argument('templateNoList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.add_http_header_template(req)
+    return service.create_element_http_headers_template_list(req)
 
 
-@blueprint.delete('/element/http/headers/template')
+@blueprint.put('/element/http/headers/template/list')
 @require_login
 @require_permission
-def remove_http_header_template():
-    """删除HTTP请求头模板"""
+def modify_element_http_headers_template_list():
+    """修改元素关联的HTTP请求头模板关联列表"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+        Argument('templateNoList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.remove_http_header_template(req)
+    return service.modify_element_http_headers_template_list(req)

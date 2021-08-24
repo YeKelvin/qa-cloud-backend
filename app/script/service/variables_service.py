@@ -67,23 +67,6 @@ def query_variable_set_all(req):
 
 
 @http_service
-def query_variable_set(req):
-    variables = VariableDao.select_list_by_set(req.setNo)
-
-    result = []
-    for variable in variables:
-        result.append({
-            'varNo': variable.VAR_NO,
-            'varName': variable.VAR_NAME,
-            'varDesc': variable.VAR_DESC,
-            'initialValue': variable.INITIAL_VALUE,
-            'currentValue': variable.CURRENT_VALUE,
-            'enabled': variable.ENABLED
-        })
-    return result
-
-
-@http_service
 def create_variable_set(req):
     # 查询变量集信息
     varset = VariableSetDao.select_first(WORKSPACE_NO=req.workspaceNo, SET_NAME=req.setName, SET_TYPE=req.setType)
@@ -214,6 +197,23 @@ def update_current_value(req):
     variable.update(
         CURRENT_VALUE=req.value
     )
+
+
+@http_service
+def query_variable_in_set(req):
+    variables = VariableDao.select_list_by_set(req.setNo)
+
+    result = []
+    for variable in variables:
+        result.append({
+            'varNo': variable.VAR_NO,
+            'varName': variable.VAR_NAME,
+            'varDesc': variable.VAR_DESC,
+            'initialValue': variable.INITIAL_VALUE,
+            'currentValue': variable.CURRENT_VALUE,
+            'enabled': variable.ENABLED
+        })
+    return result
 
 
 @http_service
