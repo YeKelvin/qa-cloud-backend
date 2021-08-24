@@ -6,5 +6,5 @@
 from app.script.model import TTestElement
 
 
-def select_by_element(element_no) -> TTestElement:
+def select_by_no(element_no) -> TTestElement:
     return TTestElement.query_by(ELEMENT_NO=element_no).first()

@@ -45,43 +45,43 @@ class ElementType(Enum):
 @unique
 class ElementClass(Enum):
     # 测试集合
-    TEST_COLLECTION = 'TEST_COLLECTION'
+    TEST_COLLECTION = 'TestCollection'
 
     # 测试组
-    TEST_GROUP = 'TEST_GROUP'
+    TEST_GROUP = 'TestGroup'
 
     # HTTP取样器
-    HTTP_SAMPLER = 'HTTP_SAMPLER'
+    HTTP_SAMPLER = 'HTTPSampler'
 
     # Python取样器
-    PYTHON_SAMPLER = 'PYTHON_SAMPLER'
+    PYTHON_SAMPLER = 'PythonSampler'
 
     # SQL取样器
-    SQL_SAMPLER = 'SQL_SAMPLER'
+    SQL_SAMPLER = 'SQLSampler'
 
     # HTTP头部配置器
-    HTTP_HEADER_MANAGER = 'HTTP_HEADER_MANAGER'
+    HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
 
     # 循环控制器
-    LOOP_CONTROL = 'LOOP_CONTROL'
+    LOOP_CONTROL = 'LoopController'
 
     # if控制器
-    IF_CONTROL = 'IF_CONTROL'
+    IF_CONTROL = 'IfController'
 
     # Python前置处理器
-    PYTHON_PRE_PROCESSOR = 'PYTHON_PRE_PROCESSOR'
+    PYTHON_PRE_PROCESSOR = 'PythonPreProcessor'
 
     # Python后置处理器
-    PYTHON_POST_PROCESSOR = 'PYTHON_POST_PROCESSOR'
+    PYTHON_POST_PROCESSOR = 'PythonPostProcessor'
 
     # JsonPath提取器
-    JSON_PATH_EXTRACTOR = 'JSON_PATH_EXTRACTOR'
+    JSON_PATH_EXTRACTOR = 'JsonPathExtractor'
 
     # Python断言器
-    PYTHON_ASSERTION = 'PYTHON_ASSERTION'
+    PYTHON_ASSERTION = 'PythonAssertion'
 
     # JsonPath断言器
-    JSON_PATH_ASSERTION = 'JSON_PATH_ASSERTION'
+    JSON_PATH_ASSERTION = 'JsonPathAssertion'
 
 
 @unique
