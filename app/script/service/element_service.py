@@ -42,6 +42,7 @@ def query_element_list(req):
     conds.add_fuzzy_match(TTestElement.ELEMENT_NAME, req.elementName)
     conds.add_fuzzy_match(TTestElement.ELEMENT_REMARK, req.elementRemark)
     conds.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_CLASS, req.elementClass)
     conds.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo:
@@ -80,6 +81,7 @@ def query_element_all(req):
     conds.add_exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
     conds.add_fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
     conds.add_fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.add_fuzzy_match(TTestElement.ELEMENT_CLASS, req.elementClass)
     conds.add_fuzzy_match(TTestElement.ENABLED, req.enabled)
 
     # TTestElement，TWorkspaceCollectionRel连表查询

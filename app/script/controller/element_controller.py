@@ -25,6 +25,7 @@ def query_element_list():
         Argument('elementName'),
         Argument('elementRemark'),
         Argument('elementType'),
+        Argument('elementClass'),
         Argument('enabled'),
         Argument('workspaceNo'),
         Argument('workspaceName'),
@@ -41,6 +42,7 @@ def query_element_all():
     """查询所有测试元素"""
     req = JsonParser(
         Argument('elementType'),
+        Argument('elementClass'),
         Argument('enabled'),
         Argument('workspaceNo'),
     ).parse()

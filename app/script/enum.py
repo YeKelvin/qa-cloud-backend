@@ -8,6 +8,7 @@ from enum import unique, Enum
 
 @unique
 class ElementType(Enum):
+
     # 测试集合
     COLLECTION = 'COLLECTION'
 
@@ -44,11 +45,18 @@ class ElementType(Enum):
 
 @unique
 class ElementClass(Enum):
+
     # 测试集合
     TEST_COLLECTION = 'TestCollection'
 
     # 测试组
     TEST_GROUP = 'TestGroup'
+
+    # 前置分组
+    SETUP_GROUP = 'SetupGroup'
+
+    # 后置分组
+    TEARDOWN_GROUP = 'TeardownGroup'
 
     # HTTP取样器
     HTTP_SAMPLER = 'HTTPSampler'
@@ -68,6 +76,9 @@ class ElementClass(Enum):
     # if控制器
     IF_CONTROL = 'IfController'
 
+    # 事务控制器
+    TRANSACTION_CONTROLLER = 'TransactionController'
+
     # Python前置处理器
     PYTHON_PRE_PROCESSOR = 'PythonPreProcessor'
 
@@ -86,6 +97,7 @@ class ElementClass(Enum):
 
 @unique
 class ElementStatus(Enum):
+
     # 启用
     ENABLE = True
 
