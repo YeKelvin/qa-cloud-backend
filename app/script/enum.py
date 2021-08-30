@@ -64,6 +64,9 @@ class ElementClass(Enum):
     # Python取样器
     PYTHON_SAMPLER = 'PythonSampler'
 
+    # Snippet取样器
+    SNIPPET_SAMPLER = 'SnippetSampler'
+
     # SQL取样器
     SQL_SAMPLER = 'SQLSampler'
 

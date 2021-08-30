@@ -8,6 +8,7 @@ import traceback
 from pymeter.runner import Runner
 
 from app.common.decorators.service import http_service
+from app.common.exceptions import ServiceError
 from app.common.validator import check_is_not_blank
 from app.extension import executor
 from app.extension import socketio
@@ -19,7 +20,6 @@ from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_set_dao as VariableSetDao
 from app.script.enum import ElementClass
-from app.script.enum import ElementType
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -64,27 +64,40 @@ def load_element_tree(element_no):
     # 元素子代
     children = []
 
+    # 读取元素属性
+    property = load_element_property(element_no)
+
     # 如果是 HttpSampler 则添加 HTTP请求头管理器
-    if (element.ELEMENT_TYPE == ElementType.SAMPLER.value) and (element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value):
+    if element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
         add_http_header_manager(element, children)
 
-    # 递归查询元素子代，并根据序号正序排序
-    element_child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
+    # 普通 Sampler 正常添加子代元素
+    if element.ELEMENT_CLASS != ElementClass.SNIPPET_SAMPLER.value:
+        # 递归查询元素子代，并根据序号正序排序
+        element_child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
 
-    # 添加元素子代
-    if element_child_rel_list:
-        for element_child_rel in element_child_rel_list:
-            children.append(load_element_tree(element_child_rel.CHILD_NO))
+        # 添加元素子代
+        if element_child_rel_list:
+            for element_child_rel in element_child_rel_list:
+                children.append(load_element_tree(element_child_rel.CHILD_NO))
 
-    info = {
+    else:  # 如果是 SnippetSampler 则读取片段内容
+        if 'snippetNo' not in property:
+            raise ServiceError('片段编号不能为空')
+        children.extend(load_element_tree(property['snippetNo'])['children'])
+
+    return {
         'name': element.ELEMENT_NAME,
         'remark': element.ELEMENT_REMARK,
-        'class': element.ELEMENT_CLASS,
+        'class': (
+            element.ELEMENT_CLASS
+            if element.ELEMENT_CLASS != ElementClass.SNIPPET_SAMPLER.value
+            else ElementClass.TRANSACTION_CONTROLLER.value
+        ),
         'enabled': element.ENABLED,
-        'property': load_element_property(element_no),
+        'property': property,
         'children': children
     }
-    return info
 
 
 def load_element_property(element_no):
