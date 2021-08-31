@@ -22,7 +22,7 @@ class ElementType(Enum):
     CONFIG = 'CONFIG'
 
     # 逻辑控制器
-    CONTROL = 'CONTROL'
+    CONTROLLER = 'CONTROLLER'
 
     # 时间控制器
     TIMER = 'TIMER'
@@ -74,10 +74,10 @@ class ElementClass(Enum):
     HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
 
     # 循环控制器
-    LOOP_CONTROL = 'LoopController'
+    LOOP_CONTROLLER = 'LoopController'
 
     # if控制器
-    IF_CONTROL = 'IfController'
+    IF_CONTROLLER = 'IfController'
 
     # 事务控制器
     TRANSACTION_CONTROLLER = 'TransactionController'

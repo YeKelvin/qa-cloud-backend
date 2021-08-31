@@ -182,28 +182,39 @@ def modify_element_child():
     return service.modify_element_children(req)
 
 
-@blueprint.patch('/element/child/order/up')
+@blueprint.patch('/element/child/move/up')
 @require_login
 @require_permission
-def move_up_element_child_order():
-    """根据父元素编号和子元素编号上移序号"""
+def move_up_element_child():
+    """上移元素"""
     req = JsonParser(
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.move_up_child_order(req)
+    return service.move_up_element_child(req)
 
 
-@blueprint.patch('/element/child/order/down')
+@blueprint.patch('/element/child/move/down')
 @require_login
 @require_permission
-def move_down_element_child_order():
-    """根据父元素编号和子元素编号下移序号"""
+def move_down_element_child():
+    """下移元素"""
     req = JsonParser(
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.move_down_child_order(req)
+    return service.move_down_element_child(req)
+
+
+@blueprint.post('/element/child/move')
+@require_login
+@require_permission
+def move_element_child():
+    """移动元素"""
+    req = JsonParser(
+        Argument('sourceChildNo', required=True, nullable=False, help='来源子元素编号不能为空'),
+        Argument('targetParentNo', required=True, nullable=False, help='目标父元素编号不能为空'),
+        Argument('targetSerialNo', required=True, nullable=False, help='子元素序号不能为空')
+    ).parse()
+    return service.move_element_child(req)
 
 
 @blueprint.post('/element/duplicate')

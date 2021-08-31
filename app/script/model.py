@@ -74,7 +74,7 @@ class TElementChildRel(DBModel):
     ROOT_NO = db.Column(db.String(32), comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    CHILD_ORDER = db.Column(db.Integer, nullable=False, comment='子元素序号')
+    SERIAL_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
