@@ -73,13 +73,16 @@ class ElementClass(Enum):
     # HTTP头部配置器
     HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
 
-    # 循环控制器
+    # Loop控制器
     LOOP_CONTROLLER = 'LoopController'
 
-    # if控制器
+    # If控制器
     IF_CONTROLLER = 'IfController'
 
-    # 事务控制器
+    # While控制器
+    WHILE_CONTROLLER = 'WhileController'
+
+    # Transaction控制器
     TRANSACTION_CONTROLLER = 'TransactionController'
 
     # Python前置处理器
