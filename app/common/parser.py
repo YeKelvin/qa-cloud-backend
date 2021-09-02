@@ -74,7 +74,9 @@ class Argument:
                 assert str(value).lower() in ['true', 'false']
                 value = str(value).lower() == 'true'
             elif self.type == list:
-                if not isinstance(value, list):
+                if request.args:  # url传递数组
+                    value = request.args.getlist(self.name)
+                elif not isinstance(value, list):  # body传递数组
                     value = from_json(value)
                 value = transform(value)
             elif self.type == dict:
