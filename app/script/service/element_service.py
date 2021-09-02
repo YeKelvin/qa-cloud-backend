@@ -151,6 +151,27 @@ def query_element_children(req):
     return get_element_children(req.elementNo, req.depth)
 
 
+@http_service
+def query_elements_children(req):
+    result = []
+    for element_no in req.elementNoList:
+        element = TestElementDao.select_by_no(element_no)
+        if not element:
+            log.info(f'elementNo:[ {element_no} ] 元素不存在')
+            continue
+        children = get_element_children(element_no, req.depth)
+        result.append({
+            'elementNo': element.ELEMENT_NO,
+            'elementName': element.ELEMENT_NAME,
+            'elementType': element.ELEMENT_TYPE,
+            'elementClass': element.ELEMENT_CLASS,
+            'enabled': element.ENABLED,
+            'children': children
+        })
+
+    return result
+
+
 def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
@@ -184,7 +205,8 @@ def get_element_children(parent_no, depth):
 @http_service
 @transactional
 def create_element(req):
-    # TODO: Type==TestCollection时，workspaceNo不允许为空
+    if (req.elementType == 'COLLECTION') and (not req.workspaceNo):
+        raise ServiceError('新增测试集合时，工作空间编号不能为空')
 
     # 创建元素
     element_no = add_element(
@@ -200,7 +222,7 @@ def create_element(req):
     if req.workspaceNo:
         workspace = WorkspaceDao.select_by_no(req.workspaceNo)
         check_is_not_blank(workspace, '测试项目不存在')
-
+        # 关联工作空间和测试集合
         TWorkspaceCollectionRel.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
 
     return {'elementNo': element_no}
