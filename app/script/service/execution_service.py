@@ -12,6 +12,7 @@ from app.common.exceptions import ServiceError
 from app.common.validator import check_is_not_blank
 from app.extension import executor
 from app.extension import socketio
+from app.script.dao import element_builtin_child_rel_dao as ElementBuiltinChildRelDao
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_dao as HttpHeaderDao
@@ -19,7 +20,7 @@ from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRel
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_set_dao as VariableSetDao
-from app.script.enum import ElementClass
+from app.script.enum import ElementClass, ElementType
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -67,24 +68,36 @@ def load_element_tree(element_no):
     # 读取元素属性
     property = load_element_property(element_no)
 
-    # 如果是 HttpSampler 则添加 HTTP请求头管理器
+    # 如果是 HttpSampler 则添加 HTTP 请求头管理器
     if element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
         add_http_header_manager(element, children)
 
     # 普通 Sampler 正常添加子代元素
     if element.ELEMENT_CLASS != ElementClass.SNIPPET_SAMPLER.value:
         # 递归查询元素子代，并根据序号正序排序
-        element_child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
+        child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
 
         # 添加元素子代
-        if element_child_rel_list:
-            for element_child_rel in element_child_rel_list:
+        if child_rel_list:
+            for element_child_rel in child_rel_list:
                 children.append(load_element_tree(element_child_rel.CHILD_NO))
 
     else:  # 如果是 SnippetSampler 则读取片段内容
         if 'snippetNo' not in property:
             raise ServiceError('片段编号不能为空')
         children.extend(load_element_tree(property['snippetNo'])['children'])
+
+    # 如果元素为 HTTPSampler 时，查询内置元素并添加至 children 中
+    if element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
+        # 查询内置元素关联
+        builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
+        for builtin_rel in builtin_rel_list:
+            if builtin_rel.CHILD_TYPE == ElementType.PRE_PROCESSOR.value:
+                # 内置元素为 Pre-Processor 时，添加至最后（最后一个运行 Pre-Processor）
+                children.append(load_element_tree(builtin_rel.CHILD_NO))
+            elif builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
+                # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
+                children.insert(0, load_element_tree(builtin_rel.CHILD_NO))
 
     return {
         'name': element.ELEMENT_NAME,

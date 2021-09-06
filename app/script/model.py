@@ -38,7 +38,7 @@ class TTestElement(DBModel):
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     ELEMENT_REMARK = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
-    ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素类')
+    ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     META_DATA = db.Column(db.String(512), comment='元数据')
     REMARK = db.Column(db.String(64), comment='备注')
@@ -71,10 +71,26 @@ class TElementChildRel(DBModel):
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    ROOT_NO = db.Column(db.String(32), comment='根元素编号')
+    ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     SERIAL_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TElementBuiltinChildRel(DBModel):
+    """内置元素关联表"""
+    __tablename__ = 'ELEMENT_BUILTIN_CHILD_REL'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
+    PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
+    CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
+    CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -201,3 +217,59 @@ class TElementTagRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+# class TTestPlan(DBModel):
+#     """测试计划表"""
+#     __tablename__ = 'TestPlan'
+#     ID = db.Column(db.Integer, primary_key=True)
+#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+#     REMARK = db.Column(db.String(64), comment='备注')
+#     CREATED_BY = db.Column(db.String(64), comment='创建人')
+#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
+#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+# class TTestReport(DBModel):
+#     """测试报告表"""
+#     ID = db.Column(db.Integer, primary_key=True)
+#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+#     REMARK = db.Column(db.String(64), comment='备注')
+#     CREATED_BY = db.Column(db.String(64), comment='创建人')
+#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
+#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+# class TTestCollectionResult(DBModel):
+#     """测试集合结果表"""
+#     ID = db.Column(db.Integer, primary_key=True)
+#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+#     REMARK = db.Column(db.String(64), comment='备注')
+#     CREATED_BY = db.Column(db.String(64), comment='创建人')
+#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
+#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+# class TTestGroupResult(DBModel):
+#     """测试分组结果表"""
+#     ID = db.Column(db.Integer, primary_key=True)
+#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+#     REMARK = db.Column(db.String(64), comment='备注')
+#     CREATED_BY = db.Column(db.String(64), comment='创建人')
+#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
+#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+# class TTestSamplerResult(DBModel):
+#     """测试取样器结果表"""
+#     ID = db.Column(db.Integer, primary_key=True)
+#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+#     REMARK = db.Column(db.String(64), comment='备注')
+#     CREATED_BY = db.Column(db.String(64), comment='创建人')
+#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
+#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')

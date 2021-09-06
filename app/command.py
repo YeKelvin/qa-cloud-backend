@@ -172,6 +172,9 @@ def init_permission():
     _create_permission(name='查询元素关联的HTTP请求头模板列表', method='GET', endpoint='/script/element/http/headers/template/list')
     _create_permission(name='批量新增元素和HTTP请求头模板的关联', method='POST', endpoint='/script/element/http/headers/template/list')
     _create_permission(name='修改元素关联的HTTP请求头模板关联列表', method='PUT', endpoint='/script/element/http/headers/template/list')
+    _create_permission(name='查询内置元素', method='GET', endpoint='/script/element/builtin/children')
+    _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtin/children')
+    _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtin/children')
 
     # execution
     _create_permission(name='执行脚本', method='POST', endpoint='/script/execute')
