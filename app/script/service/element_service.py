@@ -338,12 +338,20 @@ def delete_element_children(parent_no):
     # 查询所有子代关联列表
     child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     for child_rel in child_rel_list:
+        # 如果子代存在内置元素，一并删除
+        builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(child_rel.CHILD_NO)
+        if builtin_rel_list:
+            for builtin_rel in builtin_rel_list:
+                # 删除子代内置元素
+                TestElementDao.delete_by_no(builtin_rel.CHILD_NO)
+                # 删除子代内置元素关联
+                builtin_rel.delete()
         # 查询子代元素
-        child = TestElementDao.select_by_no(child_rel.child_no)
+        child = TestElementDao.select_by_no(child_rel.CHILD_NO)
         # 递归删除子代元素的子代和关联
-        delete_element_children(child_rel.child_no)
+        delete_element_children(child_rel.CHILD_NO)
         # 删除子代元素属性
-        delete_element_property(child_rel.child_no)
+        delete_element_property(child_rel.CHILD_NO)
         # 删除父子关联
         child_rel.delete()
         # 删除子代元素
@@ -435,7 +443,8 @@ def update_element_property(element_no, property: dict):
 @http_service
 @transactional
 def create_element_children(req):
-    return add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+    children = add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+    return {'children': children}
 
 
 def add_element_children(root_no, parent_no, children: Iterable[dict]):
@@ -469,11 +478,12 @@ def modify_element_children(req):
 def update_element_children(children: Iterable[dict]):
     """遍历修改元素子代"""
     for child in children:
-        if 'elementNo' not in child:
+        child_no = child.get('elementNo', None)
+        if not child_no:
             raise ServiceError('子代元素编号不能为空')
 
         update_element(
-            element_no=child.get('elementNo'),
+            element_no=child_no,
             element_name=child.get('elementName'),
             element_remark=child.get('elementRemark'),
             property=child.get('property', None),
@@ -653,7 +663,7 @@ def query_element_builtin_children(req):
                 'elementName': builtin.ELEMENT_NAME,
                 'elementType': builtin.ELEMENT_TYPE,
                 'elementClass': builtin.ELEMENT_CLASS,
-                'enabled': builtin.ENABLED
+                'property': query_element_property(builtin.ELEMENT_NO)
             })
 
     return result
@@ -662,10 +672,15 @@ def query_element_builtin_children(req):
 @http_service
 @transactional
 def create_element_builtin_children(req):
+    builtin = add_element_builtin_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+    return {'builtin': builtin}
+
+
+def add_element_builtin_children(root_no, parent_no, children):
     result = []
-    for builtin in req.children:
+    for builtin in children:
         # 查询父级元素
-        parent = TestElementDao.select_by_no(req.parentNo)
+        parent = TestElementDao.select_by_no(parent_no)
         builtin_type = builtin.get('elementType')
         builtin_class = builtin.get('elementClass')
 
@@ -692,8 +707,8 @@ def create_element_builtin_children(req):
 
         # 创建内置元素关联
         TElementBuiltinChildRel.insert(
-            ROOT_NO=req.rootNo,
-            PARENT_NO=req.parentNo,
+            ROOT_NO=root_no,
+            PARENT_NO=parent_no,
             CHILD_NO=builtin_no,
             CHILD_TYPE=builtin_type
         )
@@ -704,15 +719,15 @@ def create_element_builtin_children(req):
 @http_service
 @transactional
 def modify_element_builtin_children(req):
-    for child in req.children:
+    update_element_builtin_children(req.children)
+
+
+def update_element_builtin_children(children):
+    for child in children:
         # 内置元素编号
         builtin_no = child.get('elementNo', None)
         if not builtin_no:
             raise ServiceError('内置元素编号不能为空')
-
-        # 查询内置元素关联
-        rel = ElementBuiltinChildRelDao.select_by_parent_and_child(req.parentNo, builtin_no)
-        check_is_not_blank(rel, '内置元素关联不存在')
 
         # 查询内置元素
         builtin = TestElementDao.select_by_no(builtin_no)
