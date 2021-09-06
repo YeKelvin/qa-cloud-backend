@@ -8,7 +8,7 @@
             "program": "${file}",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
-            "justMyCode": false,
+            "justMyCode": true,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 "PYTHONIOENCODING": "UTF8"
@@ -21,7 +21,7 @@
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "module": "flask",
-            "justMyCode": false,
+            "justMyCode": true,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 "PYTHONIOENCODING": "UTF8"
@@ -38,7 +38,7 @@
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "module": "pytest",
-            "justMyCode": false,
+            "justMyCode": true,
             "args": [
                 "-sv",
                 "--disable-pytest-warnings",
