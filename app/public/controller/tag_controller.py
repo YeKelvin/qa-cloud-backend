@@ -66,9 +66,9 @@ def modify_tag():
 @blueprint.delete('/tag')
 @require_login
 @require_permission
-def delete_tag():
+def remove_tag():
     """删除标签"""
     req = JsonParser(
         Argument('tagNo', required=True, nullable=False, help='标签编号不能为空'),
     ).parse()
-    return service.delete_tag(req)
+    return service.remove_tag(req)

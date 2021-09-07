@@ -92,7 +92,7 @@ def modify_http_headers_template(req):
 
 
 @http_service
-def delete_http_headers_template(req):
+def remove_http_headers_template(req):
     # 查询模板
     template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
@@ -140,7 +140,7 @@ def modify_http_header(req):
 
 
 @http_service
-def delete_http_header(req):
+def remove_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
     check_is_not_blank(header, '请求头不存在')
@@ -274,6 +274,6 @@ def modify_http_headers(req):
 
 
 @http_service
-def delete_http_headers(req):
+def remove_http_headers(req):
     # 批量删除请求头
     HttpHeaderDao.delete_in_no(req.list)

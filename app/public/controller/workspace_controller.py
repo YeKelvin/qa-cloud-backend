@@ -72,12 +72,12 @@ def modify_workspace():
 @blueprint.delete('/workspace')
 @require_login
 @require_permission
-def delete_workspace():
+def remove_workspace():
     """删除工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
     ).parse()
-    return service.delete_workspace(req)
+    return service.remove_workspace(req)
 
 
 @blueprint.post('/workspace/user')

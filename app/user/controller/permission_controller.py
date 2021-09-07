@@ -19,8 +19,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_permission_list():
-    """分页查询权限列表
-    """
+    """分页查询权限列表"""
     req = JsonParser(
         Argument('permissionNo'),
         Argument('permissionName'),
@@ -29,7 +28,7 @@ def query_permission_list():
         Argument('method'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_permission_list(req)
 
@@ -38,8 +37,7 @@ def query_permission_list():
 @require_login
 @require_permission
 def query_permission_all():
-    """查询所有权限
-    """
+    """查询所有权限"""
     return service.query_permission_all()
 
 
@@ -47,13 +45,12 @@ def query_permission_all():
 @require_login
 @require_permission
 def create_permission():
-    """新增权限
-    """
+    """新增权限"""
     req = JsonParser(
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
         Argument('permissionDesc'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
-        Argument('method', required=True, nullable=False, help='请求方法不能为空'),
+        Argument('method', required=True, nullable=False, help='请求方法不能为空')
     ).parse()
     return service.create_permission(req)
 
@@ -62,14 +59,13 @@ def create_permission():
 @require_login
 @require_permission
 def modify_permission():
-    """更新权限信息
-    """
+    """更新权限信息"""
     req = JsonParser(
         Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
         Argument('permissionName', required=True, nullable=False, help='权限名称不能为空'),
         Argument('permissionDesc'),
         Argument('endpoint', required=True, nullable=False, help='请求路由不能为空'),
-        Argument('method', required=True, nullable=False, help='请求方法不能为空'),
+        Argument('method', required=True, nullable=False, help='请求方法不能为空')
     ).parse()
     return service.modify_permission(req)
 
@@ -78,11 +74,10 @@ def modify_permission():
 @require_login
 @require_permission
 def modify_permission_state():
-    """更新权限状态
-    """
+    """更新权限状态"""
     req = JsonParser(
         Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
-        Argument('state', required=True, nullable=False, help='权限状态不能为空'),
+        Argument('state', required=True, nullable=False, help='权限状态不能为空')
     ).parse()
     return service.modify_permission_state(req)
 
@@ -90,10 +85,9 @@ def modify_permission_state():
 @blueprint.delete('/permission')
 @require_login
 @require_permission
-def delete_permission():
-    """删除权限
-    """
+def remove_permission():
+    """删除权限"""
     req = JsonParser(
-        Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
+        Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空')
     ).parse()
-    return service.delete_permission(req)
+    return service.remove_permission(req)

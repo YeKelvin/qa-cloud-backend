@@ -72,7 +72,7 @@ def modify_tag(req):
 
 
 @http_service
-def delete_tag(req):
+def remove_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
     check_is_not_blank(tag, '标签不存在')
 

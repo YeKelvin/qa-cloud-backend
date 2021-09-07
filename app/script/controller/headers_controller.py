@@ -75,12 +75,12 @@ def modify_http_headers_template():
 @blueprint.delete('/http/headers/template')
 @require_login
 @require_permission
-def delete_http_headers_template():
+def remove_http_headers_template():
     """删除请求头模板"""
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
     ).parse()
-    return service.delete_http_headers_template(req)
+    return service.remove_http_headers_template(req)
 
 
 @blueprint.post('/http/header')
@@ -113,12 +113,12 @@ def modify_http_header():
 @blueprint.delete('/http/header')
 @require_login
 @require_permission
-def delete_http_header():
+def remove_http_header():
     """删除请求头"""
     req = JsonParser(
         Argument('headerNo', required=True, nullable=False, help='请求头编号不能为空')
     ).parse()
-    return service.delete_http_header(req)
+    return service.remove_http_header(req)
 
 
 @blueprint.patch('/http/header/enable')
@@ -220,11 +220,11 @@ def modify_http_headers():
 @blueprint.delete('/http/headers')
 @require_login
 @require_permission
-def delete_http_headers():
+def remove_http_headers():
     """
     根据列表批量删除请求头
 
     example: [1, 2, 3]
     """
     req = ListParser().parse()
-    return service.delete_http_headers(req)
+    return service.remove_http_headers(req)

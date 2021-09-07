@@ -95,7 +95,7 @@ def modify_role_state(req):
 
 
 @http_service
-def delete_role(req):
+def remove_role(req):
     # 查询角色
     role = RoleDao.select_by_roleno(req.roleNo)
     check_is_not_blank(role, '角色不存在')

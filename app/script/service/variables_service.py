@@ -104,7 +104,7 @@ def modify_variable_set(req):
 
 
 @http_service
-def delete_variable_set(req):
+def remove_variable_set(req):
     # 查询变量集信息
     varset = VariableSetDao.select_by_no(req.setNo)
     check_is_not_blank(varset, '变量集不存在')
@@ -154,7 +154,7 @@ def modify_variable(req):
 
 
 @http_service
-def delete_variable(req):
+def remove_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
     check_is_not_blank(variable, '变量不存在')
@@ -306,6 +306,6 @@ def modify_variables(req):
 
 
 @http_service
-def delete_variables(req):
+def remove_variables(req):
     # 批量删除变量
     VariableDao.delete_in_no(req.list)

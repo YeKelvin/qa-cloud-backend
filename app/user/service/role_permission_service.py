@@ -67,7 +67,7 @@ def create_role_permission_rel(req):
 
 
 @http_service
-def delete_role_permission_rel(req):
+def remove_role_permission_rel(req):
     # 查询角色权限
     role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo)
     check_is_not_blank(role_permission, '角色权限关联关系不存在')

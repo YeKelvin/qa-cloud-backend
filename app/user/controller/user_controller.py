@@ -17,11 +17,10 @@ log = get_logger(__name__)
 
 @blueprint.post('/login')
 def login():
-    """用户登录
-    """
+    """用户登录"""
     req = JsonParser(
         Argument('loginName', required=True, nullable=False, help='登录账号或密码不能为空'),
-        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空'),
+        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空')
     ).parse()
     return service.login(req)
 
@@ -29,8 +28,7 @@ def login():
 @blueprint.post('/logout')
 @require_login
 def logout():
-    """用户登出
-    """
+    """用户登出"""
     return service.logout()
 
 
@@ -38,14 +36,13 @@ def logout():
 @require_login
 @require_permission
 def register():
-    """用户注册
-    """
+    """用户注册"""
     req = JsonParser(
         Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
-        Argument('email'),
+        Argument('email')
     ).parse()
     return service.register(req)
 
@@ -54,10 +51,9 @@ def register():
 @require_login
 @require_permission
 def reset_password():
-    """重置密码
-    """
+    """重置密码"""
     req = JsonParser(
-        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空')
     ).parse()
     return service.reset_login_password(req)
 
@@ -66,8 +62,7 @@ def reset_password():
 @require_login
 @require_permission
 def query_user_list():
-    """分页查询用户列表
-    """
+    """分页查询用户列表"""
     req = JsonParser(
         Argument('userNo'),
         Argument('userName'),
@@ -75,7 +70,7 @@ def query_user_list():
         Argument('email'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_user_list(req)
 
@@ -84,16 +79,14 @@ def query_user_list():
 @require_login
 @require_permission
 def query_user_all():
-    """查询所有用户
-    """
+    """查询所有用户"""
     return service.query_user_all()
 
 
 @blueprint.get('/info')
 @require_login
 def query_user_info():
-    """查询个人用户信息
-    """
+    """查询个人用户信息"""
     return service.query_user_info()
 
 
@@ -101,13 +94,12 @@ def query_user_info():
 @require_login
 @require_permission
 def modify_user():
-    """更新用户信息
-    """
+    """更新用户信息"""
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('mobileNo'),
-        Argument('email'),
+        Argument('email')
     ).parse()
     return service.modify_user(req)
 
@@ -116,11 +108,10 @@ def modify_user():
 @require_login
 @require_permission
 def modify_user_state():
-    """更新用户状态
-    """
+    """更新用户状态"""
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
-        Argument('state', required=True, nullable=False, help='用户状态不能为空'),
+        Argument('state', required=True, nullable=False, help='用户状态不能为空')
     ).parse()
     return service.modify_user_state(req)
 
@@ -128,10 +119,9 @@ def modify_user_state():
 @blueprint.delete('')
 @require_login
 @require_permission
-def delete_user():
-    """删除用户
-    """
+def remove_user():
+    """删除用户"""
     req = JsonParser(
-        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空')
     ).parse()
-    return service.delete_user(req)
+    return service.remove_user(req)

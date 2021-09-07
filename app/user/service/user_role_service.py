@@ -61,7 +61,7 @@ def create_user_role_rel(req):
 
 
 @http_service
-def delete_user_role_rel(req):
+def remove_user_role_rel(req):
     # 查询用户角色
     user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
     check_is_not_blank(user_role, '用户角色关联关系不存在')

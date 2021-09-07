@@ -82,7 +82,7 @@ def modify_workspace(req):
 
 
 @http_service
-def delete_workspace(req):
+def remove_workspace(req):
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_is_not_blank(workspace, '工作空间不存在')
 

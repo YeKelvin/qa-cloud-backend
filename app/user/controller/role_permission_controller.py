@@ -19,8 +19,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_role_permission_rel_list():
-    """分页查询角色权限关联关系列表
-    """
+    """分页查询角色权限关联关系列表"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo'),
@@ -29,7 +28,7 @@ def query_role_permission_rel_list():
         Argument('endpoint'),
         Argument('method'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_role_permission_rel_list(req)
 
@@ -38,11 +37,10 @@ def query_role_permission_rel_list():
 @require_login
 @require_permission
 def create_role_permission_rel():
-    """新增角色权限关联关系
-    """
+    """新增角色权限关联关系"""
     req = JsonParser(
         Argument('roleNo'),
-        Argument('permissionNo'),
+        Argument('permissionNo')
     ).parse()
     return service.create_role_permission_rel(req)
 
@@ -50,11 +48,10 @@ def create_role_permission_rel():
 @blueprint.delete('/role/permission/rel')
 @require_login
 @require_permission
-def delete_role_permission_rel():
-    """删除角色权限关联关系
-    """
+def remove_role_permission_rel():
+    """删除角色权限关联关系"""
     req = JsonParser(
         Argument('roleNo'),
-        Argument('permissionNo'),
+        Argument('permissionNo')
     ).parse()
-    return service.delete_role_permission_rel(req)
+    return service.remove_role_permission_rel(req)

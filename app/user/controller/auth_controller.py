@@ -15,9 +15,8 @@ log = get_logger(__name__)
 
 @blueprint.get('/encryption/factor')
 def create_rsa_public_key():
-    """获取加密因子
-    """
+    """获取加密因子"""
     req = JsonParser(
-        Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
+        Argument('loginName', required=True, nullable=False, help='登录账号不能为空')
     ).parse()
     return service.create_rsa_public_key(req)

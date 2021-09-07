@@ -78,12 +78,12 @@ def modify_variable_set():
 @blueprint.delete('/variable/set')
 @require_login
 @require_permission
-def delete_variable_set():
+def remove_variable_set():
     """删除变量集"""
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
-    return service.delete_variable_set(req)
+    return service.remove_variable_set(req)
 
 
 @blueprint.post('/variable')
@@ -119,12 +119,12 @@ def modify_variable():
 @blueprint.delete('/variable')
 @require_login
 @require_permission
-def delete_variable():
+def remove_variable():
     """删除变量"""
     req = JsonParser(
         Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
     ).parse()
-    return service.delete_variable(req)
+    return service.remove_variable(req)
 
 
 @blueprint.patch('/variable/enable')
@@ -241,11 +241,11 @@ def modify_variables():
 @blueprint.delete('/variables')
 @require_login
 @require_permission
-def delete_variables():
+def remove_variables():
     """
     根据列表批量删除变量
 
     example: [1, 2, 3]
     """
     req = ListParser().parse()
-    return service.delete_variables(req)
+    return service.remove_variables(req)

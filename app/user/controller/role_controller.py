@@ -19,15 +19,14 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_role_list():
-    """分页查询角色列表
-    """
+    """分页查询角色列表"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('roleName'),
         Argument('roleDesc'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_role_list(req)
 
@@ -36,8 +35,7 @@ def query_role_list():
 @require_login
 @require_permission
 def query_role_all():
-    """查询所有角色
-    """
+    """查询所有角色"""
     return service.query_role_all()
 
 
@@ -45,11 +43,10 @@ def query_role_all():
 @require_login
 @require_permission
 def create_role():
-    """新增角色
-    """
+    """新增角色"""
     req = JsonParser(
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('roleDesc', required=True, nullable=False, help='角色描述不能为空'),
+        Argument('roleDesc', required=True, nullable=False, help='角色描述不能为空')
     ).parse()
     return service.create_role(req)
 
@@ -58,12 +55,11 @@ def create_role():
 @require_login
 @require_permission
 def modify_role():
-    """更新角色信息
-    """
+    """更新角色信息"""
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
-        Argument('roleDesc'),
+        Argument('roleDesc')
     ).parse()
     return service.modify_role(req)
 
@@ -72,11 +68,10 @@ def modify_role():
 @require_login
 @require_permission
 def modify_role_state():
-    """更新角色状态
-    """
+    """更新角色状态"""
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
-        Argument('state', required=True, nullable=False, help='角色状态不能为空'),
+        Argument('state', required=True, nullable=False, help='角色状态不能为空')
     ).parse()
     return service.modify_role_state(req)
 
@@ -84,10 +79,9 @@ def modify_role_state():
 @blueprint.delete('/role')
 @require_login
 @require_permission
-def delete_role():
-    """删除角色
-    """
+def remove_role():
+    """删除角色"""
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空')
     ).parse()
-    return service.delete_role(req)
+    return service.remove_role(req)

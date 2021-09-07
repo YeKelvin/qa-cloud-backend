@@ -104,7 +104,7 @@ def modify_permission_state(req):
 
 
 @http_service
-def delete_permission(req):
+def remove_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
     check_is_not_blank(permission, '权限不存在')

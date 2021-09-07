@@ -262,7 +262,7 @@ def modify_user_state(req):
 
 @http_service
 @transactional
-def delete_user(req):
+def remove_user(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
