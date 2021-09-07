@@ -93,7 +93,7 @@ def create_element():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('children'),
+        Argument('children', type=list),
         Argument('workspaceNo'),
     ).parse()
     return service.create_element(req)
@@ -110,7 +110,7 @@ def modify_element():
         Argument('elementRemark'),
         Argument('enabled'),
         Argument('property'),
-        Argument('children'),
+        Argument('children', type=list),
     ).parse()
     return service.modify_element(req)
 
@@ -172,11 +172,30 @@ def modify_element_property():
 @require_login
 @require_permission
 def create_element_children():
-    """根据父元素编号新增元素子代"""
+    """
+    根据父元素编号新增子代元素（同时支持新增子代内置元素）
+    request:
+    {
+        "rootNo": "",
+        "parentNo": "",
+        "children": [
+            {
+                "elementName": "",
+                "elementRemark": "",
+                "elementType": "",
+                "elementClass": "",
+                "property": { ... },
+                "children": [ ... ],
+                "builtIn": [ ... ]
+            }
+            ...
+        ],
+    }
+    """
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', required=True, nullable=False, help='子元素列表不能为空')
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
     return service.create_element_children(req)
 
@@ -185,9 +204,24 @@ def create_element_children():
 @require_login
 @require_permission
 def modify_element_children():
-    """根据父元素编号修改元素子代"""
+    """
+    根据父元素编号修改元素子代
+    request:
+    {
+        "children": [
+            {
+                "elementName": "",
+                "elementRemark": "",
+                "elementType": "",
+                "elementClass": "",
+                "property": { ... },
+                "children": [ ... ]
+            }
+            ...
+        ],
+    }"""
     req = JsonParser(
-        Argument('children', required=True, nullable=False, help='子元素列表不能为空')
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
     return service.modify_element_children(req)
 
@@ -221,6 +255,7 @@ def move_element_child():
     """移动元素"""
     req = JsonParser(
         Argument('sourceChildNo', required=True, nullable=False, help='来源子元素编号不能为空'),
+        # Argument('targetRootNo', required=True, nullable=False, help='目标根元素编号不能为空'),
         Argument('targetParentNo', required=True, nullable=False, help='目标父元素编号不能为空'),
         Argument('targetSerialNo', required=True, nullable=False, help='子元素序号不能为空')
     ).parse()
@@ -288,7 +323,7 @@ def create_element_builtin_children():
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', required=True, nullable=False, help='子元素列表不能为空')
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
     return service.create_element_builtin_children(req)
 

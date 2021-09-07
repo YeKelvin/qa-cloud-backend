@@ -31,7 +31,7 @@ log = get_logger(__name__)
 
 @http_service
 def execute_script(req):
-    # 根据collectionNo递归查询脚本数据并转换成dict
+    # 根据 collectionNo 递归查询脚本数据并转换成 dict
     collection = load_element_tree(req.collectionNo)
 
     # TODO: 增加脚本完整性校验，例如脚本下是否有内容

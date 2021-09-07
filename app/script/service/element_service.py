@@ -305,26 +305,11 @@ def delete_element(element_no):
     # 递归删除元素子代和子代关联
     delete_element_children(element_no)
 
-    # 如果存在父级关联，则删除关联并重新排序子代元素
-    child_rel = ElementChildRelDao.select_by_child(element_no)
-    if child_rel:
-        # 重新排序父级子代
-        TElementChildRel.query.filter(
-            TElementChildRel.PARENT_NO == child_rel.PARENT_NO, TElementChildRel.SERIAL_NO > child_rel.SERIAL_NO
-        ).update(
-            {TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1}
-        )
-        # 删除父级关联
-        child_rel.delete()
+    # 如果元素存在父级关联，则删除关联并重新排序子代元素
+    delete_element_child_rel(element_no)
 
     # 如果存在内置元素，一并删除
-    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
-    if builtin_rel_list:
-        for builtin_rel in builtin_rel_list:
-            # 删除内置元素
-            TestElementDao.delete_by_no(builtin_rel.CHILD_NO)
-            # 删除内置元素关联
-            builtin_rel.delete()
+    delete_element_builtin_by_parent(element_no)
 
     # 删除元素属性
     delete_element_property(element_no)
@@ -334,18 +319,12 @@ def delete_element(element_no):
 
 
 def delete_element_children(parent_no):
-    """递归删除子代元素"""
+    """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、子代内置元素和子代内置元素属性）"""
     # 查询所有子代关联列表
     child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     for child_rel in child_rel_list:
         # 如果子代存在内置元素，一并删除
-        builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(child_rel.CHILD_NO)
-        if builtin_rel_list:
-            for builtin_rel in builtin_rel_list:
-                # 删除子代内置元素
-                TestElementDao.delete_by_no(builtin_rel.CHILD_NO)
-                # 删除子代内置元素关联
-                builtin_rel.delete()
+        delete_element_builtin_by_parent(child_rel.CHILD_NO)
         # 查询子代元素
         child = TestElementDao.select_by_no(child_rel.CHILD_NO)
         # 递归删除子代元素的子代和关联
@@ -358,9 +337,22 @@ def delete_element_children(parent_no):
         child.delete()
 
 
+def delete_element_child_rel(child_no):
+    # 如果子代存在父级关联，则删除关联并重新排序子代元素
+    child_rel = ElementChildRelDao.select_by_child(child_no)
+    if child_rel:
+        # 重新排序父级子代
+        TElementChildRel.query.filter(
+            TElementChildRel.PARENT_NO == child_rel.PARENT_NO, TElementChildRel.SERIAL_NO > child_rel.SERIAL_NO
+        ).update(
+            {TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1}
+        )
+        # 删除父级关联
+        child_rel.delete()
+
+
 def delete_element_property(element_no):
-    """遍历删除元素属性"""
-    # 查询元素所有属性
+    # 查询所有元素属性
     props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
         prop.delete()
@@ -451,6 +443,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]):
     """添加元素子代"""
     result = []
     for child in children:
+        # 新建子代元素
         child_no = add_element(
             element_name=child.get('elementName'),
             element_remark=child.get('elementRemark'),
@@ -459,12 +452,17 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]):
             property=child.get('property', None),
             children=child.get('children', None)
         )
+        # 新建子代与父级关联
         TElementChildRel.insert(
             ROOT_NO=root_no,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
             SERIAL_NO=ElementChildRelDao.next_serialno_by_parent(parent_no)
         )
+        # 新建子代内置元素
+        builtin = child.get('builtIn', None)
+        if builtin:
+            add_element_builtin_children(root_no, child_no, builtin)
         result.append(child_no)
     return result
 
@@ -492,6 +490,7 @@ def update_element_children(children: Iterable[dict]):
 
 
 @http_service
+@transactional
 def move_up_element_child(req):
     # 查询元素子代关联
     element_child_rel = ElementChildRelDao.select_by_child(req.childNo)
@@ -515,6 +514,7 @@ def move_up_element_child(req):
 
 
 @http_service
+@transactional
 def move_down_element_child(req):
     # 查询元素子代关联
     element_child_rel = ElementChildRelDao.select_by_child(req.childNo)
@@ -587,7 +587,7 @@ def duplicate_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(element, '元素不存在')
-    # todo 复制元素
+    # TODO: 复制元素
 
 
 @http_service
@@ -740,3 +740,24 @@ def update_element_builtin_children(children):
         property = child.get('property', None)
         if property:
             update_element_property(builtin_no, property)
+
+
+def delete_element_builtin(element_no):
+    # 查询内置元素
+    element = TestElementDao.select_by_no(element_no)
+    check_is_not_blank(element, '内置元素不存在')
+    # 删除内置元素属性
+    delete_element_property(element_no)
+    # 删除内置元素
+    element.delete()
+
+
+def delete_element_builtin_by_parent(parent_no):
+    # 根据父级删除所有内置元素
+    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(parent_no)
+    if builtin_rel_list:
+        for builtin_rel in builtin_rel_list:
+            # 删除内置元素
+            delete_element_builtin(builtin_rel.CHILD_NO)
+            # 删除内置元素关联
+            builtin_rel.delete()
