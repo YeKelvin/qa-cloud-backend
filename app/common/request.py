@@ -85,7 +85,7 @@ def transform(value: list or dict):
             else:
                 attrs.append(item)
         return attrs
-    if isinstance(value, dict):
+    elif isinstance(value, dict):
         attrs = {}
         for key, val in value.items():
             if isinstance(val, dict) or isinstance(val, list):
@@ -93,3 +93,5 @@ def transform(value: list or dict):
             else:
                 attrs[key] = val
         return AttributeDict(attrs)
+    else:
+        return value
