@@ -20,7 +20,8 @@ from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRel
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_set_dao as VariableSetDao
-from app.script.enum import ElementClass, ElementType
+from app.script.enum import ElementClass
+from app.script.enum import ElementType
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -88,16 +89,19 @@ def load_element_tree(element_no):
         children.extend(load_element_tree(property['snippetNo'])['children'])
 
     # 如果元素为 HTTPSampler 时，查询内置元素并添加至 children 中
-    if element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
+    if (
+        element.ELEMENT_TYPE == ElementType.GROUP.value  # noqa
+        or element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value  # noqa
+    ):
         # 查询内置元素关联
         builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
         for builtin_rel in builtin_rel_list:
-            if builtin_rel.CHILD_TYPE == ElementType.PRE_PROCESSOR.value:
-                # 内置元素为 Pre-Processor 时，添加至最后（最后一个运行 Pre-Processor）
-                children.append(load_element_tree(builtin_rel.CHILD_NO))
-            elif builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
+            if builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
                 # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
                 children.insert(0, load_element_tree(builtin_rel.CHILD_NO))
+            else:
+                # 其余内置元素添加至最后（最后一个运行）
+                children.append(load_element_tree(builtin_rel.CHILD_NO))
 
     return {
         'name': element.ELEMENT_NAME,
