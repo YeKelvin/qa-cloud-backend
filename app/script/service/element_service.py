@@ -462,7 +462,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]):
         # 新建子代内置元素
         builtin = child.get('builtIn', None)
         if builtin:
-            add_element_builtin_children(root_no, child_no, builtin)
+            add_element_builtin_children(parent_no=child_no, children=builtin, root_no=root_no)
         result.append(child_no)
     return result
 
@@ -672,12 +672,21 @@ def query_element_builtin_children(req):
 @http_service
 @transactional
 def create_element_builtin_children(req):
-    builtin = add_element_builtin_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+    builtin = add_element_builtin_children(parent_no=req.parentNo, children=req.children, root_no=req.rootNo)
     return {'builtin': builtin}
 
 
-def add_element_builtin_children(root_no, parent_no, children):
+def add_element_builtin_children(parent_no, children, root_no=None):
     result = []
+
+    # 根据父级查询根元素编号
+    if not root_no:
+        parent_rel = ElementChildRelDao.select_by_child(parent_no)
+        if parent_rel:
+            root_no = parent_rel.ROOT_NO
+        else:
+            root_no = parent_no
+
     for builtin in children:
         # 查询父级元素
         parent = TestElementDao.select_by_no(parent_no)

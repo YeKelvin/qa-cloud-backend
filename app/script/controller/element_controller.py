@@ -321,9 +321,9 @@ def query_element_builtin_children():
 def create_element_builtin_children():
     """新增内置元素"""
     req = JsonParser(
-        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空'),
+        Argument('rootNo', required=True, nullable=True)
     ).parse()
     return service.create_element_builtin_children(req)
 
