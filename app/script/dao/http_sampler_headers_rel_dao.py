@@ -16,6 +16,8 @@ def select_all_by_sampler(sampler_no) -> List[THttpSamplerHeadersRel]:
     return THttpSamplerHeadersRel.query_by(SAMPLER_NO=sampler_no).all()
 
 
-def delete_not_in_template(*args):
+def delete_all_by_sampler_and_not_in_template(sampler_no, *args):
     THttpSamplerHeadersRel.query.filter(
-        THttpSamplerHeadersRel.TEMPLATE_NO.notin_(*args)).update({THttpSamplerHeadersRel.DEL_STATE: 1})
+        THttpSamplerHeadersRel.SAMPLER_NO == sampler_no,
+        THttpSamplerHeadersRel.TEMPLATE_NO.notin_(*args)
+    ).update({THttpSamplerHeadersRel.DEL_STATE: 1})

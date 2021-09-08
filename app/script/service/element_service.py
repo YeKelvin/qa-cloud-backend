@@ -642,7 +642,7 @@ def modify_element_http_headers_template_list(req):
             )
 
     # 删除不在请求中的模板
-    HttpSamplerHeadersRelDao.delete_not_in_template(req.templateNoList)
+    HttpSamplerHeadersRelDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNoList)
 
 
 @http_service
