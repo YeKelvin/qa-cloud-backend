@@ -63,6 +63,8 @@ def load_element_tree(element_no):
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
 
+    # TODO: 元素禁用时直接 return
+
     # 元素子代
     children = []
 
@@ -88,7 +90,7 @@ def load_element_tree(element_no):
             raise ServiceError('片段编号不能为空')
         children.extend(load_element_tree(property['snippetNo'])['children'])
 
-    # 如果元素为 HTTPSampler 时，查询内置元素并添加至 children 中
+    # 类型是Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
     if (
         element.ELEMENT_TYPE == ElementType.GROUP.value  # noqa
         or element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value  # noqa

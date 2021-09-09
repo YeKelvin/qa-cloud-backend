@@ -323,7 +323,7 @@ def create_element_builtin_children():
     req = JsonParser(
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空'),
-        Argument('rootNo', required=True, nullable=True)
+        Argument('rootNo')
     ).parse()
     return service.create_element_builtin_children(req)
 

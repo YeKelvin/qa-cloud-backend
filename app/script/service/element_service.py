@@ -663,6 +663,7 @@ def query_element_builtin_children(req):
                 'elementName': builtin.ELEMENT_NAME,
                 'elementType': builtin.ELEMENT_TYPE,
                 'elementClass': builtin.ELEMENT_CLASS,
+                'enabled': builtin.ENABLED,
                 'property': query_element_property(builtin.ELEMENT_NO)
             })
 
