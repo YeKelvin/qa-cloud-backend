@@ -135,3 +135,16 @@ class VariableSetWeight(Enum):
 
     # 自定义变量
     CUSTOM = 3
+
+
+@unique
+class RunningState(Enum):
+
+    # 待运行
+    WAITING = 'WAITING'
+
+    # 运行中
+    RUNNING = 'RUNNING'
+
+    # 已完成
+    COMPLETED = 'COMPLETED'

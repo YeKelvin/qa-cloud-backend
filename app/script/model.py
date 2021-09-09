@@ -104,7 +104,7 @@ class TVariableSet(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
-    SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
+    SET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量集编号')
     SET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
     SET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
     SET_DESC = db.Column(db.String(256), comment='变量集描述')
@@ -206,7 +206,7 @@ class TSQLConfiguration(DBModel):
 
 
 class TElementTagRel(DBModel):
-    """元素子代关联表"""
+    """元素标签关联表"""
     __tablename__ = 'ELEMENT_TAG_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -219,31 +219,98 @@ class TElementTagRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-# class TTestPlan(DBModel):
-#     """测试计划表"""
-#     __tablename__ = 'TestPlan'
-#     ID = db.Column(db.Integer, primary_key=True)
-#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-#     REMARK = db.Column(db.String(64), comment='备注')
-#     CREATED_BY = db.Column(db.String(64), comment='创建人')
-#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+class TTestPlan(DBModel):
+    """测试计划表"""
+    __tablename__ = 'TestPlan'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
+    VERSION_NO = db.Column(db.String(128), comment='需求版本号')
+    PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
+    PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
+    PLAN_DESC = db.Column(db.String(256), comment='计划描述')
+    TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
+    RUNNING_STATE = db.Column(db.Boolean, comment='运行状态，待运行/运行中/已完成')
+    SUCCESS_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='成功脚本数')
+    FAILURE_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='失败脚本数')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-# class TTestReport(DBModel):
-#     """测试报告表"""
-#     ID = db.Column(db.Integer, primary_key=True)
-#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-#     REMARK = db.Column(db.String(64), comment='备注')
-#     CREATED_BY = db.Column(db.String(64), comment='创建人')
-#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+class TTestPlanSettings(DBModel):
+    """测试计划设置表"""
+    __tablename__ = 'TestPlanSettings'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
+    ITERATIONS = db.Column(db.Integer, nullable=False, default=0, comment='计划迭代次数')
+    DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
+    SAVE = db.Column(db.Boolean, nullable=False, default=True, comment='是否保存数据至报告中')
+    USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TTestPlanVariableSetRel(DBModel):
+    """测试计划变量集关联表"""
+    __tablename__ = 'TESTPLAN_VARIABLE_SET_REL'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
+    SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TTestPlanItem(DBModel):
+    """测试计划项目明细表"""
+    __tablename__ = 'TESTPLAN_ITEM'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
+    COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
+    SERIAL_NO = db.Column(db.Integer, nullable=False, comment='序号')
+    RUNNING_STATE = db.Column(db.Boolean, comment='运行状态，待运行/运行中/已完成')
+    RESULT_STATUS = db.Column(db.Boolean, comment='运行结果，成功/失败')
+    TRACEBACK = db.Column(db.String(4096), comment='异常堆栈')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+
+
+class TTestReport(DBModel):
+    """测试报告表"""
+    __tablename__ = 'TEST_REPORT'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
+    PLAN_NO = db.Column(db.String(32), nullable=False, comment='计划编号')
+    REPORT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='报告编号')
+    REPORT_NAME = db.Column(db.String(256), nullable=False, comment='报告名称')
+    REPORT_DESC = db.Column(db.String(256), nullable=False, comment='报告描述')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
 # class TTestCollectionResult(DBModel):
 #     """测试集合结果表"""
+#     __tablename__ = 'TEST_COLLECTION_RESULT'
 #     ID = db.Column(db.Integer, primary_key=True)
 #     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
 #     REMARK = db.Column(db.String(64), comment='备注')
@@ -255,6 +322,7 @@ class TElementTagRel(DBModel):
 
 # class TTestGroupResult(DBModel):
 #     """测试分组结果表"""
+#     __tablename__ = 'TEST_GROUP_RESULT'
 #     ID = db.Column(db.Integer, primary_key=True)
 #     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
 #     REMARK = db.Column(db.String(64), comment='备注')
@@ -266,6 +334,7 @@ class TElementTagRel(DBModel):
 
 # class TTestSamplerResult(DBModel):
 #     """测试取样器结果表"""
+#     __tablename__ = 'TEST_SAMPLER_RESULT'
 #     ID = db.Column(db.Integer, primary_key=True)
 #     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
 #     REMARK = db.Column(db.String(64), comment='备注')

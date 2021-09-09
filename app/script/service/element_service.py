@@ -186,7 +186,7 @@ def get_element_children(parent_no, depth):
     if not element_child_rel_list:
         return result
 
-    # 根据child-order排序
+    # 根据序号排序
     element_child_rel_list.sort(key=lambda k: k.SERIAL_NO)
     for rel in element_child_rel_list:
         # 查询子代元素
@@ -227,7 +227,7 @@ def create_element(req):
     if req.workspaceNo:
         # 查询工作空间
         workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-        check_is_not_blank(workspace, '测试项目不存在')
+        check_is_not_blank(workspace, '工作空间不存在')
         # 关联工作空间和测试集合
         TWorkspaceCollectionRel.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
 

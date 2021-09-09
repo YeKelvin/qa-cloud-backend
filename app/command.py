@@ -177,7 +177,10 @@ def init_permission():
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtin/children')
 
     # execution
-    _create_permission(name='执行脚本', method='POST', endpoint='/script/execute')
+    _create_permission(name='执行集合', method='POST', endpoint='/script/execute/collection')
+    _create_permission(name='执行分组', method='POST', endpoint='/script/execute/group')
+    _create_permission(name='执行取样器', method='POST', endpoint='/script/execute/sampler')
+    _create_permission(name='执行测试计划', method='POST', endpoint='/script/execute/testplan')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/set/list')

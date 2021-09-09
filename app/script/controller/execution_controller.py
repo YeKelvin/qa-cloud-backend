@@ -15,10 +15,10 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.post('/execute')
+@blueprint.post('/execute/collection')
 @require_login
 @require_permission
-def execute_script():
+def execute_collection():
     """
     运行脚本
 
@@ -27,17 +27,17 @@ def execute_script():
         "collectionNo": "",
         "variableSet": {
             "useCurrentValue": true,
-            "list": []
+            "numberList": []
         },
-        "sid": ""
+        "socketId": ""
     }
     """
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('variableSet', type=dict),
-        Argument('sid')
+        Argument('socketId')
     ).parse()
-    return service.execute_script(req)
+    return service.execute_collection(req)
 
 
 # @blueprint.post('/execute/group')
@@ -46,6 +46,8 @@ def execute_script():
 # def execute_group():
 #     req = JsonParser(
 #         Argument('groupNo', required=True, nullable=False, help='集合编号不能为空')
+#         Argument('variableSet', type=dict),
+#         Argument('socketId')
 #     ).parse()
 #     return service.execute_group(req)
 
@@ -56,5 +58,49 @@ def execute_script():
 # def execute_sampler():
 #     req = JsonParser(
 #         Argument('samplerNo', required=True, nullable=False, help='集合编号不能为空')
+#         Argument('variableSet', type=dict),
+#         Argument('socketId')
 #     ).parse()
 #     return service.execute_sampler(req)
+
+
+@blueprint.post('/execute/testplan')
+@require_login
+@require_permission
+def execute_testplan():
+    """
+    运行测试计划
+
+    request:
+    {
+        "collectionList": [
+            {"elementNo": "", "serialNo": ""},
+            {"elementNo": "", "serialNo": ""}
+            ...
+        ],
+        "variableSetNumberList": [],
+        "workspaceNo": "",
+        "versionNo": "",
+        "planName": "",
+        "planDesc": "",
+        "iterations": "1",
+        "delay": "0",
+        "save": true,
+        "useCurrentValue": false,
+        "executeNow": true
+    }
+    """
+    req = JsonParser(
+        Argument('collectionList', type=dict, required=True, nullable=False, help='集合列表不能为空'),
+        Argument('variableSetNumberList', type=list),
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('versionNo'),
+        Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
+        Argument('planDesc'),
+        Argument('iterations', default=1),
+        Argument('delay', default=0),
+        Argument('save', default=True),
+        Argument('useCurrentValue', default=False),
+        Argument('executeNow', default=True)
+    ).parse()
+    return service.execute_testplan(req)
