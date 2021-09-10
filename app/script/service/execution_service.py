@@ -8,6 +8,7 @@ from datetime import datetime
 
 from pymeter.runner import Runner
 
+import app
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
@@ -90,10 +91,12 @@ def execute_testplan(req):
     # 新增测试计划设置
     TTestPlanSettings.insert(
         PLAN_NO=plan_no,
+        CONCURRENCY=req.concurrency,
         ITERATIONS=req.iterations,
         DELAY=req.delay,
         SAVE=req.save,
-        USE_CURRENT_VALUE=req.useCurrentValue
+        USE_CURRENT_VALUE=req.useCurrentValue,
+        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount
     )
     # 新增测试计划与变量集关联
     for set_no in req.variableSetNumberList:
@@ -324,21 +327,20 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     })
 
 
-def add_flask_result_storage(script: dict, plan_no, report_no, collection_no):
-    log.debug('添加 FlaskResultStorage 组件')
+def add_result_db_storage(script: dict, plan_no, report_no, collection_no):
+    log.debug('添加 ResultDBStorage 组件')
 
     script['children'].insert(
         0, {
-            'name': 'FlaskResultStorage',
+            'name': 'ResultDBStorage',
             'remark': '',
-            'class': 'FlaskResultStorage',
+            'class': 'ResultDBStorage',
             'enabled': True,
             'property': {
-                'FlaskResultStorage__plan_no': plan_no,
-                'FlaskResultStorage__report_no': report_no,
-                'FlaskResultStorage__collection_no': collection_no,
-                'FlaskResultStorage__flask_db_instance_module': 'app.extension',
-                'FlaskResultStorage__flask_db_instance_name': 'db',
+                'ResultDBStorage__database_url': app.get_db_url(),
+                'ResultDBStorage__plan_no': plan_no,
+                'ResultDBStorage__report_no': report_no,
+                'ResultDBStorage__collection_no': collection_no
             },
             'children': None
         }
@@ -368,7 +370,7 @@ def run_testplan(collection_list, set_no_list, use_current_value, plan_no, repor
 
         # 添加报告存储器组件
         if report_no:
-            add_flask_result_storage(collection, plan_no, report_no, collection_no)
+            add_result_db_storage(collection, plan_no, report_no, collection_no)
 
         # 新开一个线程执行脚本
         def start():

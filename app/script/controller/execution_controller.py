@@ -83,10 +83,12 @@ def execute_testplan():
         "versionNo": "",
         "planName": "",
         "planDesc": "",
+        "concurrency": "1",
         "iterations": "1",
         "delay": "0",
         "save": true,
         "useCurrentValue": false,
+        "stopTestOnErrorCount": "3",
         "executeNow": true
     }
     """
@@ -97,10 +99,12 @@ def execute_testplan():
         Argument('versionNo'),
         Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
         Argument('planDesc'),
+        Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('useCurrentValue', default=False),
+        Argument('stopTestOnErrorCount', default=3),
         Argument('executeNow', default=True)
     ).parse()
     return service.execute_testplan(req)

@@ -248,10 +248,12 @@ class TTestPlanSettings(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
+    CONCURRENCY = db.Column(db.Integer, nullable=False, default=1, comment='并发数')
     ITERATIONS = db.Column(db.Integer, nullable=False, default=0, comment='计划迭代次数')
     DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
     SAVE = db.Column(db.Boolean, nullable=False, default=True, comment='是否保存数据至报告中')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
+    STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
@@ -308,37 +310,71 @@ class TTestReport(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-# class TTestCollectionResult(DBModel):
-#     """测试集合结果表"""
-#     __tablename__ = 'TEST_COLLECTION_RESULT'
-#     ID = db.Column(db.Integer, primary_key=True)
-#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-#     REMARK = db.Column(db.String(64), comment='备注')
-#     CREATED_BY = db.Column(db.String(64), comment='创建人')
-#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+class TTestCollectionResult(DBModel):
+    """测试集合结果表"""
+    __tablename__ = 'TEST_COLLECTION_RESULT'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
+    COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
+    COLLECTION_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时集合的对象id')
+    COLLECTION_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
+    COLLECTION_REMARK = db.Column(db.String(512), comment='元素描述')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
+    ELAPSED_TIME = db.Column(db.Integer, nullable=False, default=0, comment='耗时')
+    SUCCESS = db.Column(db.Boolean, comment='是否成功')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-# class TTestGroupResult(DBModel):
-#     """测试分组结果表"""
-#     __tablename__ = 'TEST_GROUP_RESULT'
-#     ID = db.Column(db.Integer, primary_key=True)
-#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-#     REMARK = db.Column(db.String(64), comment='备注')
-#     CREATED_BY = db.Column(db.String(64), comment='创建人')
-#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+class TTestGroupResult(DBModel):
+    """测试分组结果表"""
+    __tablename__ = 'TEST_GROUP_RESULT'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
+    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时集合的对象id')
+    GROUP_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时分组的对象id')
+    GROUP_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
+    GROUP_REMARK = db.Column(db.String(512), comment='元素描述')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
+    ELAPSED_TIME = db.Column(db.Integer, nullable=False, default=0, comment='耗时')
+    SUCCESS = db.Column(db.Boolean, comment='是否成功')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
 
 
-# class TTestSamplerResult(DBModel):
-#     """测试取样器结果表"""
-#     __tablename__ = 'TEST_SAMPLER_RESULT'
-#     ID = db.Column(db.Integer, primary_key=True)
-#     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-#     REMARK = db.Column(db.String(64), comment='备注')
-#     CREATED_BY = db.Column(db.String(64), comment='创建人')
-#     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-#     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-#     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+class TTestSamplerResult(DBModel):
+    """测试取样器结果表"""
+    __tablename__ = 'TEST_SAMPLER_RESULT'
+    ID = db.Column(db.Integer, primary_key=True)
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
+    GROUP_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时分组的对象id')
+    PARENT_ID = db.Column(db.String(32), comment='运行时子代取样器的父级的对象id')
+    SAMPLER_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时取样器的对象id')
+    SAMPLER_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
+    SAMPLER_REMARK = db.Column(db.String(512), comment='元素描述')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
+    ELAPSED_TIME = db.Column(db.Integer, nullable=False, default=0, comment='耗时')
+    SUCCESS = db.Column(db.Boolean, comment='是否成功')
+    REQUEST_URL = db.Column(db.String(4096), comment='请求地址')
+    REQUEST_DATA = db.Column(db.String(4096), comment='请求数据')
+    REQUEST_HEADERS = db.Column(db.String(4096), comment='请求头')
+    RESPONSE_DATA = db.Column(db.String(4096), comment='响应数据')
+    RESPONSE_HEADERS = db.Column(db.String(4096), comment='响应头')
+    ERROR_ASSERTION = db.Column(db.String(4096), comment='失败断言数据')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
