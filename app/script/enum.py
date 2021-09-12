@@ -148,3 +148,6 @@ class RunningState(Enum):
 
     # 已完成
     COMPLETED = 'COMPLETED'
+
+    # 异常
+    ERROR = 'ERROR'

@@ -87,13 +87,14 @@ def execute_testplan():
         "iterations": "1",
         "delay": "0",
         "save": true,
-        "useCurrentValue": false,
+        "saveOnError": false,
         "stopTestOnErrorCount": "3",
+        "useCurrentValue": false,
         "executeNow": true
     }
     """
     req = JsonParser(
-        Argument('collectionList', type=dict, required=True, nullable=False, help='集合列表不能为空'),
+        Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
         Argument('variableSetNumberList', type=list),
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('versionNo'),
@@ -103,8 +104,9 @@ def execute_testplan():
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
-        Argument('useCurrentValue', default=False),
+        Argument('saveOnError', default=False),
         Argument('stopTestOnErrorCount', default=3),
+        Argument('useCurrentValue', default=False),
         Argument('executeNow', default=True)
     ).parse()
     return service.execute_testplan(req)
