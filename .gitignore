@@ -8,6 +8,9 @@ __pycache__/
 assets/
 report.html
 
+# flask-migrate
+migrations/
+
 *.lock
 *.db
 *.log

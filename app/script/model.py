@@ -33,6 +33,7 @@ class TTestElement(DBModel):
     """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
     ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
@@ -52,10 +53,11 @@ class TElementProperty(DBModel):
     """测试元素属性表"""
     __tablename__ = 'ELEMENT_PROPERTY'
     ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
-    PROPERTY_VALUE = db.Column(db.String(4096), comment='属性值')
+    PROPERTY_VALUE = db.Column(db.Text, comment='属性值')
     PROPERTY_TYPE = db.Column(db.String(32), nullable=False, default='STR', comment='属性类型')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
@@ -70,6 +72,7 @@ class TElementChildRel(DBModel):
     """元素子代关联表"""
     __tablename__ = 'ELEMENT_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
@@ -86,6 +89,7 @@ class TElementBuiltinChildRel(DBModel):
     """内置元素关联表"""
     __tablename__ = 'ELEMENT_BUILTIN_CHILD_REL'
     ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
@@ -124,7 +128,7 @@ class TVariable(DBModel):
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
-    VAR_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
+    VAR_NAME = db.Column(db.Text, nullable=False, comment='变量名称')
     VAR_DESC = db.Column(db.String(256), comment='变量描述')
     INITIAL_VALUE = db.Column(db.String(2048), comment='变量值')
     CURRENT_VALUE = db.Column(db.String(2048), comment='当前值')
@@ -175,7 +179,7 @@ class THttpHeader(DBModel):
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
     HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')
     HEADER_NAME = db.Column(db.String(256), nullable=False, comment='请求头名称')
-    HEADER_VALUE = db.Column(db.String(1024), nullable=False, comment='请求头值')
+    HEADER_VALUE = db.Column(db.Text, nullable=False, comment='请求头值')
     HEADER_DESC = db.Column(db.String(256), comment='请求头描述')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
@@ -244,7 +248,7 @@ class TTestPlan(DBModel):
 
 class TTestPlanSettings(DBModel):
     """测试计划设置表"""
-    __tablename__ = 'TestPlanSettings'
+    __tablename__ = 'TESTPLAN_SETTINGS'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
@@ -322,7 +326,7 @@ class TTestCollectionResult(DBModel):
     COLLECTION_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
-    ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
+    ELAPSED_TIME = db.Column(db.String(128), comment='耗时')
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -343,7 +347,7 @@ class TTestGroupResult(DBModel):
     GROUP_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
-    ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
+    ELAPSED_TIME = db.Column(db.String(128), comment='耗时')
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
@@ -365,14 +369,14 @@ class TTestSamplerResult(DBModel):
     SAMPLER_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
-    ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
+    ELAPSED_TIME = db.Column(db.String(128), comment='耗时')
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
-    REQUEST_URL = db.Column(db.String(4096), comment='请求地址')
-    REQUEST_DATA = db.Column(db.String(4096), comment='请求数据')
-    REQUEST_HEADERS = db.Column(db.String(4096), comment='请求头')
-    RESPONSE_DATA = db.Column(db.String(4096), comment='响应数据')
-    RESPONSE_HEADERS = db.Column(db.String(4096), comment='响应头')
-    ERROR_ASSERTION = db.Column(db.String(4096), comment='失败断言数据')
+    REQUEST_URL = db.Column(db.Text, comment='请求地址')
+    REQUEST_DATA = db.Column(db.Text, comment='请求数据')
+    REQUEST_HEADERS = db.Column(db.Text, comment='请求头')
+    RESPONSE_DATA = db.Column(db.Text, comment='响应数据')
+    RESPONSE_HEADERS = db.Column(db.Text, comment='响应头')
+    ERROR_ASSERTION = db.Column(db.Text, comment='失败断言数据')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')

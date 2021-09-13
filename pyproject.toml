@@ -21,6 +21,7 @@ pydantic = "1.8.2"
 pyjwt = { version = "2.1.0", extras=["crypto"] }
 pycryptodome = "3.10.1"
 python-dotenv = "0.19.0"
+psycopg2 = "2.9.1"
 gevent = "21.8.0"
 gevent-websocket = "0.10.1"
 gunicorn = { version = "*", markers = "platform_system == 'Linux'" }

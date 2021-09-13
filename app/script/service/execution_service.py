@@ -9,7 +9,6 @@ from datetime import datetime
 import flask
 from pymeter.runner import Runner
 
-import app
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
@@ -342,20 +341,19 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     })
 
 
-def add_result_db_storage(script: dict, plan_no, report_no, collection_no):
-    log.debug('添加 ResultDBStorage 组件')
+def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no):
+    log.debug('添加 FlaskDBResultStorage 组件')
 
     script['children'].insert(
         0, {
-            'name': 'ResultDBStorage',
+            'name': 'FlaskDBResultStorage',
             'remark': '',
-            'class': 'ResultDBStorage',
+            'class': 'FlaskDBResultStorage',
             'enabled': True,
             'property': {
-                'ResultDBStorage__database_url': app.get_db_url(),
-                'ResultDBStorage__plan_no': plan_no,
-                'ResultDBStorage__report_no': report_no,
-                'ResultDBStorage__collection_no': collection_no
+                'FlaskDBResultStorage__plan_no': plan_no,
+                'FlaskDBResultStorage__report_no': report_no,
+                'FlaskDBResultStorage__collection_no': collection_no
             },
             'children': None
         }
@@ -386,7 +384,7 @@ def run_testplan(collection_list, set_no_list, use_current_value, plan_no, repor
 
         # 添加报告存储器组件
         if report_no:
-            add_result_db_storage(collection, plan_no, report_no, collection_no)
+            add_flask_db_result_storage(collection, plan_no, report_no, collection_no)
 
         # 新开一个线程执行脚本
         def start():

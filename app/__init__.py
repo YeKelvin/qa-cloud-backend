@@ -33,11 +33,13 @@ def create_app() -> Flask:
 
 def set_app(app):
     global __app__
+
     __app__ = app
 
 
 def get_app() -> Flask:
     global __app__
+
     if __app__ is None:
         raise RuntimeError('please call create_app() first')
     return __app__
@@ -96,7 +98,7 @@ def register_hooks(app):
 def register_shell_context(app):
     """Register shell context objects"""
     def shell_context():
-        return {"db": db}
+        return {'db': db}
 
     app.shell_context_processor(shell_context)
 
@@ -111,18 +113,11 @@ def register_commands(app):
 
 def get_db_url() -> str:
     """获取dbUrl"""
-    db_type = config.get('db', 'type')
-    if db_type.startswith('sqlite'):
+    if 'sqlite' in config.get('db', 'type'):
         return get_sqlite_url()
 
-    username = config.get('db', 'username')
-    password = config.get('db', 'password')
-    address = config.get('db', 'address')
-    name = config.get('db', 'name')
-    db_url = f'{db_type}://{username}:{password}@{address}/{name}'
-    return db_url
+    return config.get('db', 'url')
 
 
 def get_sqlite_url():
-    name = config.get('db', 'name')
-    return f'sqlite:///{os.path.join(config.get_project_path(), name)}.db'
+    return f'sqlite:///{os.path.join(config.get_project_path(), "app")}.db'

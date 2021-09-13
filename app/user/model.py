@@ -159,7 +159,7 @@ class TUserPasswordKey(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
-    PASSWORD_KEY = db.Column(db.String(128), nullable=False, comment='密码密钥')
+    PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
