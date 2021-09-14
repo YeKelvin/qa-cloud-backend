@@ -161,8 +161,6 @@ def init_permission():
     _create_permission(name='删除元素', method='DELETE', endpoint='/script/element')
     _create_permission(name='启用元素', method='PATCH', endpoint='/script/element/enable')
     _create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
-    _create_permission(name='添加元素属性', method='POST', endpoint='/script/element/property')
-    _create_permission(name='修改元素属性', method='PUT', endpoint='/script/element/property')
     _create_permission(name='根据父元素编号新增元素子代', method='POST', endpoint='/script/element/children')
     _create_permission(name='根据父元素编号修改元素子代', method='PUT', endpoint='/script/element/children')
     _create_permission(name='上移元素', method='PATCH', endpoint='/script/element/child/move/up')
@@ -257,3 +255,128 @@ def _create_role(name, role_desc):
 
 def _create_permission(name, method, endpoint):
     TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')
+
+
+@click.command('sqlite-to-pgsql')
+@with_appcontext
+def migrate_sqlite_to_pgsql():
+    import app
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+    from app.script import model
+
+    sqlite_engine = create_engine(app.get_sqlite_url())
+    sqlite_session = Session(sqlite_engine)
+
+    # TWorkspaceCollectionRel
+    for entity in sqlite_session.query(model.TWorkspaceCollectionRel).filter_by(DEL_STATE=0).all():
+        model.TWorkspaceCollectionRel.insert(
+            WORKSPACE_NO=entity.WORKSPACE_NO,
+            COLLECTION_NO=entity.COLLECTION_NO
+        )
+        click.echo(f'success insert into TWorkspaceCollectionRel value {entity.WORKSPACE_NO} {entity.COLLECTION_NO}')
+
+    # TTestElement
+    for entity in sqlite_session.query(model.TTestElement).filter_by(DEL_STATE=0).all():
+        model.TTestElement.insert(
+            ELEMENT_NO=entity.ELEMENT_NO,
+            ELEMENT_NAME=entity.ELEMENT_NAME,
+            ELEMENT_REMARK=entity.ELEMENT_REMARK,
+            ELEMENT_TYPE=entity.ELEMENT_TYPE,
+            ELEMENT_CLASS=entity.ELEMENT_CLASS,
+            ENABLED=entity.ENABLED,
+            META_DATA=entity.META_DATA
+        )
+        click.echo(f'success insert into TTestElement value {entity.ELEMENT_NO}')
+
+    # TElementProperty
+    for entity in sqlite_session.query(model.TElementProperty).filter_by(DEL_STATE=0).all():
+        model.TElementProperty.insert(
+            ELEMENT_NO=entity.ELEMENT_NO,
+            PROPERTY_NAME=entity.PROPERTY_NAME,
+            PROPERTY_VALUE=(
+                entity.PROPERTY_VALUE
+                if not isinstance(entity.PROPERTY_VALUE, bytes)
+                else str(entity.PROPERTY_VALUE, encoding='utf8')
+            ),
+            PROPERTY_TYPE=entity.PROPERTY_TYPE,
+            ENABLED=entity.ENABLED
+        )
+        click.echo(f'success insert into TElementProperty value {entity.ELEMENT_NO}')
+
+    # TElementChildRel
+    for entity in sqlite_session.query(model.TElementChildRel).filter_by(DEL_STATE=0).all():
+        model.TElementChildRel.insert(
+            ROOT_NO=entity.ROOT_NO,
+            PARENT_NO=entity.PARENT_NO,
+            CHILD_NO=entity.CHILD_NO,
+            SERIAL_NO=entity.SERIAL_NO
+        )
+        click.echo(f'success insert into TElementChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
+
+    # TElementBuiltinChildRel
+    for entity in sqlite_session.query(model.TElementBuiltinChildRel).filter_by(DEL_STATE=0).all():
+        model.TElementBuiltinChildRel.insert(
+            ROOT_NO=entity.ROOT_NO,
+            PARENT_NO=entity.PARENT_NO,
+            CHILD_NO=entity.CHILD_NO,
+            CHILD_TYPE=entity.CHILD_TYPE
+        )
+        click.echo(f'success insert into TElementBuiltinChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
+
+    # TVariableSet
+    for entity in sqlite_session.query(model.TVariableSet).filter_by(DEL_STATE=0).all():
+        model.TVariableSet.insert(
+            WORKSPACE_NO=entity.WORKSPACE_NO,
+            SET_NO=entity.SET_NO,
+            SET_NAME=entity.SET_NAME,
+            SET_TYPE=entity.SET_TYPE,
+            SET_DESC=entity.SET_DESC,
+            WEIGHT=entity.WEIGHT
+        )
+        click.echo(f'success insert into TVariableSet value {entity.SET_NO}')
+
+    # TVariable
+    for entity in sqlite_session.query(model.TVariable).filter_by(DEL_STATE=0).all():
+        model.TVariable.insert(
+            SET_NO=entity.SET_NO,
+            VAR_NO=entity.VAR_NO,
+            VAR_NAME=entity.VAR_NAME,
+            VAR_DESC=entity.VAR_DESC,
+            INITIAL_VALUE=entity.INITIAL_VALUE,
+            CURRENT_VALUE=entity.CURRENT_VALUE,
+            ENABLED=entity.ENABLED
+        )
+        click.echo(f'success insert into TVariable value {entity.VAR_NO}')
+
+    # THttpSamplerHeadersRel
+    for entity in sqlite_session.query(model.THttpSamplerHeadersRel).filter_by(DEL_STATE=0).all():
+        model.THttpSamplerHeadersRel.insert(
+            SAMPLER_NO=entity.SAMPLER_NO,
+            TEMPLATE_NO=entity.TEMPLATE_NO
+        )
+        click.echo(f'success insert into THttpSamplerHeadersRel value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
+
+    # THttpHeadersTemplate
+    for entity in sqlite_session.query(model.THttpHeadersTemplate).filter_by(DEL_STATE=0).all():
+        model.THttpHeadersTemplate.insert(
+            WORKSPACE_NO=entity.WORKSPACE_NO,
+            TEMPLATE_NO=entity.TEMPLATE_NO,
+            TEMPLATE_NAME=entity.TEMPLATE_NAME,
+            TEMPLATE_DESC=entity.TEMPLATE_DESC
+        )
+        click.echo(f'success insert into THttpHeadersTemplate value {entity.TEMPLATE_NO}')
+
+    # THttpHeader
+    for entity in sqlite_session.query(model.THttpHeader).filter_by(DEL_STATE=0).all():
+        model.THttpHeader.insert(
+            TEMPLATE_NO=entity.TEMPLATE_NO,
+            HEADER_NO=entity.HEADER_NO,
+            HEADER_NAME=entity.HEADER_NAME,
+            HEADER_VALUE=entity.HEADER_VALUE,
+            HEADER_DESC=entity.HEADER_DESC,
+            ENABLED=entity.ENABLED
+        )
+        click.echo(f'success insert into THttpHeader value {entity.HEADER_NO}')
+
+    sqlite_session.close()

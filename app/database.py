@@ -3,8 +3,6 @@
 # @File    : database.py
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from app.extension import db
 from app.utils.log_util import get_logger
 
@@ -58,12 +56,3 @@ class DBModel(CRUDMixin, db.Model):
 
     def __str__(self):
         return str(self.__dict__)
-
-
-class BaseColumn:
-    ID = db.Column(db.Integer, primary_key=True)
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')

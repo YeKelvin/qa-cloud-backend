@@ -65,7 +65,7 @@ class TElementProperty(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-    UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', name='unique_elementno_propertyno')
+    UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', 'DEL_STATE', name='unique_element_property')
 
 
 class TElementChildRel(DBModel):
@@ -118,7 +118,7 @@ class TVariableSet(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-    UniqueConstraint('WORKSPACE_NO', 'SET_NAME', 'SET_TYPE', name='unique_workspaceno_setname_settype')
+    UniqueConstraint('WORKSPACE_NO', 'SET_NAME', 'SET_TYPE', 'DEL_STATE', name='unique_workspace_name_type')
 
 
 class TVariable(DBModel):
@@ -138,7 +138,7 @@ class TVariable(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
-    UniqueConstraint('SET_NO', 'VAR_NAME', name='unique_setno_varname')
+    UniqueConstraint('SET_NO', 'VAR_NAME', 'DEL_STATE', name='unique_set_name')
 
 
 class THttpSamplerHeadersRel(DBModel):
@@ -153,6 +153,7 @@ class THttpSamplerHeadersRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('SAMPLER_NO', 'TEMPLATE_NO', 'DEL_STATE', name='unique_sampler_template')
 
 
 class THttpHeadersTemplate(DBModel):
@@ -169,6 +170,7 @@ class THttpHeadersTemplate(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('TEMPLATE_NAME', 'DEL_STATE', name='unique_templatename')
 
 
 class THttpHeader(DBModel):
@@ -177,7 +179,7 @@ class THttpHeader(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
-    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')
+    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')  # TODO: HEADER_NO要来干啥??
     HEADER_NAME = db.Column(db.String(256), nullable=False, comment='请求头名称')
     HEADER_VALUE = db.Column(db.Text, nullable=False, comment='请求头值')
     HEADER_DESC = db.Column(db.String(256), comment='请求头描述')
@@ -187,6 +189,7 @@ class THttpHeader(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DEL_STATE', name='unique_template_header')
 
 
 class TSQLConfiguration(DBModel):
@@ -221,6 +224,7 @@ class TElementTagRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DEL_STATE', name='unique_element_tag')
 
 
 class TTestPlan(DBModel):
