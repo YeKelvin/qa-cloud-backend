@@ -9,7 +9,6 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
@@ -139,15 +138,12 @@ def query_element_property(element_no):
     property = {}
     props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
-        if prop.PROPERTY_TYPE == 'STR':
-            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
-            continue
         if prop.PROPERTY_TYPE == 'DICT':
             property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
-            continue
-        if prop.PROPERTY_TYPE == 'LIST':
+        elif prop.PROPERTY_TYPE == 'LIST':
             property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
-            continue
+        else:
+            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
     return property
 
 
@@ -378,16 +374,6 @@ def disable_element(req):
     element.update(ENABLED=ElementStatus.DISABLE.value)
 
 
-@http_service
-def create_element_property(req):
-    # 查询元素属性
-    el_prop = ElementPropertyDao.select_by_elementno_and_propname(req.elementNo, req.propertyName)
-    check_is_blank(el_prop, '元素属性已存在')
-
-    # 创建元素属性
-    TElementProperty.insert(ELEMENT_NO=req.elementNo, PROPERTY_NAME=req.propertyName, PROPERTY_VALUE=req.propertyValue)
-
-
 def add_element_property(element_no, property: dict):
     """遍历添加元素属性"""
     for name, value in property.items():
@@ -399,20 +385,12 @@ def add_element_property(element_no, property: dict):
         if isinstance(value, list):
             value_type = 'LIST'
             value = to_json(value)
+        if isinstance(value, bytes):
+            value = str(value, encoding='utf8')
 
         TElementProperty.insert(
             ELEMENT_NO=element_no, PROPERTY_NAME=name, PROPERTY_VALUE=value, PROPERTY_TYPE=value_type
         )
-
-
-@http_service
-def modify_element_property(req):
-    # 查询元素属性
-    el_prop = ElementPropertyDao.select_by_elementno_and_propname(req.elementNo, req.propertyName)
-    check_is_not_blank(el_prop, '元素属性不存在')
-
-    # 更新元素属性值
-    el_prop.update(property_value=req.propertyValue)
 
 
 def update_element_property(element_no, property: dict):
@@ -420,16 +398,19 @@ def update_element_property(element_no, property: dict):
     for name, value in property.items():
         # 查询元素属性
         prop = ElementPropertyDao.select_by_element_and_name(element_no, name)
+        # 属性类型
+        value_type = 'STR'
         # 更新元素属性值
-        if isinstance(value, str):
-            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE='STR')
-            continue
         if isinstance(value, dict):
-            prop.update(PROPERTY_VALUE=to_json(value), PROPERTY_TYPE='DICT')
-            continue
+            value_type = 'DICT'
+            value = to_json(value)
         if isinstance(value, list):
-            prop.update(PROPERTY_VALUE=to_json(value), PROPERTY_TYPE='LIST')
-            continue
+            value_type = 'LIST'
+            value = to_json(value)
+        if isinstance(value, bytes):
+            value = str(value, encoding='utf8')
+
+        prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=value_type)
 
 
 @http_service

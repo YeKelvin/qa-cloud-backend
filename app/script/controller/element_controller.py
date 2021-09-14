@@ -142,32 +142,6 @@ def disable_element():
     return service.disable_element(req)
 
 
-@blueprint.post('/element/property')
-@require_login
-@require_permission
-def create_element_property():
-    """添加元素属性"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
-        Argument('propertyValue', required=True, nullable=False, help='属性值不能为空'),
-    ).parse()
-    return service.create_element_property(req)
-
-
-@blueprint.put('/element/property')
-@require_login
-@require_permission
-def modify_element_property():
-    """修改元素属性"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('propertyName', required=True, nullable=False, help='属性名称不能为空'),
-        Argument('propertyValue', required=True, nullable=False, help='属性值不能为空'),
-    ).parse()
-    return service.modify_element_property(req)
-
-
 @blueprint.post('/element/children')
 @require_login
 @require_permission

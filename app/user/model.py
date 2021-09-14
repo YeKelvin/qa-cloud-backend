@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from sqlalchemy import UniqueConstraint
+
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
@@ -14,8 +16,7 @@ log = get_logger(__name__)
 
 
 class TUser(DBModel):
-    """用户表
-    """
+    """用户表"""
     __tablename__ = 'USER'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -30,11 +31,11 @@ class TUser(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('USER_NAME', 'DEL_STATE', name='unique_username')
 
 
 class TRole(DBModel):
-    """角色表
-    """
+    """角色表"""
     __tablename__ = 'ROLE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -47,11 +48,11 @@ class TRole(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('ROLE_NAME', 'DEL_STATE', name='unique_rolename')
 
 
 class TUserRoleRel(DBModel):
-    """用户角色关联表
-    """
+    """用户角色关联表"""
     __tablename__ = 'USER_ROLE_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -62,11 +63,11 @@ class TUserRoleRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('USER_NO', 'ROLE_NO', 'DEL_STATE', name='unique_user_role')
 
 
 class TPermission(DBModel):
-    """权限表
-    """
+    """权限表"""
     __tablename__ = 'PERMISSION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -81,11 +82,11 @@ class TPermission(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('PERMISSION_NAME', 'METHOD', 'ENDPOINT', 'DEL_STATE', name='unique_permission_method_endpoint')
 
 
 class TRolePermissionRel(DBModel):
-    """角色权限关联表
-    """
+    """角色权限关联表"""
     __tablename__ = 'ROLE_PERMISSION_REL'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -96,11 +97,11 @@ class TRolePermissionRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DEL_STATE', name='unique_role_permission')
 
 
 class TUserLoginInfo(DBModel):
-    """用户登陆号表
-    """
+    """用户登陆号表"""
     __tablename__ = 'USER_LOGIN_INFO'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -112,11 +113,11 @@ class TUserLoginInfo(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DEL_STATE', name='unique_user_loginname_logintype')
 
 
 class TUserLoginLog(DBModel):
-    """用户登陆日志表
-    """
+    """用户登陆日志表"""
     __tablename__ = 'USER_LOGIN_LOG'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -132,8 +133,7 @@ class TUserLoginLog(DBModel):
 
 
 class TUserPassword(DBModel):
-    """用户密码表
-    """
+    """用户密码表"""
     __tablename__ = 'USER_PASSWORD'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -150,11 +150,11 @@ class TUserPassword(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DEL_STATE', name='unique_user_password_passwordtype')
 
 
 class TUserPasswordKey(DBModel):
-    """用户密码密钥表
-    """
+    """用户密码密钥表"""
     __tablename__ = 'USER_PASSWORD_KEY'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
@@ -168,8 +168,7 @@ class TUserPasswordKey(DBModel):
 
 
 class TUserAccessToken(DBModel):
-    """用户认证令牌表
-    """
+    """用户认证令牌表"""
     __tablename__ = 'USER_ACCESS_TOKEN'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
