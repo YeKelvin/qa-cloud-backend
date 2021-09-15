@@ -22,8 +22,8 @@ def query_test_report_list():
     """分页查询报告列表"""
     req = JsonParser(
         Argument('No', required=True, nullable=False, help=''),
-        Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_test_report_list(req)
 
