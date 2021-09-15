@@ -215,6 +215,13 @@ def init_permission():
     _create_permission(name='根据列表批量修改请求头', method='PUT', endpoint='/script/http/headers')
     _create_permission(name='根据列表批量删除请求头', method='DELETE', endpoint='/script/http/headers')
 
+    # testplan
+    _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
+    _create_permission(name='查询测试计划信息', method='GET', endpoint='/script/testplan/info')
+
+    # report
+    _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testreport/list')
+
     click.echo('创建权限成功')
 
 

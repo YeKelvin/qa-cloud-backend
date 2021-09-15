@@ -22,9 +22,9 @@ def select_by_name(tag_name) -> TTag:
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(TTag)
     if kwargs:
-        conds.add_fuzzy_match(TTag.TAG_NO, kwargs.pop('tagNo', None))
-        conds.add_fuzzy_match(TTag.TAG_NAME, kwargs.pop('tagName', None))
-        conds.add_fuzzy_match(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
+        conds.fuzzy_match(TTag.TAG_NO, kwargs.pop('tagNo', None))
+        conds.fuzzy_match(TTag.TAG_NAME, kwargs.pop('tagName', None))
+        conds.fuzzy_match(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')

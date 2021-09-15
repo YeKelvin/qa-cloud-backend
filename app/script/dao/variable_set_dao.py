@@ -22,11 +22,11 @@ def select_first(**kwargs) -> TVariableSet:
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(TVariableSet)
     if kwargs:
-        conds.add_fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.add_fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
-        conds.add_fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
-        conds.add_fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
-        conds.add_fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
+        conds.fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+        conds.fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
+        conds.fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
+        conds.fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
+        conds.fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
@@ -41,10 +41,10 @@ def select_list_in_set_orderby_weight(*set_no) -> List[TVariableSet]:
 def select_all(**kwargs) -> List[TVariableSet]:
     conds = QueryCondition(TVariableSet)
     if kwargs:
-        conds.add_fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.add_fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
-        conds.add_fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
-        conds.add_fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
-        conds.add_fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
+        conds.fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+        conds.fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
+        conds.fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
+        conds.fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
+        conds.fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
 
     return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).all()

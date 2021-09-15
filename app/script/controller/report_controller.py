@@ -15,7 +15,7 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.get('/report/list')
+@blueprint.get('/testreport/list')
 @require_login
 @require_permission
 def query_test_report_list():
@@ -28,7 +28,7 @@ def query_test_report_list():
     return service.query_test_report_list(req)
 
 
-@blueprint.get('/report/all')
+@blueprint.get('/testreport/all')
 @require_login
 @require_permission
 def query_test_report_all():
@@ -39,7 +39,7 @@ def query_test_report_all():
     return service.query_test_report_all(req)
 
 
-@blueprint.get('/report/info')
+@blueprint.get('/testreport/info')
 @require_login
 @require_permission
 def query_test_report_info():

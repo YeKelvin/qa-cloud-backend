@@ -21,9 +21,13 @@ log = get_logger(__name__)
 def query_testplan_list():
     """分页查询测试计划列表"""
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
+        Argument('versionNo'),
+        Argument('planNo'),
+        Argument('planName'),
+        Argument('runningState'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_testplan_list(req)
 
@@ -34,7 +38,11 @@ def query_testplan_list():
 def query_testplan_all():
     """查询所有测试计划"""
     req = JsonParser(
-        Argument('No', required=True, nullable=False, help=''),
+        Argument('workspaceNo'),
+        Argument('versionNo'),
+        Argument('planNo'),
+        Argument('planName'),
+        Argument('runningState')
     ).parse()
     return service.query_testplan_all(req)
 
@@ -45,6 +53,6 @@ def query_testplan_all():
 def query_testplan_info():
     """查询测试计划信息"""
     req = JsonParser(
-        Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
+        Argument('planNo', required=True, nullable=False, help='计划编号不能为空')
     ).parse()
     return service.query_testplan_info(req)

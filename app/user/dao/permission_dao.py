@@ -22,12 +22,12 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(TPermission)
     if kwargs:
-        conds.add_fuzzy_match(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
-        conds.add_fuzzy_match(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
-        conds.add_fuzzy_match(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
-        conds.add_fuzzy_match(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
-        conds.add_fuzzy_match(TPermission.METHOD, kwargs.pop('method', None))
-        conds.add_fuzzy_match(TPermission.STATE, kwargs.pop('state', None))
+        conds.fuzzy_match(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
+        conds.fuzzy_match(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
+        conds.fuzzy_match(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
+        conds.fuzzy_match(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
+        conds.fuzzy_match(TPermission.METHOD, kwargs.pop('method', None))
+        conds.fuzzy_match(TPermission.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     pageSize = kwargs.pop('pageSize')
