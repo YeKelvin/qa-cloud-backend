@@ -4,7 +4,6 @@
 # @Time    : 2020/3/20 15:00
 # @Author  : Kelvin.Ye
 import traceback
-from datetime import datetime
 
 import flask
 from pymeter.runner import Runner
@@ -24,7 +23,9 @@ from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRelDao
 from app.script.dao import test_element_dao as TestElementDao
+from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
+from app.script.dao import testplan_item_dao as TestPlanItemDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_set_dao as VariableSetDao
 from app.script.enum import ElementClass
@@ -38,6 +39,9 @@ from app.script.model import TTestPlanVariableSetRel
 from app.script.model import TTestReport
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
+from app.utils.time_util import microsecond_to_h_m_s
+from app.utils.time_util import timestamp_now
+from app.utils.time_util import timestamp_to_utc8_datetime
 
 
 log = get_logger(__name__)
@@ -125,27 +129,24 @@ def execute_testplan(req):
         )
     # 立即执行
     if req.executeNow:
-        # 新开一个线程执行脚本
+        # 异步函数
         def start(app, collection_list, set_no_list, use_current_value):
             try:
                 with app.app_context():
-                    run_testplan(collection_list, set_no_list, use_current_value, plan_no, report_no)
+                    run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, report_no)
             except Exception:
                 log.error(f'计划编号:[ {plan_no} ] 发生异常\n{traceback.format_exc()}')
                 with app.app_context():
                     try:
-                        TTestPlan.query_by(PLAN_NO=plan_no).update({
-                            'RUNNING_STATE': RunningState.ERROR.value
-                        })
+                        TestPlanDao.update_running_state_by_no(plan_no, RunningState.ERROR.value)
                     except Exception:
                         log.error(f'计划编号:[ {plan_no} ] 发生异常\n{traceback.format_exc()}')
 
         # 先提交事务，防止新线程查询计划时拿不到
         db.session.commit()
         app = flask.current_app._get_current_object()
-        executor.submit(
-            start, app, req.collectionList, req.variableSetNumberList, req.useCurrentValue
-        )
+        # 异步执行脚本
+        executor.submit(start, app, req.collectionList, req.variableSetNumberList, req.useCurrentValue)
 
     return {'planNo': plan_no, 'executeNow': req.executeNow}
 
@@ -360,20 +361,26 @@ def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no)
     )
 
 
-def run_testplan(collection_list, set_no_list, use_current_value, plan_no, report_no=None):
+def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, report_no=None):
     log.info(f'计划编号:[ {plan_no} ] 开始执行测试计划')
+    # 记录开始时间
+    start_time = timestamp_now()
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(plan_no)
-    # 记录开始时间，更新运行状态
-    testplan.update(START_TIME=datetime.utcnow(), RUNNING_STATE=RunningState.RUNNING.value)
+    # 更新运行状态
+    testplan.update(RUNNING_STATE=RunningState.RUNNING.value)
     # 根据序号排序
     collection_list.sort(key=lambda k: k.serialNo)
-    log.info(f'collection_list={collection_list}')
 
     # 顺序执行脚本
     for collection in collection_list:
         # 根据 collectionNo 递归查询脚本数据并转换成 dict
         collection_no = collection['elementNo']
+        # 查询计划项目
+        plan_item = TestPlanItemDao.select_by_plan_and_collection(plan_no, collection_no)
+        # 更新项目运行状态
+        plan_item.update(RUNNING_STATE=RunningState.RUNNING.value)
+        # 加载脚本
         collection = load_element_tree(collection_no)
         if not collection:
             log.warn(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
@@ -386,17 +393,37 @@ def run_testplan(collection_list, set_no_list, use_current_value, plan_no, repor
         if report_no:
             add_flask_db_result_storage(collection, plan_no, report_no, collection_no)
 
-        # 新开一个线程执行脚本
-        def start():
+        # 异步函数
+        def start(app):
             try:
                 log.info(f'计划编号:[ {plan_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
                 Runner.start([collection], throw_ex=True)
             except Exception:
                 log.error(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本执行异常\n{traceback.format_exc()}')
+                with app.app_context():
+                    try:
+                        plan_item.update(RUNNING_STATE=RunningState.ERROR.value)
+                    except Exception:
+                        log.error(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 发生异常\n{traceback.format_exc()}')
 
-        task = executor.submit(start)
-        task.result()  # 阻塞
+        task = executor.submit(start, app)  # 异步执行脚本
+        task.result()  # 阻塞等待脚本执行完成
+        # 更新项目运行状态
+        plan_item.update(RUNNING_STATE=RunningState.COMPLETED.value)
+        log.info(f'计划编号:[ {plan_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
 
-    # 记录结束时间，更新运行状态
-    testplan.update(END_TIME=datetime.utcnow(), RUNNING_STATE=RunningState.COMPLETED.value)
+    if report_no:
+        # 记录结束时间
+        end_time = timestamp_now()
+        # 计算耗时
+        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
+        # 更新报告的开始时间、结束时间和耗时
+        TestReportDao.select_by_no(report_no).update(
+            START_TIME=timestamp_to_utc8_datetime(start_time),
+            END_TIME=timestamp_to_utc8_datetime(end_time),
+            ELAPSED_TIME=microsecond_to_h_m_s(elapsed_time)
+        )
+
+    # 更新运行状态
+    testplan.update(RUNNING_STATE=RunningState.COMPLETED.value)
     log.info(f'计划编号:[ {plan_no} ] 测试计划执行完成')
