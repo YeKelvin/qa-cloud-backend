@@ -3,13 +3,12 @@
 # @File    : model.py
 # @Time    : 2019/11/14 9:50
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from sqlalchemy import UniqueConstraint
 
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
+from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
@@ -24,9 +23,9 @@ class TWorkspaceCollectionRel(DBModel):
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TTestElement(DBModel):
@@ -44,9 +43,9 @@ class TTestElement(DBModel):
     META_DATA = db.Column(db.String(512), comment='元数据')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TElementProperty(DBModel):
@@ -62,9 +61,9 @@ class TElementProperty(DBModel):
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', 'DEL_STATE', name='unique_element_property')
 
 
@@ -80,9 +79,9 @@ class TElementChildRel(DBModel):
     SERIAL_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TElementBuiltinChildRel(DBModel):
@@ -97,9 +96,9 @@ class TElementBuiltinChildRel(DBModel):
     CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TVariableSet(DBModel):
@@ -115,9 +114,9 @@ class TVariableSet(DBModel):
     WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('WORKSPACE_NO', 'SET_NAME', 'SET_TYPE', 'DEL_STATE', name='unique_workspace_name_type')
 
 
@@ -135,9 +134,9 @@ class TVariable(DBModel):
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('SET_NO', 'VAR_NAME', 'DEL_STATE', name='unique_set_name')
 
 
@@ -150,9 +149,9 @@ class THttpSamplerHeadersRel(DBModel):
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('SAMPLER_NO', 'TEMPLATE_NO', 'DEL_STATE', name='unique_sampler_template')
 
 
@@ -167,9 +166,9 @@ class THttpHeadersTemplate(DBModel):
     TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('TEMPLATE_NAME', 'DEL_STATE', name='unique_templatename')
 
 
@@ -186,9 +185,9 @@ class THttpHeader(DBModel):
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DEL_STATE', name='unique_template_header')
 
 
@@ -207,9 +206,9 @@ class TSQLConfiguration(DBModel):
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库密码')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TElementTagRel(DBModel):
@@ -221,9 +220,9 @@ class TElementTagRel(DBModel):
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DEL_STATE', name='unique_element_tag')
 
 
@@ -239,15 +238,13 @@ class TTestPlan(DBModel):
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
     TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
-    SUCCESS_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='成功脚本数')
-    FAILURE_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='失败脚本数')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TTestPlanSettings(DBModel):
@@ -265,9 +262,9 @@ class TTestPlanSettings(DBModel):
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TTestPlanVariableSetRel(DBModel):
@@ -279,9 +276,10 @@ class TTestPlanVariableSetRel(DBModel):
     SET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
+    UniqueConstraint('PLAN_NO', 'SET_NO', 'DEL_STATE', name='unique_plan_set')
 
 
 class TTestPlanItem(DBModel):
@@ -293,12 +291,12 @@ class TTestPlanItem(DBModel):
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
     SERIAL_NO = db.Column(db.Integer, nullable=False, comment='序号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
-    SUCCESS = db.Column(db.Boolean, comment='是否成功')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
+    UniqueConstraint('PLAN_NO', 'COLLECTION_NO', 'DEL_STATE', name='unique_plan_collection')
 
 
 class TTestReport(DBModel):
@@ -311,11 +309,15 @@ class TTestReport(DBModel):
     REPORT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='报告编号')
     REPORT_NAME = db.Column(db.String(256), nullable=False, comment='报告名称')
     REPORT_DESC = db.Column(db.String(512), comment='报告描述')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
+    ELAPSED_TIME = db.Column(db.String(128), comment='耗时')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
+    UniqueConstraint('WORKSPACE_NO', 'PLAN_NO', 'REPORT_NO', 'DEL_STATE', name='unique_workspace_plan_report')
 
 
 class TTestCollectionResult(DBModel):
@@ -334,9 +336,9 @@ class TTestCollectionResult(DBModel):
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TTestGroupResult(DBModel):
@@ -355,9 +357,9 @@ class TTestGroupResult(DBModel):
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TTestSamplerResult(DBModel):
@@ -383,6 +385,6 @@ class TTestSamplerResult(DBModel):
     ERROR_ASSERTION = db.Column(db.Text, comment='失败断言数据')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')

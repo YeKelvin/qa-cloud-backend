@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.extension import db
 from app.utils.log_util import get_logger
+from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
@@ -56,3 +57,15 @@ class DBModel(CRUDMixin, db.Model):
 
     def __str__(self):
         return str(self.__dict__)
+
+
+class BaseColumnMixin:
+
+    ID = db.Column(db.Integer, primary_key=True)
+    VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
+    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    REMARK = db.Column(db.String(64), comment='备注')
+    CREATED_BY = db.Column(db.String(64), comment='创建人')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
+    UPDATED_BY = db.Column(db.String(64), comment='更新人')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')

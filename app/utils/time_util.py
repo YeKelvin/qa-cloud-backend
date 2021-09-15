@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 import time
 from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 
 STRFTIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -19,21 +21,13 @@ def strftime(format: str = STRFTIME_FORMAT) -> str:
     return datetime.now().strftime(format)
 
 
-def timestamp_as_s() -> int:
-    """获取秒级时间戳
-    """
-    return int(time.time())
-
-
 def timestamp_as_ms() -> int:
-    """获取毫秒级时间戳
-    """
+    """获取毫秒级时间戳"""
     return int(time.time() * 1000)
 
 
 def timestamp_as_micro_s() -> int:
-    """获取微秒级时间戳
-    """
+    """获取微秒级时间戳"""
     return int(round(time.time() * 1000000))
 
 
@@ -68,15 +62,10 @@ def change_strftime_format(strftime: str, old_format: str, new_format: str = STR
     return datetime.strptime(strftime, old_format).strftime(new_format)
 
 
-def seconds_to_h_m_s(seconds: int) -> str:
-    """秒数转换为时分秒
-    """
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    return '%02dh:%02dm:%02ds' % (h, m, s)
-
-
 def sleep(secs: float) -> None:
-    """睡眠等待
-    """
+    """睡眠等待"""
     time.sleep(secs)
+
+
+def datetime_now_by_utc8() -> datetime:
+    return datetime.now(timezone(timedelta(hours=8)))

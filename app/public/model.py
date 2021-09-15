@@ -3,13 +3,12 @@
 # @File    : model.py
 # @Time    : 2021-08-18 15:27:03
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from sqlalchemy import UniqueConstraint
 
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
+from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
@@ -27,9 +26,9 @@ class TWorkspace(DBModel):
     WORKSPACE_DESC = db.Column(db.String(256), comment='工作空间描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('WORKSPACE_NAME', 'WORKSPACE_TYPE', 'WORKSPACE_SCOPE', name='unique_name_type_scope')
 
 
@@ -42,9 +41,9 @@ class TWorkspaceUserRel(DBModel):
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('WORKSPACE_NO', 'USER_NO', 'DEL_STATE', name='unique_workspace_user')
 
 
@@ -58,7 +57,7 @@ class TTag(DBModel):
     TAG_DESC = db.Column(db.String(256), nullable=False, comment='标签描述')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
     UniqueConstraint('TAG_NAME', 'DEL_STATE', name='unique_tagname')

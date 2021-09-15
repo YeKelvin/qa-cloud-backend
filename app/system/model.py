@@ -3,11 +3,10 @@
 # @File    : model.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from datetime import datetime
-
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
+from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
@@ -24,9 +23,9 @@ class TActionLog(DBModel):
     NEW_VALUE = db.Column(db.String(512), comment='新值')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
 class TSystemOperationLog(DBModel):
@@ -48,6 +47,6 @@ class TSystemOperationLog(DBModel):
     TIME_CONSUMING = db.Column(db.Integer, comment='耗时(ms)')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
+    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
