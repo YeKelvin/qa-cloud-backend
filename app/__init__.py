@@ -5,7 +5,9 @@
 # @Author  : Kelvin.Ye
 import os
 
+import orjson
 from flask import Flask
+from sqlalchemy.pool import QueuePool
 
 from app.extension import db
 from app.extension import migrate
@@ -31,7 +33,7 @@ def create_app() -> Flask:
     return app
 
 
-def set_app(app):
+def set_app(app: Flask):
     global __app__
 
     __app__ = app
@@ -45,29 +47,49 @@ def get_app() -> Flask:
     return __app__
 
 
-def configure_flask(app):
+def configure_flask(app: Flask):
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=get_db_url(),
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
+        SQLALCHEMY_ENGINE_OPTIONS={
+            # 使用将来版本的特性
+            'future': True,
+            # 连接池实现类
+            'poolclass': QueuePool,
+            # 连接池大小
+            'pool_size': 10,
+            # 连接回收时间，这个值必须要比数据库自身配置的 interactive_timeout 的值小
+            # 'pool_recycle': 1000,
+            # 预检测池中连接是否有效，并替换无效连接
+            'pool_pre_ping': True,
+            # 会打印输出连接池的异常信息，帮助排查问题
+            'echo_pool': True,
+            # 最大允许溢出连接池大小的连接数量
+            'max_overflow': 5,
+            # 自定义序列化函数
+            'json_serializer': orjson_serializer,
+            # 自定义反序列化函数
+            'json_deserializer': orjson_deserializer
+        }
     )
 
 
-def register_extensions(app):
+def register_extensions(app: Flask):
     """Register Flask extensions"""
     db.init_app(app)
     migrate.init_app(app, db)
     register_socketio(app)
 
 
-def register_socketio(app):
+def register_socketio(app: Flask):
     socketio.init_app(app)
     # app运行前加载events，否则handle不到
     from app import socket  # noqa
 
 
-def register_blueprints(app):
+def register_blueprints(app: Flask):
     """Register Flask blueprints"""
     from app.public.controller import blueprint as public_blueprint
     from app.script.controller import blueprint as script_blueprint
@@ -80,7 +102,7 @@ def register_blueprints(app):
     app.register_blueprint(user_blueprint)
 
 
-def register_hooks(app):
+def register_hooks(app: Flask):
     from app import hook
 
     app.before_request(hook.set_logid)
@@ -95,15 +117,16 @@ def register_hooks(app):
     #     ...
 
 
-def register_shell_context(app):
+def register_shell_context(app: Flask):
     """Register shell context objects"""
+
     def shell_context():
         return {'db': db}
 
     app.shell_context_processor(shell_context)
 
 
-def register_commands(app):
+def register_commands(app: Flask):
     """Register Click commands"""
     from app import command
 
@@ -122,3 +145,14 @@ def get_db_url() -> str:
 
 def get_sqlite_url():
     return f'sqlite:///{os.path.join(config.get_project_path(), "app")}.db'
+
+
+def orjson_serializer(obj):
+    """
+    Note that `orjson.dumps()` return byte array, while sqlalchemy expects string, thus `decode()` call.
+    """
+    return orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NAIVE_UTC).decode('utf8')
+
+
+def orjson_deserializer(val):
+    return orjson.loads(val)
