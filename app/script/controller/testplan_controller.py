@@ -47,12 +47,23 @@ def query_testplan_all():
     return service.query_testplan_all(req)
 
 
-@blueprint.get('/testplan/info')
+@blueprint.get('/testplan/details')
 @require_login
 @require_permission
-def query_testplan_info():
-    """查询测试计划信息"""
+def query_testplan_details():
+    """查询测试计划详情"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空')
     ).parse()
-    return service.query_testplan_info(req)
+    return service.query_testplan_details(req)
+
+
+@blueprint.get('/testplan/report')
+@require_login
+@require_permission
+def query_testplan_report():
+    """查询测试报告"""
+    req = JsonParser(
+        Argument('planNo', required=True, nullable=False, help='报告编号不能为空')
+    ).parse()
+    return service.query_testplan_report(req)

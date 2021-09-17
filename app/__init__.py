@@ -57,17 +57,17 @@ def configure_flask(app: Flask):
             # 使用将来版本的特性
             'future': True,
             # 连接池实现类
-            'poolclass': QueuePool,
+            # 'poolclass': QueuePool,
             # 连接池大小
-            'pool_size': 10,
+            # 'pool_size': 10,
             # 连接回收时间，这个值必须要比数据库自身配置的 interactive_timeout 的值小
             # 'pool_recycle': 1000,
             # 预检测池中连接是否有效，并替换无效连接
-            'pool_pre_ping': True,
+            # 'pool_pre_ping': True,
             # 会打印输出连接池的异常信息，帮助排查问题
-            'echo_pool': True,
+            # 'echo_pool': True,
             # 最大允许溢出连接池大小的连接数量
-            'max_overflow': 5,
+            # 'max_overflow': 5,
             # 自定义序列化函数
             'json_serializer': orjson_serializer,
             # 自定义反序列化函数

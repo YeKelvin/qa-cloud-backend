@@ -217,10 +217,8 @@ def init_permission():
 
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
-    _create_permission(name='查询测试计划信息', method='GET', endpoint='/script/testplan/info')
-
-    # report
-    _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testreport/list')
+    _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan/details')
+    _create_permission(name='查询测试报告', method='GET', endpoint='/script/testplan/report')
 
     click.echo('创建权限成功')
 
