@@ -116,15 +116,15 @@ def query_testplan_report(req):
     for collection_result in collection_result_list:
         collections.append({
             'reportNo': collection_result.REPORT_NO,
-            'collectionNo': collection_result.COLLECTION_NO,
-            'collectionId': collection_result.COLLECTION_ID,
-            'collectionName': collection_result.COLLECTION_NAME,
-            'collectionRemark': collection_result.COLLECTION_REMARK,
-            'startTime': collection_result.START_TIME,
-            'endTime': collection_result.END_TIME,
+            'elementNo': collection_result.COLLECTION_NO,
+            'id': collection_result.COLLECTION_ID,
+            'name': collection_result.COLLECTION_NAME,
+            'remark': collection_result.COLLECTION_REMARK,
+            'startTime': collection_result.START_TIME.strftime('%m-%d %H:%M:%S'),
+            'endTime': collection_result.END_TIME.strftime('%m-%d %H:%M:%S'),
             'elapsedTime': collection_result.ELAPSED_TIME,
             'success': collection_result.SUCCESS,
-            'groups': get_groups_result(collection_result.COLLECTION_ID)
+            'children': get_groups_result(collection_result.COLLECTION_ID)
         })
     return {
         'details': {
@@ -144,14 +144,14 @@ def get_groups_result(collection_id):
     for group_result in group_result_list:
         groups.append({
             'collectionId': group_result.COLLECTION_ID,
-            'groupId': group_result.GROUP_ID,
-            'groupName': group_result.GROUP_NAME,
-            'groupRemark': group_result.GROUP_REMARK,
-            'startTime': group_result.START_TIME,
-            'endTime': group_result.END_TIME,
+            'id': group_result.GROUP_ID,
+            'name': group_result.GROUP_NAME,
+            'remark': group_result.GROUP_REMARK,
+            'startTime': group_result.START_TIME.strftime('%H:%M:%S'),
+            'endTime': group_result.END_TIME.strftime('%H:%M:%S'),
             'elapsedTime': group_result.ELAPSED_TIME,
             'success': group_result.SUCCESS,
-            'samplers': get_samplers_result(group_result.GROUP_ID)
+            'children': get_samplers_result(group_result.GROUP_ID)
         })
     return groups
 
@@ -161,11 +161,13 @@ def get_samplers_result(group_id):
     sampler_result_list = TestSamplerResultDao.select_all_by_group(group_id)
     for sampler_result in sampler_result_list:
         samplers.append({
-            'samplerId': sampler_result.SAMPLER_ID,
-            'samplerName': sampler_result.SAMPLER_NAME,
-            'samplerRemark': sampler_result.SAMPLER_REMARK,
-            'startTime': sampler_result.START_TIME,
-            'endTime': sampler_result.END_TIME,
+            'groupId': sampler_result.GROUP_ID,
+            'parentId': None,
+            'id': sampler_result.SAMPLER_ID,
+            'name': sampler_result.SAMPLER_NAME,
+            'remark': sampler_result.SAMPLER_REMARK,
+            'startTime': sampler_result.START_TIME.strftime('%H:%M:%S'),
+            'endTime': sampler_result.END_TIME.strftime('%H:%M:%S'),
             'elapsedTime': sampler_result.ELAPSED_TIME,
             'success': sampler_result.SUCCESS,
             'requestUrl': sampler_result.REQUEST_URL,
@@ -175,7 +177,7 @@ def get_samplers_result(group_id):
             'responseHeaders': sampler_result.RESPONSE_HEADERS,
             'responseData': sampler_result.RESPONSE_DATA,
             'errorAssertion': sampler_result.ERROR_ASSERTION,
-            'subSamplers': get_subsamplers_result(sampler_result.SAMPLER_ID)
+            'children': get_subsamplers_result(sampler_result.SAMPLER_ID)
         })
     return samplers
 
@@ -185,11 +187,13 @@ def get_subsamplers_result(parent_id):
     sub_sampler_result_list = TestSamplerResultDao.select_all_by_parent(parent_id)
     for sub_result in sub_sampler_result_list:
         sub_samplers.append({
-            'samplerId': sub_result.SAMPLER_ID,
-            'samplerName': sub_result.SAMPLER_NAME,
-            'samplerRemark': sub_result.SAMPLER_REMARK,
-            'startTime': sub_result.START_TIME,
-            'endTime': sub_result.END_TIME,
+            'groupId': sub_result.GROUP_ID,
+            'parentId': parent_id,
+            'id': sub_result.SAMPLER_ID,
+            'name': sub_result.SAMPLER_NAME,
+            'remark': sub_result.SAMPLER_REMARK,
+            'startTime': sub_result.START_TIME.strftime('%m-%d %H:%M:%S'),
+            'endTime': sub_result.END_TIME.strftime('%m-%d %H:%M:%S'),
             'elapsedTime': sub_result.ELAPSED_TIME,
             'success': sub_result.SUCCESS,
             'requestUrl': sub_result.REQUEST_URL,
@@ -199,6 +203,6 @@ def get_subsamplers_result(parent_id):
             'responseHeaders': sub_result.RESPONSE_HEADERS,
             'responseData': sub_result.RESPONSE_DATA,
             'errorAssertion': sub_result.ERROR_ASSERTION,
-            'subSamplers': get_subsamplers_result(sub_result.SAMPLER_ID)
+            'children': get_subsamplers_result(sub_result.SAMPLER_ID)
         })
     return sub_samplers
