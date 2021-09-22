@@ -3,6 +3,9 @@
 # @File    : database.py
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
+import decimal
+from sqlalchemy import func
+
 from app.extension import db
 from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
@@ -22,6 +25,22 @@ class CRUDMixin:
     @classmethod
     def query_by(cls, **kwargs):
         return cls.query.filter_by(DEL_STATE=0, **kwargs)
+
+    @classmethod
+    def filter(cls, *args):
+        return cls.query.filter(DEL_STATE==0, *args)
+
+    @classmethod
+    def filter_by(cls, **kwargs):
+        return cls.query.filter_by(DEL_STATE=0, **kwargs)
+
+    @classmethod
+    def count_by(cls, **kwargs) -> int:
+        return cls.query.session.query(func.count(cls.ID)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
+
+    @classmethod
+    def avg_by(cls, field, **kwargs) -> decimal.Decimal:
+        return cls.query.session.query(func.avg(field)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
 
     @classmethod
     def select_first(cls, **kwargs):

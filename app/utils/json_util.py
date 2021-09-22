@@ -15,7 +15,11 @@ log = get_logger(__name__)
 
 def to_json(obj):
     """序列化"""
-    return orjson.dumps(obj)
+    try:
+        return orjson.dumps(obj)
+    except TypeError as e:
+        e.args = e.args + (f'obj:[ {obj} ]',)
+        raise e
 
 
 def from_json(val):

@@ -39,7 +39,6 @@ from app.script.model import TTestPlanVariableSetRel
 from app.script.model import TTestReport
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
-from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
@@ -421,7 +420,7 @@ def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, 
         TestReportDao.select_by_no(report_no).update(
             START_TIME=timestamp_to_utc8_datetime(start_time),
             END_TIME=timestamp_to_utc8_datetime(end_time),
-            ELAPSED_TIME=microsecond_to_h_m_s(elapsed_time)
+            ELAPSED_TIME=elapsed_time
         )
 
     # 更新运行状态

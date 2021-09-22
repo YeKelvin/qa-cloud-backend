@@ -220,6 +220,15 @@ def init_permission():
     _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan/details')
     _create_permission(name='查询测试报告', method='GET', endpoint='/script/testplan/report')
 
+    # report
+    _create_permission(
+        name='根据 collectionId 查询 Collection 结果和 Group 结果列表',
+        method='GET',
+        endpoint='/script/report/collection/result'
+    )
+    _create_permission(name='根据 groupId 查询 GroupGroup 结果', method='GET', endpoint='/script/report/group/result')
+    _create_permission(name='根据 samplerId 查询 Sampler 结果', method='GET', endpoint='/script/report/sampler/result')
+
     click.echo('创建权限成功')
 
 

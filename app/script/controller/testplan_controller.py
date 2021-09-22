@@ -21,11 +21,8 @@ log = get_logger(__name__)
 def query_testplan_list():
     """分页查询测试计划列表"""
     req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
-        Argument('versionNo'),
-        Argument('planNo'),
-        Argument('planName'),
-        Argument('runningState'),
+        Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'), Argument('versionNo'),
+        Argument('planNo'), Argument('planName'), Argument('runningState'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
@@ -38,10 +35,7 @@ def query_testplan_list():
 def query_testplan_all():
     """查询所有测试计划"""
     req = JsonParser(
-        Argument('workspaceNo'),
-        Argument('versionNo'),
-        Argument('planNo'),
-        Argument('planName'),
+        Argument('workspaceNo'), Argument('versionNo'), Argument('planNo'), Argument('planName'),
         Argument('runningState')
     ).parse()
     return service.query_testplan_all(req)
@@ -52,9 +46,7 @@ def query_testplan_all():
 @require_permission
 def query_testplan_details():
     """查询测试计划详情"""
-    req = JsonParser(
-        Argument('planNo', required=True, nullable=False, help='计划编号不能为空')
-    ).parse()
+    req = JsonParser(Argument('planNo', required=True, nullable=False, help='计划编号不能为空')).parse()
     return service.query_testplan_details(req)
 
 
@@ -63,7 +55,5 @@ def query_testplan_details():
 @require_permission
 def query_testplan_report():
     """查询测试报告"""
-    req = JsonParser(
-        Argument('planNo', required=True, nullable=False, help='报告编号不能为空')
-    ).parse()
+    req = JsonParser(Argument('planNo', required=True, nullable=False, help='报告编号不能为空')).parse()
     return service.query_testplan_report(req)

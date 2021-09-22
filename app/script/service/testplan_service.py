@@ -19,6 +19,8 @@ from app.script.dao import variable_set_dao as VariableSetDao
 from app.script.model import TTestPlan
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
+from app.utils.time_util import microsecond_to_h_m_s
+from app.utils.time_util import microsecond_to_m_s
 
 
 log = get_logger(__name__)
@@ -124,85 +126,28 @@ def query_testplan_report(req):
             'endTime': collection_result.END_TIME.strftime('%m-%d %H:%M:%S'),
             'elapsedTime': collection_result.ELAPSED_TIME,
             'success': collection_result.SUCCESS,
-            'children': get_groups_result(collection_result.COLLECTION_ID)
         })
+
     return {
         'details': {
             'reportName': report.REPORT_NAME,
             'reportDesc': report.REPORT_DESC,
-            'startTime': report.START_TIME,
-            'endTime': report.END_TIME,
-            'elapsedTime': report.ELAPSED_TIME
+            'startTime': report.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
+            'endTime': report.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
+            'elapsedTime': microsecond_to_h_m_s(report.ELAPSED_TIME),
+            'successfulCollectionsTotal': TestCollectionResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'successfulGroupsTotal': TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'successfulSamplersTotal': TestSamplerResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'failedCollectionsTotal': TestCollectionResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'failedGroupsTotal': TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'failedSamplersTotal': TestSamplerResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'avgCollectionsElapsedTime': microsecond_to_m_s(
+                TestCollectionResultDao.avg_elapsed_time_by_report(report.REPORT_NO)
+            ),
+            'avgGroupsElapsedTime': microsecond_to_m_s(
+                TestGroupResultDao.avg_elapsed_time_by_report(report.REPORT_NO)
+            ),
+            'avgSamplersElapsedTime': f'{TestSamplerResultDao.avg_elapsed_time_by_report(report.REPORT_NO)}ms',
         },
         'collections': collections
     }
-
-
-def get_groups_result(collection_id):
-    groups = []
-    group_result_list = TestGroupResultDao.select_all_by_collection(collection_id)
-    for group_result in group_result_list:
-        groups.append({
-            'collectionId': group_result.COLLECTION_ID,
-            'id': group_result.GROUP_ID,
-            'name': group_result.GROUP_NAME,
-            'remark': group_result.GROUP_REMARK,
-            'startTime': group_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': group_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': group_result.ELAPSED_TIME,
-            'success': group_result.SUCCESS,
-            'children': get_samplers_result(group_result.GROUP_ID)
-        })
-    return groups
-
-
-def get_samplers_result(group_id):
-    samplers = []
-    sampler_result_list = TestSamplerResultDao.select_all_by_group(group_id)
-    for sampler_result in sampler_result_list:
-        samplers.append({
-            'groupId': sampler_result.GROUP_ID,
-            'parentId': None,
-            'id': sampler_result.SAMPLER_ID,
-            'name': sampler_result.SAMPLER_NAME,
-            'remark': sampler_result.SAMPLER_REMARK,
-            'startTime': sampler_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': sampler_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': sampler_result.ELAPSED_TIME,
-            'success': sampler_result.SUCCESS,
-            'requestUrl': sampler_result.REQUEST_URL,
-            'requestHeaders': sampler_result.REQUEST_HEADERS,
-            'requestData': sampler_result.REQUEST_DATA,
-            'responseCode': sampler_result.RESPONSE_CODE,
-            'responseHeaders': sampler_result.RESPONSE_HEADERS,
-            'responseData': sampler_result.RESPONSE_DATA,
-            'errorAssertion': sampler_result.ERROR_ASSERTION,
-            'children': get_subsamplers_result(sampler_result.SAMPLER_ID)
-        })
-    return samplers
-
-
-def get_subsamplers_result(parent_id):
-    sub_samplers = []
-    sub_sampler_result_list = TestSamplerResultDao.select_all_by_parent(parent_id)
-    for sub_result in sub_sampler_result_list:
-        sub_samplers.append({
-            'groupId': sub_result.GROUP_ID,
-            'parentId': parent_id,
-            'id': sub_result.SAMPLER_ID,
-            'name': sub_result.SAMPLER_NAME,
-            'remark': sub_result.SAMPLER_REMARK,
-            'startTime': sub_result.START_TIME.strftime('%m-%d %H:%M:%S'),
-            'endTime': sub_result.END_TIME.strftime('%m-%d %H:%M:%S'),
-            'elapsedTime': sub_result.ELAPSED_TIME,
-            'success': sub_result.SUCCESS,
-            'requestUrl': sub_result.REQUEST_URL,
-            'requestHeaders': sub_result.REQUEST_HEADERS,
-            'requestData': sub_result.REQUEST_DATA,
-            'responseCode': sub_result.RESPONSE_CODE,
-            'responseHeaders': sub_result.RESPONSE_HEADERS,
-            'responseData': sub_result.RESPONSE_DATA,
-            'errorAssertion': sub_result.ERROR_ASSERTION,
-            'children': get_subsamplers_result(sub_result.SAMPLER_ID)
-        })
-    return sub_samplers
