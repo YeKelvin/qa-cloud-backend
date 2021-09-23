@@ -74,9 +74,10 @@ def query_testplan_details(req):
     for item in items:
         element = TestElementDao.select_by_no(item.COLLECTION_NO)
         collection_list.append({
+            'serialNo': item.SERIAL_NO,
             'elementNo': item.COLLECTION_NO,
             'elementName': element.ELEMENT_NAME,
-            'serialNo': item.SERIAL_NO
+            'runningState': item.RUNNING_STATE
         })
 
     # 查询测试计划关联的变量集
@@ -89,10 +90,6 @@ def query_testplan_details(req):
     return {
         'collectionList': collection_list,
         'variableSetList': variable_set_list,
-        'versionNo': testplan.VERSION_NO,
-        'planNo': testplan.PLAN_NO,
-        'planName': testplan.PLAN_NAME,
-        'planDesc': testplan.PLAN_DESC,
         'concurrency': settings.CONCURRENCY,
         'iterations': settings.ITERATIONS,
         'delay': settings.DELAY,
@@ -122,9 +119,9 @@ def query_testplan_report(req):
             'id': collection_result.COLLECTION_ID,
             'name': collection_result.COLLECTION_NAME,
             'remark': collection_result.COLLECTION_REMARK,
-            'startTime': collection_result.START_TIME.strftime('%m-%d %H:%M:%S'),
-            'endTime': collection_result.END_TIME.strftime('%m-%d %H:%M:%S'),
-            'elapsedTime': collection_result.ELAPSED_TIME,
+            'startTime': collection_result.START_TIME.strftime('%H:%M:%S'),
+            'endTime': collection_result.END_TIME.strftime('%H:%M:%S'),
+            'elapsedTime': microsecond_to_m_s(collection_result.ELAPSED_TIME),
             'success': collection_result.SUCCESS,
         })
 
