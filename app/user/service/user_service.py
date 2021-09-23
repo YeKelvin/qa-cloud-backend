@@ -4,7 +4,6 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from datetime import datetime
-from datetime import timedelta
 
 from app.common import global_variables as gvars
 from app.common.decorators.service import http_service
@@ -14,7 +13,6 @@ from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.user.dao import role_dao as RoleDao
-from app.user.dao import user_access_token_dao as UserAccessTokenDao
 from app.user.dao import user_dao as UserDao
 from app.user.dao import user_login_info_dao as UserLoginInfoDao
 from app.user.dao import user_login_log_dao as UserLoginLogDao
@@ -59,42 +57,37 @@ def login(req):
     ras_decrypted_password = decrypt_by_rsa_private_key(req.password, user_password_key.PASSWORD_KEY)
 
     # 校验密码是否正确
-    check_pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
+    pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
 
     # 密码校验失败
-    if not check_pwd_success:
+    if not pwd_success:
         user_password.LAST_ERROR_TIME = datetime.utcnow()
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成token
-    login_time = datetime.utcnow()
-    access_token = JWTAuth.encode_auth_token(user.USER_NO, login_time.timestamp())
-    expire_in = login_time + timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME)
-
-    # 更新用户token
-    UserAccessTokenDao.update_or_insert_by_userno(
-        user.USER_NO,
-        ACCESS_TOKEN=access_token,
-        EXPIRE_IN=expire_in,
-        STATE='VALID'
-    )
+    issued_at = datetime.utcnow()
+    access_token = JWTAuth.encode_auth_token(user.USER_NO, issued_at.timestamp())
 
     # 更新用户登录时间
     # 清空用户登录失败次数
     user_password.update(
-        LAST_SUCCESS_TIME=login_time,
+        LAST_SUCCESS_TIME=issued_at,
         ERROR_TIMES=0
     )
 
     # 记录用户登录日志
+    # TODO: 记录用户IP
     TUserLoginLog.insert(
         USER_NO=login_info.USER_NO,
         LOGIN_NAME=login_info.LOGIN_NAME,
         LOGIN_TYPE=login_info.LOGIN_TYPE,
         IP=''
     )
+
+    # 更新用户登录状态
+    user.update(LOGGED_IN=True)
 
     # 设置全局操作员
     gvars.put('operator', user.USER_NAME)
@@ -103,8 +96,7 @@ def login(req):
 
 @http_service
 def logout():
-    # 更新用户accessToken状态为无效
-    UserAccessTokenDao.update_state_by_userno('INVALID', gvars.get_userno())
+    UserDao.logout(gvars.get_userno())
 
 
 @http_service
@@ -276,9 +268,6 @@ def remove_user(req):
     # 删除用户密码秘钥 TODO: 优化删除逻辑
     for login_info in UserLoginInfoDao.select_all_by_userno(req.userNo):
         UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
-
-    # 删除用户令牌
-    UserAccessTokenDao.delete_by_userno(req.userNo)
 
     # 删除用户登录历史记录
     UserLoginLogDao.delete_all_by_userno(req.userNo)

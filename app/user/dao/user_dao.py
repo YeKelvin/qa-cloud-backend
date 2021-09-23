@@ -44,3 +44,7 @@ def select_all(**kwargs) -> List[TUser]:
         conds.fuzzy_match(TUser.STATE, kwargs.pop('state', None))
 
     return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
+
+
+def logout(user_no):
+    TUser.query_by(USER_NO=user_no).update({TUser.LOGGED_IN: False})

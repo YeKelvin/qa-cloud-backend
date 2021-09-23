@@ -44,12 +44,12 @@ class JWTAuth:
     EXPIRE_TIME = int(config.get('jwt', 'expire.time'))
 
     @staticmethod
-    def encode_auth_token(user_no, login_time):
+    def encode_auth_token(user_no, issued_at):
         """生成认证Token
 
         Args:
             user_no:    用户编号
-            login_time: 登录时间
+            issued_at:  签发时间
 
         Returns:
             token
@@ -60,12 +60,11 @@ class JWTAuth:
         }
 
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),  # 销毁的时间
-            'iat': datetime.datetime.utcnow(),  # 签发时间
+            'exp': issued_at + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),  # 销毁的时间
+            'iat': issued_at,  # 签发时间
             'iss': config.get('jwt', 'issuer'),  # 签发者
             'data': {
-                'id': user_no,
-                'loginTime': login_time
+                'id': user_no
             }
         }
         token = jwt.encode(payload, JWTAuth.SECRET_KEY, algorithm='HS256', headers=header)

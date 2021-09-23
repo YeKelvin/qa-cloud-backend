@@ -15,12 +15,8 @@ def get_userno():
     return getattr(g, 'user_no', None)
 
 
-def get_auth_token():
-    return getattr(g, 'auth_token', None)
-
-
-def get_auth_login_time():
-    return getattr(g, 'auth_login_time', None)
+def get_issued_at():
+    return getattr(g, 'issued_at', None)
 
 
 def get_operator():

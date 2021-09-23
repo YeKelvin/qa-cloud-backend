@@ -63,8 +63,7 @@ def set_user():
             payload = JWTAuth.decode_auth_token(auth_token)
             # 设置全局属性
             gvars.put('user_no', payload['data']['id'])
-            gvars.put('auth_token', auth_token)
-            gvars.put('auth_login_time', payload['data']['loginTime'])
+            gvars.put('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
             log.info(f'logId:[ {g.logid} ] token已失效')
         except jwt.InvalidTokenError:

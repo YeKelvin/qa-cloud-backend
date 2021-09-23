@@ -25,6 +25,7 @@ class TUser(DBModel):
     EMAIL = db.Column(db.String(128), comment='邮箱')
     AVATAR = db.Column(db.String(256), comment='头像URL')
     STATE = db.Column(db.String(16), nullable=False, comment='用户状态(ENABLE:启用, CLOSE:禁用)')
+    LOGGED_IN = db.Column(db.Boolean, nullable=False, default=False, comment='是否已登录')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
@@ -159,24 +160,6 @@ class TUserPasswordKey(DBModel):
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-
-
-class TUserAccessToken(DBModel):
-    """用户认证令牌表"""
-    __tablename__ = 'USER_ACCESS_TOKEN'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    ACCESS_TOKEN = db.Column(db.String(512), comment='令牌')
-    EXPIRE_IN = db.Column(db.DateTime, comment='令牌到期时间')
-    STATE = db.Column(db.String(16), nullable=False, comment='令牌状态(VALID:有效, INVALID:失效)')
-    DEVICE_ID = db.Column(db.String(64), comment='设备ID')
-    APP_ID = db.Column(db.String(64), comment='应用ID')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
