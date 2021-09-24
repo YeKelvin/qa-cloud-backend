@@ -125,7 +125,7 @@ def require_permission(func):
             )
             return __auth_fail_response(ErrorCode.E401002)
 
-        # 查询角色权限关联关系
+        # 查询角色权限关联
         role_permission_rel = TRolePermissionRel.query.filter_by(
             ROLE_NO=user_role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO
         ).first()
@@ -133,7 +133,7 @@ def require_permission(func):
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'userNo:[ {user_no} ] roleNo:[ {user_role.ROLE_NO} ] permissionNo:[ {permission.PERMISSION_NO} ]'
-                f'msg:[ 查询角色权限关联关系失败，用户无当前请求的权限 ]'
+                f'msg:[ 查询角色权限关联失败，用户无当前请求的权限 ]'
             )
             return __auth_fail_response(ErrorCode.E401002)
 

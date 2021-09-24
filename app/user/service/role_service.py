@@ -102,7 +102,7 @@ def remove_role(req):
 
     # 查询用户角色列表
     user_role_list = UserRoleRelDao.select_all_by_roleno(req.roleNo)
-    check_is_blank(user_role_list, '角色与用户存在关联关系，请先解除关联')
+    check_is_blank(user_role_list, '角色与用户存在关联，请先解除关联')
 
     # 解绑角色和权限
     RolePermissionRelDao.delete_by_roleno(req.roleNo)

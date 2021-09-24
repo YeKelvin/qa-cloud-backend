@@ -12,6 +12,8 @@ from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
+from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUserRel
 from app.user.dao import role_dao as RoleDao
 from app.user.dao import user_dao as UserDao
 from app.user.dao import user_login_info_dao as UserLoginInfoDao
@@ -137,6 +139,15 @@ def register(req):
         CREATE_TYPE='CUSTOMER'
     )
 
+    # 创建私有空间
+    worksapce_no = new_id()
+    TWorkspace.insert(
+        WORKSPACE_NO=worksapce_no,
+        WORKSPACE_NAME=f'{req.userName}的私有空间',
+        WORKSPACE_SCOPE='PRIVATE'
+    )
+    TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+
 
 @http_service
 def reset_login_password(req):
@@ -242,6 +253,7 @@ def modify_user(req):
         MOBILE_NO=req.mobileNo,
         EMAIL=req.email
     )
+    # TODO: workspaceName也要同步修改
 
 
 @http_service
@@ -279,3 +291,4 @@ def remove_user(req):
 
     # 删除用户
     user.delete()
+    # TODO: 私有空间也要删除

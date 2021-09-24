@@ -75,8 +75,7 @@ def init_user():
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
         WORKSPACE_NAME='超级管理员的私有空间',
-        WORKSPACE_TYPE='PUBLIC',
-        WORKSPACE_SCOPE='PERSONAL'
+        WORKSPACE_SCOPE='PRIVATE'
     )
     TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
@@ -120,12 +119,12 @@ def init_permission():
     _create_permission(name='更新角色信息', method='PUT', endpoint='/user/role')
     _create_permission(name='更新角色状态', method='PATCH', endpoint='/user/role/state')
     _create_permission(name='删除角色', method='DELETE', endpoint='/user/role')
-    _create_permission(name='分页查询用户角色关联关系列表', method='GET', endpoint='/user/role/rel/list')
-    _create_permission(name='新增用户角色关联关系', method='POST', endpoint='/user/role/rel')
-    _create_permission(name='删除用户角色关联关系', method='DELETE', endpoint='/user/role/rel')
-    _create_permission(name='分页查询角色权限关联关系列表', method='GET', endpoint='/user/role/permission/rel/list')
-    _create_permission(name='新增角色权限关联关系', method='POST', endpoint='/user/role/permission/rel')
-    _create_permission(name='删除角色权限关联关系', method='DELETE', endpoint='/user/role/permission/rel')
+    _create_permission(name='分页查询用户角色关联列表', method='GET', endpoint='/user/role/rel/list')
+    _create_permission(name='新增用户角色关联', method='POST', endpoint='/user/role/rel')
+    _create_permission(name='删除用户角色关联', method='DELETE', endpoint='/user/role/rel')
+    _create_permission(name='分页查询角色权限关联列表', method='GET', endpoint='/user/role/permission/rel/list')
+    _create_permission(name='新增角色权限关联', method='POST', endpoint='/user/role/permission/rel')
+    _create_permission(name='删除角色权限关联', method='DELETE', endpoint='/user/role/permission/rel')
 
     # system模块路由
     # log
@@ -138,9 +137,9 @@ def init_permission():
     _create_permission(name='新增工作空间', method='POST', endpoint='/public/workspace')
     _create_permission(name='修改工作空间', method='PUT', endpoint='/public/workspace')
     _create_permission(name='删除工作空间', method='DELETE', endpoint='/public/workspace')
-    _create_permission(name='添加工作空间成员', method='POST', endpoint='/public/workspace/user')
-    _create_permission(name='修改工作空间成员', method='PUT', endpoint='/public/workspace/user')
-    _create_permission(name='删除工作空间成员', method='DELETE', endpoint='/public/workspace/user')
+    _create_permission(name='分页查询空间用户列表', method='GET', endpoint='/public/workspace/user/list')
+    _create_permission(name='新增空间用户', method='POST', endpoint='/public/workspace/user')
+    _create_permission(name='删除空间用户', method='DELETE', endpoint='/public/workspace/user')
 
     # tag
     _create_permission(name='分页查询标签列表', method='GET', endpoint='/public/tag/list')
@@ -234,21 +233,21 @@ def init_permission():
 
 @with_appcontext
 def init_user_role_rel():
-    """初始化用户角色关联关系"""
+    """初始化用户角色关联"""
     user = TUser.query.filter_by(USER_NAME='超级管理员').first()
     role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
     TUserRoleRel.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
-    click.echo('创建用户角色关联关系成功')
+    click.echo('创建用户角色关联成功')
 
 
 @with_appcontext
 def init_role_permission_rel():
-    """初始化角色权限关联关系"""
+    """初始化角色权限关联"""
     permissions = TPermission.query.all()
     role = TRole.query.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
     for permission in permissions:
         TRolePermissionRel.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
-    click.echo('创建角色权限关联关系成功')
+    click.echo('创建角色权限关联成功')
 
 
 @with_appcontext

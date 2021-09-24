@@ -60,7 +60,7 @@ def query_role_permission_rel_list(req):
 def create_role_permission_rel(req):
     # 查询角色权限
     role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo)
-    check_is_blank(role_permission, '角色权限关联关系已存在')
+    check_is_blank(role_permission, '角色权限关联已存在')
 
     # 绑定角色和权限
     TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
@@ -70,7 +70,7 @@ def create_role_permission_rel(req):
 def remove_role_permission_rel(req):
     # 查询角色权限
     role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo)
-    check_is_not_blank(role_permission, '角色权限关联关系不存在')
+    check_is_not_blank(role_permission, '角色权限关联不存在')
 
     # 解绑角色和权限
     role_permission.delete()

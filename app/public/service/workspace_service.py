@@ -20,7 +20,6 @@ def query_workspace_list(req):
     workspaces = WorkspaceDao.select_list(
         workspaceNo=req.workspaceNo,
         workspaceName=req.workspaceName,
-        workspaceType=req.workspaceType,
         workspaceScope=req.workspaceScope,
         workspaceDesc=req.workspaceDesc,
         page=req.page,
@@ -32,7 +31,6 @@ def query_workspace_list(req):
         data.append({
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
-            'workspaceType': workspace.WORKSPACE_TYPE,
             'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
         })
@@ -47,7 +45,6 @@ def query_workspace_all():
         result.append({
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
-            'workspaceType': workspace.WORKSPACE_TYPE,
             'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
         })
@@ -62,7 +59,6 @@ def create_workspace(req):
     TWorkspace.insert(
         WORKSPACE_NO=new_id(),
         WORKSPACE_NAME=req.workspaceName,
-        WORKSPACE_TYPE=req.workspaceType,
         WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
     )
@@ -75,7 +71,6 @@ def modify_workspace(req):
 
     workspace.update(
         WORKSPACE_NAME=req.workspaceName,
-        WORKSPACE_TYPE=req.workspaceType,
         WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
     )

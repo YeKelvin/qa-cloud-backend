@@ -24,7 +24,6 @@ def select_list(**kwargs) -> Pagination:
     if kwargs:
         conds.fuzzy_match(TWorkspace.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
         conds.fuzzy_match(TWorkspace.WORKSPACE_NAME, kwargs.pop('workspaceName', None))
-        conds.fuzzy_match(TWorkspace.WORKSPACE_TYPE, kwargs.pop('workspaceType', None))
         conds.fuzzy_match(TWorkspace.WORKSPACE_DESC, kwargs.pop('workspaceDesc', None))
 
     page = kwargs.pop('page')

@@ -23,7 +23,6 @@ def query_workspace_list():
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('workspaceName'),
-        Argument('workspaceType'),
         Argument('workspaceScope'),
         Argument('workspaceDesc'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
@@ -47,7 +46,6 @@ def create_workspace():
     """新增工作空间"""
     req = JsonParser(
         Argument('workspaceName', required=True, nullable=False, help='工作空间名称不能为空'),
-        Argument('workspaceType', required=True, nullable=False, help='工作空间类型不能为空'),
         Argument('workspaceScope', required=True, nullable=False, help='工作空间作用域不能为空'),
         Argument('workspaceDesc'),
     ).parse()
@@ -62,7 +60,6 @@ def modify_workspace():
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
         Argument('workspaceName', required=True, nullable=False, help='工作空间名称不能为空'),
-        Argument('workspaceType', required=True, nullable=False, help='工作空间类型不能为空'),
         Argument('workspaceScope', required=True, nullable=False, help='工作空间作用域不能为空'),
         Argument('workspaceDesc'),
     ).parse()

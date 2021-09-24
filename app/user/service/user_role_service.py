@@ -54,7 +54,7 @@ def query_user_role_rel_list(req):
 def create_user_role_rel(req):
     # 查询用户角色
     user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
-    check_is_blank(user_role, '用户角色关联关系已存在')
+    check_is_blank(user_role, '用户角色关联已存在')
 
     # 绑定用户和角色
     TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=req.roleNo)
@@ -64,7 +64,7 @@ def create_user_role_rel(req):
 def remove_user_role_rel(req):
     # 查询用户角色
     user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
-    check_is_not_blank(user_role, '用户角色关联关系不存在')
+    check_is_not_blank(user_role, '用户角色关联不存在')
 
     # 解绑用户和角色
     user_role.delete()

@@ -19,7 +19,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_role_permission_rel_list():
-    """分页查询角色权限关联关系列表"""
+    """分页查询角色权限关联列表"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo'),
@@ -37,7 +37,7 @@ def query_role_permission_rel_list():
 @require_login
 @require_permission
 def create_role_permission_rel():
-    """新增角色权限关联关系"""
+    """新增角色权限关联"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo')
@@ -49,7 +49,7 @@ def create_role_permission_rel():
 @require_login
 @require_permission
 def remove_role_permission_rel():
-    """删除角色权限关联关系"""
+    """删除角色权限关联"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo')
