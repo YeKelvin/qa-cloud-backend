@@ -16,11 +16,11 @@ header:
 
 payload:
     Registered Claims:
-        - "exp"(expiration):    该jwt销毁的时间（unix时间戳）
-        - "nbf"(not before):    该jwt的使用时间不能早于该时间（unix时间戳）
-        - "iss"(issuer):        发布者的url地址（token签发者）
-        - "aud"(audience):      接受者的url地址（token接收者）
-        - "iat"(issued at):     该jwt的签发时间（unix时间戳）
+        - exp(expiration):    该jwt销毁的时间（unix时间戳）
+        - nbf(not before):    该jwt的使用时间不能早于该时间（unix时间戳）
+        - iss(issuer):        发布者的url地址（token签发者）
+        - aud(audience):      接受者的url地址（token接收者）
+        - iat(issued at):     该jwt的签发时间（unix时间戳）
 
     Public Claims:
     Private Claims:
@@ -37,6 +37,10 @@ import datetime
 import jwt
 
 from app.utils import config
+from app.utils.log_util import get_logger
+from app.utils.time_util import timestamp_to_utc8_datetime
+
+log = get_logger(__name__)
 
 
 class JWTAuth:
@@ -60,9 +64,9 @@ class JWTAuth:
         }
 
         payload = {
-            'exp': issued_at + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),  # 销毁的时间
-            'iat': issued_at,  # 签发时间
-            'iss': config.get('jwt', 'issuer'),  # 签发者
+            'exp': timestamp_to_utc8_datetime(issued_at) + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),
+            'iat': issued_at,
+            'iss': config.get('jwt', 'issuer'),
             'data': {
                 'id': user_no
             }
@@ -84,7 +88,6 @@ class JWTAuth:
             jwt.InvalidTokenError（无效token）
         """
 
-        # 取消过期时间验证
         payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, algorithms=['HS256'], options={'verify_exp': True})
         if 'data' in payload and 'id' in payload['data']:
             return payload

@@ -54,7 +54,7 @@ def require_login(func):
         if datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
             log.info(
                 f'logId:[ {g.logid} ] '
-                f'签发时间:[ {datetime.fromtimestamp(issued_at)} ]'
+                f'签发时间:[ {datetime.fromtimestamp(issued_at)} ] '
                 f'最后成功登录时间:[ {user_password.LAST_SUCCESS_TIME} ] '
                 f'Token 已失效'
             )

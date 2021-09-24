@@ -50,12 +50,12 @@ def set_user():
         auth_header = request.headers.get('Authorization')
         auth_array = auth_header.split(' ')
         if not auth_array or len(auth_array) != 2:
-            log.info(f'logId:[ {g.logid} ] 解析Authorization Header有误')
+            log.info(f'logId:[ {g.logid} ] 解析 Authorization 有误')
             return
 
         auth_schema, auth_token = auth_array
         if auth_schema != 'Bearer':
-            log.info(f'logId:[ {g.logid} ] 暂不支持的schema')
+            log.info(f'logId:[ {g.logid} ] 暂不支持的 schema')
             return
 
         try:

@@ -29,6 +29,8 @@ from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
 from app.utils.security import check_password
 from app.utils.security import encrypt_password
+from app.utils.time_util import timestamp_now
+from app.utils.time_util import timestamp_to_utc8_datetime
 
 
 log = get_logger(__name__)
@@ -67,13 +69,13 @@ def login(req):
         raise ServiceError('账号或密码不正确')
 
     # 密码校验通过后生成token
-    issued_at = datetime.utcnow()
-    access_token = JWTAuth.encode_auth_token(user.USER_NO, issued_at.timestamp())
+    issued_at = timestamp_now()
+    access_token = JWTAuth.encode_auth_token(user.USER_NO, issued_at)
 
     # 更新用户登录时间
     # 清空用户登录失败次数
     user_password.update(
-        LAST_SUCCESS_TIME=issued_at,
+        LAST_SUCCESS_TIME=timestamp_to_utc8_datetime(issued_at),
         ERROR_TIMES=0
     )
 
