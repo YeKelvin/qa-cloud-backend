@@ -13,4 +13,4 @@ def select_by_plan_and_collection(plan_no, collection_no) -> TTestPlanItem:
 
 
 def select_all_by_plan(plan_no) -> List[TTestPlanItem]:
-    return TTestPlanItem.query_by(PLAN_NO=plan_no).all()
+    return TTestPlanItem.query_by(PLAN_NO=plan_no).order_by(TTestPlanItem.SERIAL_NO).all()

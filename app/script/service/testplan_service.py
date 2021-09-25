@@ -74,7 +74,6 @@ def query_testplan_details(req):
     for item in items:
         element = TestElementDao.select_by_no(item.COLLECTION_NO)
         collection_list.append({
-            'serialNo': item.SERIAL_NO,
             'elementNo': item.COLLECTION_NO,
             'elementName': element.ELEMENT_NAME,
             'runningState': item.RUNNING_STATE
