@@ -13,6 +13,7 @@ from app.common import global_variables as gvars
 from app.common.exceptions import ErrorCode
 from app.common.response import ResponseDTO
 from app.common.response import http_response
+from app.extension import db
 from app.user.model import TPermission
 from app.user.model import TRole
 from app.user.model import TRolePermissionRel
@@ -34,23 +35,23 @@ def require_login(func):
         issued_at = gvars.get_issued_at()
 
         # 用户不存在
-        user = TUser.query.filter_by(USER_NO=user_no).first()
+        user = TUser.filter_by(USER_NO=user_no).first()
         if not user:
             log.info(f'logId:[ {g.logid} ] 用户不存在')
-            return __auth_fail_response(ErrorCode.E401001)
+            return check_failed_response(ErrorCode.E401001)
 
         # 用户未登录，请先登录
         if not user.LOGGED_IN:
             log.info(f'logId:[ {g.logid} ] 用户未登录，请先登录')
-            return __auth_fail_response(ErrorCode.E401001)
+            return check_failed_response(ErrorCode.E401001)
 
         # 用户状态异常
         if user.STATE != 'ENABLE':
             log.info(f'logId:[ {g.logid} ] user.state:[ {user.STATE} ] 用户状态异常')
-            return __auth_fail_response(ErrorCode.E401001)
+            return check_failed_response(ErrorCode.E401001)
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
-        user_password = TUserPassword.query.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
+        user_password = TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
         if datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
             log.info(
                 f'logId:[ {g.logid} ] '
@@ -58,7 +59,7 @@ def require_login(func):
                 f'最后成功登录时间:[ {user_password.LAST_SUCCESS_TIME} ] '
                 f'Token 已失效'
             )
-            return __auth_fail_response(ErrorCode.E401001)
+            return check_failed_response(ErrorCode.E401001)
 
         gvars.put('operator', user.USER_NAME)
         return func(*args, **kwargs)
@@ -76,73 +77,57 @@ def require_permission(func):
         if not user_no:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'msg:[ 获取 flask.g.user_no失败 ]'
+                f'获取 flask.g.user_no失败'
             )
-            return __auth_fail_response(ErrorCode.E401002)
+            return check_failed_response(ErrorCode.E401002)
 
-        # 查询权限信息
-        permission = TPermission.query.filter_by(ENDPOINT=request.path, METHOD=request.method).first()
-        if not permission:
+        # 查询用户角色关联
+        user_role_rel_list = TUserRoleRel.filter_by(USER_NO=user_no).all()
+        if not user_role_rel_list:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'msg:[ 查询请求路由权限信息失败 ]'
+                f'userNo:[ {user_no} ] 查询用户角色失败'
             )
-            return __auth_fail_response(ErrorCode.E401002)
+            return check_failed_response(ErrorCode.E401002)
 
-        # 判断权限状态是否已禁用
-        if permission.STATE != 'ENABLE':
+        # 查询用户角色权限信息
+        conds = [
+            TRole.DEL_STATE == 0,
+            TPermission.DEL_STATE == 0,
+            TRolePermissionRel.DEL_STATE == 0,
+            TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
+            TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO,
+            TRole.STATE == 'ENABLE',
+            TRole.ROLE_NO.in_([rel.ROLE_NO for rel in user_role_rel_list]),
+            TPermission.STATE == 'ENABLE',
+            TPermission.METHOD == request.method,
+            TPermission.ENDPOINT == request.path
+        ]
+        role_permission_list = db.session.query(
+            TRole.ROLE_NO,
+            # TRole.ROLE_NAME,
+            # TRole.STATE.label('Role_STATE'),
+            TPermission.PERMISSION_NO,
+            # TPermission.PERMISSION_NAME,
+            # TPermission.STATE.label('Permission_STATE'),
+            # TPermission.METHOD,
+            # TPermission.ENDPOINT
+        ).filter(*conds).all()
+
+        # 判断权限是否存在且状态正常
+        if not role_permission_list:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'permissionNo:[ {permission.PERMISSION_NO} ] permissionName:[ {permission.PERMISSION_NAME} ]'
-                f'msg:[ 权限状态异常 ]'
+                f'查询请求路由权限失败，或角色权限状态异常'
             )
-            return __auth_fail_response(ErrorCode.E401002)
-
-        # 查询用户角色
-        user_role = TUserRoleRel.query.filter_by(USER_NO=user_no).first()
-        if not user_role:
-            log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] msg:[ 查询用户角色失败 ]'
-            )
-            return __auth_fail_response(ErrorCode.E401002)
-
-        # 查询角色信息
-        role = TRole.query.filter_by(ROLE_NO=user_role.ROLE_NO, STATE='ENABLE').first()
-        if not role:
-            log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {user_role.ROLE_NO} ] msg:[ 查询角色信息失败 ]'
-            )
-            return __auth_fail_response(ErrorCode.E401002)
-
-        # 判断权限状态是否已禁用
-        if role.STATE != 'ENABLE':
-            log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {role.ROLE_NO} ] roleName:[ {role.ROLE_NAME} ]'
-                f'msg:[ 角色状态异常 ]'
-            )
-            return __auth_fail_response(ErrorCode.E401002)
-
-        # 查询角色权限关联
-        role_permission_rel = TRolePermissionRel.query.filter_by(
-            ROLE_NO=user_role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO
-        ).first()
-        if not role_permission_rel:
-            log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'userNo:[ {user_no} ] roleNo:[ {user_role.ROLE_NO} ] permissionNo:[ {permission.PERMISSION_NO} ]'
-                f'msg:[ 查询角色权限关联失败，用户无当前请求的权限 ]'
-            )
-            return __auth_fail_response(ErrorCode.E401002)
+            return check_failed_response(ErrorCode.E401002)
 
         return func(*args, **kwargs)
 
     return wrapper
 
 
-def __auth_fail_response(error: ErrorCode):
+def check_failed_response(error: ErrorCode):
     user_no = gvars.get_userno()
     log.info(
         f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
