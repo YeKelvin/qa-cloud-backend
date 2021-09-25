@@ -71,7 +71,7 @@ def query_sampler_result(req):
         'samplerRemark': sampler_result.SAMPLER_REMARK,
         'startTime': sampler_result.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
         'endTime': sampler_result.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-        'elapsedTime': microsecond_to_m_s(sampler_result.ELAPSED_TIME),
+        'elapsedTime': f'{sampler_result.ELAPSED_TIME}ms',
         'success': sampler_result.SUCCESS,
         'requestUrl': sampler_result.REQUEST_URL,
         'requestHeaders': sampler_result.REQUEST_HEADERS,
@@ -113,7 +113,7 @@ def get_sampler_result_list(group_id):
             'remark': sampler_result.SAMPLER_REMARK,
             'startTime': sampler_result.START_TIME.strftime('%H:%M:%S'),
             'endTime': sampler_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': microsecond_to_m_s(sampler_result.ELAPSED_TIME),
+            'elapsedTime': f'{sampler_result.ELAPSED_TIME}ms',
             'success': sampler_result.SUCCESS,
             'children': get_subsampler_result_list(sampler_result.SAMPLER_ID)
         })
@@ -132,7 +132,7 @@ def get_subsampler_result_list(parent_id):
             'remark': sub_result.SAMPLER_REMARK,
             'startTime': sub_result.START_TIME.strftime('%H:%M:%S'),
             'endTime': sub_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': sub_result.ELAPSED_TIME,
+            'elapsedTime': f'{sub_result.ELAPSED_TIME}ms',
             'success': sub_result.SUCCESS,
             'children': get_subsampler_result_list(sub_result.SAMPLER_ID)
         })
