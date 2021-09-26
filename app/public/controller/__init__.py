@@ -11,3 +11,4 @@ blueprint = Blueprint('public', __name__, url_prefix='/public')
 
 from . import tag_controller  # noqa
 from . import workspace_controller  # noqa
+from . import workspace_user_controller  # noqa
