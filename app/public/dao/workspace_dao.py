@@ -12,11 +12,11 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(workspace_no) -> TWorkspace:
-    return TWorkspace.query_by(WORKSPACE_NO=workspace_no).first()
+    return TWorkspace.filter_by(WORKSPACE_NO=workspace_no).first()
 
 
 def select_by_name(workspace_name) -> TWorkspace:
-    return TWorkspace.query_by(WORKSPACE_NAME=workspace_name).first()
+    return TWorkspace.filter_by(WORKSPACE_NAME=workspace_name).first()
 
 
 def select_list(**kwargs) -> Pagination:
@@ -33,4 +33,4 @@ def select_list(**kwargs) -> Pagination:
 
 
 def select_all() -> List[TWorkspace]:
-    return TWorkspace.query_by().order_by(TWorkspace.CREATED_TIME.desc()).all()
+    return TWorkspace.filter_by().order_by(TWorkspace.CREATED_TIME.desc()).all()

@@ -4,9 +4,10 @@
 # @Time    : 2021/6/5 23:39
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.common.validator import check_is_blank
+from app.common.decorators.transaction import transactional
 from app.common.validator import check_is_not_blank
 from app.extension import db
+from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_user_rel_dao as WorkspaceUserRelDao
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUserRel
@@ -22,9 +23,9 @@ log = get_logger(__name__)
 def query_workspace_user_list(req):
     # 查询条件
     conds = QueryCondition(TUser, TWorkspace, TWorkspaceUserRel)
-    conds.exact_match(TUser.USER_NO, TWorkspaceUserRel.USER_NO)
-    conds.exact_match(TWorkspace.WORKSPACE_NO, TWorkspaceUserRel.WORKSPACE_NO)
-    conds.fuzzy_match(TWorkspaceUserRel.WORKSPACE_NO, req.workspaceNo)
+    conds.equal(TUser.USER_NO, TWorkspaceUserRel.USER_NO)
+    conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUserRel.WORKSPACE_NO)
+    conds.like(TWorkspaceUserRel.WORKSPACE_NO, req.workspaceNo)
 
     # TUser, TWorkspace, TWorkspaceUserRel 连表查询
     pagination = db.session.query(
@@ -47,20 +48,42 @@ def query_workspace_user_list(req):
 
 
 @http_service
-def create_workspace_user(req):
-    # 查询空间用户
-    workspace_user = WorkspaceUserRelDao.select_by_workspace_and_user(req.workspaceNo, req.userNo)
-    check_is_blank(workspace_user, '空间用户关联已存在')
+def query_workspace_user_all(req):
+    # 查询条件
+    conds = QueryCondition(TUser, TWorkspaceUserRel)
+    conds.equal(TUser.USER_NO, TWorkspaceUserRel.USER_NO)
+    conds.equal(TWorkspaceUserRel.WORKSPACE_NO, req.workspaceNo)
 
-    # 新增空间用户
-    TWorkspaceUserRel.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=req.userNo)
+    # 查询所有空间成员
+    workspace_user_list = db.session.query(
+        TUser.USER_NO,
+        TUser.USER_NAME
+    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
+
+    result = []
+    for user in workspace_user_list:
+        result.append({
+            'userNo': user.USER_NO,
+            'userName': user.USER_NAME
+        })
+    return result
 
 
 @http_service
-def remove_workspace_user(req):
-    # 查询用户角色
-    workspace_user = WorkspaceUserRelDao.select_by_workspace_and_user(req.workspaceNo, req.userNo)
-    check_is_not_blank(workspace_user, '空间用户关联不存在')
+@transactional
+def modify_workspace_user(req):
+    # 查询元素
+    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    check_is_not_blank(workspace, '工作空间不存在')
 
-    # 删除空间用户
-    workspace_user.delete()
+    for user_no in req.userNumberList:
+        # 查询空间成员
+        workspace_user = WorkspaceUserRelDao.select_by_workspace_and_user(req.workspaceNo, user_no)
+        if workspace_user:
+            continue
+        else:
+            # 新增空间成员
+            TWorkspaceUserRel.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
+
+    # 删除不在请求中的空间成员
+    WorkspaceUserRelDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, req.userNumberList)

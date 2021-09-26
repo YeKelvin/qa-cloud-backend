@@ -137,9 +137,9 @@ def init_permission():
     _create_permission(name='新增工作空间', method='POST', endpoint='/public/workspace')
     _create_permission(name='修改工作空间', method='PUT', endpoint='/public/workspace')
     _create_permission(name='删除工作空间', method='DELETE', endpoint='/public/workspace')
-    _create_permission(name='分页查询空间用户列表', method='GET', endpoint='/public/workspace/user/list')
-    _create_permission(name='新增空间用户', method='POST', endpoint='/public/workspace/user')
-    _create_permission(name='删除空间用户', method='DELETE', endpoint='/public/workspace/user')
+    _create_permission(name='分页查询空间成员列表', method='GET', endpoint='/public/workspace/user/list')
+    _create_permission(name='查询所有空间成员', method='GET', endpoint='/public/workspace/user/all')
+    _create_permission(name='修改空间成员', method='PUT', endpoint='/public/workspace/user')
 
     # tag
     _create_permission(name='分页查询标签列表', method='GET', endpoint='/public/tag/list')

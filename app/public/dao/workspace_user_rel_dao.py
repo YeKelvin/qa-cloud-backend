@@ -16,3 +16,10 @@ def select_list_by_workspace(**kwargs) -> Pagination:
     return TWorkspaceUserRel.filter_by(
         WORKSPACE_NO=kwargs.pop('workspaceNo')).order_by(
             TWorkspaceUserRel.CREATED_TIME.desc()).paginate(kwargs.pop('page'), kwargs.pop('pageSize'))
+
+
+def delete_all_by_workspace_and_notin_user(workspace_no, *uset_number_list) -> None:
+    TWorkspaceUserRel.filter(
+        TWorkspaceUserRel.WORKSPACE_NO == workspace_no,
+        TWorkspaceUserRel.USER_NO.notin_(*uset_number_list)
+    ).update({TWorkspaceUserRel.DEL_STATE: 1})

@@ -28,25 +28,24 @@ def query_workspace_user_list():
     return service.query_workspace_user_list(req)
 
 
-@blueprint.post('/workspace/user')
+@blueprint.get('/workspace/user/all')
 @require_login
 @require_permission
-def create_workspace_user():
-    """新增空间用户"""
+def query_workspace_user_all():
+    """查询所有空间用户"""
     req = JsonParser(
-        Argument('workspaceNo'),
-        Argument('userNo')
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
     ).parse()
-    return service.create_workspace_user(req)
+    return service.query_workspace_user_all(req)
 
 
-@blueprint.delete('/workspace/user')
+@blueprint.put('/workspace/user')
 @require_login
 @require_permission
-def remove_workspace_user():
-    """删除空间用户"""
+def modify_workspace_user():
+    """修改空间用户"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('userNo')
+        Argument('userNumberList')
     ).parse()
-    return service.remove_workspace_user(req)
+    return service.modify_workspace_user(req)

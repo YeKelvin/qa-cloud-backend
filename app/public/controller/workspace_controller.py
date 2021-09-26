@@ -75,39 +75,3 @@ def remove_workspace():
         Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
     ).parse()
     return service.remove_workspace(req)
-
-
-@blueprint.post('/workspace/user')
-@require_login
-@require_permission
-def add_workspace_user():
-    """添加工作空间成员"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
-    ).parse()
-    return service.add_workspace_user(req)
-
-
-@blueprint.put('/workspace/user')
-@require_login
-@require_permission
-def modify_workspace_user():
-    """修改工作空间成员"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
-    ).parse()
-    return service.modify_workspace_user(req)
-
-
-@blueprint.delete('/workspace/user')
-@require_login
-@require_permission
-def remove_workspace_user():
-    """移除工作空间成员"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空'),
-        Argument('userList', required=True, nullable=False, help='用户列表不能为空'),
-    ).parse()
-    return service.remove_workspace_user(req)
