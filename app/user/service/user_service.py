@@ -167,7 +167,7 @@ def reset_login_password(req):
 
 @http_service
 def query_user_list(req):
-    # 查询用户列表
+    # 查询条件
     conds = QueryCondition(TUser, TUserLoginInfo)
     conds.like(TUser.USER_NO, req.userNo)
     conds.like(TUser.USER_NAME, req.userName)
@@ -178,6 +178,7 @@ def query_user_list(req):
     conds.equal(TUserLoginInfo.LOGIN_TYPE, 'ACCOUNT')
     conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
 
+    # 查询用户列表
     pagination = db.session.query(
         TUser.USER_NO,
         TUser.USER_NAME,

@@ -36,7 +36,10 @@ def query_workspace_list():
 @require_permission
 def query_workspace_all():
     """查询所有工作空间"""
-    return service.query_workspace_all()
+    req = JsonParser(
+        Argument('userNo')
+    ).parse()
+    return service.query_workspace_all(req)
 
 
 @blueprint.post('/workspace')

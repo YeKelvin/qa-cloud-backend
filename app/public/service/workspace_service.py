@@ -7,9 +7,12 @@ from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
+from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUserRel
 from app.utils.log_util import get_logger
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -38,8 +41,33 @@ def query_workspace_list(req):
 
 
 @http_service
-def query_workspace_all():
-    workspaces = WorkspaceDao.select_all()
+def query_workspace_all(req):
+    # 查询条件
+    conds = QueryCondition(TWorkspace)
+    if req.userNo:
+        conds.equal(TWorkspaceUserRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.equal(TWorkspaceUserRel.USER_NO, req.userNo)
+
+    workspaces = db.session.query(
+        TWorkspace.WORKSPACE_NO,
+        TWorkspace.WORKSPACE_NAME,
+        TWorkspace.WORKSPACE_SCOPE,
+        TWorkspace.WORKSPACE_DESC,
+        TWorkspace.CREATED_TIME
+    ).filter(*conds)
+
+    if req.userNo:
+        public_workspaces = db.session.query(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TWorkspace.WORKSPACE_DESC,
+            TWorkspace.CREATED_TIME
+        ).filter(
+            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC', TWorkspace.DEL_STATE == 0
+        )
+        workspaces = workspaces.union(public_workspaces).filter().order_by(TWorkspace.CREATED_TIME.desc()).all()
+
     result = []
     for workspace in workspaces:
         result.append({
