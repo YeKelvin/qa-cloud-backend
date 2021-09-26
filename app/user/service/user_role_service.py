@@ -22,12 +22,12 @@ log = get_logger(__name__)
 def query_user_role_rel_list(req):
     # 查询条件
     conds = QueryCondition(TUser, TRole, TUserRoleRel)
-    conds.exact_match(TUser.USER_NO, TUserRoleRel.USER_NO)
-    conds.fuzzy_match(TUser.USER_NAME, req.userName)
-    conds.exact_match(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
-    conds.fuzzy_match(TRole.ROLE_NAME, req.roleName)
-    conds.fuzzy_match(TUserRoleRel.USER_NO, req.userNo)
-    conds.fuzzy_match(TUserRoleRel.ROLE_NO, req.roleNo)
+    conds.equal(TUser.USER_NO, TUserRoleRel.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
+    conds.like(TUser.USER_NAME, req.userName)
+    conds.like(TRole.ROLE_NAME, req.roleName)
+    conds.like(TUserRoleRel.USER_NO, req.userNo)
+    conds.like(TUserRoleRel.ROLE_NO, req.roleNo)
 
     # TUser，TRole，TUserRoleRel连表查询
     pagination = db.session.query(

@@ -30,11 +30,11 @@ log = get_logger(__name__)
 def query_testplan_list(req):
     # 查询条件
     conds = QueryCondition(TTestPlan)
-    conds.fuzzy_match(TTestPlan.WORKSPACE_NO, req.workspaceNo)
-    conds.fuzzy_match(TTestPlan.VERSION_NO, req.versionNo)
-    conds.fuzzy_match(TTestPlan.PLAN_NO, req.planNo)
-    conds.fuzzy_match(TTestPlan.PLAN_NAME, req.planName)
-    conds.fuzzy_match(TTestPlan.RUNNING_STATE, req.runningState)
+    conds.like(TTestPlan.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TTestPlan.VERSION_NO, req.versionNo)
+    conds.like(TTestPlan.PLAN_NO, req.planNo)
+    conds.like(TTestPlan.PLAN_NAME, req.planName)
+    conds.like(TTestPlan.RUNNING_STATE, req.runningState)
 
     # 分页查询
     pagination = db.session.query(

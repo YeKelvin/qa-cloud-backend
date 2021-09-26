@@ -22,12 +22,12 @@ class QueryCondition(list):
         if table:
             self.append(table.DEL_STATE == 0)
 
-    def fuzzy_match(self, column, value):
+    def like(self, column, value):
         """模糊匹配"""
         if value:
             self.append(column.like(f'%{value}%'))
 
-    def exact_match(self, column, value):
+    def equal(self, column, value):
         """完全匹配"""
         if value:
             self.append(column == value)

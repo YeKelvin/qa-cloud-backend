@@ -22,26 +22,26 @@ def select_first(**kwargs) -> TUser:
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(TUser)
     if kwargs:
-        conds.fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
-        conds.fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
-        conds.fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
-        conds.fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
-        conds.fuzzy_match(TUser.STATE, kwargs.pop('state', None))
+        conds.like(TUser.USER_NO, kwargs.pop('userNo', None))
+        conds.like(TUser.USER_NAME, kwargs.pop('userName', None))
+        conds.like(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
+        conds.like(TUser.EMAIL, kwargs.pop('email', None))
+        conds.like(TUser.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
-    pageSize = kwargs.pop('pageSize')
+    page_size = kwargs.pop('pageSize')
 
-    return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page, page_size)
 
 
 def select_all(**kwargs) -> List[TUser]:
     conds = QueryCondition(TUser)
     if kwargs:
-        conds.fuzzy_match(TUser.USER_NO, kwargs.pop('userNo', None))
-        conds.fuzzy_match(TUser.USER_NAME, kwargs.pop('userName', None))
-        conds.fuzzy_match(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
-        conds.fuzzy_match(TUser.EMAIL, kwargs.pop('email', None))
-        conds.fuzzy_match(TUser.STATE, kwargs.pop('state', None))
+        conds.like(TUser.USER_NO, kwargs.pop('userNo', None))
+        conds.like(TUser.USER_NAME, kwargs.pop('userName', None))
+        conds.like(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
+        conds.like(TUser.EMAIL, kwargs.pop('email', None))
+        conds.like(TUser.STATE, kwargs.pop('state', None))
 
     return TUser.query.filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
 

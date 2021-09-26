@@ -22,14 +22,14 @@ log = get_logger(__name__)
 def query_role_permission_rel_list(req):
     # 查询条件
     conds = QueryCondition(TRole, TPermission, TRolePermissionRel)
-    conds.fuzzy_match(TRole.ROLE_NAME, req.roleName)
-    conds.fuzzy_match(TPermission.PERMISSION_NAME, req.permissionName)
-    conds.fuzzy_match(TPermission.ENDPOINT, req.endpoint)
-    conds.fuzzy_match(TPermission.METHOD, req.method)
-    conds.exact_match(TRolePermissionRel.ROLE_NO, TRole.ROLE_NO)
-    conds.exact_match(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
-    conds.fuzzy_match(TRolePermissionRel.ROLE_NO, req.roleNo)
-    conds.fuzzy_match(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
+    conds.like(TRole.ROLE_NAME, req.roleName)
+    conds.like(TPermission.PERMISSION_NAME, req.permissionName)
+    conds.like(TPermission.ENDPOINT, req.endpoint)
+    conds.like(TPermission.METHOD, req.method)
+    conds.like(TRolePermissionRel.ROLE_NO, req.roleNo)
+    conds.like(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
+    conds.equal(TRolePermissionRel.ROLE_NO, TRole.ROLE_NO)
+    conds.equal(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
 
     # TRole，TPermission，TRolePermissionRel连表查询
     pagination = db.session.query(

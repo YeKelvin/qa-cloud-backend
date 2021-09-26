@@ -66,6 +66,7 @@ def query_user_list():
     req = JsonParser(
         Argument('userNo'),
         Argument('userName'),
+        Argument('loginName'),
         Argument('mobileNo'),
         Argument('email'),
         Argument('state'),

@@ -41,24 +41,24 @@ log = get_logger(__name__)
 def query_element_list(req):
     # 查询条件
     conds = QueryCondition(TTestElement)
-    conds.fuzzy_match(TTestElement.ELEMENT_NO, req.elementNo)
-    conds.fuzzy_match(TTestElement.ELEMENT_NAME, req.elementName)
-    conds.fuzzy_match(TTestElement.ELEMENT_REMARK, req.elementRemark)
-    conds.fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
-    conds.fuzzy_match(TTestElement.ELEMENT_CLASS, req.elementClass)
-    conds.fuzzy_match(TTestElement.ENABLED, req.enabled)
+    conds.like(TTestElement.ELEMENT_NO, req.elementNo)
+    conds.like(TTestElement.ELEMENT_NAME, req.elementName)
+    conds.like(TTestElement.ELEMENT_REMARK, req.elementRemark)
+    conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
+    conds.like(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo:
         conds.add_table(TWorkspaceCollectionRel)
-        conds.exact_match(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
-        conds.fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+        conds.equal(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
+        conds.like(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
-        conds.exact_match(TWorkspaceCollectionRel.DEL_STATE, 0)
-        conds.exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-        conds.exact_match(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
-        conds.fuzzy_match(TWorkspace.WORKSPACE_NAME, req.workspaceName)
+        conds.equal(TWorkspaceCollectionRel.DEL_STATE, 0)
+        conds.equal(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+        conds.equal(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
 
     # TTestElement，TWorkspace，TWorkspaceCollectionRel连表查询
     pagination = db.session.query(
@@ -81,11 +81,11 @@ def query_element_list(req):
 def query_element_all(req):
     # 查询条件
     conds = QueryCondition(TTestElement, TWorkspaceCollectionRel)
-    conds.exact_match(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conds.fuzzy_match(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
-    conds.fuzzy_match(TTestElement.ELEMENT_TYPE, req.elementType)
-    conds.fuzzy_match(TTestElement.ELEMENT_CLASS, req.elementClass)
-    conds.fuzzy_match(TTestElement.ENABLED, req.enabled)
+    conds.equal(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    conds.like(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
+    conds.like(TTestElement.ENABLED, req.enabled)
 
     # TTestElement，TWorkspaceCollectionRel连表查询
     items = db.session.query(

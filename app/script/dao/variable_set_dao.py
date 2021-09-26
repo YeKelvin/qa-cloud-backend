@@ -22,16 +22,16 @@ def select_first(**kwargs) -> TVariableSet:
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition(TVariableSet)
     if kwargs:
-        conds.fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
-        conds.fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
-        conds.fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
-        conds.fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
+        conds.like(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+        conds.like(TVariableSet.SET_NO, kwargs.pop('setNo', None))
+        conds.like(TVariableSet.SET_NAME, kwargs.pop('setName', None))
+        conds.like(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
+        conds.like(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
 
     page = kwargs.pop('page')
-    pageSize = kwargs.pop('pageSize')
+    page_size = kwargs.pop('pageSize')
 
-    return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).paginate(page, page_size)
 
 
 def select_list_in_set_orderby_weight(*set_no) -> List[TVariableSet]:
@@ -41,10 +41,10 @@ def select_list_in_set_orderby_weight(*set_no) -> List[TVariableSet]:
 def select_all(**kwargs) -> List[TVariableSet]:
     conds = QueryCondition(TVariableSet)
     if kwargs:
-        conds.fuzzy_match(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.fuzzy_match(TVariableSet.SET_NO, kwargs.pop('setNo', None))
-        conds.fuzzy_match(TVariableSet.SET_NAME, kwargs.pop('setName', None))
-        conds.fuzzy_match(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
-        conds.fuzzy_match(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
+        conds.like(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+        conds.like(TVariableSet.SET_NO, kwargs.pop('setNo', None))
+        conds.like(TVariableSet.SET_NAME, kwargs.pop('setName', None))
+        conds.like(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
+        conds.like(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
 
     return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).all()

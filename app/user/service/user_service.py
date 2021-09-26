@@ -12,6 +12,7 @@ from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
+from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUserRel
 from app.user.dao import role_dao as RoleDao
@@ -31,6 +32,7 @@ from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
 from app.utils.security import check_password
 from app.utils.security import encrypt_password
+from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
@@ -166,15 +168,25 @@ def reset_login_password(req):
 @http_service
 def query_user_list(req):
     # 查询用户列表
-    pagination = UserDao.select_list(
-        userNo=req.userNo,
-        userName=req.userName,
-        mobileNo=req.mobileNo,
-        email=req.email,
-        state=req.state,
-        page=req.page,
-        pageSize=req.pageSize
-    )
+    conds = QueryCondition(TUser, TUserLoginInfo)
+    conds.like(TUser.USER_NO, req.userNo)
+    conds.like(TUser.USER_NAME, req.userName)
+    conds.like(TUser.MOBILE_NO, req.mobileNo)
+    conds.like(TUser.EMAIL, req.email)
+    conds.like(TUser.STATE, req.state)
+    conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
+    conds.equal(TUserLoginInfo.LOGIN_TYPE, 'ACCOUNT')
+    conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
+
+    pagination = db.session.query(
+        TUser.USER_NO,
+        TUser.USER_NAME,
+        TUser.MOBILE_NO,
+        TUser.EMAIL,
+        TUser.STATE,
+        TUser.AVATAR,
+        TUserLoginInfo.LOGIN_NAME
+    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for user in pagination.items:
@@ -191,6 +203,7 @@ def query_user_list(req):
         data.append({
             'userNo': user.USER_NO,
             'userName': user.USER_NAME,
+            'loginName': user.LOGIN_NAME,
             'mobileNo': user.MOBILE_NO,
             'email': user.EMAIL,
             'avatar': user.AVATAR,
@@ -209,7 +222,8 @@ def query_user_all():
     for user in users:
         result.append({
             'userNo': user.USER_NO,
-            'userName': user.USER_NAME
+            'userName': user.USER_NAME,
+            'state': user.STATE
         })
     return result
 
