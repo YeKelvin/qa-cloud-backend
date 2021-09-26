@@ -7,8 +7,8 @@ from app.script.model import TTestReport
 
 
 def select_by_no(report_no) -> TTestReport:
-    return TTestReport.query_by(REPORT_NO=report_no).first()
+    return TTestReport.filter_by(REPORT_NO=report_no).first()
 
 
 def select_by_plan(plan_no) -> TTestReport:
-    return TTestReport.query_by(PLAN_NO=plan_no).first()
+    return TTestReport.filter_by(PLAN_NO=plan_no).first()

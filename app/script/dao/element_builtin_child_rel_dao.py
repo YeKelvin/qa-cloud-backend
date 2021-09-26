@@ -9,12 +9,12 @@ from app.script.model import TElementBuiltinChildRel
 
 
 def select_by_child(child_no) -> TElementBuiltinChildRel:
-    return TElementBuiltinChildRel.query_by(CHILD_NO=child_no).first()
+    return TElementBuiltinChildRel.filter_by(CHILD_NO=child_no).first()
 
 
 def select_by_parent_and_child(parent_no, child_no) -> TElementBuiltinChildRel:
-    return TElementBuiltinChildRel.query_by(PARENT_NO=parent_no, CHILD_NO=child_no).first()
+    return TElementBuiltinChildRel.filter_by(PARENT_NO=parent_no, CHILD_NO=child_no).first()
 
 
 def select_all_by_parent(parent_no) -> List[TElementBuiltinChildRel]:
-    return TElementBuiltinChildRel.query_by(PARENT_NO=parent_no).all()
+    return TElementBuiltinChildRel.filter_by(PARENT_NO=parent_no).all()

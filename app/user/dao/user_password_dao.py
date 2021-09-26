@@ -8,14 +8,14 @@ from app.user.model import TUserPassword
 
 
 def select_loginpwd_by_userno(user_no) -> TUserPassword:
-    return TUserPassword.query_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
+    return TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
 
 
 def select_all_by_userno(user_no) -> List[TUserPassword]:
-    return TUserPassword.query_by(USER_NO=user_no).all()
+    return TUserPassword.filter_by(USER_NO=user_no).all()
 
 
 def delete_all_by_user_no(user_no):
-    entities = TUserPassword.query_by(USER_NO=user_no).all()
+    entities = TUserPassword.filter_by(USER_NO=user_no).all()
     for entity in entities:
         entity.delete()

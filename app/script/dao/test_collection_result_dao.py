@@ -14,7 +14,7 @@ def select_first_by_collectionid(collection_id) -> TTestCollectionResult:
 
 
 def select_all_by_report(report_no) -> List[TTestCollectionResult]:
-    return TTestCollectionResult.query_by(REPORT_NO=report_no).all()
+    return TTestCollectionResult.filter_by(REPORT_NO=report_no).all()
 
 
 def count_by_report_and_success(report_no, success) -> int:

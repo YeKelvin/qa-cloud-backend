@@ -9,11 +9,11 @@ from app.script.model import THttpSamplerHeadersRel
 
 
 def select_by_sampler_and_template(sampler_no, template_no) -> THttpSamplerHeadersRel:
-    return THttpSamplerHeadersRel.query_by(SAMPLER_NO=sampler_no, TEMPLATE_NO=template_no).first()
+    return THttpSamplerHeadersRel.filter_by(SAMPLER_NO=sampler_no, TEMPLATE_NO=template_no).first()
 
 
 def select_all_by_sampler(sampler_no) -> List[THttpSamplerHeadersRel]:
-    return THttpSamplerHeadersRel.query_by(SAMPLER_NO=sampler_no).all()
+    return THttpSamplerHeadersRel.filter_by(SAMPLER_NO=sampler_no).all()
 
 
 def delete_all_by_sampler_and_not_in_template(sampler_no, *args):

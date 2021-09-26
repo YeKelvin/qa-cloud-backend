@@ -12,11 +12,11 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_permissionno(permission_no) -> TPermission:
-    return TPermission.query_by(PERMISSION_NO=permission_no).first()
+    return TPermission.filter_by(PERMISSION_NO=permission_no).first()
 
 
 def select_by_endpoint_and_method(endpoint, method) -> TPermission:
-    return TPermission.query_by(ENDPOINT=endpoint, METHOD=method).first()
+    return TPermission.filter_by(ENDPOINT=endpoint, METHOD=method).first()
 
 
 def select_list(**kwargs) -> Pagination:
@@ -36,4 +36,4 @@ def select_list(**kwargs) -> Pagination:
 
 
 def select_all() -> List[TPermission]:
-    return TPermission.query_by().order_by(TPermission.CREATED_TIME.desc()).all()
+    return TPermission.filter_by().order_by(TPermission.CREATED_TIME.desc()).all()

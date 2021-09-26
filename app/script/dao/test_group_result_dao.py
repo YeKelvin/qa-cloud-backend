@@ -9,11 +9,11 @@ from app.script.model import TTestGroupResult
 
 
 def select_first_by_group(group_id) -> TTestGroupResult:
-    return TTestGroupResult.query_by(GROUP_ID=group_id).first()
+    return TTestGroupResult.filter_by(GROUP_ID=group_id).first()
 
 
 def select_all_by_collection(collection_id) -> List[TTestGroupResult]:
-    return TTestGroupResult.query_by(COLLECTION_ID=collection_id).all()
+    return TTestGroupResult.filter_by(COLLECTION_ID=collection_id).all()
 
 
 def count_by_report_and_success(report_no, success) -> int:

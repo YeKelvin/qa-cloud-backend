@@ -9,15 +9,15 @@ from app.script.model import TTestSamplerResult
 
 
 def select_first_by_sampler(sampler_id) -> TTestSamplerResult:
-    return TTestSamplerResult.query_by(SAMPLER_ID=sampler_id).first()
+    return TTestSamplerResult.filter_by(SAMPLER_ID=sampler_id).first()
 
 
 def select_all_by_group(group_id) -> List[TTestSamplerResult]:
-    return TTestSamplerResult.query_by(GROUP_ID=group_id).all()
+    return TTestSamplerResult.filter_by(GROUP_ID=group_id).all()
 
 
 def select_all_by_parent(parent_id) -> List[TTestSamplerResult]:
-    return TTestSamplerResult.query_by(PARENT_ID=parent_id).all()
+    return TTestSamplerResult.filter_by(PARENT_ID=parent_id).all()
 
 
 def count_by_report_and_success(report_no, success) -> int:

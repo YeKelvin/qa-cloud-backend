@@ -7,4 +7,4 @@ from app.script.model import TTestPlanSettings
 
 
 def select_by_no(plan_no) -> TTestPlanSettings:
-    return TTestPlanSettings.query_by(PLAN_NO=plan_no).first()
+    return TTestPlanSettings.filter_by(PLAN_NO=plan_no).first()

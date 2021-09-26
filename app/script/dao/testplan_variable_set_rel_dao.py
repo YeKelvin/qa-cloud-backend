@@ -9,4 +9,4 @@ from app.script.model import TTestPlanVariableSetRel
 
 
 def select_all_by_plan(plan_no) -> List[TTestPlanVariableSetRel]:
-    return TTestPlanVariableSetRel.query_by(PLAN_NO=plan_no).all()
+    return TTestPlanVariableSetRel.filter_by(PLAN_NO=plan_no).all()

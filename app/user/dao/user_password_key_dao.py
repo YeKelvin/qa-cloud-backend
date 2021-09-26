@@ -7,8 +7,8 @@ from app.user.model import TUserPasswordKey
 
 
 def select_by_loginname(login_name):
-    return TUserPasswordKey.query_by(LOGIN_NAME=login_name).first()
+    return TUserPasswordKey.filter_by(LOGIN_NAME=login_name).first()
 
 
 def delete_by_loginname(login_name):
-    TUserPasswordKey.query_by(LOGIN_NAME=login_name).delete()
+    TUserPasswordKey.filter_by(LOGIN_NAME=login_name).delete()

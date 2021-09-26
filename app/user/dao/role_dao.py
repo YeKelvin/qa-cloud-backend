@@ -12,15 +12,15 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_roleno(role_no) -> TRole:
-    return TRole.query_by(ROLE_NO=role_no).first()
+    return TRole.filter_by(ROLE_NO=role_no).first()
 
 
 def select_by_rolename(role_name) -> TRole:
-    return TRole.query_by(ROLE_NAME=role_name).first()
+    return TRole.filter_by(ROLE_NAME=role_name).first()
 
 
 def select_all() -> List[TRole]:
-    return TRole.query_by().order_by(TRole.CREATED_TIME.desc()).all()
+    return TRole.filter_by().order_by(TRole.CREATED_TIME.desc()).all()
 
 
 def select_list(**kwargs) -> Pagination:

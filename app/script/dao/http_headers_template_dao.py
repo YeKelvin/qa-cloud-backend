@@ -12,15 +12,15 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(template_no) -> THttpHeadersTemplate:
-    return THttpHeadersTemplate.query_by(TEMPLATE_NO=template_no).first()
+    return THttpHeadersTemplate.filter_by(TEMPLATE_NO=template_no).first()
 
 
 def select_by_name(template_name) -> THttpHeadersTemplate:
-    return THttpHeadersTemplate.query_by(TEMPLATE_NAME=template_name).first()
+    return THttpHeadersTemplate.filter_by(TEMPLATE_NAME=template_name).first()
 
 
 def select_by_workspace_and_name(workspace_no, template_name) -> THttpHeadersTemplate:
-    return THttpHeadersTemplate.query_by(WORKSPACE_NO=workspace_no, TEMPLATE_NAME=template_name).first()
+    return THttpHeadersTemplate.filter_by(WORKSPACE_NO=workspace_no, TEMPLATE_NAME=template_name).first()
 
 
 def select_list(**kwargs) -> Pagination:

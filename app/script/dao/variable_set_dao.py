@@ -12,11 +12,11 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(set_no) -> TVariableSet:
-    return TVariableSet.query_by(SET_NO=set_no).first()
+    return TVariableSet.filter_by(SET_NO=set_no).first()
 
 
 def select_first(**kwargs) -> TVariableSet:
-    return TVariableSet.query_by(**kwargs).first()
+    return TVariableSet.filter_by(**kwargs).first()
 
 
 def select_list(**kwargs) -> Pagination:

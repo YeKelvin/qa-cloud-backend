@@ -12,11 +12,11 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_userno(user_no) -> TUser:
-    return TUser.query_by(USER_NO=user_no).first()
+    return TUser.filter_by(USER_NO=user_no).first()
 
 
 def select_first(**kwargs) -> TUser:
-    return TUser.select_first(**kwargs)
+    return TUser.filter_by(**kwargs).first()
 
 
 def select_list(**kwargs) -> Pagination:
@@ -47,4 +47,4 @@ def select_all(**kwargs) -> List[TUser]:
 
 
 def logout(user_no):
-    TUser.query_by(USER_NO=user_no).update({TUser.LOGGED_IN: False})
+    TUser.filter_by(USER_NO=user_no).update({TUser.LOGGED_IN: False})

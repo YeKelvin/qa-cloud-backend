@@ -12,11 +12,11 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(tag_no) -> TTag:
-    return TTag.query_by(TAG_NO=tag_no).first()
+    return TTag.filter_by(TAG_NO=tag_no).first()
 
 
 def select_by_name(tag_name) -> TTag:
-    return TTag.query_by(TAG_NAME=tag_name).first()
+    return TTag.filter_by(TAG_NAME=tag_name).first()
 
 
 def select_list(**kwargs) -> Pagination:
@@ -33,4 +33,4 @@ def select_list(**kwargs) -> Pagination:
 
 
 def select_all() -> List[TTag]:
-    return TTag.query_by().order_by(TTag.CREATED_TIME.desc()).all()
+    return TTag.filter_by().order_by(TTag.CREATED_TIME.desc()).all()

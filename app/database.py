@@ -23,12 +23,8 @@ class CRUDMixin:
         entity.submit()
 
     @classmethod
-    def query_by(cls, **kwargs):
-        return cls.query.filter_by(DEL_STATE=0, **kwargs)
-
-    @classmethod
     def filter(cls, *args):
-        return cls.query.filter(DEL_STATE==0, *args)
+        return cls.query.filter(cls.DEL_STATE == 0, *args)
 
     @classmethod
     def filter_by(cls, **kwargs):
@@ -41,14 +37,6 @@ class CRUDMixin:
     @classmethod
     def avg_by(cls, field, **kwargs) -> decimal.Decimal:
         return cls.query.session.query(func.avg(field)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
-
-    @classmethod
-    def select_first(cls, **kwargs):
-        return cls.query_by(**kwargs).first()
-
-    @classmethod
-    def select_all(cls, **kwargs):
-        return cls.query_by(**kwargs).all()
 
     def update(self, **kwargs):
         for attr, value in kwargs.items():
