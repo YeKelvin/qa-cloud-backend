@@ -382,7 +382,7 @@ def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, 
         # 加载脚本
         collection = load_element_tree(collection_no)
         if not collection:
-            log.warn(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+            log.warning(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
 
         # 添加自定义变量组件
         if set_no_list:
