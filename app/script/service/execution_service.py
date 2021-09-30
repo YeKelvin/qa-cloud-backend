@@ -182,14 +182,18 @@ def load_element_tree(element_no):
                 if child:
                     children.append(child)
 
-    else:  # 如果是 SnippetSampler 则读取片段内容
+    # 如果是 SnippetSampler 则读取片段内容
+    else:
         if 'snippetNo' not in property:
             raise ServiceError('片段编号不能为空')
-        snippets = load_element_tree(property['snippetNo'])
+        snippet_no = property['snippetNo']
+        snippets = load_element_tree(snippet_no)
         if snippets:
-            children.extend(snippets['children'])
+            transaction = snippets['children']
+            add_snippet_config(snippet_no, transaction)
+            children.extend(transaction)
 
-    # 类型是Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
+    # 类型是 Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
     if (
         element.ELEMENT_TYPE == ElementType.GROUP.value  # noqa
         or element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value  # noqa
@@ -358,6 +362,17 @@ def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no)
             'children': None
         }
     )
+
+
+def add_snippet_config(snippet_no, transaction):
+    # 查询元素
+    snippet = TestElementDao.select_by_no(snippet_no)
+    check_is_not_blank(snippet, '片段不存在')
+
+    # 查询元素属性
+    prop = load_element_property(snippet_no)
+    arguments = prop['property']
+    use_hhtp_session = prop['useHTTPSession']
 
 
 def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, report_no=None):
