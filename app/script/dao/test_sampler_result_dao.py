@@ -5,11 +5,26 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from app.extension import db
 from app.script.model import TTestSamplerResult
 
 
 def select_first_by_sampler(sampler_id) -> TTestSamplerResult:
     return TTestSamplerResult.filter_by(SAMPLER_ID=sampler_id).first()
+
+
+def select_all_summary_by_group(group_id) -> List[TTestSamplerResult]:
+    entities = db.session.query(
+        TTestSamplerResult.GROUP_ID,
+        TTestSamplerResult.SAMPLER_ID,
+        TTestSamplerResult.SAMPLER_NAME,
+        TTestSamplerResult.SAMPLER_REMARK,
+        TTestSamplerResult.START_TIME,
+        TTestSamplerResult.END_TIME,
+        TTestSamplerResult.ELAPSED_TIME,
+        TTestSamplerResult.SUCCESS,
+    ).filter_by(GROUP_ID=group_id).all()
+    return entities
 
 
 def select_all_by_group(group_id) -> List[TTestSamplerResult]:

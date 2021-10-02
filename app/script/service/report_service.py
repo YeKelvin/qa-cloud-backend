@@ -103,8 +103,7 @@ def get_group_result_list(collection_id):
 
 def get_sampler_result_list(group_id):
     samplers = []
-    # TODO: 不用返回所有数据
-    sampler_result_list = TestSamplerResultDao.select_all_by_group(group_id)
+    sampler_result_list = TestSamplerResultDao.select_all_summary_by_group(group_id)
     for sampler_result in sampler_result_list:
         samplers.append({
             'groupId': sampler_result.GROUP_ID,
@@ -123,8 +122,7 @@ def get_sampler_result_list(group_id):
 
 def get_subsampler_result_list(parent_id):
     sub_samplers = []
-    # TODO: 不用返回所有数据
-    sub_sampler_result_list = TestSamplerResultDao.select_all_by_parent(parent_id)
+    sub_sampler_result_list = TestSamplerResultDao.select_all_summary_by_group(parent_id)
     for sub_result in sub_sampler_result_list:
         sub_samplers.append({
             'groupId': sub_result.GROUP_ID,
