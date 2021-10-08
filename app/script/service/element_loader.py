@@ -235,7 +235,7 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
     snippet_arguments = snippet_collection['property'].get('arguments', [])
     use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
     if use_http_session == 'true':
-        snippet_children.iinsert(0, {
+        snippet_children.insert(0, {
             'name': 'Dynamic TransactionHTTPSessionManager',
             'remark': '',
             'class': 'TransactionHTTPSessionManager',
@@ -243,7 +243,7 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
             'property': {}
         })
 
-    if transaction_parameters and snippet_arguments:
+    if transaction_parameters or snippet_arguments:
         arguments = []
         param_dict = {param['name']: param['value'] for param in transaction_parameters}
         for arg in snippet_arguments:
@@ -251,7 +251,7 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
                 'class': 'Argument',
                 'property': {
                     'Argument__name': arg['name'],
-                    'Argument__value': param_dict[arg['name']] or arg['default']
+                    'Argument__value': param_dict.get(arg['name']) or arg['default']
                 }
             })
 
