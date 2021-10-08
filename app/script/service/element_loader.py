@@ -233,8 +233,8 @@ def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no)
 
 def add_snippet_config(snippet_collection, snippet_children, transaction_parameters):
     snippet_arguments = snippet_collection['property'].get('arguments', [])
-    use_http_session = snippet_collection['property'].get('useHTTPSession', False)
-    if use_http_session:
+    use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
+    if use_http_session == 'true':
         snippet_children.iinsert(0, {
             'name': 'Dynamic TransactionHTTPSessionManager',
             'remark': '',
