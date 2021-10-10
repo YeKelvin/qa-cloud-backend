@@ -178,7 +178,7 @@ class THttpHeader(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
-    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')  # TODO: HEADER_NO要来干啥??
+    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')
     HEADER_NAME = db.Column(db.String(256), nullable=False, comment='请求头名称')
     HEADER_VALUE = db.Column(db.Text, nullable=False, comment='请求头值')
     HEADER_DESC = db.Column(db.String(256), comment='请求头描述')

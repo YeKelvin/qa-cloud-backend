@@ -532,27 +532,36 @@ def move_element_child(req):
     # 父元素不变时，仅重新排序其他子元素
     if source_parent_no == req.targetParentNo:
         # 查询同级且大于目标元素序号的子元素关联
-        other_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-            source_parent_no, req.targetSerialNo)
+        # other_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
+        #     source_parent_no, req.targetSerialNo)
         # 同级且大于目标元素序号的子元素序号 + 1（下移元素）
-        for rel in other_child_rel_list:
-            rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
+        # for rel in other_child_rel_list:
+        #     rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
+        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
+            source_parent_no, req.targetSerialNo
+        )
         # 更新目标元素序号
         source_child_rel.update(SERIAL_NO=req.targetSerialNo)
     # 子元素移动至新的父元素下
     else:
         # 查询同级且大于目标元素序号的子元素关联
-        source_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-            source_parent_no, req.targetSerialNo)
+        # source_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
+        #     source_parent_no, req.targetSerialNo)
         # 同级且大于目标元素序号的子元素序号 - 1（上移元素）
-        for rel in source_parent_child_rel_list:
-            rel.update(SERIAL_NO=rel.SERIAL_NO - 1)
+        # for rel in source_parent_child_rel_list:
+        #     rel.update(SERIAL_NO=rel.SERIAL_NO - 1)
+        ElementChildRelDao.minus_one_serialno_all_by_parent_and_greater_than_serialno(
+            source_parent_no, req.targetSerialNo
+        )
         # 查询目标父级同级且大于目标元素序号的子元素关联
-        target_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-            req.targetParentNo, req.targetSerialNo)
+        # target_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
+        #     req.targetParentNo, req.targetSerialNo)
         # 目标父级同级且大于目标元素序号的子元素序号 + 1（下移元素）
-        for rel in target_parent_child_rel_list:
-            rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
+        # for rel in target_parent_child_rel_list:
+        #     rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
+        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
+            req.targetParentNo, req.targetSerialNo
+        )
         # 删除原父级和子元素的关联
         source_child_rel.delete()
         # 新建目标父级和子元素的关联
@@ -564,11 +573,75 @@ def move_element_child(req):
 
 
 @http_service
+@transactional
 def duplicate_element(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
-    check_is_not_blank(element, '元素不存在')
-    # TODO: 复制元素
+    source = TestElementDao.select_by_no(req.elementNo)
+    check_is_not_blank(source, '元素不存在')
+
+    if source.ELEMENT_TYPE == 'COLLECTION' or source.ELEMENT_TYPE == 'GROUP':
+        raise ServiceError('暂不支持复制Collection 或 Group')
+
+    # 递归复制元素
+    copied_no = copy_element(source, rename=True)
+    # 将 copy 元素插入 source 元素的下方
+    source_parent_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
+    ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
+        source_parent_rel.PARENT_NO, source_parent_rel.SERIAL_NO
+    )
+    TElementChildRel.insert(
+        ROOT_NO=source_parent_rel.ROOT_NO,
+        PARENT_NO=source_parent_rel.PARENT_NO,
+        CHILD_NO=copied_no,
+        SERIAL_NO=source_parent_rel.SERIAL_NO + 1
+    )
+    return {'elementNo': copied_no}
+
+
+def copy_element(source: TTestElement):
+    # 克隆元素和属性
+    copied_parent_no = clone_element(source)
+    # 遍历克隆元素子代
+    source_child_rel_list = ElementChildRelDao.select_all_by_parent(source.ELEMENT_NO)
+    for source_child_rel in source_child_rel_list:
+        source_child = TestElementDao.select_by_no(source_child_rel.CHILD_NO)
+        copied_child_no = copy_element(source_child)
+        TElementChildRel.insert(
+            ROOT_NO=source_child_rel.ROOT_NO,
+            PARENT_NO=copied_parent_no,
+            CHILD_NO=copied_child_no,
+            SERIAL_NO=source_child_rel.SERIAL_NO
+        )
+    # 遍历克隆内建元素
+    source_builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(source.ELEMENT_NO)
+    for source_builtin_rel in source_builtin_rel_list:
+        source_builtin = TestElementDao.select_by_no(source_builtin_rel.CHILD_NO)
+        copied_builtin_no = copy_element(source_builtin)
+        TElementBuiltinChildRel.insert(
+            ROOT_NO=source_builtin_rel.ROOT_NO,
+            PARENT_NO=copied_parent_no,
+            CHILD_NO=copied_builtin_no,
+            CHILD_TYPE=source_builtin_rel.CHILD_TYPE
+        )
+
+
+def clone_element(source: TTestElement, rename=False):
+    cloned_no = new_id()
+    TTestElement.insert(
+        ELEMENT_NO=cloned_no,
+        ELEMENT_NAME=source.ELEMENT_NAME + ' copy' if rename else source.ELEMENT_NAME,
+        ELEMENT_REMARK=source.ELEMENT_REMARK,
+        ELEMENT_TYPE=source.ELEMENT_TYPE,
+        ELEMENT_CLASS=source.ELEMENT_CLASS
+    )
+    prop = ElementPropertyDao.select_by_element(source.ELEMENT_NO)
+    TElementProperty.insert(
+        ELEMENT_NO=cloned_no,
+        PROPERTY_NAME=prop.PROPERTY_NAME,
+        PROPERTY_VALUE=prop.PROPERTY_VALUE,
+        PROPERTY_TYPE=prop.PROPERTY_TYPE
+    )
+    return cloned_no
 
 
 @http_service
