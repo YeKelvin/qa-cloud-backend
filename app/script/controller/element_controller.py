@@ -76,7 +76,7 @@ def query_element_children():
 def query_elements_children():
     """根据元素编号列表查询元素子代"""
     req = JsonParser(
-        Argument('elementNoList', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
+        Argument('elementNumberList', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
     return service.query_elements_children(req)
@@ -200,40 +200,40 @@ def modify_element_children():
     return service.modify_element_children(req)
 
 
-@blueprint.patch('/element/child/move/up')
+@blueprint.patch('/element/move/up')
 @require_login
 @require_permission
-def move_up_element_child():
+def move_up_element():
     """上移元素"""
     req = JsonParser(
-        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.move_up_element_child(req)
+    return service.move_up_element(req)
 
 
-@blueprint.patch('/element/child/move/down')
+@blueprint.patch('/element/move/down')
 @require_login
 @require_permission
-def move_down_element_child():
+def move_down_element():
     """下移元素"""
     req = JsonParser(
-        Argument('childNo', required=True, nullable=False, help='子元素列表不能为空')
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.move_down_element_child(req)
+    return service.move_down_element(req)
 
 
-@blueprint.post('/element/child/move')
+@blueprint.post('/element/move')
 @require_login
 @require_permission
-def move_element_child():
+def move_element():
     """移动元素"""
     req = JsonParser(
-        Argument('sourceChildNo', required=True, nullable=False, help='来源子元素编号不能为空'),
-        # Argument('targetRootNo', required=True, nullable=False, help='目标根元素编号不能为空'),
-        Argument('targetParentNo', required=True, nullable=False, help='目标父元素编号不能为空'),
-        Argument('targetSerialNo', required=True, nullable=False, help='子元素序号不能为空')
+        Argument('sourceNo', required=True, nullable=False, help='source元素编号不能为空'),
+        Argument('targetRootNo', required=True, nullable=False, help='target根元素编号不能为空'),
+        Argument('targetParentNo', required=True, nullable=False, help='target父元素编号不能为空'),
+        Argument('targetSerialNo', type=int, required=True, nullable=False, help='target元素序号不能为空')
     ).parse()
-    return service.move_element_child(req)
+    return service.move_element(req)
 
 
 @blueprint.post('/element/duplicate')

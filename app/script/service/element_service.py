@@ -155,7 +155,7 @@ def query_element_children(req):
 @http_service
 def query_elements_children(req):
     result = []
-    for element_no in req.elementNoList:
+    for element_no in req.elementNumberList:
         element = TestElementDao.select_by_no(element_no)
         if not element:
             log.info(f'elementNo:[ {element_no} ] 元素不存在')
@@ -472,17 +472,17 @@ def update_element_children(children: Iterable[dict]):
 
 @http_service
 @transactional
-def move_up_element_child(req):
+def move_up_element(req):
     # 查询元素子代关联
-    element_child_rel = ElementChildRelDao.select_by_child(req.childNo)
-    check_is_not_blank(element_child_rel, '子元素不存在')
+    child_rel = ElementChildRelDao.select_by_child(req.elementNo)
+    check_is_not_blank(child_rel, '子元素不存在')
 
     # 父元素编号
-    parent_no = element_child_rel.PARENT_NO
+    parent_no = child_rel.PARENT_NO
 
     # 统计子代个数
     children_count = ElementChildRelDao.count_by_parent(parent_no)
-    serial_no = element_child_rel.SERIAL_NO
+    serial_no = child_rel.SERIAL_NO
 
     # 如果元素只有一个子代或该子代元素排第一位则无需上移
     if children_count == 1 or serial_no == 1:
@@ -491,22 +491,22 @@ def move_up_element_child(req):
     # 重新排序子元素
     upper_child_rel = ElementChildRelDao.select_by_parent_and_serialno(parent_no, serial_no - 1)
     upper_child_rel.update(SERIAL_NO=upper_child_rel.SERIAL_NO + 1)
-    element_child_rel.update(SERIAL_NO=element_child_rel.SERIAL_NO - 1)
+    child_rel.update(SERIAL_NO=child_rel.SERIAL_NO - 1)
 
 
 @http_service
 @transactional
-def move_down_element_child(req):
+def move_down_element(req):
     # 查询元素子代关联
-    element_child_rel = ElementChildRelDao.select_by_child(req.childNo)
-    check_is_not_blank(element_child_rel, '子元素不存在')
+    child_rel = ElementChildRelDao.select_by_child(req.elementNo)
+    check_is_not_blank(child_rel, '子元素不存在')
 
     # 父元素编号
-    parent_no = element_child_rel.PARENT_NO
+    parent_no = child_rel.PARENT_NO
 
     # 统计子代个数
     children_count = ElementChildRelDao.count_by_parent(parent_no)
-    serial_no = element_child_rel.SERIAL_NO
+    serial_no = child_rel.SERIAL_NO
 
     # 如果元素只有一个子代或该子代元素排最后一位则无需下移
     if children_count == 1 or children_count == serial_no:
@@ -515,59 +515,50 @@ def move_down_element_child(req):
     # 重新排序子元素
     lower_child_rel = ElementChildRelDao.select_by_parent_and_serialno(parent_no, serial_no + 1)
     lower_child_rel.update(SERIAL_NO=lower_child_rel.SERIAL_NO - 1)
-    element_child_rel.update(SERIAL_NO=element_child_rel.SERIAL_NO + 1)
+    child_rel.update(SERIAL_NO=child_rel.SERIAL_NO + 1)
 
 
 @http_service
 @transactional
-def move_element_child(req):
-    # TODO: 如果是跨集合移动元素，那么child-rel中的rootNo也要修改
-    # 查询元素子代关联
-    source_child_rel = ElementChildRelDao.select_by_child(req.sourceChildNo)
-    check_is_not_blank(source_child_rel, '子元素不存在')
+def move_element(req):
+    # 查询 source 元素子代关联
+    source_child_rel = ElementChildRelDao.select_by_child(req.sourceNo)
+    check_is_not_blank(source_child_rel, 'source元素关联不存在')
 
-    # 当前父元素编号
+    if req.targetSerialNo < 0:
+        raise ServiceError('target元素序号不能小于0')
+    if req.targetSerialNo == source_child_rel.SERIAL_NO:
+        raise ServiceError('元素序号相等，无需移动元素')
+
+    # source 父元素编号
     source_parent_no = source_child_rel.PARENT_NO
+    # source 元素序号
+    source_serial_no = source_child_rel.SERIAL_NO
 
-    # 父元素不变时，仅重新排序其他子元素
+    # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
-        # 查询同级且大于目标元素序号的子元素关联
-        # other_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-        #     source_parent_no, req.targetSerialNo)
-        # 同级且大于目标元素序号的子元素序号 + 1（下移元素）
-        # for rel in other_child_rel_list:
-        #     rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
+        # 元素移动类型，上移或下移 TODO:
+        move_type = 'UP' if source_serial_no > req.targetSerialNo else 'DOWN'
+        # source 同级且大于 target 元素序号的子元素序号 + 1（下移元素）
         ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
-            source_parent_no, req.targetSerialNo
-        )
-        # 更新目标元素序号
+            source_parent_no, req.targetSerialNo)
+        # 更新 target 元素序号
         source_child_rel.update(SERIAL_NO=req.targetSerialNo)
-    # 子元素移动至新的父元素下
+    # source 元素移动至不同的父元素下
     else:
-        # 查询同级且大于目标元素序号的子元素关联
-        # source_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-        #     source_parent_no, req.targetSerialNo)
-        # 同级且大于目标元素序号的子元素序号 - 1（上移元素）
-        # for rel in source_parent_child_rel_list:
-        #     rel.update(SERIAL_NO=rel.SERIAL_NO - 1)
-        ElementChildRelDao.minus_one_serialno_all_by_parent_and_greater_than_serialno(
-            source_parent_no, req.targetSerialNo
-        )
-        # 查询目标父级同级且大于目标元素序号的子元素关联
-        # target_parent_child_rel_list = ElementChildRelDao.select_all_by_parent_and_greater_than_serialno(
-        #     req.targetParentNo, req.targetSerialNo)
-        # 目标父级同级且大于目标元素序号的子元素序号 + 1（下移元素）
-        # for rel in target_parent_child_rel_list:
-        #     rel.update(SERIAL_NO=rel.SERIAL_NO + 1)
-        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
-            req.targetParentNo, req.targetSerialNo
-        )
-        # 删除原父级和子元素的关联
+        # 删除 source 父级和 source 元素的关联
         source_child_rel.delete()
-        # 新建目标父级和子元素的关联
+        # source 元素下方的同级元素序号 - 1（上移元素）
+        ElementChildRelDao.minus_one_serialno_all_by_parent_and_greater_than_serialno(
+            source_parent_no, source_serial_no)
+        # target 元素下方的同级元素序号 + 1（下移元素）
+        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
+            req.targetParentNo, req.targetSerialNo)
+        # 新增 target 父级和 target 元素的关联
         TElementChildRel.insert(
+            ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
-            CHILD_NO=req.sourceChildNo,
+            CHILD_NO=req.sourceNo,
             SERIAL_NO=req.targetSerialNo
         )
 
@@ -584,7 +575,7 @@ def duplicate_element(req):
 
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
-    # 将 copy 元素插入 source 元素的下方
+    # 将 copy 元素插入 source 元素的下方
     source_parent_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
     ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
         source_parent_rel.PARENT_NO, source_parent_rel.SERIAL_NO
@@ -598,9 +589,9 @@ def duplicate_element(req):
     return {'elementNo': copied_no}
 
 
-def copy_element(source: TTestElement):
+def copy_element(source: TTestElement, rename=False):
     # 克隆元素和属性
-    copied_parent_no = clone_element(source)
+    copied_no = clone_element(source, rename)
     # 遍历克隆元素子代
     source_child_rel_list = ElementChildRelDao.select_all_by_parent(source.ELEMENT_NO)
     for source_child_rel in source_child_rel_list:
@@ -608,7 +599,7 @@ def copy_element(source: TTestElement):
         copied_child_no = copy_element(source_child)
         TElementChildRel.insert(
             ROOT_NO=source_child_rel.ROOT_NO,
-            PARENT_NO=copied_parent_no,
+            PARENT_NO=copied_no,
             CHILD_NO=copied_child_no,
             SERIAL_NO=source_child_rel.SERIAL_NO
         )
@@ -619,10 +610,11 @@ def copy_element(source: TTestElement):
         copied_builtin_no = copy_element(source_builtin)
         TElementBuiltinChildRel.insert(
             ROOT_NO=source_builtin_rel.ROOT_NO,
-            PARENT_NO=copied_parent_no,
+            PARENT_NO=copied_no,
             CHILD_NO=copied_builtin_no,
             CHILD_TYPE=source_builtin_rel.CHILD_TYPE
         )
+    return copied_no
 
 
 def clone_element(source: TTestElement, rename=False):
