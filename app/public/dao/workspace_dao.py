@@ -20,7 +20,7 @@ def select_by_name(workspace_name) -> TWorkspace:
 
 
 def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition(TWorkspace)
+    conds = QueryCondition()
     if kwargs:
         conds.like(TWorkspace.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
         conds.like(TWorkspace.WORKSPACE_NAME, kwargs.pop('workspaceName', None))
@@ -29,7 +29,7 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TWorkspace.query.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc()).paginate(page, page_size)
+    return TWorkspace.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc()).paginate(page, page_size)
 
 
 def select_all() -> List[TWorkspace]:

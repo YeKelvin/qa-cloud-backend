@@ -25,8 +25,8 @@ def select_list_by_set(set_no) -> List[TVariable]:
 
 
 def select_list_in_set(*set_no) -> List[TVariable]:
-    return TVariable.query.filter(TVariable.SET_NO.in_(*set_no)).all()
+    return TVariable.filter(TVariable.SET_NO.in_(*set_no)).all()
 
 
 def delete_in_no(*args):
-    TVariable.query.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DEL_STATE: 1})
+    TVariable.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DEL_STATE: 1})

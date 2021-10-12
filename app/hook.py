@@ -79,7 +79,7 @@ def record_action(response):
     """
     success = gvars.get_success()
     if success and 'GET' not in request.method:
-        permission = TPermission.query.filter_by(ENDPOINT=request.path).first()
+        permission = TPermission.filter_by(ENDPOINT=request.path).first()
         TActionLog.insert(
             ACTION_DESC=permission.PERMISSION_NAME if permission else None,
             ACTION_METHOD=request.method,

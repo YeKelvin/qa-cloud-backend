@@ -158,10 +158,11 @@ def query_elements_children(req):
     for element_no in req.elementNumberList:
         element = TestElementDao.select_by_no(element_no)
         if not element:
-            log.info(f'elementNo:[ {element_no} ] 元素不存在')
+            log.warning(f'elementNo:[ {element_no} ] 元素不存在')
             continue
         children = get_element_children(element_no, req.depth)
         result.append({
+            'rootNo': get_root_no(element_no),
             'elementNo': element.ELEMENT_NO,
             'elementName': element.ELEMENT_NAME,
             'elementType': element.ELEMENT_TYPE,
@@ -178,36 +179,47 @@ def get_element_children(parent_no, depth):
     result = []
 
     # 查询元素所有子代关系
-    element_child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
-    if not element_child_rel_list:
+    child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
+    if not child_rel_list:
         return result
 
     # 根据序号排序
-    element_child_rel_list.sort(key=lambda k: k.SERIAL_NO)
-    for rel in element_child_rel_list:
+    child_rel_list.sort(key=lambda k: k.SERIAL_NO)
+    for child_rel in child_rel_list:
         # 查询子代元素
-        element = TestElementDao.select_by_no(rel.CHILD_NO)
+        element = TestElementDao.select_by_no(child_rel.CHILD_NO)
         if element:
             # 递归查询子代
-            children = depth and get_element_children(rel.CHILD_NO, depth) or []
+            children = depth and get_element_children(child_rel.CHILD_NO, depth) or []
             result.append({
+                'rootNo': child_rel.ROOT_NO,
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
-                'serialNo': rel.SERIAL_NO,
+                'serialNo': child_rel.SERIAL_NO,
                 'children': children
             })
 
     return result
 
 
+def get_root_no(element_no):
+    """根据元素编号获取根元素编号（集合编号）"""
+    rel = ElementChildRelDao.select_by_child(element_no)
+    if rel:
+        return rel.ROOT_NO
+    else:
+        return element_no
+
+
 @http_service
 @transactional
 def create_element(req):
+    # 新增测试集合时，工作空间编号不能为空
     if (req.elementType == 'COLLECTION') and (not req.workspaceNo):
-        raise ServiceError('新增测试集合时，工作空间编号不能为空')
+        raise ServiceError('工作空间编号不能为空')
 
     # 创建元素
     element_no = add_element(
@@ -338,7 +350,7 @@ def delete_element_child_rel(child_no):
     child_rel = ElementChildRelDao.select_by_child(child_no)
     if child_rel:
         # 重新排序父级子代
-        TElementChildRel.query.filter(
+        TElementChildRel.filter(
             TElementChildRel.PARENT_NO == child_rel.PARENT_NO, TElementChildRel.SERIAL_NO > child_rel.SERIAL_NO
         ).update(
             {TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1}
@@ -525,10 +537,9 @@ def move_element(req):
     source_child_rel = ElementChildRelDao.select_by_child(req.sourceNo)
     check_is_not_blank(source_child_rel, 'source元素关联不存在')
 
+    # 校验
     if req.targetSerialNo < 0:
         raise ServiceError('target元素序号不能小于0')
-    if req.targetSerialNo == source_child_rel.SERIAL_NO:
-        raise ServiceError('元素序号相等，无需移动元素')
 
     # source 父元素编号
     source_parent_no = source_child_rel.PARENT_NO
@@ -537,30 +548,58 @@ def move_element(req):
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
-        # 元素移动类型，上移或下移 TODO:
+        # 序号相等时直接跳过
+        if req.targetSerialNo == source_child_rel.SERIAL_NO:
+            return
+
+        # 元素移动类型，上移或下移
         move_type = 'UP' if source_serial_no > req.targetSerialNo else 'DOWN'
-        # source 同级且大于 target 元素序号的子元素序号 + 1（下移元素）
-        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
-            source_parent_no, req.targetSerialNo)
+        if move_type == 'UP':
+            # 下移  [target, source) 区间元素
+            TElementChildRel.filter(
+                TElementChildRel.PARENT_NO == source_parent_no,
+                TElementChildRel.SERIAL_NO < source_serial_no,
+                TElementChildRel.SERIAL_NO >= req.targetSerialNo
+            ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+        else:
+            # 上移  (source, target] 区间元素
+            TElementChildRel.filter(
+                TElementChildRel.PARENT_NO == source_parent_no,
+                TElementChildRel.SERIAL_NO > source_serial_no,
+                TElementChildRel.SERIAL_NO <= req.targetSerialNo,
+            ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1})
         # 更新 target 元素序号
         source_child_rel.update(SERIAL_NO=req.targetSerialNo)
     # source 元素移动至不同的父元素下
     else:
-        # 删除 source 父级和 source 元素的关联
-        source_child_rel.delete()
         # source 元素下方的同级元素序号 - 1（上移元素）
-        ElementChildRelDao.minus_one_serialno_all_by_parent_and_greater_than_serialno(
-            source_parent_no, source_serial_no)
-        # target 元素下方的同级元素序号 + 1（下移元素）
-        ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
-            req.targetParentNo, req.targetSerialNo)
-        # 新增 target 父级和 target 元素的关联
-        TElementChildRel.insert(
+        TElementChildRel.filter(
+            TElementChildRel.PARENT_NO == source_parent_no,
+            TElementChildRel.SERIAL_NO > source_serial_no
+        ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1})
+        # target 元素下方（包含 target 自身位置）的同级元素序号 + 1（下移元素）
+        TElementChildRel.filter(
+            TElementChildRel.PARENT_NO == req.targetParentNo,
+            TElementChildRel.SERIAL_NO >= req.targetSerialNo
+        ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+        # 移动 source 元素至 target 位置
+        source_child_rel.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
-            CHILD_NO=req.sourceNo,
             SERIAL_NO=req.targetSerialNo
         )
+
+    # 校验 target 父级子代元素序号的连续性，避免埋坑
+    target_child_rel_list = ElementChildRelDao.select_all_by_parent(req.targetParentNo)
+    for index, target_child_rel in enumerate(target_child_rel_list):
+        if target_child_rel.SERIAL_NO != index + 1:
+            log.error(
+                f'parentNo:[ {req.targetParentNo} ] '
+                f'elementNo:[ {target_child_rel.CHILD_NO} ] '
+                f'serialNo:[ {target_child_rel.SERIAL_NO} ]'
+                f'序号连续性错误 '
+            )
+            raise ServiceError('Target 父级子代序号连续性有误')
 
 
 @http_service
@@ -575,11 +614,13 @@ def duplicate_element(req):
 
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
-    # 将 copy 元素插入 source 元素的下方
+    # 下移 source 元素的下方的元素
     source_parent_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
-    ElementChildRelDao.plus_one_serialno_all_by_parent_and_greater_than_serialno(
-        source_parent_rel.PARENT_NO, source_parent_rel.SERIAL_NO
-    )
+    TElementChildRel.filter(
+        TElementChildRel.PARENT_NO == source_parent_rel.PARENT_NO,
+        TElementChildRel.SERIAL_NO > source_parent_rel.SERIAL_NO
+    ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+    # 将 copy 元素插入 source 元素的下方
     TElementChildRel.insert(
         ROOT_NO=source_parent_rel.ROOT_NO,
         PARENT_NO=source_parent_rel.PARENT_NO,

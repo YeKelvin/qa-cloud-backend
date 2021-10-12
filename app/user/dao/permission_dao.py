@@ -20,7 +20,7 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
 
 
 def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition(TPermission)
+    conds = QueryCondition()
     if kwargs:
         conds.like(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
         conds.like(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
@@ -30,9 +30,9 @@ def select_list(**kwargs) -> Pagination:
         conds.like(TPermission.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
-    pageSize = kwargs.pop('pageSize')
+    page_size = kwargs.pop('pageSize')
 
-    return TPermission.query.filter(*conds).order_by(TPermission.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TPermission.filter(*conds).order_by(TPermission.CREATED_TIME.desc()).paginate(page, page_size)
 
 
 def select_all() -> List[TPermission]:

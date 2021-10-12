@@ -24,7 +24,7 @@ def select_all() -> List[TRole]:
 
 
 def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition(TRole)
+    conds = QueryCondition()
     if kwargs:
         conds.like(TRole.ROLE_NO, kwargs.pop('roleNo', None))
         conds.like(TRole.ROLE_NAME, kwargs.pop('roleName', None))
@@ -32,6 +32,6 @@ def select_list(**kwargs) -> Pagination:
         conds.like(TRole.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
-    pageSize = kwargs.pop('pageSize')
+    page_size = kwargs.pop('pageSize')
 
-    return TRole.query.filter(*conds).order_by(TRole.CREATED_TIME.desc()).paginate(page, pageSize)
+    return TRole.filter(*conds).order_by(TRole.CREATED_TIME.desc()).paginate(page, page_size)

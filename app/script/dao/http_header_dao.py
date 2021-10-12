@@ -25,4 +25,4 @@ def select_list_by_template(template_no) -> List[THttpHeader]:
 
 
 def delete_in_no(*args):
-    THttpHeader.query.filter(THttpHeader.HEADER_NO.in_(*args)).update({THttpHeader.DEL_STATE: 1})
+    THttpHeader.filter(THttpHeader.HEADER_NO.in_(*args)).update({THttpHeader.DEL_STATE: 1})

@@ -20,7 +20,7 @@ def select_first(**kwargs) -> TVariableSet:
 
 
 def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition(TVariableSet)
+    conds = QueryCondition()
     if kwargs:
         conds.like(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
         conds.like(TVariableSet.SET_NO, kwargs.pop('setNo', None))
@@ -31,15 +31,15 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).paginate(page, page_size)
+    return TVariableSet.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).paginate(page, page_size)
 
 
 def select_list_in_set_orderby_weight(*set_no) -> List[TVariableSet]:
-    return TVariableSet.query.filter(TVariableSet.SET_NO.in_(set_no)).order_by(TVariableSet.WEIGHT.asc()).all()
+    return TVariableSet.filter(TVariableSet.SET_NO.in_(set_no)).order_by(TVariableSet.WEIGHT.asc()).all()
 
 
 def select_all(**kwargs) -> List[TVariableSet]:
-    conds = QueryCondition(TVariableSet)
+    conds = QueryCondition()
     if kwargs:
         conds.like(TVariableSet.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
         conds.like(TVariableSet.SET_NO, kwargs.pop('setNo', None))
@@ -47,4 +47,4 @@ def select_all(**kwargs) -> List[TVariableSet]:
         conds.like(TVariableSet.SET_TYPE, kwargs.pop('setType', None))
         conds.like(TVariableSet.SET_DESC, kwargs.pop('setDesc', None))
 
-    return TVariableSet.query.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).all()
+    return TVariableSet.filter(*conds).order_by(TVariableSet.CREATED_TIME.desc()).all()

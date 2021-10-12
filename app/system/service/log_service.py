@@ -29,7 +29,7 @@ def query_action_log_list(req):
     if req.createdBy:
         conditions.append(TActionLog.CREATED_BY.like(f'%{req.createdBy}%'))
 
-    pagination = TActionLog.query.filter(
+    pagination = TActionLog.filter(
         *conditions).order_by(TActionLog.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data_set = []
