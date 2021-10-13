@@ -421,8 +421,18 @@ def update_element_property(element_no, property: dict):
             value = to_json(value)
         if isinstance(value, bytes):
             value = str(value, encoding='utf8')
-
-        prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=value_type)
+        # prop存在就更新，不存在就新增
+        if prop:
+            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=value_type)
+        else:
+            TElementProperty.insert(
+                ELEMENT_NO=element_no,
+                PROPERTY_NAME=name,
+                PROPERTY_VALUE=value,
+                PROPERTY_TYPE=value_type
+            )
+    # 删除请求中没有的属性
+    ElementPropertyDao.delete_all_by_element_and_notin_name(element_no, list(property.keys()))
 
 
 @http_service

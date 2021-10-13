@@ -121,8 +121,6 @@ def loads_property(element_no):
 
 
 def add_flask_socketio_result_collector(script: dict, sid: str):
-    log.debug('添加 FlaskSocketIOResultCollector 组件')
-
     script['children'].insert(0, {
         'name': 'Dynamic FlaskSocketIOResultCollector',
         'remark': '',
@@ -139,8 +137,6 @@ def add_flask_socketio_result_collector(script: dict, sid: str):
 
 
 def add_variable_data_set(script: dict, set_no_list, use_current_value):
-    log.debug('添加 VariableDataSet 组件')
-
     variables = get_variables_by_set_list(set_no_list, use_current_value)
     arguments = []
     for name, value in variables.items():
@@ -181,8 +177,6 @@ def get_variables_by_set_list(set_no_list, use_current_value):
 
 
 def add_http_header_manager(sampler: TTestElement, children: list):
-    log.debug('添加 HTTPHeaderManager 组件')
-
     # 查询元素关联的请求头模板
     rels = HttpSamplerHeadersRelDao.select_all_by_sampler(sampler.ELEMENT_NO)
 
@@ -216,8 +210,6 @@ def add_http_header_manager(sampler: TTestElement, children: list):
 
 
 def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no):
-    log.debug('添加 FlaskDBResultStorage 组件')
-
     script['children'].insert(0, {
         'name': 'Dynamic FlaskDBResultStorage',
         'remark': '',

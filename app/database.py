@@ -38,6 +38,14 @@ class CRUDMixin:
     def avg_by(cls, field, **kwargs) -> decimal.Decimal:
         return cls.query.session.query(func.avg(field)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
 
+    @classmethod
+    def delete_filter(cls, *args):
+        cls.filter(*args).update({cls.DEL_STATE: 1})
+
+    @classmethod
+    def delete_filter_by(cls, **kwargs):
+        cls.filter_by(**kwargs).update({cls.DEL_STATE: 1})
+
     def update(self, **kwargs):
         for attr, value in kwargs.items():
             if value is not None:
