@@ -122,7 +122,7 @@ def get_sampler_result_list(group_id):
 
 def get_subsampler_result_list(parent_id):
     sub_samplers = []
-    sub_sampler_result_list = TestSamplerResultDao.select_all_summary_by_group(parent_id)
+    sub_sampler_result_list = TestSamplerResultDao.select_all_by_parent(parent_id)
     for sub_result in sub_sampler_result_list:
         sub_samplers.append({
             'groupId': sub_result.GROUP_ID,

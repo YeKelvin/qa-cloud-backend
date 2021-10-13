@@ -23,7 +23,7 @@ def select_all_summary_by_group(group_id) -> List[TTestSamplerResult]:
         TTestSamplerResult.END_TIME,
         TTestSamplerResult.ELAPSED_TIME,
         TTestSamplerResult.SUCCESS,
-    ).filter_by(GROUP_ID=group_id).all()
+    ).filter_by(GROUP_ID=group_id, PARENT_ID=None).all()
     return entities
 
 
