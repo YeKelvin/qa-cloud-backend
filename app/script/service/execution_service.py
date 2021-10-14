@@ -17,9 +17,12 @@ from app.extension import db
 from app.extension import executor
 from app.extension import socketio
 from app.public.dao import workspace_dao as WorkspaceDao
+from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
 from app.script.dao import testplan_item_dao as TestPlanItemDao
+from app.script.enum import ElementType
 from app.script.enum import RunningState
 from app.script.model import TTestPlan
 from app.script.model import TTestPlanItem
@@ -43,8 +46,7 @@ def execute_collection(req):
         raise ServiceError('脚本为空或脚本已禁用，请检查脚本后重新运行')
 
     # 添加 socket 组件
-    if req.socketId:
-        element_loader.add_flask_socketio_result_collector(collection, req.socketId)
+    element_loader.add_flask_socketio_result_collector(collection, req.socketId)
 
     # 添加变量组件
     if req.variableSet:
@@ -61,6 +63,18 @@ def execute_collection(req):
 
     # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
     executor.submit(start)
+
+
+@http_service
+def execute_group(req):
+    # 查询元素
+    group = TestElementDao.select_by_no(req.groupNo)
+    if group.ELEMENT_TYPE != ElementType.GROUP.value:
+        raise ServiceError('仅支持运行 Group 元素')
+    group_parent_rel = ElementChildRelDao.select_by_child(req.groupNo)
+    if not group_parent_rel:
+        raise ServiceError('元素父级关联不存在')
+    collection_no = group_parent_rel.PARENT_NO
 
 
 @http_service

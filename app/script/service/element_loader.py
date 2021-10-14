@@ -35,68 +35,36 @@ def loads_tree(element_no):
 
     # 元素子代
     children = []
-
     # 读取元素属性
-    property = loads_property(element_no)
+    properties = loads_property(element_no)
 
-    # 如果是 HttpSampler 则添加 HTTP 请求头管理器
-    if element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
+    # 元素为 HttpSampler 时，添加 HTTP 请求头管理器
+    if is_http_sampler(element):
         add_http_header_manager(element, children)
 
-    # 普通 Sampler 正常添加子代元素
-    if element.ELEMENT_CLASS != ElementClass.SNIPPET_SAMPLER.value:
-        # 递归查询元素子代，并根据序号正序排序
-        child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
-
-        # 添加元素子代
-        if child_rel_list:
-            for element_child_rel in child_rel_list:
-                child = loads_tree(element_child_rel.CHILD_NO)
-                if child:
-                    children.append(child)
-
-    # 如果是 SnippetSampler 则读取片段内容
+    # 元素为常规 Sampler 时，添加子代
+    if not is_snippet_sampler(element):
+        add_children(element_no, children)
+    # 元素为 SnippetSampler 时，读取片段内容
     else:
-        if 'snippetNo' not in property:
-            raise ServiceError('片段编号不能为空')
-        snippet_no = property['snippetNo']
-        snippet_collection = loads_tree(snippet_no)
-        if snippet_collection:
-            snippet_children = snippet_collection['children']
-            add_snippet_config(snippet_collection, snippet_children, property.get('arguments', []))
-            children.extend(snippet_children)
+        add_snippets(properties, children)
         # SnippetSampler 的属性不需要添加至脚本中
-        property = None
+        properties = None
 
-    # 类型是 Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
-    if (
-        element.ELEMENT_TYPE == ElementType.GROUP.value  # noqa
-        or element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value  # noqa
-    ):
-        # 查询内置元素关联
-        builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
-        for builtin_rel in builtin_rel_list:
-            if builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
-                # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
-                builtin = loads_tree(builtin_rel.CHILD_NO)
-                if builtin:
-                    children.insert(0, builtin)
-            else:
-                # 其余内置元素添加至最后（最后一个运行）
-                builtin = loads_tree(builtin_rel.CHILD_NO)
-                if builtin:
-                    children.append(builtin)
+    # 元素为 Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
+    if is_group(element) or is_http_sampler(element):
+        add_builtin_children(element_no, children)
 
     return {
         'name': element.ELEMENT_NAME,
         'remark': element.ELEMENT_REMARK,
         'class': (
             element.ELEMENT_CLASS
-            if element.ELEMENT_CLASS != ElementClass.SNIPPET_SAMPLER.value
+            if not is_snippet_sampler(element)
             else ElementClass.TRANSACTION_CONTROLLER.value
         ),
         'enabled': element.ENABLED,
-        'property': property,
+        'property': properties,
         'children': children
     }
 
@@ -105,19 +73,59 @@ def loads_property(element_no):
     # 查询元素属性，只查询 enabled 的属性
     props = ElementPropertyDao.select_all_by_enable_element(element_no)
 
-    property = {}
+    properties = {}
     for prop in props:
         if prop.PROPERTY_TYPE == 'STR':
-            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+            properties[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
             continue
         if prop.PROPERTY_TYPE == 'DICT':
-            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
         if prop.PROPERTY_TYPE == 'LIST':
-            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
             continue
 
-    return property
+    return properties
+
+
+def add_snippets(properties, children: list):
+    snippet_no = properties.get('snippetNo', None)
+    if not snippet_no:
+        raise ServiceError('片段编号不能为空')
+    snippets = loads_tree(snippet_no)
+    if not snippets:
+        return
+    transaction = snippets['children']
+    add_snippet_config(snippets, transaction, properties.get('arguments', []))
+    children.extend(transaction)
+
+
+def add_children(element_no, children: list):
+    # 递归查询子代，并根据序号正序排序
+    child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
+
+    # 添加子代
+    if child_rel_list:
+        for element_child_rel in child_rel_list:
+            child = loads_tree(element_child_rel.CHILD_NO)
+            if child:
+                children.append(child)
+
+
+def add_builtin_children(element_no, children: list):
+    # 查询内置元素关联
+    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
+    for builtin_rel in builtin_rel_list:
+        if builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
+            # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
+            builtin = loads_tree(builtin_rel.CHILD_NO)
+            if builtin:
+                children.insert(0, builtin)
+        else:
+            # 其余内置元素添加至最后（最后一个运行）
+            builtin = loads_tree(builtin_rel.CHILD_NO)
+            if builtin:
+                children.append(builtin)
 
 
 def add_flask_socketio_result_collector(script: dict, sid: str):
@@ -256,3 +264,15 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
                 'Arguments__arguments': arguments
             }
         })
+
+
+def is_http_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+
+
+def is_snippet_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
+
+
+def is_group(element):
+    return element.ELEMENT_TYPE == ElementType.GROUP.value

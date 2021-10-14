@@ -34,22 +34,22 @@ def execute_collection():
     """
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('variableSet', type=dict),
-        Argument('socketId')
+        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
+        Argument('variableSet', type=dict)
     ).parse()
     return service.execute_collection(req)
 
 
-# @blueprint.post('/execute/group')
-# @require_login
-# @require_permission
-# def execute_group():
-#     req = JsonParser(
-#         Argument('groupNo', required=True, nullable=False, help='集合编号不能为空')
-#         Argument('variableSet', type=dict),
-#         Argument('socketId')
-#     ).parse()
-#     return service.execute_group(req)
+@blueprint.post('/execute/group')
+@require_login
+@require_permission
+def execute_group():
+    req = JsonParser(
+        Argument('groupNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
+        Argument('variableSet', type=dict)
+    ).parse()
+    return service.execute_group(req)
 
 
 # @blueprint.post('/execute/sampler')
