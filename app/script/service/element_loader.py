@@ -23,7 +23,7 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-def loads_tree(element_no):
+def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, self_only=False):
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
@@ -32,6 +32,11 @@ def loads_tree(element_no):
     if not element.ENABLED:
         log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return None
+
+    # 加载指定元素，如果当前元素非指定元素时返回空
+    if specified_group_no or specified_sampler_no:
+        if is_not_specified_element(element, specified_group_no, specified_sampler_no, self_only):
+            return None
 
     # 元素子代
     children = []
@@ -44,7 +49,7 @@ def loads_tree(element_no):
 
     # 元素为常规 Sampler 时，添加子代
     if not is_snippet_sampler(element):
-        add_children(element_no, children)
+        children.extend(loads_children(element_no, specified_group_no, specified_sampler_no, self_only))
     # 元素为 SnippetSampler 时，读取片段内容
     else:
         add_snippets(properties, children)
@@ -88,6 +93,18 @@ def loads_property(element_no):
     return properties
 
 
+def loads_children(element_no, specified_group_no, specified_sampler_no, self_only):
+    # 递归查询子代，并根据序号正序排序
+    child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
+    children = []
+    # 添加子代
+    for element_child_rel in child_rel_list:
+        child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, self_only)
+        if child:
+            children.append(child)
+    return children
+
+
 def add_snippets(properties, children: list):
     snippet_no = properties.get('snippetNo', None)
     if not snippet_no:
@@ -98,18 +115,6 @@ def add_snippets(properties, children: list):
     transaction = snippets['children']
     add_snippet_config(snippets, transaction, properties.get('arguments', []))
     children.extend(transaction)
-
-
-def add_children(element_no, children: list):
-    # 递归查询子代，并根据序号正序排序
-    child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
-
-    # 添加子代
-    if child_rel_list:
-        for element_child_rel in child_rel_list:
-            child = loads_tree(element_child_rel.CHILD_NO)
-            if child:
-                children.append(child)
 
 
 def add_builtin_children(element_no, children: list):
@@ -274,5 +279,45 @@ def is_snippet_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
 
 
+def is_test_group(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
+
+
 def is_group(element):
     return element.ELEMENT_TYPE == ElementType.GROUP.value
+
+
+def is_sampler(element):
+    return element.ELEMENT_TYPE == ElementType.SAMPLER.value
+
+
+def is_not_specified_element(element, specified_group_no, specified_sampler_no, self_only):
+    """是否非指定的元素
+
+    Args:
+        element:                当前元素
+        specified_group_no:     指定的 Group 元素编号
+        specified_sampler_no:   指定的 Sampler 元素编号
+        self_only:              是否仅元素自身
+
+    Returns:
+
+    """
+    # 仅元素自身
+    if self_only:
+        # 非指定 Group
+        if is_group(element) and element.ELEMENT_NO != specified_group_no:
+            return True
+        # 非指定 Sampler
+        if not is_group(element) and element.ELEMENT_NO != specified_sampler_no:
+            return True
+    # 除指定元素外，还需包含配置、控制器、前置、后置和断言
+    else:
+        # 非指定 TestGroup
+        if is_test_group(element) and element.ELEMENT_NO != specified_group_no:
+            return True
+        # 非指定 Sampler
+        if is_sampler(element) and element.ELEMENT_NO != specified_sampler_no:
+            return True
+
+    return False
