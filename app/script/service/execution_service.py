@@ -40,23 +40,30 @@ log = get_logger(__name__)
 
 @http_service
 def execute_collection(req):
-    # 根据 collectionNo 递归查询脚本数据并转换成 dict
-    collection = element_loader.loads_tree(req.collectionNo)
-    if not collection:
-        raise ServiceError('脚本为空或脚本已禁用，请检查脚本后重新运行')
+    # 查询元素
+    collection = TestElementDao.select_by_no(req.collectionNo)
+    if not collection.ENABLED:
+        raise ServiceError('元素已禁用')
+    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
+        raise ServiceError('仅支持运行 Collecion 元素')
+
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_tree(req.collectionNo)
+    if not script:
+        raise ServiceError('脚本异常，请检查后重试')
 
     # 添加 socket 组件
-    element_loader.add_flask_socketio_result_collector(collection, req.socketId)
+    element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
 
     # 添加变量组件
     if req.variableSet:
-        element_loader.add_variable_data_set(collection, req.variableSet.numberList, req.variableSet.useCurrentValue)
+        element_loader.add_variable_data_set(script, req.variableSet.numberList, req.variableSet.useCurrentValue)
 
-    # 新开一个线程执行脚本
+    # 新建线程执行脚本
     def start():
         sid = req.socketId
         try:
-            Runner.start([collection], throw_ex=True)
+            Runner.start([script], throw_ex=True)
         except Exception:
             log.error(traceback.format_exc())
             socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
@@ -69,12 +76,44 @@ def execute_collection(req):
 def execute_group(req):
     # 查询元素
     group = TestElementDao.select_by_no(req.groupNo)
+    if not group.ENABLED:
+        raise ServiceError('元素已禁用')
     if group.ELEMENT_TYPE != ElementType.GROUP.value:
         raise ServiceError('仅支持运行 Group 元素')
+
+    # 获取 collectionNo
     group_parent_rel = ElementChildRelDao.select_by_child(req.groupNo)
     if not group_parent_rel:
         raise ServiceError('元素父级关联不存在')
     collection_no = group_parent_rel.PARENT_NO
+
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo, self_only=req.selfOnly)
+    if not script:
+        raise ServiceError('脚本异常，请检查后重试')
+
+    # 添加 socket 组件
+    element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
+
+    # 添加变量组件
+    if req.variableSet:
+        element_loader.add_variable_data_set(script, req.variableSet.numberList, req.variableSet.useCurrentValue)
+
+    # 新建线程执行脚本
+    def start():
+        sid = req.socketId
+        try:
+            Runner.start([script], throw_ex=True)
+        except Exception:
+            log.error(traceback.format_exc())
+            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
+
+    executor.submit(start)
+
+
+@http_service
+def execute_sampler(req):
+    ...
 
 
 @http_service

@@ -133,18 +133,15 @@ def add_builtin_children(element_no, children: list):
                 children.append(builtin)
 
 
-def add_flask_socketio_result_collector(script: dict, sid: str):
+def add_flask_sio_result_collector(script: dict, sid: str, name: str):
     script['children'].insert(0, {
-        'name': 'Dynamic FlaskSocketIOResultCollector',
+        'name': 'Dynamic FlaskSIOResultCollector',
         'remark': '',
-        'class': 'FlaskSocketIOResultCollector',
+        'class': 'FlaskSIOResultCollector',
         'enabled': True,
         'property': {
-            'FlaskSocketIOResultCollector__namespace': '/',
-            'FlaskSocketIOResultCollector__event_name': 'pymeter_result',
-            'FlaskSocketIOResultCollector__target_sid': sid,
-            'FlaskSocketIOResultCollector__flask_sio_instance_module': 'app.extension',
-            'FlaskSocketIOResultCollector__flask_sio_instance_name': 'socketio',
+            'FlaskSIOResultCollector__target_sid': sid,
+            'FlaskSIOResultCollector__result_name': name,
         }
     })
 
