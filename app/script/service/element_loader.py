@@ -23,7 +23,9 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, self_only=False):
+def loads_tree(
+    element_no, specified_group_no=None, specified_sampler_no=None, specified_self_only=False, no_sampler=False
+):
     """根据元素编号加载脚本"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
@@ -34,13 +36,12 @@ def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, s
         log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return None
 
-    if specified_sampler_no and specified_group_no is None:
-        raise ServiceError('指定 Sampler 元素时，specified_sampler_no 不能为空')
-
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_group_no and not is_specified_group_or_passable_element(element, specified_group_no, self_only):
+    if specified_group_no and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only):
         return None
-    if specified_sampler_no and not is_specified_sampler_or_passable_element(element, specified_sampler_no, self_only):
+
+    # 标记为不需要 Sampler 时返回空
+    if no_sampler and is_sampler(element):
         return None
 
     # 元素子代
@@ -54,7 +55,7 @@ def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, s
 
     # 元素为常规 Sampler 时，添加子代
     if not is_snippet_sampler(element):
-        children.extend(loads_children(element_no, specified_group_no, specified_sampler_no, self_only))
+        children.extend(loads_children(element_no, specified_group_no, specified_sampler_no, specified_self_only))
     # 元素为 SnippetSampler 时，读取片段内容
     else:
         add_snippets(properties, children)
@@ -98,18 +99,36 @@ def loads_property(element_no):
     return properties
 
 
-def loads_children(element_no, specified_group_no, specified_sampler_no, self_only):
+def loads_children(element_no, specified_group_no, specified_sampler_no, specified_self_only):
     # 递归查询子代，并根据序号正序排序
     child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
     children = []
     # 添加子代
     for element_child_rel in child_rel_list:
-        try:
-            child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, self_only)
+        found = False
+        # 需要指定 Sampler
+        if specified_sampler_no:
+            # 独立运行
+            if specified_self_only:
+                if element_child_rel.CHILD_NO == specified_sampler_no:
+                    child = loads_tree(element_child_rel.CHILD_NO)
+                    if child:
+                        children.append(child)
+            # 非独立运行
+            else:
+                child = loads_tree(
+                    element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only, found
+                )
+                if child:
+                    children.append(child)
+                if element_child_rel.CHILD_NO == specified_sampler_no:
+                    found = True
+
+        # 无需指定 Sampler
+        else:
+            child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
             if child:
                 children.append(child)
-        except FoundSpecifiedSampler:
-            break
 
     return children
 
@@ -156,7 +175,7 @@ def add_flask_sio_result_collector(script: dict, sid: str, name: str):
 
 
 def add_variable_data_set(script: dict, set_no_list, use_current_value):
-    variables = get_variables_by_set_list(set_no_list, use_current_value)
+    variables = get_variables_by_dataset_list(set_no_list, use_current_value)
     arguments = []
     for name, value in variables.items():
         arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})
@@ -172,10 +191,10 @@ def add_variable_data_set(script: dict, set_no_list, use_current_value):
     })
 
 
-def get_variables_by_set_list(set_no_list, use_current_value):
+def get_variables_by_dataset_list(dataset_number_list, use_current_value):
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    set_list = VariableSetDao.select_list_in_set_orderby_weight(*set_no_list)
+    set_list = VariableSetDao.select_list_in_set_orderby_weight(*dataset_number_list)
     if not set_list:
         return result
 
@@ -297,16 +316,6 @@ def is_sampler(element):
     return element.ELEMENT_TYPE == ElementType.SAMPLER.value
 
 
-PASSABLE_ELEMENT_TYPE_LIST = [
-    'COLLECTION',
-    'CONFIG',
-    'CONTROLLER',
-    'TIMER',
-    'PRE_PROCESSOR',
-    'POST_PROCESSOR',
-    'ASSERTION',
-    'LISTENER'
-]
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
 
 
@@ -325,24 +334,3 @@ def is_specified_group_or_passable_element(element, specified_no, self_only):
             return True
 
     return False
-
-
-def is_specified_sampler_or_passable_element(element, specified_no, self_only):
-    # 非 Sampler 时加载
-    if not is_sampler(element):
-        return True  # pass
-
-    # 判断是否为指定的 Sampler
-    if element.ELEMENT_NO == specified_no:
-        # 独立运行时，仅加载元素本身
-        if self_only:
-            return True  # pass
-        # 非独立运行时，加载至指定元素
-        else:
-            raise FoundSpecifiedSampler
-
-    return False
-
-
-class FoundSpecifiedSampler(Exception):
-    ...
