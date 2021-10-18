@@ -25,17 +25,17 @@ def execute_collection():
     example:
     {
         "collectionNo": "",
+        "socketId": "",
         "variableSet": {
             "useCurrentValue": true,
             "numberList": []
-        },
-        "socketId": ""
+        }
     }
     """
     req = JsonParser(
-        Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('variableSet', type=dict)
+        Argument('variableDataSet', type=dict)
     ).parse()
     return service.execute_collection(req)
 
@@ -45,25 +45,25 @@ def execute_collection():
 @require_permission
 def execute_group():
     req = JsonParser(
-        Argument('groupNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('variableSet', type=dict),
+        Argument('variableDataSet', type=dict),
         Argument('selfOnly', type=bool, default=False)
     ).parse()
     return service.execute_group(req)
 
 
-# @blueprint.post('/execute/sampler')
-# @require_login
-# @require_permission
-# def execute_sampler():
-#     req = JsonParser(
-#         Argument('samplerNo', required=True, nullable=False, help='集合编号不能为空')
-#         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-#         Argument('variableSet', type=dict),
-#         Argument('selfOnly', type=bool, default=False)
-#     ).parse()
-#     return service.execute_sampler(req)
+@blueprint.post('/execute/sampler')
+@require_login
+@require_permission
+def execute_sampler():
+    req = JsonParser(
+        Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
+        Argument('variableDataSet', type=dict),
+        Argument('selfOnly', type=bool, default=False)
+    ).parse()
+    return service.execute_sampler(req)
 
 
 @blueprint.post('/execute/testplan')

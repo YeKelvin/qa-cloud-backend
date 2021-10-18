@@ -24,6 +24,7 @@ log = get_logger(__name__)
 
 
 def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, self_only=False):
+    """根据元素编号加载脚本"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
@@ -33,10 +34,14 @@ def loads_tree(element_no, specified_group_no=None, specified_sampler_no=None, s
         log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return None
 
+    if specified_sampler_no and specified_group_no is None:
+        raise ServiceError('指定 Sampler 元素时，specified_sampler_no 不能为空')
+
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_group_no or specified_sampler_no:
-        if is_not_specified_element(element, specified_group_no, specified_sampler_no, self_only):
-            return None
+    if specified_group_no and not is_specified_group_or_passable_element(element, specified_group_no, self_only):
+        return None
+    if specified_sampler_no and not is_specified_sampler_or_passable_element(element, specified_sampler_no, self_only):
+        return None
 
     # 元素子代
     children = []
@@ -99,9 +104,13 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, self_on
     children = []
     # 添加子代
     for element_child_rel in child_rel_list:
-        child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, self_only)
-        if child:
-            children.append(child)
+        try:
+            child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, self_only)
+            if child:
+                children.append(child)
+        except FoundSpecifiedSampler:
+            break
+
     return children
 
 
@@ -288,33 +297,52 @@ def is_sampler(element):
     return element.ELEMENT_TYPE == ElementType.SAMPLER.value
 
 
-def is_not_specified_element(element, specified_group_no, specified_sampler_no, self_only):
-    """是否非指定的元素
+PASSABLE_ELEMENT_TYPE_LIST = [
+    'COLLECTION',
+    'CONFIG',
+    'CONTROLLER',
+    'TIMER',
+    'PRE_PROCESSOR',
+    'POST_PROCESSOR',
+    'ASSERTION',
+    'LISTENER'
+]
+PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
 
-    Args:
-        element:                当前元素
-        specified_group_no:     指定的 Group 元素编号
-        specified_sampler_no:   指定的 Sampler 元素编号
-        self_only:              是否仅元素自身
 
-    Returns:
+def is_specified_group_or_passable_element(element, specified_no, self_only):
+    # 非 Group 时加载
+    if not is_group(element):
+        return True  # pass
 
-    """
-    # 仅元素自身
-    if self_only:
-        # 非指定 Group
-        if is_group(element) and element.ELEMENT_NO != specified_group_no:
-            return True
-        # 非指定 Sampler
-        if not is_group(element) and element.ELEMENT_NO != specified_sampler_no:
-            return True
-    # 除指定元素外，还需包含配置、控制器、前置、后置和断言
-    else:
-        # 非指定 TestGroup
-        if is_test_group(element) and element.ELEMENT_NO != specified_group_no:
-            return True
-        # 非指定 Sampler
-        if is_sampler(element) and element.ELEMENT_NO != specified_sampler_no:
+    # 判断是否为指定的 Group
+    if element.ELEMENT_NO == specified_no:
+        return True  # pass
+
+    # 非独立运行时，除指定的 Group 外，还需要加载前置和后置 Group）
+    if not self_only:
+        if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
             return True
 
     return False
+
+
+def is_specified_sampler_or_passable_element(element, specified_no, self_only):
+    # 非 Sampler 时加载
+    if not is_sampler(element):
+        return True  # pass
+
+    # 判断是否为指定的 Sampler
+    if element.ELEMENT_NO == specified_no:
+        # 独立运行时，仅加载元素本身
+        if self_only:
+            return True  # pass
+        # 非独立运行时，加载至指定元素
+        else:
+            raise FoundSpecifiedSampler
+
+    return False
+
+
+class FoundSpecifiedSampler(Exception):
+    ...

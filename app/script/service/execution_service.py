@@ -56,8 +56,10 @@ def execute_collection(req):
     element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
 
     # 添加变量组件
-    if req.variableSet:
-        element_loader.add_variable_data_set(script, req.variableSet.numberList, req.variableSet.useCurrentValue)
+    if req.variableDataSet:
+        element_loader.add_variable_data_set(
+            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
+        )
 
     # 新建线程执行脚本
     def start():
@@ -96,8 +98,10 @@ def execute_group(req):
     element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
 
     # 添加变量组件
-    if req.variableSet:
-        element_loader.add_variable_data_set(script, req.variableSet.numberList, req.variableSet.useCurrentValue)
+    if req.variableDataSet:
+        element_loader.add_variable_data_set(
+            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
+        )
 
     # 新建线程执行脚本
     def start():
@@ -113,7 +117,44 @@ def execute_group(req):
 
 @http_service
 def execute_sampler(req):
-    ...
+    # 查询元素
+    sampler = TestElementDao.select_by_no(req.samplerNo)
+    if not sampler.ENABLED:
+        raise ServiceError('元素已禁用')
+    if sampler.ELEMENT_TYPE != ElementType.SAMPLER.value:
+        raise ServiceError('仅支持运行 Sampler 元素')
+
+    # 获取 collectionNo 和 groupNo
+    sampler_parent_rel = ElementChildRelDao.select_by_child(req.samplerNo)
+    if not sampler_parent_rel:
+        raise ServiceError('元素父级关联不存在')
+    collection_no = sampler_parent_rel.ROOT_NO
+    group_no = sampler_parent_rel.PARENT_NO
+
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfOnly)
+    if not script:
+        raise ServiceError('脚本异常，请检查后重试')
+
+    # 添加 socket 组件
+    element_loader.add_flask_sio_result_collector(script, req.socketId, sampler.ELEMENT_NAME)
+
+    # 添加变量组件
+    if req.variableDataSet:
+        element_loader.add_variable_data_set(
+            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
+        )
+
+    # 新建线程执行脚本
+    def start():
+        sid = req.socketId
+        try:
+            Runner.start([script], throw_ex=True)
+        except Exception:
+            log.error(traceback.format_exc())
+            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
+
+    executor.submit(start)
 
 
 @http_service

@@ -39,15 +39,15 @@ class ElementType(Enum):
     # 监听器
     LISTENER = 'LISTENER'
 
-    # 片段
-    SNIPPET = 'SNIPPET'
-
 
 @unique
 class ElementClass(Enum):
 
     # 测试集合
     TEST_COLLECTION = 'TestCollection'
+
+    # 片段集合
+    TEST_SNIPPET = 'TestSnippet'
 
     # 测试组
     TEST_GROUP = 'TestGroup'
