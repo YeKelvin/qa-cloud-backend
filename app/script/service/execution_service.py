@@ -90,7 +90,7 @@ def execute_group(req):
     collection_no = group_parent_rel.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo, self_only=req.selfOnly)
+    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo, specified_self_only=req.selfOnly)
     if not script:
         raise ServiceError('脚本异常，请检查后重试')
 
@@ -299,3 +299,40 @@ def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, 
     # 更新运行状态
     testplan.update(RUNNING_STATE=RunningState.COMPLETED.value)
     log.info(f'计划编号:[ {plan_no} ] 测试计划执行完成')
+
+
+@http_service
+def execute_snippet_collection(req):
+    # 查询元素
+    collection = TestElementDao.select_by_no(req.collectionNo)
+    if not collection.ENABLED:
+        raise ServiceError('元素已禁用')
+    if not element_loader.is_test_snippet(collection):
+        raise ServiceError('仅支持运行 TestSnippet 元素')
+
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_snippet_collecion(
+        collection.ELEMENT_NO, collection.ELEMENT_NAME, collection.ELEMENT_REMARK
+    )
+    if not script:
+        raise ServiceError('脚本异常，请检查后重试')
+
+    # 添加 socket 组件
+    element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
+
+    # 添加变量组件
+    if req.variableDataSet:
+        element_loader.add_variable_data_set(
+            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue, req.variables
+        )
+
+    # 新建线程执行脚本
+    def start():
+        sid = req.socketId
+        try:
+            Runner.start([script], throw_ex=True)
+        except Exception:
+            log.error(traceback.format_exc())
+            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
+
+    executor.submit(start)

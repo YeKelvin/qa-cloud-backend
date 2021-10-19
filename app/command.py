@@ -178,6 +178,8 @@ def init_permission():
     _create_permission(name='执行分组', method='POST', endpoint='/script/execute/group')
     _create_permission(name='执行取样器', method='POST', endpoint='/script/execute/sampler')
     _create_permission(name='执行测试计划', method='POST', endpoint='/script/execute/testplan')
+    _create_permission(name='执行片段集合', method='POST', endpoint='/script/execute/snippet/collection')
+    _create_permission(name='执行片段取样器', method='POST', endpoint='/script/execute/snippet/sampler')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/set/list')

@@ -3,6 +3,8 @@
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
+from typing import Dict
+
 from app.common.exceptions import ServiceError
 from app.common.validator import check_is_not_blank
 from app.script.dao import element_builtin_child_rel_dao as ElementBuiltinChildRelDao
@@ -37,7 +39,10 @@ def loads_tree(
         return None
 
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_group_no and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only):
+    if (
+        specified_group_no
+        and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only)
+    ):
         return None
 
     # 标记为不需要 Sampler 时返回空
@@ -174,8 +179,10 @@ def add_flask_sio_result_collector(script: dict, sid: str, name: str):
     })
 
 
-def add_variable_data_set(script: dict, set_no_list, use_current_value):
-    variables = get_variables_by_dataset_list(set_no_list, use_current_value)
+def add_variable_data_set(script: dict, dataset_number_list, use_current_value, additional=None):
+    variables = get_variables_by_dataset_list(dataset_number_list, use_current_value)
+    if additional:
+        variables.update(additional)
     arguments = []
     for name, value in variables.items():
         arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})
@@ -191,16 +198,16 @@ def add_variable_data_set(script: dict, set_no_list, use_current_value):
     })
 
 
-def get_variables_by_dataset_list(dataset_number_list, use_current_value):
+def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    set_list = VariableSetDao.select_list_in_set_orderby_weight(*dataset_number_list)
-    if not set_list:
+    dataset_list = VariableSetDao.select_list_in_set_orderby_weight(*dataset_number_list)
+    if not dataset_list:
         return result
 
-    for set in set_list:
+    for dataset in dataset_list:
         # 查询变量列表
-        variables = VariableDao.select_list_by_set(set.SET_NO)
+        variables = VariableDao.select_list_by_set(dataset.SET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量
@@ -296,16 +303,67 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
         })
 
 
-def is_http_sampler(element):
-    return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
+    # 读取元素属性
+    properties = loads_property(snippets_no)
+    use_http_session = properties.get('useHTTPSession', 'false')
+    # 递归查询子代，并根据序号正序排序
+    child_rel_list = ElementChildRelDao.select_all_by_parent(snippets_no)
+    children = []
+    # 添加 HTTP Session 组件
+    if use_http_session:
+        children.append({
+            'name': 'Dynamic HTTPSessionManager',
+            'remark': '',
+            'class': 'HTTPSessionManager',
+            'enabled': True,
+            'property': {}
+        })
+    # 添加子代
+    for element_child_rel in child_rel_list:
+        child = loads_tree(element_child_rel.CHILD_NO)
+        if child:
+            children.append(child)
+    # 创建一个临时的 Group
+    group = {
+        'name': snippets_name,
+        'remark': snippets_remark,
+        'class': 'TestGroup',
+        'enabled': True,
+        'property': {
+            'TestGroup__on_sample_error': 'start_next_coroutine',
+            'TestGroup__number_groups': '1',
+            'TestGroup__start_interval': '',
+            'TestGroup__main_controller': {
+                'class': 'LoopController', 'property': {
+                  'LoopController__loops': '1',
+                  'LoopController__continue_forever': 'false'
+                }
+            }
+        },
+        'children': children
+    }
+    # 创建一个临时的 Collection
+    collection = {
+        'name': snippets_name,
+        'remark': snippets_remark,
+        'class': 'TestCollection',
+        'enabled': True,
+        'property': {
+            'TestCollection__serialize_groups': 'true',
+            'TestCollection__delay': '0'
+        },
+        'children': [group]
+    }
+
+    return collection
 
 
-def is_snippet_sampler(element):
-    return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
+PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
 
 
-def is_test_group(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
+def is_collection(element):
+    return element.ELEMENT_CLASS == ElementType.COLLECTION.value
 
 
 def is_group(element):
@@ -316,7 +374,20 @@ def is_sampler(element):
     return element.ELEMENT_TYPE == ElementType.SAMPLER.value
 
 
-PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
+def is_test_snippet(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPET.value
+
+
+def is_test_group(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
+
+
+def is_http_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+
+
+def is_snippet_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
 
 
 def is_specified_group_or_passable_element(element, specified_no, self_only):

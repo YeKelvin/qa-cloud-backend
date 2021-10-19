@@ -19,8 +19,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def execute_collection():
-    """
-    运行脚本
+    """运行脚本
 
     example:
     {
@@ -28,13 +27,13 @@ def execute_collection():
         "socketId": "",
         "variableSet": {
             "useCurrentValue": true,
-            "numberList": []
+            "numberList": [ ... ]
         }
     }
     """
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
-        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
+        Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('variableDataSet', type=dict)
     ).parse()
     return service.execute_collection(req)
@@ -77,10 +76,9 @@ def execute_testplan():
     {
         "collectionList": [
             {"elementNo": "", "serialNo": ""},
-            {"elementNo": "", "serialNo": ""}
             ...
         ],
-        "variableSetNumberList": [],
+        "variableSetNumberList": [ ... ],
         "workspaceNo": "",
         "versionNo": "",
         "planName": "",
@@ -112,3 +110,29 @@ def execute_testplan():
         Argument('executeNow', default=True)
     ).parse()
     return service.execute_testplan(req)
+
+
+@blueprint.post('/execute/snippet/collection')
+@require_login
+@require_permission
+def execute_snippet_collection():
+    """运行脚本
+
+    example:
+    {
+        "collectionNo": "",
+        "socketId": "",
+        "variableSet": {
+            "useCurrentValue": true,
+            "numberList": [ ... ]
+        }
+        "variables": { ... }
+    }
+    """
+    req = JsonParser(
+        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
+        Argument('variableDataSet', type=dict),
+        Argument('variables', type=dict)
+    ).parse()
+    return service.execute_snippet_collection(req)
