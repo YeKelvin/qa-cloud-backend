@@ -93,10 +93,3 @@ class WerkzeugLogFilter(logging.Filter):
     def filter(self, record):
         print(record.__dict__)
         return True
-
-
-class PyMeterLogFilter(logging.Filter):
-
-    def filter(self, record):
-        print(record.__dict__)
-        return True

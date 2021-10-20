@@ -38,6 +38,15 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 log = get_logger(__name__)
 
 
+def debug_pymeter(script, sid):
+    try:
+        Runner.start([script], throw_ex=True, sio=socketio, sid=sid)
+        socketio.emit('pymeter_completed', namespace='/', to=sid)
+    except Exception:
+        log.error(traceback.format_exc())
+        socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
+
+
 @http_service
 def execute_collection(req):
     # 查询元素
@@ -61,17 +70,9 @@ def execute_collection(req):
             script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
         )
 
-    # 新建线程执行脚本
-    def start():
-        sid = req.socketId
-        try:
-            Runner.start([script], throw_ex=True)
-        except Exception:
-            log.error(traceback.format_exc())
-            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
-
     # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
-    executor.submit(start)
+    # 新建线程执行脚本
+    executor.submit(debug_pymeter, script, req.socketId)
 
 
 @http_service
@@ -104,15 +105,7 @@ def execute_group(req):
         )
 
     # 新建线程执行脚本
-    def start():
-        sid = req.socketId
-        try:
-            Runner.start([script], throw_ex=True)
-        except Exception:
-            log.error(traceback.format_exc())
-            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
-
-    executor.submit(start)
+    executor.submit(debug_pymeter, script, req.socketId)
 
 
 @http_service
@@ -146,15 +139,7 @@ def execute_sampler(req):
         )
 
     # 新建线程执行脚本
-    def start():
-        sid = req.socketId
-        try:
-            Runner.start([script], throw_ex=True)
-        except Exception:
-            log.error(traceback.format_exc())
-            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
-
-    executor.submit(start)
+    executor.submit(debug_pymeter, script, req.socketId)
 
 
 @http_service
@@ -327,12 +312,4 @@ def execute_snippet_collection(req):
         )
 
     # 新建线程执行脚本
-    def start():
-        sid = req.socketId
-        try:
-            Runner.start([script], throw_ex=True)
-        except Exception:
-            log.error(traceback.format_exc())
-            socketio.emit('pymeter_error', '脚本执行异常，请联系管理员', namespace='/', to=sid)
-
-    executor.submit(start)
+    executor.submit(debug_pymeter, script, req.socketId)
