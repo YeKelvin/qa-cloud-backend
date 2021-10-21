@@ -40,7 +40,7 @@ log = get_logger(__name__)
 
 def debug_pymeter(script, sid):
     try:
-        Runner.start([script], throw_ex=True, sio=socketio, sid=sid)
+        Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
         log.error(traceback.format_exc())
