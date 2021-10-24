@@ -17,15 +17,15 @@ def select_by_name(var_name) -> TVariable:
 
 
 def select_by_set_and_name(set_no, var_name) -> TVariable:
-    return TVariable.filter_by(SET_NO=set_no, VAR_NAME=var_name).first()
+    return TVariable.filter_by(DATASET_NO=set_no, VAR_NAME=var_name).first()
 
 
 def select_list_by_set(set_no) -> List[TVariable]:
-    return TVariable.filter_by(SET_NO=set_no).all()
+    return TVariable.filter_by(DATASET_NO=set_no).all()
 
 
 def select_list_in_set(*set_no) -> List[TVariable]:
-    return TVariable.filter(TVariable.SET_NO.in_(*set_no)).all()
+    return TVariable.filter(TVariable.DATASET_NO.in_(*set_no)).all()
 
 
 def delete_in_no(*args):

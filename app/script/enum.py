@@ -112,7 +112,7 @@ class ElementStatus(Enum):
 
 
 @unique
-class VariableSetType(Enum):
+class VariableDatasetType(Enum):
 
     # 全局变量：与环境无关，与工作空间无关
     GLOBAL = 'GLOBAL'
@@ -125,7 +125,7 @@ class VariableSetType(Enum):
 
 
 @unique
-class VariableSetWeight(Enum):
+class VariableDatasetWeight(Enum):
 
     # 全局变量
     GLOBAL = 1
@@ -151,3 +151,41 @@ class RunningState(Enum):
 
     # 异常
     ERROR = 'ERROR'
+
+
+@unique
+class TestplanState(Enum):
+
+    # 待开始
+    INITIAL = 'INITIAL'
+
+    # 测试中
+    TESTING = 'TESTING'
+
+    # 已完成
+    COMPLETED = 'COMPLETED'
+
+
+@unique
+class TestPhase(Enum):
+
+    # 待测试
+    INITIAL = 'INITIAL'
+
+    # 调试
+    DEBUG = 'DEBUG'
+
+    # 冒烟测试
+    SMOKE_TESTING = 'SMOKE_TESTING'
+
+    # 系统测试
+    SYSTEM_TESTING = 'SYSTEM_TESTING'
+
+    # 回归测试
+    REGRESSION_TESTING = 'REGRESSION_TESTING'
+
+    # 验收测试
+    ACCEPTANCE_TESTING = 'ACCEPTANCE_TESTING'
+
+    # 已完成
+    COMPLETED = 'COMPLETED'

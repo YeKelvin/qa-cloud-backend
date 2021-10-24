@@ -8,7 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument, ListParser
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
-from app.script.enum import VariableSetType
+from app.script.enum import VariableDatasetType
 from app.script.service import variables_service as service
 from app.utils.log_util import get_logger
 
@@ -56,7 +56,7 @@ def create_variable_set():
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('setName', required=True, nullable=False, help='变量集名称不能为空'),
-        Argument('setType', required=True, nullable=False, enum=VariableSetType, help='变量集类型不能为空'),
+        Argument('setType', required=True, nullable=False, enum=VariableDatasetType, help='变量集类型不能为空'),
         Argument('setDesc')
     ).parse()
     return service.create_variable_set(req)

@@ -14,7 +14,7 @@ from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
-from app.script.dao import variable_set_dao as VariableSetDao
+from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementType
 from app.script.model import TTestElement
@@ -41,7 +41,7 @@ def loads_tree(
     # 加载指定元素，如果当前元素非指定元素时返回空
     if (
         specified_group_no
-        and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only)
+        and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only)  # noqa
     ):
         return None
 
@@ -201,13 +201,13 @@ def add_variable_data_set(script: dict, dataset_number_list, use_current_value, 
 def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = VariableSetDao.select_list_in_set_orderby_weight(*dataset_number_list)
+    dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_number_list)
     if not dataset_list:
         return result
 
     for dataset in dataset_list:
         # 查询变量列表
-        variables = VariableDao.select_list_by_set(dataset.SET_NO)
+        variables = VariableDao.select_list_by_set(dataset.DATASET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量
@@ -336,8 +336,8 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
             'TestGroup__start_interval': '',
             'TestGroup__main_controller': {
                 'class': 'LoopController', 'property': {
-                  'LoopController__loops': '1',
-                  'LoopController__continue_forever': 'false'
+                    'LoopController__loops': '1',
+                    'LoopController__continue_forever': 'false'
                 }
             }
         },

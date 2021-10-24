@@ -21,13 +21,13 @@ from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
-from app.script.dao import testplan_item_dao as TestPlanItemDao
+from app.script.dao import testplan_items_dao as TestPlanItemsDao
 from app.script.enum import ElementType
 from app.script.enum import RunningState
-from app.script.model import TTestPlan
-from app.script.model import TTestPlanItem
-from app.script.model import TTestPlanSettings
-from app.script.model import TTestPlanVariableSetRel
+from app.script.model import TTestplan
+from app.script.model import TTestplanItems
+from app.script.model import TTestplanSettings
+from app.script.model import TTestplanDatasetRel
 from app.script.model import TTestReport
 from app.script.service import element_loader
 from app.utils.log_util import get_logger
@@ -150,9 +150,9 @@ def execute_testplan(req):
     check_is_not_blank(workspace, '工作空间不存在')
     # 新增测试计划
     plan_no = new_id()
-    TTestPlan.insert(
+    TTestplan.insert(
         WORKSPACE_NO=req.workspaceNo,
-        VERSION_NO=req.versionNo,
+        VERSION_NUMBER=req.versionNo,
         PLAN_NO=plan_no,
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
@@ -160,7 +160,7 @@ def execute_testplan(req):
         RUNNING_STATE=RunningState.RUNNING.value if req.executeNow else RunningState.WAITING.value
     )
     # 新增测试计划设置
-    TTestPlanSettings.insert(
+    TTestplanSettings.insert(
         PLAN_NO=plan_no,
         CONCURRENCY=req.concurrency,
         ITERATIONS=req.iterations,
@@ -172,13 +172,13 @@ def execute_testplan(req):
     )
     # 新增测试计划与变量集关联
     for set_no in req.variableSetNumberList:
-        TTestPlanVariableSetRel.insert(
+        TTestplanDatasetRel.insert(
             PLAN_NO=plan_no,
-            SET_NO=set_no
+            DATASET_NO=set_no
         )
     # 新增测试计划项目明细
     for collection in req.collectionList:
-        TTestPlanItem.insert(
+        TTestplanItems.insert(
             PLAN_NO=plan_no,
             COLLECTION_NO=collection.elementNo,
             SERIAL_NO=collection.serialNo,
@@ -234,7 +234,7 @@ def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, 
         # 根据 collectionNo 递归查询脚本数据并转换成 dict
         collection_no = collection['elementNo']
         # 查询计划项目
-        plan_item = TestPlanItemDao.select_by_plan_and_collection(plan_no, collection_no)
+        plan_item = TestPlanItemsDao.select_by_plan_and_collection(plan_no, collection_no)
         # 更新项目运行状态
         plan_item.update(RUNNING_STATE=RunningState.RUNNING.value)
         # 加载脚本

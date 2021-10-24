@@ -8,7 +8,7 @@ from flask.cli import with_appcontext
 
 from app.common.id_generator import new_id
 from app.extension import db
-from app.script.model import TVariableSet
+from app.script.model import TVariableDataset
 from app.system.model import TActionLog
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUserRel
@@ -218,7 +218,13 @@ def init_permission():
 
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
-    _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan/details')
+    _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan')
+    _create_permission(name='创建测试计划', method='POST', endpoint='/script/testplan')
+    _create_permission(name='修改测试计划', method='PUT', endpoint='/script/testplan')
+    _create_permission(name='修改测试计划状态', method='PATCH', endpoint='/script/testplan/state')
+    _create_permission(name='修改测试计划测试阶段', method='PATCH', endpoint='/script/testplan/testphase')
+    _create_permission(name='查询所有测试计划执行记录', method='GET', endpoint='/script/testplan/execution/all')
+    _create_permission(name='查询测试计划执行记录详情', method='GET', endpoint='/script/testplan/execution/details')
     _create_permission(name='查询测试报告', method='GET', endpoint='/script/testplan/report')
 
     # report
@@ -254,7 +260,7 @@ def init_role_permission_rel():
 
 @with_appcontext
 def init_script_global_variable_set():
-    TVariableSet.insert(SET_NO=new_id(), SET_NAME='public', SET_TYPE='GLOBAL', WEIGHT=1)
+    TVariableDataset.insert(DATASET_NO=new_id(), DATASET_NAME='public', DATASET_TYPE='GLOBAL', WEIGHT=1)
     click.echo('初始化PyMeter全局变量成功')
 
 
@@ -339,22 +345,22 @@ def migrate_sqlite_to_pgsql():
         )
         click.echo(f'success insert into TElementBuiltinChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
 
-    # TVariableSet
-    for entity in sqlite_session.query(model.TVariableSet).filter_by(DEL_STATE=0).all():
-        model.TVariableSet.insert(
+    # TVariableDataset
+    for entity in sqlite_session.query(model.TVariableDataset).filter_by(DEL_STATE=0).all():
+        model.TVariableDataset.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
-            SET_NO=entity.SET_NO,
-            SET_NAME=entity.SET_NAME,
-            SET_TYPE=entity.SET_TYPE,
-            SET_DESC=entity.SET_DESC,
+            DATASET_NO=entity.DATASET_NO,
+            DATASET_NAME=entity.DATASET_NAME,
+            DATASET_TYPE=entity.DATASET_TYPE,
+            DATASET_DESC=entity.DATASET_DESC,
             WEIGHT=entity.WEIGHT
         )
-        click.echo(f'success insert into TVariableSet value {entity.SET_NO}')
+        click.echo(f'success insert into TVariableDataset value {entity.DATASET_NO}')
 
     # TVariable
     for entity in sqlite_session.query(model.TVariable).filter_by(DEL_STATE=0).all():
         model.TVariable.insert(
-            SET_NO=entity.SET_NO,
+            DATASET_NO=entity.DATASET_NO,
             VAR_NO=entity.VAR_NO,
             VAR_NAME=entity.VAR_NAME,
             VAR_DESC=entity.VAR_DESC,
