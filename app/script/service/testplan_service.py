@@ -4,6 +4,7 @@
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_is_not_blank
 from app.extension import db
@@ -23,10 +24,12 @@ from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import TestPhase
 from app.script.enum import TestplanState
+from app.script.enum import VariableDatasetType
 from app.script.model import TTestplan
 from app.script.model import TTestplanDatasetRel
 from app.script.model import TTestplanItems
 from app.script.model import TTestplanSettings
+from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import microsecond_to_h_m_s
@@ -60,6 +63,7 @@ def query_testplan_list(req):
             'planDesc': item.PLAN_DESC,
             'versionNumber': item.VERSION_NUMBER,
             'environment': item.ENVIRONMENT,
+            'collectionTotal': item.COLLECTION_TOTAL,
             'testPhase': item.TEST_PHASE,
             'state': item.STATE,
             'startTime': item.START_TIME,
@@ -97,6 +101,10 @@ def query_testplan(req):
         dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
 
     return {
+        'planNo': testplan.PLAN_NO,
+        'planName': testplan.PLAN_NAME,
+        'planDesc': testplan.PLAN_DESC,
+        'versionNumber': testplan.VERSION_NUMBER,
         'collectionList': collection_list,
         'datasetList': dataset_list,
         'concurrency': settings.CONCURRENCY,
@@ -110,23 +118,14 @@ def query_testplan(req):
 
 
 @http_service
+@transactional
 def create_testplan(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_is_not_blank(workspace, '工作空间不存在')
 
-    # 新增测试计划
+    # 创建计划编号
     plan_no = new_id()
-    TTestplan.insert(
-        WORKSPACE_NO=req.workspaceNo,
-        PLAN_NO=plan_no,
-        PLAN_NAME=req.planName,
-        PLAN_DESC=req.planDesc,
-        VERSION_NUMBER=req.versionNo,
-        ENVIRONMENT=req.environment,
-        TEST_PHASE=TestPhase.INITIAL.value,
-        STATE=TestplanState.INITIAL.value
-    )
 
     # 新增测试计划设置项
     TTestplanSettings.insert(
@@ -141,7 +140,11 @@ def create_testplan(req):
     )
 
     # 新增测试计划与数据集关联
+    environment = ''
     for dataset_no in req.datasetNumberList:
+        dataset = VariableDatasetDao.select_by_no(dataset_no)
+        if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
+            environment = dataset.DATASET_NAME
         TTestplanDatasetRel.insert(
             PLAN_NO=plan_no,
             DATASET_NO=dataset_no
@@ -155,10 +158,24 @@ def create_testplan(req):
             SERIAL_NO=collection.serialNo
         )
 
+    # 新增测试计划
+    TTestplan.insert(
+        WORKSPACE_NO=req.workspaceNo,
+        PLAN_NO=plan_no,
+        PLAN_NAME=req.planName,
+        PLAN_DESC=req.planDesc,
+        VERSION_NUMBER=req.versionNo,
+        ENVIRONMENT=environment,
+        COLLECTION_TOTAL=len(req.collectionList),
+        TEST_PHASE=TestPhase.INITIAL.value,
+        STATE=TestplanState.INITIAL.value
+    )
+
     return {'planNo': plan_no}
 
 
 @http_service
+@transactional
 def modify_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
@@ -168,27 +185,13 @@ def modify_testplan(req):
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
     check_is_not_blank(settings, '计划设置不存在')
 
-    # 修改测试计划
-    testplan.update(
-        PLAN_NAME=req.planName,
-        PLAN_DESC=req.planDesc,
-        VERSION_NUMBER=req.versionNo,
-        ENVIRONMENT=req.environment
-    )
-
-    # 修改测试计划设置项项
-    settings.update(
-        CONCURRENCY=req.concurrency,
-        ITERATIONS=req.iterations,
-        DELAY=req.delay,
-        SAVE=req.save,
-        SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        USE_CURRENT_VALUE=req.useCurrentValue,
-    )
-
     # 修改测试计划与数据集关联
+    environment = ''
     for dataset_no in req.datasetNumberList:
+        # 查询变量集
+        dataset = VariableDatasetDao.select_by_no(dataset_no)
+        if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
+            environment = dataset.DATASET_NAME
         # 查询测试计划关联的变量集
         plan_dataset_rel = TestPlanDatasetRelDao.select_by_plan_and_dataset(req.planNo, dataset_no)
         # 不存在则新增
@@ -213,6 +216,26 @@ def modify_testplan(req):
             )
     # 删除不在请求中的集合
     TestPlanItemsDao.delete_all_by_plan_and_not_in_dataset(req.planNo, collection_no_list)
+
+    # 修改测试计划
+    testplan.update(
+        PLAN_NAME=req.planName,
+        PLAN_DESC=req.planDesc,
+        VERSION_NUMBER=req.versionNo,
+        ENVIRONMENT=environment,
+        COLLECTION_TOTAL=len(req.collectionList)
+    )
+
+    # 修改测试计划设置项项
+    settings.update(
+        CONCURRENCY=req.concurrency,
+        ITERATIONS=req.iterations,
+        DELAY=req.delay,
+        SAVE=req.save,
+        SAVE_ON_ERROR=req.saveOnError,
+        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
+        USE_CURRENT_VALUE=req.useCurrentValue,
+    )
 
 
 @http_service
@@ -271,15 +294,15 @@ def query_testplan_execution_details(req):
         })
 
     # 查询测试计划关联的变量集
-    # plan_set_rel_list = TestPlanDatasetRelDao.select_all_by_plan(req.planNo)
-    # variable_set_list = []
-    # for rel in plan_set_rel_list:
-    #     variable_set = VariableDatasetDao.select_by_no(rel.DATASET_NO)
-    #     variable_set_list.append({'datasetNo': variable_set.DATASET_NO, 'datasetName': variable_set.DATASET_NAME})
+    dataset_number_list = from_json(settings.DATASETS)
+    dataset_list = []
+    for dataset_no in dataset_number_list:
+        dataset = VariableDatasetDao.select_by_no(dataset_no)
+        dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
 
     return {
         'collectionList': collection_list,
-        # 'datasetList': variable_set_list,
+        'datasetList': dataset_list,
         'concurrency': settings.CONCURRENCY,
         'iterations': settings.ITERATIONS,
         'delay': settings.DELAY,

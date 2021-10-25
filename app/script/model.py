@@ -196,14 +196,14 @@ class TDataBaseConfiguration(DBModel):
     __tablename__ = 'DATABASE_CONFIGURATION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')  # TODO: rename DB_NO
-    DB_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')  # TODO: rename DB_NAME
-    DB_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')  # TODO: rename DB_DESC
+    DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
+    DB_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
+    DB_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')
     DB_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
     DB_URL = db.Column(db.String(256), nullable=False, comment='数据库地址')
     USER_NAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库密码')
-    CONNECTION_NAME = db.Column(db.String(256), nullable=False, comment='数据库连接变量')  # TODO: rename CONNECTION_NAME
+    CONNECTION_NAME = db.Column(db.String(256), nullable=False, comment='数据库连接变量')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
@@ -235,8 +235,9 @@ class TTestplan(DBModel):
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
-    VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')  # TODO: rename VERSION_NUMBER
+    VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')
     ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
+    COLLECTION_TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
     START_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='开始时间')
@@ -274,7 +275,7 @@ class TTestplanDatasetRel(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
-    DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')  # TODO: rename DATASET_NO
+    DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
