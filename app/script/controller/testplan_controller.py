@@ -66,7 +66,7 @@ def create_testplan():
         Argument('useCurrentValue', default=False),
         Argument('executeNow', default=True)
     ).parse()
-    return service.execute_testplan(req)
+    return service.create_testplan(req)
 
 
 @blueprint.put('/testplan')

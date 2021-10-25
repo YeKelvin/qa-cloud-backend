@@ -101,11 +101,9 @@ class TElementBuiltinChildRel(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
-# TODO: rename TVariableDataset
-# TODO: rename DATADATASET_NO
 class TVariableDataset(DBModel):
     """变量集表"""
-    __tablename__ = 'VARIABLE_SET'
+    __tablename__ = 'VARIABLE_DATASET'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
@@ -193,10 +191,9 @@ class THttpHeader(DBModel):
     UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DEL_STATE', name='unique_template_header')
 
 
-# TODO: rename TDataBaseConfiguration
 class TDataBaseConfiguration(DBModel):
     """SQL配置表"""
-    __tablename__ = 'SQL_CONFIGURATION'
+    __tablename__ = 'DATABASE_CONFIGURATION'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')  # TODO: rename DB_NO
@@ -229,7 +226,6 @@ class TElementTagRel(DBModel):
     UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DEL_STATE', name='unique_element_tag')
 
 
-# TODO: rename TTestplan
 class TTestplan(DBModel):
     """测试计划表"""
     __tablename__ = 'TESTPLAN'
@@ -241,8 +237,6 @@ class TTestplan(DBModel):
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
     VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')  # TODO: rename VERSION_NUMBER
     ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
-    # TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')  # TODO: del 查询时计算
-    # RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')  # TODO: del
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
     START_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='开始时间')
@@ -254,7 +248,6 @@ class TTestplan(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
-# TODO: rename TTestplanSettings
 class TTestplanSettings(DBModel):
     """测试计划设置表"""
     __tablename__ = 'TESTPLAN_SETTINGS'
@@ -275,7 +268,6 @@ class TTestplanSettings(DBModel):
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
-# TODO: rename TTestplanDatasetRel
 class TTestplanDatasetRel(DBModel):
     """测试计划数据集关联表"""
     __tablename__ = 'TESTPLAN_DATASET_REL'
@@ -291,7 +283,6 @@ class TTestplanDatasetRel(DBModel):
     UniqueConstraint('PLAN_NO', 'DATASET_NO', 'DEL_STATE', name='unique_plan_set')
 
 
-# TODO: rename TTestplanItems
 class TTestplanItems(DBModel):
     """测试计划项目明细表"""
     __tablename__ = 'TESTPLAN_ITEMS'
@@ -300,7 +291,6 @@ class TTestplanItems(DBModel):
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
     SERIAL_NO = db.Column(db.Integer, nullable=False, comment='序号')
-    # RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')  # TODO: del
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
@@ -330,7 +320,6 @@ class TTestplanExecutionSettings(DBModel):
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
-    ...
     CONCURRENCY = db.Column(db.Integer, nullable=False, default=1, comment='并发数')
     ITERATIONS = db.Column(db.Integer, nullable=False, default=0, comment='计划迭代次数')
     DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
@@ -338,7 +327,6 @@ class TTestplanExecutionSettings(DBModel):
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
     STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-    ...
     DATASETS = db.Column(db.Text, comment='关联的数据集字典')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
