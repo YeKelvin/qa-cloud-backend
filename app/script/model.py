@@ -281,7 +281,7 @@ class TTestplanDatasetRel(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('PLAN_NO', 'DATASET_NO', 'DEL_STATE', name='unique_plan_set')
+    UniqueConstraint('PLAN_NO', 'DATASET_NO', 'DEL_STATE', name='unique_plan_dataset')
 
 
 class TTestplanItems(DBModel):
@@ -320,7 +320,7 @@ class TTestplanExecutionSettings(DBModel):
     __tablename__ = 'TESTPLAN_EXECUTION_SETTINGS'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
-    EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
+    EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
     CONCURRENCY = db.Column(db.Integer, nullable=False, default=1, comment='并发数')
     ITERATIONS = db.Column(db.Integer, nullable=False, default=0, comment='计划迭代次数')
     DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
@@ -350,6 +350,7 @@ class TTestplanExecutionItems(DBModel):
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
+    UniqueConstraint('EXECUTION_NO', 'COLLECTION_NO', 'DEL_STATE', name='unique_execution_collection')
 
 
 class TTestReport(DBModel):

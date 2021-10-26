@@ -177,9 +177,9 @@ def init_permission():
     _create_permission(name='执行集合', method='POST', endpoint='/script/execute/collection')
     _create_permission(name='执行分组', method='POST', endpoint='/script/execute/group')
     _create_permission(name='执行取样器', method='POST', endpoint='/script/execute/sampler')
-    _create_permission(name='执行测试计划', method='POST', endpoint='/script/execute/testplan')
     _create_permission(name='执行片段集合', method='POST', endpoint='/script/execute/snippet/collection')
     _create_permission(name='执行片段取样器', method='POST', endpoint='/script/execute/snippet/sampler')
+    _create_permission(name='执行测试计划', method='POST', endpoint='/script/execute/testplan')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/set/list')
@@ -225,9 +225,9 @@ def init_permission():
     _create_permission(name='修改测试计划测试阶段', method='PATCH', endpoint='/script/testplan/testphase')
     _create_permission(name='查询所有测试计划执行记录', method='GET', endpoint='/script/testplan/execution/all')
     _create_permission(name='查询测试计划执行记录详情', method='GET', endpoint='/script/testplan/execution/details')
-    _create_permission(name='查询测试报告', method='GET', endpoint='/script/testplan/report')
 
     # report
+    _create_permission(name='查询测试报告', method='GET', endpoint='/script/report')
     _create_permission(
         name='根据 collectionId 查询 Collection 结果和 Group 结果列表',
         method='GET',

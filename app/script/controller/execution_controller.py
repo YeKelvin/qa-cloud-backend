@@ -69,45 +69,9 @@ def execute_sampler():
 @require_login
 @require_permission
 def execute_testplan():
-    """
-    运行测试计划
-
-    request:
-    {
-        "collectionList": [
-            {"elementNo": "", "serialNo": ""},
-            ...
-        ],
-        "variableSetNumberList": [ ... ],
-        "workspaceNo": "",
-        "versionNo": "",
-        "planName": "",
-        "planDesc": "",
-        "concurrency": "1",
-        "iterations": "1",
-        "delay": "0",
-        "save": true,
-        "saveOnError": false,
-        "stopTestOnErrorCount": "3",
-        "useCurrentValue": false,
-        "executeNow": true
-    }
-    """
+    """运行测试计划"""
     req = JsonParser(
-        Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
-        Argument('variableSetNumberList', type=list),
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('versionNo'),
-        Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
-        Argument('planDesc'),
-        Argument('concurrency', default=1),
-        Argument('iterations', default=1),
-        Argument('delay', default=0),
-        Argument('save', default=True),
-        Argument('saveOnError', default=False),
-        Argument('stopTestOnErrorCount', default=3),
-        Argument('useCurrentValue', default=False),
-        Argument('executeNow', default=True)
+        Argument('planNo', required=True, nullable=False, help='计划编号不能为空')
     ).parse()
     return service.execute_testplan(req)
 

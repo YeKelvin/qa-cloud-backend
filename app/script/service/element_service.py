@@ -397,8 +397,6 @@ def add_element_property(element_no, property: dict):
         if isinstance(value, list):
             value_type = 'LIST'
             value = to_json(value)
-        if isinstance(value, bytes):
-            value = str(value, encoding='utf8')
 
         TElementProperty.insert(
             ELEMENT_NO=element_no, PROPERTY_NAME=name, PROPERTY_VALUE=value, PROPERTY_TYPE=value_type
@@ -419,8 +417,7 @@ def update_element_property(element_no, property: dict):
         if isinstance(value, list):
             value_type = 'LIST'
             value = to_json(value)
-        if isinstance(value, bytes):
-            value = str(value, encoding='utf8')
+
         # prop存在就更新，不存在就新增
         if prop:
             prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=value_type)

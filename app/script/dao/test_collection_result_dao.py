@@ -9,6 +9,10 @@ from typing import List
 from app.script.model import TTestCollectionResult
 
 
+def select_by_report_and_collectionno(report_no, collection_no) -> TTestCollectionResult:
+    return TTestCollectionResult.filter_by(REPORT_NO=report_no, COLLECTION_NO=collection_no).first()
+
+
 def select_first_by_collectionid(collection_id) -> TTestCollectionResult:
     return TTestCollectionResult.filter_by(COLLECTION_ID=collection_id).first()
 

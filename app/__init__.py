@@ -4,10 +4,10 @@
 # @Time    : 2019/11/7 9:39
 # @Author  : Kelvin.Ye
 import os
+from typing import Optional
 
 import orjson
 from flask import Flask
-from sqlalchemy.pool import QueuePool
 
 from app.extension import db
 from app.extension import migrate
@@ -39,7 +39,7 @@ def set_app(app: Flask):
     __app__ = app
 
 
-def get_app() -> Flask:
+def get_app() -> Optional[Flask]:
     global __app__
 
     if __app__ is None:

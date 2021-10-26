@@ -16,20 +16,23 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
-from app.public.dao import workspace_dao as WorkspaceDao
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
+from app.script.dao import testplan_dataset_rel_dao as TestPlanDatasetRelDao
+from app.script.dao import testplan_execution_dao as TestplanExecutionDao
+from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
+from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.enum import ElementType
 from app.script.enum import RunningState
-from app.script.model import TTestplan
-from app.script.model import TTestplanItems
-from app.script.model import TTestplanSettings
-from app.script.model import TTestplanDatasetRel
+from app.script.model import TTestplanExecution
+from app.script.model import TTestplanExecutionItems
+from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
+from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
@@ -39,6 +42,7 @@ log = get_logger(__name__)
 
 
 def debug_pymeter(script, sid):
+    # noinspection PyBroadException
     try:
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
@@ -143,150 +147,6 @@ def execute_sampler(req):
 
 
 @http_service
-@transactional
-def execute_testplan(req):
-    # 查询工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_is_not_blank(workspace, '工作空间不存在')
-    # 新增测试计划
-    plan_no = new_id()
-    TTestplan.insert(
-        WORKSPACE_NO=req.workspaceNo,
-        VERSION_NUMBER=req.versionNo,
-        PLAN_NO=plan_no,
-        PLAN_NAME=req.planName,
-        PLAN_DESC=req.planDesc,
-        TOTAL=len(req.collectionList),
-        RUNNING_STATE=RunningState.RUNNING.value if req.executeNow else RunningState.WAITING.value
-    )
-    # 新增测试计划设置
-    TTestplanSettings.insert(
-        PLAN_NO=plan_no,
-        CONCURRENCY=req.concurrency,
-        ITERATIONS=req.iterations,
-        DELAY=req.delay,
-        SAVE=req.save,
-        SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        USE_CURRENT_VALUE=req.useCurrentValue,
-    )
-    # 新增测试计划与变量集关联
-    for set_no in req.variableSetNumberList:
-        TTestplanDatasetRel.insert(
-            PLAN_NO=plan_no,
-            DATASET_NO=set_no
-        )
-    # 新增测试计划项目明细
-    for collection in req.collectionList:
-        TTestplanItems.insert(
-            PLAN_NO=plan_no,
-            COLLECTION_NO=collection.elementNo,
-            SERIAL_NO=collection.serialNo,
-            RUNNING_STATE=RunningState.WAITING.value
-        )
-    # 新增测试报告
-    report_no = None
-    if req.save:
-        report_no = new_id()
-        TTestReport.insert(
-            WORKSPACE_NO=req.workspaceNo,
-            PLAN_NO=plan_no,
-            REPORT_NO=report_no,
-            REPORT_NAME=req.planName
-        )
-    # 立即执行
-    if req.executeNow:
-        # 异步函数
-        def start(app, collection_list, set_no_list, use_current_value):
-            try:
-                with app.app_context():
-                    run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, report_no)
-            except Exception:
-                log.error(f'计划编号:[ {plan_no} ] 发生异常\n{traceback.format_exc()}')
-                with app.app_context():
-                    try:
-                        TestPlanDao.update_running_state_by_no(plan_no, RunningState.ERROR.value)
-                    except Exception:
-                        log.error(f'计划编号:[ {plan_no} ] 发生异常\n{traceback.format_exc()}')
-
-        # 先提交事务，防止新线程查询计划时拿不到
-        db.session.commit()
-        app = flask.current_app._get_current_object()
-        # 异步执行脚本
-        executor.submit(start, app, req.collectionList, req.variableSetNumberList, req.useCurrentValue)
-
-    return {'planNo': plan_no, 'executeNow': req.executeNow}
-
-
-def run_testplan(app, collection_list, set_no_list, use_current_value, plan_no, report_no=None):
-    log.info(f'计划编号:[ {plan_no} ] 开始执行测试计划')
-    # 记录开始时间
-    start_time = timestamp_now()
-    # 查询测试计划
-    testplan = TestPlanDao.select_by_no(plan_no)
-    # 更新运行状态
-    testplan.update(RUNNING_STATE=RunningState.RUNNING.value)
-    # 根据序号排序
-    collection_list.sort(key=lambda k: k.serialNo)
-
-    # 顺序执行脚本
-    for collection in collection_list:
-        # 根据 collectionNo 递归查询脚本数据并转换成 dict
-        collection_no = collection['elementNo']
-        # 查询计划项目
-        plan_item = TestPlanItemsDao.select_by_plan_and_collection(plan_no, collection_no)
-        # 更新项目运行状态
-        plan_item.update(RUNNING_STATE=RunningState.RUNNING.value)
-        # 加载脚本
-        collection = element_loader.loads_tree(collection_no)
-        if not collection:
-            log.warning(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
-
-        # 添加自定义变量组件
-        if set_no_list:
-            element_loader.add_variable_data_set(collection, set_no_list, use_current_value)
-
-        # 添加报告存储器组件
-        if report_no:
-            element_loader.add_flask_db_result_storage(collection, plan_no, report_no, collection_no)
-
-        # 异步函数
-        def start(app):
-            try:
-                log.info(f'计划编号:[ {plan_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
-                Runner.start([collection], throw_ex=True)
-            except Exception:
-                log.error(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 脚本执行异常\n{traceback.format_exc()}')
-                with app.app_context():
-                    try:
-                        plan_item.update(RUNNING_STATE=RunningState.ERROR.value)
-                    except Exception:
-                        log.error(f'计划编号:[ {plan_no} ] 集合编号:[ {collection_no} ] 发生异常\n{traceback.format_exc()}')
-
-        task = executor.submit(start, app)  # 异步执行脚本
-        task.result()  # 阻塞等待脚本执行完成
-        # 更新项目运行状态
-        plan_item.update(RUNNING_STATE=RunningState.COMPLETED.value)
-        log.info(f'计划编号:[ {plan_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
-
-    if report_no:
-        # 记录结束时间
-        end_time = timestamp_now()
-        # 计算耗时
-        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
-        # 更新报告的开始时间、结束时间和耗时
-        TestReportDao.select_by_no(report_no).update(
-            START_TIME=timestamp_to_utc8_datetime(start_time),
-            END_TIME=timestamp_to_utc8_datetime(end_time),
-            ELAPSED_TIME=elapsed_time
-        )
-
-    # 更新运行状态
-    testplan.update(RUNNING_STATE=RunningState.COMPLETED.value)
-    log.info(f'计划编号:[ {plan_no} ] 测试计划执行完成')
-
-
-@http_service
 def execute_snippet_collection(req):
     # 查询元素
     collection = TestElementDao.select_by_no(req.collectionNo)
@@ -313,3 +173,157 @@ def execute_snippet_collection(req):
 
     # 新建线程执行脚本
     executor.submit(debug_pymeter, script, req.socketId)
+
+
+@http_service
+@transactional
+def execute_testplan(req):
+    # 查询测试计划
+    testplan = TestPlanDao.select_by_no(req.planNo)
+    check_is_not_blank(testplan, '测试计划不存在')
+
+    # 查询测试计划设置项
+    settings = TestPlanSettingsDao.select_by_no(req.planNo)
+    check_is_not_blank(settings, '计划设置不存在')
+
+    # 查询测试计划关联的集合
+    items = TestPlanItemsDao.select_all_by_plan(req.planNo)
+    # 根据序号排序
+    items.sort(key=lambda k: k.SERIAL_NO)
+    collection_number_list = [item.COLLECTION_NO for item in items]
+
+    # 查询测试计划关联的变量集
+    plan_dataset_rel_list = TestPlanDatasetRelDao.select_all_by_plan(req.planNo)
+    dataset_number_list = [rel.DATASET_NO for rel in plan_dataset_rel_list]
+
+    # 创建执行编号
+    execution_no = new_id()
+    # 创建执行记录
+    TTestplanExecution.insert(
+        PLAN_NO=req.planNo,
+        EXECUTION_NO=execution_no,
+        RUNNING_STATE=RunningState.WAITING.value
+    )
+    # 创建计划执行设置
+    TTestplanExecutionSettings.insert(
+        EXECUTION_NO=execution_no,
+        CONCURRENCY=settings.CONCURRENCY,
+        ITERATIONS=settings.ITERATIONS,
+        DELAY=settings.DELAY,
+        SAVE=settings.SAVE,
+        SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
+        STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
+        USE_CURRENT_VALUE=settings.USE_CURRENT_VALUE,
+        DATASETS=to_json(dataset_number_list)
+    )
+    # 创建计划执行项目明细
+    for item in items:
+        TTestplanExecutionItems.insert(
+            EXECUTION_NO=execution_no,
+            COLLECTION_NO=item.COLLECTION_NO,
+            SERIAL_NO=item.SERIAL_NO,
+            RUNNING_STATE=RunningState.WAITING.value
+        )
+
+    # 新增测试报告
+    report_no = None
+    if settings.SAVE:
+        report_no = new_id()
+        TTestReport.insert(
+            WORKSPACE_NO=testplan.WORKSPACE_NO,
+            PLAN_NO=testplan.PLAN_NO,
+            EXECUTION_NO=execution_no,
+            REPORT_NO=report_no,
+            REPORT_NAME=testplan.PLAN_NAME
+        )
+
+    # 异步函数
+    def start(app):
+        # noinspection PyBroadException
+        try:
+            with app.app_context():
+                run_testplan(
+                    app,
+                    collection_number_list, dataset_number_list, settings.USE_CURRENT_VALUE, execution_no, report_no
+                )
+        except Exception:
+            log.error(f'执行编号:[ {execution_no} ] 发生异常\n{traceback.format_exc()}')
+            with app.app_context():
+                # noinspection PyBroadException
+                try:
+                    TestPlanDao.update_running_state_by_no(execution_no, RunningState.ERROR.value)
+                except Exception:
+                    log.error(f'执行编号:[ {execution_no} ] 发生异常\n{traceback.format_exc()}')
+
+    # 先提交事务，防止新线程查询计划时拿不到
+    db.session.commit()
+    # 异步执行脚本
+    executor.submit(start, flask.current_app._get_current_object())
+
+    return {'executionNo': execution_no, 'total': len(items)}
+
+
+def run_testplan(app, collection_number_list, dataset_number_list, use_current_value, execution_no, report_no=None):
+    log.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
+    # 记录开始时间
+    start_time = timestamp_now()
+    # 查询执行记录
+    execution = TestplanExecutionDao.select_by_no(execution_no)
+    # 更新运行状态
+    execution.update(RUNNING_STATE=RunningState.RUNNING.value)
+
+    # 顺序执行脚本
+    for collection_no in collection_number_list:
+        # 查询计划项目
+        item = TestPlanExecutionItemsDao.select_by_execution_and_collection(execution_no, collection_no)
+        # 更新项目运行状态
+        item.update(RUNNING_STATE=RunningState.RUNNING.value)
+        # 加载脚本
+        collection = element_loader.loads_tree(collection_no)
+        if not collection:
+            log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+
+        # 添加自定义变量组件
+        if dataset_number_list:
+            element_loader.add_variable_data_set(collection, dataset_number_list, use_current_value)
+
+        # 添加报告存储器组件
+        if report_no:
+            element_loader.add_flask_db_result_storage(collection, execution_no, report_no, collection_no)
+
+        # 异步函数
+        def start(app):
+            # noinspection PyBroadException
+            try:
+                log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
+                Runner.start([collection], throw_ex=True)
+            except Exception:
+                log.error(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常\n{traceback.format_exc()}')
+                with app.app_context():
+                    # noinspection PyBroadException
+                    try:
+                        item.update(RUNNING_STATE=RunningState.ERROR.value)
+                    except Exception:
+                        log.error(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 发生异常\n{traceback.format_exc()}')
+
+        task = executor.submit(start, app)  # 异步执行脚本
+        task.result()  # 阻塞等待脚本执行完成
+        # 更新项目运行状态
+        item.update(RUNNING_STATE=RunningState.COMPLETED.value)
+        log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
+
+    if report_no:
+        # 记录结束时间
+        end_time = timestamp_now()
+        # 计算耗时
+        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
+        # 更新报告的开始时间、结束时间和耗时
+        TestReportDao.select_by_no(report_no).update(
+            START_TIME=timestamp_to_utc8_datetime(start_time),
+            END_TIME=timestamp_to_utc8_datetime(end_time),
+            ELAPSED_TIME=elapsed_time
+        )
+
+    # 更新运行状态
+    execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
+    log.info(f'执行编号:[ {execution_no} ] 测试计划执行完成')

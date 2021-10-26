@@ -15,6 +15,15 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
+@blueprint.get('/report')
+@require_login
+@require_permission
+def query_report():
+    """查询测试报告"""
+    req = JsonParser(Argument('reportNo', required=True, nullable=False, help='报告编号不能为空')).parse()
+    return service.query_report(req)
+
+
 @blueprint.get('/report/collection/result')
 @require_login
 @require_permission

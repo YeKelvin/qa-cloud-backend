@@ -7,12 +7,61 @@ from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_group_result_dao as TestGroupResultDao
+from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import test_sampler_result_dao as TestSamplerResultDao
 from app.utils.log_util import get_logger
+from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import microsecond_to_m_s
 
 
 log = get_logger(__name__)
+
+
+@http_service
+def query_report(req):
+    # 查询测试报告
+    report = TestReportDao.select_by_no(req.reportNo)
+    check_is_not_blank(report, '测试报告不存在')
+
+    # 递归查询脚本结果
+    collections = []
+    collection_result_list = TestCollectionResultDao.select_all_by_report(report.REPORT_NO)
+    for collection_result in collection_result_list:
+        collections.append({
+            'reportNo': collection_result.REPORT_NO,
+            'elementNo': collection_result.COLLECTION_NO,
+            'id': collection_result.COLLECTION_ID,
+            'name': collection_result.COLLECTION_NAME,
+            'remark': collection_result.COLLECTION_REMARK,
+            'startTime': collection_result.START_TIME.strftime('%H:%M:%S'),
+            'endTime': collection_result.END_TIME.strftime('%H:%M:%S'),
+            'elapsedTime': microsecond_to_m_s(collection_result.ELAPSED_TIME),
+            'success': collection_result.SUCCESS,
+        })
+
+    return {
+        'details': {
+            'reportName': report.REPORT_NAME,
+            'reportDesc': report.REPORT_DESC,
+            'startTime': report.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
+            'endTime': report.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
+            'elapsedTime': microsecond_to_h_m_s(report.ELAPSED_TIME),
+            'successfulCollectionsTotal': TestCollectionResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'successfulGroupsTotal': TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'successfulSamplersTotal': TestSamplerResultDao.count_by_report_and_success(report.REPORT_NO, True),
+            'failedCollectionsTotal': TestCollectionResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'failedGroupsTotal': TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'failedSamplersTotal': TestSamplerResultDao.count_by_report_and_success(report.REPORT_NO, False),
+            'avgCollectionsElapsedTime': microsecond_to_m_s(
+                TestCollectionResultDao.avg_elapsed_time_by_report(report.REPORT_NO)
+            ),
+            'avgGroupsElapsedTime': microsecond_to_m_s(
+                TestGroupResultDao.avg_elapsed_time_by_report(report.REPORT_NO)
+            ),
+            'avgSamplersElapsedTime': f'{TestSamplerResultDao.avg_elapsed_time_by_report(report.REPORT_NO)}ms',
+        },
+        'collections': collections
+    }
 
 
 @http_service

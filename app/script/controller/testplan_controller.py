@@ -51,6 +51,7 @@ def query_testplan():
 def create_testplan():
     """创建测试计划"""
     req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
         Argument('planDesc'),
         Argument('versionNumber'),
@@ -133,12 +134,3 @@ def query_testplan_execution_details():
     """查询测试计划执行记录详情"""
     req = JsonParser(Argument('executionNo', required=True, nullable=False, help='执行编号不能为空')).parse()
     return service.query_testplan_execution_details(req)
-
-
-@blueprint.get('/testplan/report')
-@require_login
-@require_permission
-def query_testplan_report():
-    """查询测试报告"""
-    req = JsonParser(Argument('planNo', required=True, nullable=False, help='报告编号不能为空')).parse()
-    return service.query_testplan_report(req)

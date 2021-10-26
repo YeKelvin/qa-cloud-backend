@@ -16,7 +16,7 @@ log = get_logger(__name__)
 def to_json(obj):
     """序列化"""
     try:
-        return orjson.dumps(obj)
+        return orjson.dumps(obj, option=orjson.OPT_NAIVE_UTC).decode('utf8')
     except TypeError as e:
         e.args = e.args + (f'obj:[ {obj} ]',)
         raise e
