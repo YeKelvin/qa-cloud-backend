@@ -191,7 +191,7 @@ def modify_testplan(req):
     for collection in req.collectionList:
         collection_no_list.append(collection.elementNo)
         # 查询测试计划关联的集合
-        item = TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection)
+        item = TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo)
         if item:
             item.update(SERIAL_NO=collection.serialNo)
         else:
@@ -229,7 +229,7 @@ def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')
-    testplan.update(STATE=TestplanState.INITIAL.value)
+    testplan.update(STATE=req.state)
 
 
 @http_service
@@ -237,7 +237,7 @@ def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')
-    testplan.update(TEST_PHASE=TestPhase.INITIAL.value)
+    testplan.update(TEST_PHASE=req.testPhase)
 
 
 @http_service
