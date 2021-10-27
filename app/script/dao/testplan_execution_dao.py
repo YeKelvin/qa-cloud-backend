@@ -5,11 +5,16 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
+from app.script.enum import RunningState
 from app.script.model import TTestplanExecution
 
 
 def select_by_no(execution_no) -> TTestplanExecution:
     return TTestplanExecution.filter_by(EXECUTION_NO=execution_no).first()
+
+
+def select_running_by_plan(plan_no) -> TTestplanExecution:
+    return TTestplanExecution.filter_by(PLAN_NO=plan_no, RUNNING_STATE=RunningState.RUNNING.value).first()
 
 
 def select_all_by_plan(plan_no) -> List[TTestplanExecution]:

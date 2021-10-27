@@ -178,6 +178,11 @@ def execute_snippet_collection(req):
 @http_service
 @transactional
 def execute_testplan(req):
+    # 查询是否有正在运行中的执行任务
+    running = TestplanExecutionDao.select_running_by_plan(req.planNo)
+    if running:
+        raise ServiceError('测试计划正在运行中，请执行结束后再开始新的执行')
+
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')

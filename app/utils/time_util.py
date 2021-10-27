@@ -83,6 +83,9 @@ def datetime_now_by_utc8() -> datetime:
 
 def microsecond_to_h_m_s(microsecond: int) -> str:
     """毫秒转换为时分秒"""
+    if not microsecond:
+        return '0ms'
+
     s, ms = divmod(microsecond, 1000)
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
@@ -98,6 +101,9 @@ def microsecond_to_h_m_s(microsecond: int) -> str:
 
 def microsecond_to_m_s(microsecond: int) -> str:
     """毫秒转换为时分秒"""
+    if not microsecond:
+        return '0ms'
+
     s, ms = divmod(microsecond, 1000)
     m, s = divmod(s, 60)
     if m == 0 and s == 0:

@@ -33,8 +33,8 @@ def query_report(req):
             'id': collection_result.COLLECTION_ID,
             'name': collection_result.COLLECTION_NAME,
             'remark': collection_result.COLLECTION_REMARK,
-            'startTime': collection_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': collection_result.END_TIME.strftime('%H:%M:%S'),
+            'startTime': collection_result.START_TIME.strftime('%H:%M:%S') if collection_result.START_TIME else 0,
+            'endTime': collection_result.END_TIME.strftime('%H:%M:%S') if collection_result.END_TIME else 0,
             'elapsedTime': microsecond_to_m_s(collection_result.ELAPSED_TIME),
             'success': collection_result.SUCCESS,
         })
@@ -43,8 +43,8 @@ def query_report(req):
         'details': {
             'reportName': report.REPORT_NAME,
             'reportDesc': report.REPORT_DESC,
-            'startTime': report.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-            'endTime': report.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
+            'startTime': report.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if report.START_TIME else 0,
+            'endTime': report.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if report.END_TIME else 0,
             'elapsedTime': microsecond_to_h_m_s(report.ELAPSED_TIME),
             'successfulCollectionsTotal': TestCollectionResultDao.count_by_report_and_success(report.REPORT_NO, True),
             'successfulGroupsTotal': TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True),
@@ -66,19 +66,19 @@ def query_report(req):
 
 @http_service
 def query_collection_result(req):
-    collection_result = TestCollectionResultDao.select_first_by_collectionid(req.collectionId)
-    check_is_not_blank(collection_result, 'CollectionResult不存在')
+    result = TestCollectionResultDao.select_first_by_collectionid(req.collectionId)
+    check_is_not_blank(result, 'CollectionResult不存在')
     return {
         'details': {
-            'reportNo': collection_result.REPORT_NO,
-            'elementNo': collection_result.COLLECTION_NO,
-            'collectionId': collection_result.COLLECTION_ID,
-            'collectionName': collection_result.COLLECTION_NAME,
-            'collectionRemark': collection_result.COLLECTION_REMARK,
-            'startTime': collection_result.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-            'endTime': collection_result.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-            'elapsedTime': microsecond_to_m_s(collection_result.ELAPSED_TIME),
-            'success': collection_result.SUCCESS,
+            'reportNo': result.REPORT_NO,
+            'elementNo': result.COLLECTION_NO,
+            'collectionId': result.COLLECTION_ID,
+            'collectionName': result.COLLECTION_NAME,
+            'collectionRemark': result.COLLECTION_REMARK,
+            'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.START_TIME else 0,
+            'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
+            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
+            'success': result.SUCCESS,
             'successfulGroupsTotal': TestGroupResultDao.count_by_collection_and_success(req.collectionId, True),
             'successfulSamplersTotal': TestSamplerResultDao.count_by_collection_and_success(req.collectionId, True),
             'failedGroupsTotal': TestGroupResultDao.count_by_collection_and_success(req.collectionId, False),
@@ -94,16 +94,16 @@ def query_collection_result(req):
 
 @http_service
 def query_group_result(req):
-    group_result = TestGroupResultDao.select_first_by_group(req.groupId)
-    check_is_not_blank(group_result, 'GroupResult不存在')
+    result = TestGroupResultDao.select_first_by_group(req.groupId)
+    check_is_not_blank(result, 'GroupResult不存在')
     return {
-        'groupId': group_result.GROUP_ID,
-        'groupName': group_result.GROUP_NAME,
-        'groupRemark': group_result.GROUP_REMARK,
-        'startTime': group_result.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-        'endTime': group_result.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-        'elapsedTime': microsecond_to_m_s(group_result.ELAPSED_TIME),
-        'success': group_result.SUCCESS,
+        'groupId': result.GROUP_ID,
+        'groupName': result.GROUP_NAME,
+        'groupRemark': result.GROUP_REMARK,
+        'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S')if result.START_TIME else 0,
+        'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
+        'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
+        'success': result.SUCCESS,
         'successfulSamplersTotal': TestSamplerResultDao.count_by_group_and_success(req.groupId, True),
         'failedSamplersTotal': TestSamplerResultDao.count_by_group_and_success(req.groupId, False),
         'avgSamplersElapsedTime': f'{TestSamplerResultDao.avg_elapsed_time_by_group(req.groupId)}ms'
@@ -112,40 +112,40 @@ def query_group_result(req):
 
 @http_service
 def query_sampler_result(req):
-    sampler_result = TestSamplerResultDao.select_first_by_sampler(req.samplerId)
-    check_is_not_blank(sampler_result, 'SamplerResult不存在')
+    result = TestSamplerResultDao.select_first_by_sampler(req.samplerId)
+    check_is_not_blank(result, 'SamplerResult不存在')
     return {
-        'samplerId': sampler_result.SAMPLER_ID,
-        'samplerName': sampler_result.SAMPLER_NAME,
-        'samplerRemark': sampler_result.SAMPLER_REMARK,
-        'startTime': sampler_result.START_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-        'endTime': sampler_result.END_TIME.strftime('%Y-%m-%d %H:%M:%S'),
-        'elapsedTime': f'{sampler_result.ELAPSED_TIME}ms',
-        'success': sampler_result.SUCCESS,
-        'requestUrl': sampler_result.REQUEST_URL,
-        'requestHeaders': sampler_result.REQUEST_HEADERS,
-        'requestData': sampler_result.REQUEST_DATA,
-        'responseCode': sampler_result.RESPONSE_CODE,
-        'responseHeaders': sampler_result.RESPONSE_HEADERS,
-        'responseData': sampler_result.RESPONSE_DATA,
-        'errorAssertion': sampler_result.ERROR_ASSERTION
+        'samplerId': result.SAMPLER_ID,
+        'samplerName': result.SAMPLER_NAME,
+        'samplerRemark': result.SAMPLER_REMARK,
+        'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.START_TIME else 0,
+        'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
+        'elapsedTime': f'{result.ELAPSED_TIME}ms',
+        'success': result.SUCCESS,
+        'requestUrl': result.REQUEST_URL,
+        'requestHeaders': result.REQUEST_HEADERS,
+        'requestData': result.REQUEST_DATA,
+        'responseCode': result.RESPONSE_CODE,
+        'responseHeaders': result.RESPONSE_HEADERS,
+        'responseData': result.RESPONSE_DATA,
+        'errorAssertion': result.ERROR_ASSERTION
     }
 
 
 def get_group_result_list(collection_id):
     groups = []
     group_result_list = TestGroupResultDao.select_all_by_collection(collection_id)
-    for group_result in group_result_list:
+    for result in group_result_list:
         groups.append({
-            'collectionId': group_result.COLLECTION_ID,
-            'id': group_result.GROUP_ID,
-            'name': group_result.GROUP_NAME,
-            'remark': group_result.GROUP_REMARK,
-            'startTime': group_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': group_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': microsecond_to_m_s(group_result.ELAPSED_TIME),
-            'success': group_result.SUCCESS,
-            'children': get_sampler_result_list(group_result.GROUP_ID)
+            'collectionId': result.COLLECTION_ID,
+            'id': result.GROUP_ID,
+            'name': result.GROUP_NAME,
+            'remark': result.GROUP_REMARK,
+            'startTime': result.START_TIME.strftime('%H:%M:%S') if result.START_TIME else 0,
+            'endTime': result.END_TIME.strftime('%H:%M:%S') if result.END_TIME else 0,
+            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
+            'success': result.SUCCESS,
+            'children': get_sampler_result_list(result.GROUP_ID)
         })
     return groups
 
@@ -153,18 +153,18 @@ def get_group_result_list(collection_id):
 def get_sampler_result_list(group_id):
     samplers = []
     sampler_result_list = TestSamplerResultDao.select_all_summary_by_group(group_id)
-    for sampler_result in sampler_result_list:
+    for result in sampler_result_list:
         samplers.append({
-            'groupId': sampler_result.GROUP_ID,
+            'groupId': result.GROUP_ID,
             'parentId': None,
-            'id': sampler_result.SAMPLER_ID,
-            'name': sampler_result.SAMPLER_NAME,
-            'remark': sampler_result.SAMPLER_REMARK,
-            'startTime': sampler_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': sampler_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': f'{sampler_result.ELAPSED_TIME}ms',
-            'success': sampler_result.SUCCESS,
-            'children': get_subsampler_result_list(sampler_result.SAMPLER_ID)
+            'id': result.SAMPLER_ID,
+            'name': result.SAMPLER_NAME,
+            'remark': result.SAMPLER_REMARK,
+            'startTime': result.START_TIME.strftime('%H:%M:%S') if result.START_TIME else 0,
+            'endTime': result.END_TIME.strftime('%H:%M:%S') if result.END_TIME else 0,
+            'elapsedTime': f'{result.ELAPSED_TIME}ms',
+            'success': result.SUCCESS,
+            'children': get_subsampler_result_list(result.SAMPLER_ID)
         })
     return samplers
 
@@ -172,17 +172,17 @@ def get_sampler_result_list(group_id):
 def get_subsampler_result_list(parent_id):
     sub_samplers = []
     sub_sampler_result_list = TestSamplerResultDao.select_all_by_parent(parent_id)
-    for sub_result in sub_sampler_result_list:
+    for result in sub_sampler_result_list:
         sub_samplers.append({
-            'groupId': sub_result.GROUP_ID,
+            'groupId': result.GROUP_ID,
             'parentId': parent_id,
-            'id': sub_result.SAMPLER_ID,
-            'name': sub_result.SAMPLER_NAME,
-            'remark': sub_result.SAMPLER_REMARK,
-            'startTime': sub_result.START_TIME.strftime('%H:%M:%S'),
-            'endTime': sub_result.END_TIME.strftime('%H:%M:%S'),
-            'elapsedTime': f'{sub_result.ELAPSED_TIME}ms',
-            'success': sub_result.SUCCESS,
-            'children': get_subsampler_result_list(sub_result.SAMPLER_ID)
+            'id': result.SAMPLER_ID,
+            'name': result.SAMPLER_NAME,
+            'remark': result.SAMPLER_REMARK,
+            'startTime': result.START_TIME.strftime('%H:%M:%S') if result.START_TIME else 0,
+            'endTime': result.END_TIME.strftime('%H:%M:%S') if result.END_TIME else 0,
+            'elapsedTime': f'{result.ELAPSED_TIME}ms',
+            'success': result.SUCCESS,
+            'children': get_subsampler_result_list(result.SAMPLER_ID)
         })
     return sub_samplers
