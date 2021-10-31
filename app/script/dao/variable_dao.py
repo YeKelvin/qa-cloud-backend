@@ -16,16 +16,16 @@ def select_by_name(var_name) -> TVariable:
     return TVariable.filter_by(VAR_NAME=var_name).first()
 
 
-def select_by_set_and_name(set_no, var_name) -> TVariable:
-    return TVariable.filter_by(DATASET_NO=set_no, VAR_NAME=var_name).first()
+def select_by_dataset_and_name(dataset_no, var_name) -> TVariable:
+    return TVariable.filter_by(DATASET_NO=dataset_no, VAR_NAME=var_name).first()
 
 
-def select_list_by_set(set_no) -> List[TVariable]:
-    return TVariable.filter_by(DATASET_NO=set_no).all()
+def select_list_by_dataset(dataset_no) -> List[TVariable]:
+    return TVariable.filter_by(DATASET_NO=dataset_no).all()
 
 
-def select_list_in_set(*set_no) -> List[TVariable]:
-    return TVariable.filter(TVariable.DATASET_NO.in_(*set_no)).all()
+def select_list_in_dataset(*dataset_no) -> List[TVariable]:
+    return TVariable.filter(TVariable.DATASET_NO.in_(*dataset_no)).all()
 
 
 def delete_in_no(*args):

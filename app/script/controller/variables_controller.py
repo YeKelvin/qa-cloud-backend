@@ -16,10 +16,10 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.get('/variable/set/list')
+@blueprint.get('/variable/dataset/list')
 @require_login
 @require_permission
-def query_variable_set_list():
+def query_variable_dataset_list():
     """分页查询变量集列表"""
     req = JsonParser(
         Argument('workspaceNo'),
@@ -30,13 +30,13 @@ def query_variable_set_list():
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空')
     ).parse()
-    return service.query_variables_set_list(req)
+    return service.query_variables_dataset_list(req)
 
 
-@blueprint.get('/variable/set/all')
+@blueprint.get('/variable/dataset/all')
 @require_login
 @require_permission
-def query_variable_set_all():
+def query_variable_dataset_all():
     """查询所有变量集"""
     req = JsonParser(
         Argument('workspaceNo'),
@@ -45,13 +45,13 @@ def query_variable_set_all():
         Argument('setType'),
         Argument('setDesc')
     ).parse()
-    return service.query_variable_set_all(req)
+    return service.query_variable_dataset_all(req)
 
 
-@blueprint.post('/variable/set')
+@blueprint.post('/variable/dataset')
 @require_login
 @require_permission
-def create_variable_set():
+def create_variable_dataset():
     """新增变量集"""
     req = JsonParser(
         Argument('workspaceNo'),
@@ -59,31 +59,31 @@ def create_variable_set():
         Argument('setType', required=True, nullable=False, enum=VariableDatasetType, help='变量集类型不能为空'),
         Argument('setDesc')
     ).parse()
-    return service.create_variable_set(req)
+    return service.create_variable_dataset(req)
 
 
-@blueprint.put('/variable/set')
+@blueprint.put('/variable/dataset')
 @require_login
 @require_permission
-def modify_variable_set():
+def modify_variable_dataset():
     """修改变量集"""
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('setName', required=True, nullable=False, help='变量集名称不能为空'),
         Argument('setDesc')
     ).parse()
-    return service.modify_variable_set(req)
+    return service.modify_variable_dataset(req)
 
 
-@blueprint.delete('/variable/set')
+@blueprint.delete('/variable/dataset')
 @require_login
 @require_permission
-def remove_variable_set():
+def remove_variable_dataset():
     """删除变量集"""
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
-    return service.remove_variable_set(req)
+    return service.remove_variable_dataset(req)
 
 
 @blueprint.post('/variable')
@@ -161,22 +161,25 @@ def update_current_value():
     return service.update_current_value(req)
 
 
-@blueprint.get('/variables/in/set')
+@blueprint.get('/variables/by/dataset')
 @require_login
 @require_permission
-def query_variable_in_set():
+def query_variables_by_dataset():
     """查询变量集下的变量"""
     req = JsonParser(
         Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
-    return service.query_variable_in_set(req)
+    return service.query_variable_by_dataset(req)
 
 
 @blueprint.get('/variables')
 @require_login
 @require_permission
 def query_variables():
-    """根据列表查询变量"""
+    """
+    根据列表查询变量
+    example: ['dataset_no', 'dataset_no']
+    """
     req = ListParser().parse()
     return service.query_variables(req)
 
@@ -249,3 +252,38 @@ def remove_variables():
     """
     req = ListParser().parse()
     return service.remove_variables(req)
+
+
+@blueprint.post('/variable/dataset/duplicate')
+@require_login
+@require_permission
+def duplicate_variable_dataset():
+    """复制变量集"""
+    req = JsonParser(
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
+    ).parse()
+    return service.duplicate_variable_dataset(req)
+
+
+@blueprint.post('/variable/dataset/copy/to/workspace')
+@require_login
+@require_permission
+def copy_variable_dataset_to_workspace():
+    """复制变量集至指定工作空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
+    ).parse()
+    return service.copy_variable_dataset_to_workspace(req)
+
+
+@blueprint.patch('/variable/dataset/move/to/workspace')
+@require_login
+@require_permission
+def move_variable_dataset_to_workspace():
+    """移动变量集至指定工作空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
+    ).parse()
+    return service.move_variable_dataset_to_workspace(req)

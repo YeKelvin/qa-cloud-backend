@@ -143,15 +143,15 @@ def disable_http_header():
     return service.disable_http_header(req)
 
 
-@blueprint.get('/http/headers/in/template')
+@blueprint.get('/http/headers/by/template')
 @require_login
 @require_permission
-def query_http_headers_in_template():
+def query_http_headers_by_template():
     """查询模板下的请求头"""
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
     ).parse()
-    return service.query_http_headers_in_template(req)
+    return service.query_http_headers_by_template(req)
 
 
 @blueprint.get('/http/headers')
@@ -228,3 +228,38 @@ def remove_http_headers():
     """
     req = ListParser().parse()
     return service.remove_http_headers(req)
+
+
+@blueprint.post('/http/headers/template/duplicate')
+@require_login
+@require_permission
+def duplicate_http_headers_template():
+    """复制请求头模板"""
+    req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.duplicate_http_headers_template(req)
+
+
+@blueprint.post('/http/headers/template/copy/to/workspace')
+@require_login
+@require_permission
+def copy_http_headers_template_to_workspace():
+    """复制请求头模板至指定工作空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.copy_http_headers_template_to_workspace(req)
+
+
+@blueprint.patch('/http/headers/template/move/to/workspace')
+@require_login
+@require_permission
+def move_http_headers_template_to_workspace():
+    """移动请求头模板至指定工作空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
+    return service.move_http_headers_template_to_workspace(req)

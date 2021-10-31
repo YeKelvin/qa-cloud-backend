@@ -174,7 +174,7 @@ def disable_http_header(req):
 
 
 @http_service
-def query_http_headers_in_template(req):
+def query_http_headers_by_template(req):
     headers = HttpHeaderDao.select_list_by_template(req.templateNo)
 
     result = []
@@ -277,3 +277,74 @@ def modify_http_headers(req):
 def remove_http_headers(req):
     # 批量删除请求头
     HttpHeaderDao.delete_in_no(req.list)
+
+
+@http_service
+@transactional
+def duplicate_variable_dataset(req):
+    # 查询请求头模板
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '请求头模板不存在')
+
+    # 复制请求头模板
+    template_no = new_id()
+    THttpHeadersTemplate.insert(
+        WORKSPACE_NO=template.WORKSPACE_NO,
+        TEMPLATE_NO=template_no,
+        TEMPLATE_NAME=template.TEMPLATE_NAME,
+        TEMPLATE_DESC=template.TEMPLATE_DESC
+    )
+
+    # 复制请求头
+    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+    for header in headers:
+        THttpHeader.insert(
+            TEMPLATE_NO=req.templateNo,
+            HEADER_NO=new_id(),
+            HEADER_NAME=header.HEADER_NAME,
+            HEADER_VALUE=header.HEADER_VALUE,
+            HEADER_DESC=header.HEADER_DESC,
+            ENABLED=True
+        )
+
+    return {'templateNo': template_no}
+
+
+@http_service
+@transactional
+def copy_variable_dataset_to_workspace(req):
+    # 查询请求头模板
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '请求头模板不存在')
+
+    # 复制请求头模板
+    template_no = new_id()
+    THttpHeadersTemplate.insert(
+        WORKSPACE_NO=req.workspaceNo,
+        TEMPLATE_NO=template_no,
+        TEMPLATE_NAME=template.TEMPLATE_NAME,
+        TEMPLATE_DESC=template.TEMPLATE_DESC
+    )
+
+    # 复制请求头
+    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+    for header in headers:
+        THttpHeader.insert(
+            TEMPLATE_NO=req.templateNo,
+            HEADER_NO=new_id(),
+            HEADER_NAME=header.HEADER_NAME,
+            HEADER_VALUE=header.HEADER_VALUE,
+            HEADER_DESC=header.HEADER_DESC,
+            ENABLED=True
+        )
+
+    return {'templateNo': template_no}
+
+
+@http_service
+def move_variable_dataset_to_workspace(req):
+    # 查询请求头模板
+    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '请求头模板不存在')
+
+    template.update(WORKSPACE_NO=req.workspaceNo)

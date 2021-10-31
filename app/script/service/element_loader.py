@@ -207,7 +207,7 @@ def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dic
 
     for dataset in dataset_list:
         # 查询变量列表
-        variables = VariableDao.select_list_by_set(dataset.DATASET_NO)
+        variables = VariableDao.select_list_by_dataset(dataset.DATASET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量
