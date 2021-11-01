@@ -25,7 +25,7 @@ def execute_collection():
     {
         "collectionNo": "",
         "socketId": "",
-        "variableSet": {
+        "variableDataSet": {
             "useCurrentValue": true,
             "numberList": [ ... ]
         }
@@ -86,7 +86,7 @@ def execute_snippet_collection():
     {
         "collectionNo": "",
         "socketId": "",
-        "variableSet": {
+        "variableDataSet": {
             "useCurrentValue": true,
             "numberList": [ ... ]
         }

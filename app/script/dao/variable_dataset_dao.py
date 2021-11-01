@@ -23,10 +23,10 @@ def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
     if kwargs:
         conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('setNo', None))
-        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('setName', None))
-        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('setType', None))
-        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('setDesc', None))
+        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
+        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
+        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
+        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
@@ -42,9 +42,9 @@ def select_all(**kwargs) -> List[TVariableDataset]:
     conds = QueryCondition()
     if kwargs:
         conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('setNo', None))
-        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('setName', None))
-        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('setType', None))
-        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('setDesc', None))
+        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
+        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
+        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
+        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
 
     return TVariableDataset.filter(*conds).order_by(TVariableDataset.CREATED_TIME.desc()).all()

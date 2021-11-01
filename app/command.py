@@ -198,9 +198,9 @@ def init_permission():
     _create_permission(name='根据列表批量新增变量', method='POST', endpoint='/script/variables')
     _create_permission(name='根据列表批量修改变量', method='PUT', endpoint='/script/variables')
     _create_permission(name='根据列表批量删除变量', method='DELETE', endpoint='/script/variables')
-    _create_permission(name='复制请求头模板', method='POST', endpoint='/script/variable/dataset/duplicate')
-    _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/variable/dataset/copy/to/workspace')
-    _create_permission(name='移动请求头模板至指定工作空间', method='PATCH', endpoint='/script/variable/dataset/move/to/workspace')
+    _create_permission(name='复制变量集', method='POST', endpoint='/script/variable/dataset/duplicate')
+    _create_permission(name='复制变量集至指定工作空间', method='POST', endpoint='/script/variable/dataset/copy/to/workspace')
+    _create_permission(name='移动变量集至指定工作空间', method='PATCH', endpoint='/script/variable/dataset/move/to/workspace')
 
     # headers
     _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/headers/template/list')

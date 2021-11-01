@@ -291,7 +291,7 @@ def duplicate_variable_dataset(req):
     THttpHeadersTemplate.insert(
         WORKSPACE_NO=template.WORKSPACE_NO,
         TEMPLATE_NO=template_no,
-        TEMPLATE_NAME=template.TEMPLATE_NAME,
+        TEMPLATE_NAME=template.TEMPLATE_NAME + ' copy',
         TEMPLATE_DESC=template.TEMPLATE_DESC
     )
 
@@ -322,7 +322,7 @@ def copy_variable_dataset_to_workspace(req):
     THttpHeadersTemplate.insert(
         WORKSPACE_NO=req.workspaceNo,
         TEMPLATE_NO=template_no,
-        TEMPLATE_NAME=template.TEMPLATE_NAME,
+        TEMPLATE_NAME=template.TEMPLATE_NAME + ' copy',
         TEMPLATE_DESC=template.TEMPLATE_DESC
     )
 

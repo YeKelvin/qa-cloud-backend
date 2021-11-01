@@ -25,10 +25,10 @@ def query_variables_dataset_list(req):
     # 条件分页查询
     pagination = VariableDatasetDao.select_list(
         workspaceNo=req.workspaceNo,
-        setNo=req.setNo,
-        setName=req.setName,
-        setType=req.setType,
-        setDesc=req.setDesc,
+        datasetNo=req.datasetNo,
+        datasetName=req.datasetName,
+        datasetType=req.datasetType,
+        datasetDesc=req.datasetDesc,
         page=req.page,
         pageSize=req.pageSize
     )
@@ -36,10 +36,10 @@ def query_variables_dataset_list(req):
     data = []
     for item in pagination.items:
         data.append({
-            'setNo': item.DATASET_NO,
-            'setName': item.DATASET_NAME,
-            'setType': item.DATASET_TYPE,
-            'setDesc': item.DATASET_DESC
+            'datasetNo': item.DATASET_NO,
+            'datasetName': item.DATASET_NAME,
+            'datasetType': item.DATASET_TYPE,
+            'datasetDesc': item.DATASET_DESC
         })
     return {'data': data, 'total': pagination.total}
 
@@ -49,19 +49,19 @@ def query_variable_dataset_all(req):
     # 条件查询
     items = VariableDatasetDao.select_all(
         workspaceNo=req.workspaceNo,
-        setNo=req.setNo,
-        setName=req.setName,
-        setType=req.setType,
-        setDesc=req.setDesc
+        datasetNo=req.datasetNo,
+        datasetName=req.datasetName,
+        datasetType=req.datasetType,
+        datasetDesc=req.datasetDesc
     )
 
     result = []
     for item in items:
         result.append({
-            'setNo': item.DATASET_NO,
-            'setName': item.DATASET_NAME,
-            'setType': item.DATASET_TYPE,
-            'setDesc': item.DATASET_DESC
+            'datasetNo': item.DATASET_NO,
+            'datasetName': item.DATASET_NAME,
+            'datasetType': item.DATASET_TYPE,
+            'datasetDesc': item.DATASET_DESC
         })
     return result
 
@@ -69,44 +69,48 @@ def query_variable_dataset_all(req):
 @http_service
 def create_variable_dataset(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_first(WORKSPACE_NO=req.workspaceNo, DATASET_NAME=req.setName, DATASET_TYPE=req.setType)
+    varset = VariableDatasetDao.select_first(
+        WORKSPACE_NO=req.workspaceNo,
+        DATASET_NAME=req.datasetName,
+        DATASET_TYPE=req.datasetType
+    )
     check_is_blank(varset, '变量集已存在')
 
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
-    if req.setType != VariableDatasetType.GLOBAL.value:
+    if req.datasetType != VariableDatasetType.GLOBAL.value:
         check_is_not_blank(req.workspaceNo, '工作空间编号不能为空')
 
     # 新增变量集
-    set_no = new_id()
+    dataset_no = new_id()
     TVariableDataset.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DATASET_NO=set_no,
-        DATASET_NAME=req.setName,
-        DATASET_TYPE=req.setType,
-        DATASET_DESC=req.setDesc,
-        WEIGHT=VariableDatasetWeight[req.setType].value
+        DATASET_NO=dataset_no,
+        DATASET_NAME=req.datasetName,
+        DATASET_TYPE=req.datasetType,
+        DATASET_DESC=req.datasetDesc,
+        WEIGHT=VariableDatasetWeight[req.datasetType].value
     )
 
-    return set_no
+    return {'datasetNo': dataset_no}
 
 
 @http_service
 def modify_variable_dataset(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.setNo)
+    varset = VariableDatasetDao.select_by_no(req.datasetNo)
     check_is_not_blank(varset, '变量集不存在')
 
     # 更新变量集信息
     varset.update(
-        DATASET_NAME=req.setName,
-        DATASET_DESC=req.setDesc
+        DATASET_NAME=req.datasetName,
+        DATASET_DESC=req.datasetDesc
     )
 
 
 @http_service
 def remove_variable_dataset(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.setNo)
+    varset = VariableDatasetDao.select_by_no(req.datasetNo)
     check_is_not_blank(varset, '变量集不存在')
 
     # 删除变量集，TODO: 还要删除变量集下的变量
@@ -120,13 +124,13 @@ def create_variable(req):
     check_is_blank(variable, '变量集已存在')
 
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.setNo)
-    check_is_not_blank(varset, '变量集不存在')
+    dataset = VariableDatasetDao.select_by_no(req.datasetNo)
+    check_is_not_blank(dataset, '变量集不存在')
 
     # 新增变量
     var_no = new_id()
     TVariable.insert(
-        DATASET_NO=req.setNo,
+        DATASET_NO=req.datasetNo,
         VAR_NO=var_no,
         VAR_NAME=req.varName,
         VAR_DESC=req.varDesc,
@@ -201,7 +205,7 @@ def update_current_value(req):
 
 @http_service
 def query_variable_by_dataset(req):
-    variables = VariableDao.select_list_by_dataset(req.setNo)
+    variables = VariableDao.select_list_by_dataset(req.datasetNo)
 
     result = []
     for variable in variables:
@@ -219,19 +223,19 @@ def query_variable_by_dataset(req):
 @http_service
 def query_variables(req):
     result = []
-    for set_no in req.list:
+    for dataset_no in req.list:
         # 查询变量集信息
-        set = VariableDatasetDao.select_by_no(set_no)
-        if not set:
+        dataset = VariableDatasetDao.select_by_no(dataset_no)
+        if not dataset:
             continue
 
         # 查询变量列表
-        variables = VariableDao.select_list_by_dataset(set_no)
+        variables = VariableDao.select_list_by_dataset(dataset_no)
 
         for variable in variables:
             result.append({
-                'setNo': set.DATASET_NO,
-                'setName': set.DATASET_NAME,
+                'datasetNo': dataset.DATASET_NO,
+                'datasetName': dataset.DATASET_NAME,
                 'varNo': variable.VAR_NO,
                 'varName': variable.VAR_NAME,
                 'varDesc': variable.VAR_DESC,
@@ -246,8 +250,8 @@ def query_variables(req):
 @transactional
 def create_variables(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.setNo)
-    check_is_not_blank(varset, '变量集不存在')
+    dataset = VariableDatasetDao.select_by_no(req.datasetNo)
+    check_is_not_blank(dataset, '变量集不存在')
 
     for vari in req.varList:
         # 跳过变量名为空的数据
@@ -255,12 +259,12 @@ def create_variables(req):
             continue
 
         # 查询变量信息
-        variable = VariableDao.select_by_dataset_and_name(req.setNo, vari.varName)
+        variable = VariableDao.select_by_dataset_and_name(req.datasetNo, vari.varName)
         check_is_blank(variable, '变量已存在')
 
         # 新增变量
         TVariable.insert(
-            DATASET_NO=req.setNo,
+            DATASET_NO=req.datasetNo,
             VAR_NO=new_id(),
             VAR_NAME=vari.varName,
             VAR_DESC=vari.varDesc,
@@ -291,11 +295,11 @@ def modify_variables(req):
             )
         else:
             # 查询变量信息
-            variable = VariableDao.select_by_dataset_and_name(req.setNo, vari.varName)
+            variable = VariableDao.select_by_dataset_and_name(req.datasetNo, vari.varName)
             check_is_blank(variable, '变量已存在')
             # 新增变量
             TVariable.insert(
-                DATASET_NO=req.setNo,
+                DATASET_NO=req.datasetNo,
                 VAR_NO=new_id(),
                 VAR_NAME=vari.varName,
                 VAR_DESC=vari.varDesc,
@@ -323,7 +327,7 @@ def duplicate_variable_dataset(req):
     TVariableDataset.insert(
         WORKSPACE_NO=dataset.WORKSPACE_NO,
         DATASET_NO=dataset_no,
-        DATASET_NAME=dataset.DATASET_NAME,
+        DATASET_NAME=dataset.DATASET_NAME + ' copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
         WEIGHT=dataset.WEIGHT
@@ -357,7 +361,7 @@ def copy_variable_dataset_to_workspace(req):
     TVariableDataset.insert(
         WORKSPACE_NO=req.workspaceNo,
         DATASET_NO=dataset_no,
-        DATASET_NAME=dataset.DATASET_NAME,
+        DATASET_NAME=dataset.DATASET_NAME + ' copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
         WEIGHT=dataset.WEIGHT

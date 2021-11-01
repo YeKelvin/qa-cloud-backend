@@ -23,10 +23,10 @@ def query_variable_dataset_list():
     """分页查询变量集列表"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('setNo'),
-        Argument('setName'),
-        Argument('setType'),
-        Argument('setDesc'),
+        Argument('datasetNo'),
+        Argument('datasetName'),
+        Argument('datasetType'),
+        Argument('datasetDesc'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空')
     ).parse()
@@ -40,10 +40,10 @@ def query_variable_dataset_all():
     """查询所有变量集"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('setNo'),
-        Argument('setName'),
-        Argument('setType'),
-        Argument('setDesc')
+        Argument('datasetNo'),
+        Argument('datasetName'),
+        Argument('datasetType'),
+        Argument('datasetDesc')
     ).parse()
     return service.query_variable_dataset_all(req)
 
@@ -55,9 +55,9 @@ def create_variable_dataset():
     """新增变量集"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('setName', required=True, nullable=False, help='变量集名称不能为空'),
-        Argument('setType', required=True, nullable=False, enum=VariableDatasetType, help='变量集类型不能为空'),
-        Argument('setDesc')
+        Argument('datasetName', required=True, nullable=False, help='变量集名称不能为空'),
+        Argument('datasetType', required=True, nullable=False, enum=VariableDatasetType, help='变量集类型不能为空'),
+        Argument('datasetDesc')
     ).parse()
     return service.create_variable_dataset(req)
 
@@ -68,9 +68,9 @@ def create_variable_dataset():
 def modify_variable_dataset():
     """修改变量集"""
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
-        Argument('setName', required=True, nullable=False, help='变量集名称不能为空'),
-        Argument('setDesc')
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
+        Argument('datasetName', required=True, nullable=False, help='变量集名称不能为空'),
+        Argument('datasetDesc')
     ).parse()
     return service.modify_variable_dataset(req)
 
@@ -81,7 +81,7 @@ def modify_variable_dataset():
 def remove_variable_dataset():
     """删除变量集"""
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
     return service.remove_variable_dataset(req)
 
@@ -92,7 +92,7 @@ def remove_variable_dataset():
 def create_variable():
     """新增变量"""
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
         Argument('varDesc'),
         Argument('initialValue'),
@@ -167,7 +167,7 @@ def update_current_value():
 def query_variables_by_dataset():
     """查询变量集下的变量"""
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空')
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
     return service.query_variable_by_dataset(req)
 
@@ -193,7 +193,7 @@ def create_variables():
 
     example:
     {
-        "setNo": "",
+        "datasetNo": "",
         "varList": [
             {
                 "varName": "",
@@ -206,7 +206,7 @@ def create_variables():
     }
     """
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.create_variables(req)
@@ -221,7 +221,7 @@ def modify_variables():
 
     example:
     {
-        "setNo": "",
+        "datasetNo": "",
         "varList": [
             {
                 "varNo": "",
@@ -235,7 +235,7 @@ def modify_variables():
     }
     """
     req = JsonParser(
-        Argument('setNo', required=True, nullable=False, help='变量集编号不能为空'),
+        Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.modify_variables(req)
