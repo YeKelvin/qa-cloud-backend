@@ -375,7 +375,7 @@ def is_sampler(element):
 
 
 def is_test_snippet(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPET.value
+    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPETS.value
 
 
 def is_test_group(element):

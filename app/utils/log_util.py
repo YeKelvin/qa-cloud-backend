@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 import logging
 from logging.config import dictConfig
+from logging.handlers import TimedRotatingFileHandler
 
 from app.utils import config
 
@@ -53,8 +54,11 @@ CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
 # 写入日志文件
-FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
+# FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
+# 按日分割日志文件
+FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
+
 
 # 配置werkzeug日志
 werkzeug_logger = logging.getLogger('werkzeug')

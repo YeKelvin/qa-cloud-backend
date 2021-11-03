@@ -153,7 +153,7 @@ def execute_snippet_collection(req):
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
     if not element_loader.is_test_snippet(collection):
-        raise ServiceError('仅支持运行 TestSnippet 元素')
+        raise ServiceError('仅支持运行 TestSnippets 元素')
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_snippet_collecion(
