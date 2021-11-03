@@ -36,16 +36,17 @@ import datetime
 
 import jwt
 
-from app.utils import config
+from app import config as CONFIG
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_to_utc8_datetime
+
 
 log = get_logger(__name__)
 
 
 class JWTAuth:
-    SECRET_KEY = config.get('jwt', 'secret.key')
-    EXPIRE_TIME = int(config.get('jwt', 'expire.time'))
+    SECRET_KEY = CONFIG.JWT_SECRET_KEY
+    EXPIRE_TIME = int(CONFIG.JWT_EXPIRE_TIME)
 
     @staticmethod
     def encode_auth_token(user_no, issued_at):
@@ -66,7 +67,7 @@ class JWTAuth:
         payload = {
             'exp': timestamp_to_utc8_datetime(issued_at) + datetime.timedelta(days=0, seconds=JWTAuth.EXPIRE_TIME),
             'iat': issued_at,
-            'iss': config.get('jwt', 'issuer'),
+            'iss': CONFIG.JWT_ISSUER,
             'data': {
                 'id': user_no
             }

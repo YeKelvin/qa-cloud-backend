@@ -7,7 +7,7 @@ import logging
 from logging.config import dictConfig
 from logging.handlers import TimedRotatingFileHandler
 
-from app.utils import config
+from app import config as CONFIG
 
 
 # 日志格式
@@ -18,7 +18,7 @@ dictConfig({
     'version': 1,
     'root': {
         'propagate': False,
-        'level': config.get('log', 'level'),  # handler的level会覆盖掉这里的level
+        'level': CONFIG.LOG_LEVEL,  # handler的level会覆盖掉这里的level
         'handlers': ['console', 'file']
     },
     'handlers': {
@@ -30,7 +30,7 @@ dictConfig({
             'class': 'logging.FileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
-            'filename': config.get('log', 'name')
+            'filename': CONFIG.LOG_NAME
         }
     },
     'formatters': {
@@ -41,10 +41,10 @@ dictConfig({
 })
 
 # 日志级别
-LEVEL = config.get('log', 'level')
+LEVEL = CONFIG.LOG_LEVEL
 
 # 日志文件名称
-LOG_FILE_NAME = config.get('log', 'name')
+LOG_FILE_NAME = CONFIG.LOG_NAME
 
 # 日志格式
 FORMATTER = logging.Formatter(LOG_FORMAT)
