@@ -616,8 +616,8 @@ def duplicate_element(req):
     source = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(source, '元素不存在')
 
-    if source.ELEMENT_TYPE == 'COLLECTION' or source.ELEMENT_TYPE == 'GROUP':
-        raise ServiceError('暂不支持复制Collection 或 Group')
+    if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
+        raise ServiceError('暂不支持复制 Collection 元素')
 
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
@@ -674,13 +674,14 @@ def clone_element(source: TTestElement, rename=False):
         ELEMENT_TYPE=source.ELEMENT_TYPE,
         ELEMENT_CLASS=source.ELEMENT_CLASS
     )
-    prop = ElementPropertyDao.select_by_element(source.ELEMENT_NO)
-    TElementProperty.insert(
-        ELEMENT_NO=cloned_no,
-        PROPERTY_NAME=prop.PROPERTY_NAME,
-        PROPERTY_VALUE=prop.PROPERTY_VALUE,
-        PROPERTY_TYPE=prop.PROPERTY_TYPE
-    )
+    props = ElementPropertyDao.select_all_by_element(source.ELEMENT_NO)
+    for prop in props:
+        TElementProperty.insert(
+            ELEMENT_NO=cloned_no,
+            PROPERTY_NAME=prop.PROPERTY_NAME,
+            PROPERTY_VALUE=prop.PROPERTY_VALUE,
+            PROPERTY_TYPE=prop.PROPERTY_TYPE
+        )
     return cloned_no
 
 

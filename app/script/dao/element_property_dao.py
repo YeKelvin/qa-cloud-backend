@@ -8,10 +8,6 @@ from typing import List
 from app.script.model import TElementProperty
 
 
-def select_by_element(element_no) -> TElementProperty:
-    return TElementProperty.filter_by(ELEMENT_NO=element_no).first()
-
-
 def select_by_element_and_name(element_no, property_name) -> TElementProperty:
     return TElementProperty.filter_by(ELEMENT_NO=element_no, PROPERTY_NAME=property_name).first()
 

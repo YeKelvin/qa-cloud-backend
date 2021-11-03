@@ -54,11 +54,11 @@ CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
 # 写入日志文件
-# FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
-# 按日分割日志文件
-FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
+FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
+# 按日分割日志文件（线程不安全）
+# FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
-
+FILE_HANDLER.suffix = "%Y-%m-%d_%H-%M-%S.log"
 
 # 配置werkzeug日志
 werkzeug_logger = logging.getLogger('werkzeug')
