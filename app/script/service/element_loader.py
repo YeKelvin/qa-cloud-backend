@@ -17,6 +17,10 @@ from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementType
+from app.script.enum import is_group
+from app.script.enum import is_http_sampler
+from app.script.enum import is_sampler
+from app.script.enum import is_snippet_sampler
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -360,34 +364,6 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
 
 
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
-
-
-def is_collection(element):
-    return element.ELEMENT_CLASS == ElementType.COLLECTION.value
-
-
-def is_group(element):
-    return element.ELEMENT_TYPE == ElementType.GROUP.value
-
-
-def is_sampler(element):
-    return element.ELEMENT_TYPE == ElementType.SAMPLER.value
-
-
-def is_test_snippet(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPETS.value
-
-
-def is_test_group(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
-
-
-def is_http_sampler(element):
-    return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
-
-
-def is_snippet_sampler(element):
-    return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
 
 
 def is_specified_group_or_passable_element(element, specified_no, self_only):

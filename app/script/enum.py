@@ -3,13 +3,12 @@
 # @File    : enum.py
 # @Time    : 2020/7/3 15:23
 # @Author  : Kelvin.Ye
+from enum import Enum
 from enum import unique
-
-from common.enums import BaseEnum
 
 
 @unique
-class ElementType(BaseEnum):
+class ElementType(Enum):
 
     # 测试集合
     COLLECTION = 'COLLECTION'
@@ -43,7 +42,7 @@ class ElementType(BaseEnum):
 
 
 @unique
-class ElementClass(BaseEnum):
+class ElementClass(Enum):
 
     # 测试集合
     TEST_COLLECTION = 'TestCollection'
@@ -104,7 +103,7 @@ class ElementClass(BaseEnum):
 
 
 @unique
-class ElementStatus(BaseEnum):
+class ElementStatus(Enum):
 
     # 启用
     ENABLE = True
@@ -114,7 +113,7 @@ class ElementStatus(BaseEnum):
 
 
 @unique
-class VariableDatasetType(BaseEnum):
+class VariableDatasetType(Enum):
 
     # 全局变量：与环境无关，与工作空间无关
     GLOBAL = 'GLOBAL'
@@ -127,7 +126,7 @@ class VariableDatasetType(BaseEnum):
 
 
 @unique
-class VariableDatasetWeight(BaseEnum):
+class VariableDatasetWeight(Enum):
 
     # 全局变量
     GLOBAL = 1
@@ -140,7 +139,7 @@ class VariableDatasetWeight(BaseEnum):
 
 
 @unique
-class RunningState(BaseEnum):
+class RunningState(Enum):
 
     # 待运行
     WAITING = 'WAITING'
@@ -156,7 +155,7 @@ class RunningState(BaseEnum):
 
 
 @unique
-class TestplanState(BaseEnum):
+class TestplanState(Enum):
 
     # 待开始
     INITIAL = 'INITIAL'
@@ -169,7 +168,7 @@ class TestplanState(BaseEnum):
 
 
 @unique
-class TestPhase(BaseEnum):
+class TestPhase(Enum):
 
     # 待测试
     INITIAL = 'INITIAL'
@@ -194,7 +193,7 @@ class TestPhase(BaseEnum):
 
 
 @unique
-class PasteType(BaseEnum):
+class PasteType(Enum):
 
     # 复制
     COPY = 'COPY'
@@ -203,41 +202,61 @@ class PasteType(BaseEnum):
     CUT = 'CUT'
 
 
-# def is_collection(element):
-#     return element.ELEMENT_TYPE == ElementType.COLLECTION
-#
-#
-# def is_group(element):
-#     return element.ELEMENT_TYPE == ElementType.GROUP
-#
-#
-# def is_sampler(element):
-#     return element.ELEMENT_TYPE == ElementType.SAMPLER
-#
-#
-# def is_config(element):
-#     return element.ELEMENT_TYPE == ElementType.CONFIG
-#
-#
-# def is_controller(element):
-#     return element.ELEMENT_TYPE == ElementType.CONTROLLER
-#
-#
-# def is_timer(element):
-#     return element.ELEMENT_TYPE == ElementType.TIMER
-#
-#
-# def is_pre_processor(element):
-#     return element.ELEMENT_TYPE == ElementType.PRE_PROCESSOR
-#
-#
-# def is_post_processor(element):
-#     return element.ELEMENT_TYPE == ElementType.POST_PROCESSOR
-#
-#
-# def is_assertion(element):
-#     return element.ELEMENT_TYPE == ElementType.ASSERTION
-#
-#
-# def is_listener(element):
-#     return element.ELEMENT_TYPE == ElementType.LISTENER
+def is_collection(element):
+    return element.ELEMENT_TYPE == ElementType.COLLECTION.value
+
+
+def is_group(element):
+    return element.ELEMENT_TYPE == ElementType.GROUP.value
+
+
+def is_sampler(element):
+    return element.ELEMENT_TYPE == ElementType.SAMPLER.value
+
+
+def is_config(element):
+    return element.ELEMENT_TYPE == ElementType.CONFIG.value
+
+
+def is_controller(element):
+    return element.ELEMENT_TYPE == ElementType.CONTROLLER.value
+
+
+def is_timer(element):
+    return element.ELEMENT_TYPE == ElementType.TIMER.value
+
+
+def is_pre_processor(element):
+    return element.ELEMENT_TYPE == ElementType.PRE_PROCESSOR.value
+
+
+def is_post_processor(element):
+    return element.ELEMENT_TYPE == ElementType.POST_PROCESSOR.value
+
+
+def is_assertion(element):
+    return element.ELEMENT_TYPE == ElementType.ASSERTION.value
+
+
+def is_listener(element):
+    return element.ELEMENT_TYPE == ElementType.LISTENER.value
+
+
+def is_test_collection(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_COLLECTION.value
+
+
+def is_test_snippets(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPETS.value
+
+
+def is_test_group(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
+
+
+def is_http_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+
+
+def is_snippet_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value

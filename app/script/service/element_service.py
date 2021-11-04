@@ -23,6 +23,14 @@ from app.script.enum import ElementClass
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
 from app.script.enum import PasteType
+from app.script.enum import is_collection
+from app.script.enum import is_config
+from app.script.enum import is_controller
+from app.script.enum import is_group
+from app.script.enum import is_listener
+from app.script.enum import is_sampler
+from app.script.enum import is_test_collection
+from app.script.enum import is_timer
 from app.script.model import TElementBuiltinChildRel
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
@@ -658,41 +666,30 @@ def paste_element(req):
 
 
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
-    source_type = source.ELEMENT_TYPE
-    target_type = target.ELEMENT_TYPE
-    target_class = target.ELEMENT_CLASS
-
     # Group
-    if source_type == ElementType.GROUP and target_type != ElementType.COLLECTION:
+    if is_group(source) and not is_collection(target):
         raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合 ]下剪贴')
     # Sampler | Controller | Config
     elif (
-        source_type == ElementType.SAMPLER or  # noqa
-        source_type == ElementType.CONTROLLER or  # noqa
-        source_type == ElementType.CONFIG  # noqa
+        is_sampler(source) or is_controller(source) or is_config(source)
     ) and (
-        target_class == ElementClass.TEST_COLLECTION or  # noqa
-        target_type != ElementType.GROUP or  # noqa
-        target_type != ElementType.CONTROLLER  # noqa
+        is_test_collection(target) or not is_group(target) or not is_controller(target)
     ):
         raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器 ]下剪贴')
     # Timer
-    elif source_type == ElementType.TIMER and (  # noqa
-        target_class == ElementClass.TEST_COLLECTION or  # noqa
-        target_type != ElementType.GROUP or  # noqa
-        target_type != ElementType.SAMPLER or  # noqa
-        target_type != ElementType.CONTROLLER  # noqa
+    elif is_timer(source) and (
+        is_test_collection(target) or  # noqa
+        not is_group(target) or  # noqa
+        not is_sampler(target) or  # noqa
+        not is_controller(target)  # noqa
     ):
         raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器、取样器 ]下剪贴')
     # Listener
-    elif source_type == ElementType.LISTENER and (  # noqa
-        target_type != ElementType.COLLECTION or  # noqa
-        target_type != ElementType.Group  # noqa
-    ):
+    elif is_listener(source) and (not is_collection(target) or not is_group(target)):
         raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合、片段、分组 ]下剪贴')
     # PreProcessor | PostProcessor | Assertion
     else:
-        if target_type != ElementType.SAMPLER:
+        if not is_sampler(target):
             raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 取样器 ]下剪贴')
 
 
