@@ -3,7 +3,18 @@
 # @File    : enums.py
 # @Time    : 2020/10/30 14:49
 # @Author  : Kelvin.Ye
-from enum import Enum, unique
+from enum import Enum
+from enum import unique
+
+
+class BaseEnum(Enum):
+
+    def __eq__(self, other):
+        """改造 Enum 比较函数，比较对象为 str 时，自动改为 'str' == enum.value """
+        if isinstance(other, str):
+            return self.value == other
+        else:
+            return super().__eq__(other)
 
 
 @unique
