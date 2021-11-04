@@ -12,13 +12,19 @@ from app import config as CONFIG
 
 # 日志格式
 LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d] %(message)s'
+FORMATTER = logging.Formatter(LOG_FORMAT)
+# 日志级别
+LEVEL = CONFIG.LOG_LEVEL
+# 日志文件名称
+LOG_FILE_NAME = CONFIG.LOG_NAME
 
-# logger配置
+
+# logger全局配置
 dictConfig({
     'version': 1,
     'root': {
         'propagate': False,
-        'level': CONFIG.LOG_LEVEL,  # handler的level会覆盖掉这里的level
+        'level': LEVEL,  # handler的 level 会覆盖掉这里的 level
         'handlers': ['console', 'file']
     },
     'handlers': {
@@ -30,7 +36,7 @@ dictConfig({
             'class': 'logging.FileHandler',
             'formatter': 'default',
             'encoding': 'utf-8',
-            'filename': CONFIG.LOG_NAME
+            'filename': LOG_FILE_NAME
         }
     },
     'formatters': {
@@ -40,27 +46,19 @@ dictConfig({
     }
 })
 
-# 日志级别
-LEVEL = CONFIG.LOG_LEVEL
 
-# 日志文件名称
-LOG_FILE_NAME = CONFIG.LOG_NAME
-
-# 日志格式
-FORMATTER = logging.Formatter(LOG_FORMAT)
-
-# 输出到控制台
+# 控制台 handler
 CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
-# 写入日志文件
+# 文件 handler
 FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
-# 按日分割日志文件（线程不安全）
+# 文件滚动日志（线程不安全）
 # FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
 FILE_HANDLER.suffix = "%Y-%m-%d_%H-%M-%S.log"
 
-# 配置werkzeug日志
+# werkzeug 日志配置
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.propagate = False
 werkzeug_logger.setLevel(logging.INFO)
@@ -69,7 +67,7 @@ for handler in werkzeug_logger.handlers:
 werkzeug_logger.addHandler(CONSOLE_HANDLER)
 werkzeug_logger.addHandler(FILE_HANDLER)
 
-# 配置sqlalchemy日志
+# sqlalchemy 日志配置
 sqlalchemy_logger = logging.getLogger('sqlalchemy')
 sqlalchemy_logger.propagate = False
 sqlalchemy_logger.setLevel(logging.INFO)
@@ -83,10 +81,10 @@ logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.orm').setLevel(logging.ERROR)
 
 
-def get_logger(name) -> logging.Logger:
+def get_logger(name, level=LEVEL) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.propagate = False
-    logger.setLevel(LEVEL)
+    logger.setLevel(level)
     logger.addHandler(CONSOLE_HANDLER)
     logger.addHandler(FILE_HANDLER)
     return logger
