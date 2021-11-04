@@ -3,11 +3,13 @@
 # @File    : enum.py
 # @Time    : 2020/7/3 15:23
 # @Author  : Kelvin.Ye
-from enum import unique, Enum
+from enum import unique
+
+from common.enums import BaseEnum
 
 
 @unique
-class ElementType(Enum):
+class ElementType(BaseEnum):
 
     # 测试集合
     COLLECTION = 'COLLECTION'
@@ -18,11 +20,11 @@ class ElementType(Enum):
     # 取样器
     SAMPLER = 'SAMPLER'
 
-    # 配置器
-    CONFIG = 'CONFIG'
-
     # 逻辑控制器
     CONTROLLER = 'CONTROLLER'
+
+    # 配置器
+    CONFIG = 'CONFIG'
 
     # 时间控制器
     TIMER = 'TIMER'
@@ -41,7 +43,7 @@ class ElementType(Enum):
 
 
 @unique
-class ElementClass(Enum):
+class ElementClass(BaseEnum):
 
     # 测试集合
     TEST_COLLECTION = 'TestCollection'
@@ -102,7 +104,7 @@ class ElementClass(Enum):
 
 
 @unique
-class ElementStatus(Enum):
+class ElementStatus(BaseEnum):
 
     # 启用
     ENABLE = True
@@ -112,7 +114,7 @@ class ElementStatus(Enum):
 
 
 @unique
-class VariableDatasetType(Enum):
+class VariableDatasetType(BaseEnum):
 
     # 全局变量：与环境无关，与工作空间无关
     GLOBAL = 'GLOBAL'
@@ -125,7 +127,7 @@ class VariableDatasetType(Enum):
 
 
 @unique
-class VariableDatasetWeight(Enum):
+class VariableDatasetWeight(BaseEnum):
 
     # 全局变量
     GLOBAL = 1
@@ -138,7 +140,7 @@ class VariableDatasetWeight(Enum):
 
 
 @unique
-class RunningState(Enum):
+class RunningState(BaseEnum):
 
     # 待运行
     WAITING = 'WAITING'
@@ -154,7 +156,7 @@ class RunningState(Enum):
 
 
 @unique
-class TestplanState(Enum):
+class TestplanState(BaseEnum):
 
     # 待开始
     INITIAL = 'INITIAL'
@@ -167,7 +169,7 @@ class TestplanState(Enum):
 
 
 @unique
-class TestPhase(Enum):
+class TestPhase(BaseEnum):
 
     # 待测试
     INITIAL = 'INITIAL'
@@ -189,3 +191,53 @@ class TestPhase(Enum):
 
     # 已完成
     COMPLETED = 'COMPLETED'
+
+
+@unique
+class PasteType(BaseEnum):
+
+    # 复制
+    COPY = 'COPY'
+
+    # 剪切
+    CUT = 'CUT'
+
+
+# def is_collection(element):
+#     return element.ELEMENT_TYPE == ElementType.COLLECTION
+#
+#
+# def is_group(element):
+#     return element.ELEMENT_TYPE == ElementType.GROUP
+#
+#
+# def is_sampler(element):
+#     return element.ELEMENT_TYPE == ElementType.SAMPLER
+#
+#
+# def is_config(element):
+#     return element.ELEMENT_TYPE == ElementType.CONFIG
+#
+#
+# def is_controller(element):
+#     return element.ELEMENT_TYPE == ElementType.CONTROLLER
+#
+#
+# def is_timer(element):
+#     return element.ELEMENT_TYPE == ElementType.TIMER
+#
+#
+# def is_pre_processor(element):
+#     return element.ELEMENT_TYPE == ElementType.PRE_PROCESSOR
+#
+#
+# def is_post_processor(element):
+#     return element.ELEMENT_TYPE == ElementType.POST_PROCESSOR
+#
+#
+# def is_assertion(element):
+#     return element.ELEMENT_TYPE == ElementType.ASSERTION
+#
+#
+# def is_listener(element):
+#     return element.ELEMENT_TYPE == ElementType.LISTENER

@@ -160,8 +160,7 @@ def init_permission():
     _create_permission(name='删除元素', method='DELETE', endpoint='/script/element')
     _create_permission(name='启用元素', method='PATCH', endpoint='/script/element/enable')
     _create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
-    _create_permission(name='根据父元素编号新增元素子代', method='POST', endpoint='/script/element/children')
-    _create_permission(name='根据父元素编号修改元素子代', method='PUT', endpoint='/script/element/children')
+    _create_permission(name='根据父元素编号新增子代元素', method='POST', endpoint='/script/element/children')
     _create_permission(name='上移元素', method='PATCH', endpoint='/script/element/move/up')
     _create_permission(name='下移元素', method='PATCH', endpoint='/script/element/move/down')
     _create_permission(name='移动元素', method='POST', endpoint='/script/element/move')
@@ -172,6 +171,7 @@ def init_permission():
     _create_permission(name='查询内置元素', method='GET', endpoint='/script/element/builtin/children')
     _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtin/children')
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtin/children')
+    _create_permission(name='剪贴元素', method='POST', endpoint='/script/element/paste')
 
     # execution
     _create_permission(name='执行集合', method='POST', endpoint='/script/execute/collection')

@@ -21,11 +21,11 @@ def select_by_parent_and_serialno(parent_no, serial_no) -> TElementChildRel:
 
 
 def count_by_parent(parent_no) -> int:
-    return TElementChildRel.filter_by(PARENT_NO=parent_no).count()
+    return TElementChildRel.count_by(PARENT_NO=parent_no)
 
 
-def next_serialno_by_parent(parent_no) -> int:
-    return TElementChildRel.filter_by(PARENT_NO=parent_no).count() + 1
+def next_serial_number_by_parent(parent_no) -> int:
+    return TElementChildRel.count_by(PARENT_NO=parent_no) + 1
 
 
 def select_all_by_parent(parent_no) -> List[TElementChildRel]:

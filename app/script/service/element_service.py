@@ -22,6 +22,7 @@ from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
+from app.script.enum import PasteType
 from app.script.model import TElementBuiltinChildRel
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
@@ -116,7 +117,7 @@ def query_element_info(req):
     check_is_not_blank(element, '元素不存在')
 
     # 查询元素属性
-    property = query_element_property(req.elementNo)
+    properties = query_element_property(req.elementNo)
 
     # 查询元素是否有子代
     has_children = ElementChildRelDao.count_by_parent(req.elementNo) > 0
@@ -128,23 +129,23 @@ def query_element_info(req):
         'elementType': element.ELEMENT_TYPE,
         'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
-        'property': property,
+        'property': properties,
         'hasChildren': has_children
     }
 
 
 def query_element_property(element_no):
     """查询元素属性"""
-    property = {}
+    properties = {}
     props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
         if prop.PROPERTY_TYPE == 'DICT':
-            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
         elif prop.PROPERTY_TYPE == 'LIST':
-            property[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
+            properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
         else:
-            property[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
-    return property
+            properties[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
+    return properties
 
 
 @http_service
@@ -177,7 +178,6 @@ def query_elements_children(req):
 def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
-
     # 查询元素所有子代关系
     child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     if not child_rel_list:
@@ -227,8 +227,7 @@ def create_element(req):
         element_remark=req.elementRemark,
         element_type=req.elementType,
         element_class=req.elementClass,
-        property=req.property,
-        children=req.children
+        properties=req.property
     )
 
     # 如果元素类型为 TestCollection 时，需要绑定 WorkspaceNo
@@ -242,9 +241,7 @@ def create_element(req):
     return {'elementNo': element_no}
 
 
-def add_element(
-    element_name, element_remark, element_type, element_class, property: dict = None, children: Iterable[dict] = None
-):
+def add_element(element_name, element_remark, element_type, element_class, properties: dict = None):
     """创建元素并递归创建元素属性和元素子代"""
     # 创建元素
     element_no = new_id()
@@ -258,12 +255,8 @@ def add_element(
     )
 
     # 创建元素属性
-    if property:
-        add_element_property(element_no, property)
-
-    # 创建元素子代
-    if children:
-        add_element_children(element_no, children)
+    if properties:
+        add_element_property(element_no, properties)
 
     return element_no
 
@@ -275,12 +268,11 @@ def modify_element(req):
         element_no=req.elementNo,
         element_name=req.elementName,
         element_remark=req.elementRemark,
-        property=req.property,
-        children=req.children
+        properties=req.property
     )
 
 
-def update_element(element_no, element_name, element_remark, property: dict = None, children: Iterable[dict] = None):
+def update_element(element_no, element_name, element_remark, properties: dict = None, children: Iterable[dict] = None):
     """递归修改元素"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
@@ -290,8 +282,8 @@ def update_element(element_no, element_name, element_remark, property: dict = No
     element.update(ELEMENT_NAME=element_name, ELEMENT_REMARK=element_remark)
 
     # 更新元素属性
-    if property:
-        update_element_property(element_no, property)
+    if properties:
+        update_element_property(element_no, properties)
 
     # 更新元素子代
     if children:
@@ -386,9 +378,9 @@ def disable_element(req):
     element.update(ENABLED=ElementStatus.DISABLE.value)
 
 
-def add_element_property(element_no, property: dict):
+def add_element_property(element_no, properties: dict):
     """遍历添加元素属性"""
-    for name, value in property.items():
+    for name, value in properties.items():
         value_type = 'STR'
 
         if isinstance(value, dict):
@@ -403,9 +395,9 @@ def add_element_property(element_no, property: dict):
         )
 
 
-def update_element_property(element_no, property: dict):
+def update_element_property(element_no, properties: dict):
     """遍历修改元素属性"""
-    for name, value in property.items():
+    for name, value in properties.items():
         # 查询元素属性
         prop = ElementPropertyDao.select_by_element_and_name(element_no, name)
         # 属性类型
@@ -429,7 +421,7 @@ def update_element_property(element_no, property: dict):
                 PROPERTY_TYPE=value_type
             )
     # 删除请求中没有的属性
-    ElementPropertyDao.delete_all_by_element_and_notin_name(element_no, list(property.keys()))
+    ElementPropertyDao.delete_all_by_element_and_notin_name(element_no, list(properties.keys()))
 
 
 @http_service
@@ -449,16 +441,19 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]):
             element_remark=child.get('elementRemark'),
             element_type=child.get('elementType'),
             element_class=child.get('elementClass'),
-            property=child.get('property', None),
-            children=child.get('children', None)
+            properties=child.get('property', None)
         )
         # 新建子代与父级关联
         TElementChildRel.insert(
             ROOT_NO=root_no,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            SERIAL_NO=ElementChildRelDao.next_serialno_by_parent(parent_no)
+            SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(parent_no)
         )
+        # 新建子代的子代
+        inner_children = child.get('children', None)
+        if inner_children:
+            add_element_children(root_no=root_no, parent_no=child_no, children=inner_children)
         # 新建子代内置元素
         builtin = child.get('builtIn', None)
         if builtin:
@@ -470,7 +465,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]):
 @http_service
 @transactional
 def modify_element_children(req):
-    update_element_children(children=req.children)
+    update_element_children(req.children)
 
 
 def update_element_children(children: Iterable[dict]):
@@ -484,7 +479,7 @@ def update_element_children(children: Iterable[dict]):
             element_no=child_no,
             element_name=child.get('elementName'),
             element_remark=child.get('elementRemark'),
-            property=child.get('property', None),
+            properties=child.get('property', None),
             children=child.get('children', None)
         )
 
@@ -616,25 +611,126 @@ def duplicate_element(req):
     source = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(source, '元素不存在')
 
+    # 排除不支持复制的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
         raise ServiceError('暂不支持复制 Collection 元素')
 
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
     # 下移 source 元素的下方的元素
-    source_parent_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
+    source_child_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
     TElementChildRel.filter(
-        TElementChildRel.PARENT_NO == source_parent_rel.PARENT_NO,
-        TElementChildRel.SERIAL_NO > source_parent_rel.SERIAL_NO
+        TElementChildRel.PARENT_NO == source_child_rel.PARENT_NO,
+        TElementChildRel.SERIAL_NO > source_child_rel.SERIAL_NO
     ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
     # 将 copy 元素插入 source 元素的下方
     TElementChildRel.insert(
-        ROOT_NO=source_parent_rel.ROOT_NO,
-        PARENT_NO=source_parent_rel.PARENT_NO,
+        ROOT_NO=source_child_rel.ROOT_NO,
+        PARENT_NO=source_child_rel.PARENT_NO,
         CHILD_NO=copied_no,
-        SERIAL_NO=source_parent_rel.SERIAL_NO + 1
+        SERIAL_NO=source_child_rel.SERIAL_NO + 1
     )
     return {'elementNo': copied_no}
+
+
+@http_service
+@transactional
+def paste_element(req):
+    # 查询 source 元素
+    source = TestElementDao.select_by_no(req.sourceNo)
+    check_is_not_blank(source, 'source元素不存在')
+
+    # 查询 target 元素
+    target = TestElementDao.select_by_no(req.targetNo)
+    check_is_not_blank(target, 'target元素不存在')
+
+    # 排除不支持剪贴的元素
+    if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
+        raise ServiceError('暂不支持剪贴 Collection 元素')
+
+    # 检查元素是否允许剪贴
+    check_allow_to_paste(source, target)
+
+    if req.pasteType == PasteType.COPY.value:
+        paste_element_by_copy(source, target)
+    else:
+        paste_element_by_cut(source, target)
+
+
+def check_allow_to_paste(source: TTestElement, target: TTestElement):
+    source_type = source.ELEMENT_TYPE
+    target_type = target.ELEMENT_TYPE
+    target_class = target.ELEMENT_CLASS
+
+    # Group
+    if source_type == ElementType.GROUP and target_type != ElementType.COLLECTION:
+        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合 ]下剪贴')
+    # Sampler | Controller | Config
+    elif (
+        source_type == ElementType.SAMPLER or  # noqa
+        source_type == ElementType.CONTROLLER or  # noqa
+        source_type == ElementType.CONFIG  # noqa
+    ) and (
+        target_class == ElementClass.TEST_COLLECTION or  # noqa
+        target_type != ElementType.GROUP or  # noqa
+        target_type != ElementType.CONTROLLER  # noqa
+    ):
+        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器 ]下剪贴')
+    # Timer
+    elif source_type == ElementType.TIMER and (  # noqa
+        target_class == ElementClass.TEST_COLLECTION or  # noqa
+        target_type != ElementType.GROUP or  # noqa
+        target_type != ElementType.SAMPLER or  # noqa
+        target_type != ElementType.CONTROLLER  # noqa
+    ):
+        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器、取样器 ]下剪贴')
+    # Listener
+    elif source_type == ElementType.LISTENER and (  # noqa
+        target_type != ElementType.COLLECTION or  # noqa
+        target_type != ElementType.Group  # noqa
+    ):
+        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合、片段、分组 ]下剪贴')
+    # PreProcessor | PostProcessor | Assertion
+    else:
+        if target_type != ElementType.SAMPLER:
+            raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 取样器 ]下剪贴')
+
+
+def paste_element_by_copy(source: TTestElement, target: TTestElement):
+    # 递归复制元素
+    copied_no = copy_element(source, rename=True)
+    # 查询 target 元素与父级元素关联
+    target_child_rel = ElementChildRelDao.select_by_child(target.ELEMENT_NO)
+    # 将 copy 元素插入 target 元素的最后
+    TElementChildRel.insert(
+        ROOT_NO=target_child_rel.ROOT_NO,
+        PARENT_NO=target_child_rel.PARENT_NO,
+        CHILD_NO=copied_no,
+        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_child_rel.PARENT_NO)
+    )
+
+
+def paste_element_by_cut(source: TTestElement, target: TTestElement):
+    # 查询 source 元素与父级元素关联
+    source_child_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
+    # 上移 source 元素下方的元素
+    TElementChildRel.filter(
+        TElementChildRel.PARENT_NO == source_child_rel.PARENT_NO,
+        TElementChildRel.SERIAL_NO > source_child_rel.SERIAL_NO
+    ).update({
+        TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1
+    })
+    # 删除 source 父级关联
+    source_child_rel.delete()
+    # 查询 target 元素与父级元素关联
+    target_child_rel = ElementChildRelDao.select_by_child(target.ELEMENT_NO)
+    # 将 source 元素插入 target 元素的最后
+    TElementChildRel.insert(
+        ROOT_NO=target_child_rel.ROOT_NO,
+        PARENT_NO=target_child_rel.PARENT_NO,
+        CHILD_NO=source.ELEMENT_NO,
+        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_child_rel.PARENT_NO)
+    )
 
 
 def copy_element(source: TTestElement, rename=False):
@@ -768,21 +864,12 @@ def query_element_builtin_children(req):
 @http_service
 @transactional
 def create_element_builtin_children(req):
-    builtin = add_element_builtin_children(parent_no=req.parentNo, children=req.children, root_no=req.rootNo)
+    builtin = add_element_builtin_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
     return {'builtin': builtin}
 
 
-def add_element_builtin_children(parent_no, children, root_no=None):
+def add_element_builtin_children(root_no, parent_no, children):
     result = []
-
-    # 根据父级查询根元素编号
-    if not root_no:
-        parent_rel = ElementChildRelDao.select_by_child(parent_no)
-        if parent_rel:
-            root_no = parent_rel.ROOT_NO
-        else:
-            root_no = parent_no
-
     for builtin in children:
         # 查询父级元素
         parent = TestElementDao.select_by_no(parent_no)
@@ -806,9 +893,9 @@ def add_element_builtin_children(parent_no, children, root_no=None):
         )
 
         # 创建内置元素属性
-        property = builtin.get('property', None)
-        if property:
-            add_element_property(builtin_no, property)
+        properties = builtin.get('property', None)
+        if properties:
+            add_element_property(builtin_no, properties)
 
         # 创建内置元素关联
         TElementBuiltinChildRel.insert(
@@ -842,9 +929,9 @@ def update_element_builtin_children(children):
         builtin.update(ELEMENT_NAME=child.get('elementName'), ELEMENT_REMARK=child.get('elementRemark'))
 
         # 更新内置元素属性
-        property = child.get('property', None)
-        if property:
-            update_element_property(builtin_no, property)
+        properties = child.get('property', None)
+        if properties:
+            update_element_property(builtin_no, properties)
 
 
 def delete_element_builtin(element_no):

@@ -8,6 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
+from app.script.enum import PasteType
 from app.script.service import element_service as service
 from app.utils.log_util import get_logger
 
@@ -93,8 +94,7 @@ def create_element():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('children', type=list),
-        Argument('workspaceNo'),
+        Argument('workspaceNo')
     ).parse()
     return service.create_element(req)
 
@@ -109,8 +109,7 @@ def modify_element():
         Argument('elementName'),
         Argument('elementRemark'),
         Argument('enabled'),
-        Argument('property'),
-        Argument('children', type=list),
+        Argument('property')
     ).parse()
     return service.modify_element(req)
 
@@ -147,7 +146,7 @@ def disable_element():
 @require_permission
 def create_element_children():
     """
-    根据父元素编号新增子代元素（同时支持新增子代内置元素）
+    根据父元素编号新增子代元素（支持内置元素）
     request:
     {
         "rootNo": "",
@@ -163,7 +162,7 @@ def create_element_children():
                 "builtIn": [ ... ]
             }
             ...
-        ],
+        ]
     }
     """
     req = JsonParser(
@@ -193,7 +192,8 @@ def modify_element_children():
             }
             ...
         ],
-    }"""
+    }
+    """
     req = JsonParser(
         Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
@@ -243,6 +243,19 @@ def duplicate_element():
     """复制元素及其子代"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.duplicate_element(req)
+
+
+@blueprint.post('/element/paste')
+@require_login
+@require_permission
+def paste_element():
+    """剪贴元素"""
+    req = JsonParser(
+        Argument('sourceNo', required=True, nullable=False, help='source元素编号不能为空'),
+        Argument('targetNo', required=True, nullable=False, help='target元素编号不能为空'),
+        Argument('pasteType', required=True, nullable=False, enum=PasteType, help='剪贴类型不能为空')
+    ).parse()
+    return service.paste_element(req)
 
 
 @blueprint.get('/element/http/headers/template/list')
@@ -295,9 +308,9 @@ def query_element_builtin_children():
 def create_element_builtin_children():
     """新增内置元素"""
     req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空'),
-        Argument('rootNo')
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
     return service.create_element_builtin_children(req)
 
