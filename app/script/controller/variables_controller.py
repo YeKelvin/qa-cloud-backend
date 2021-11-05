@@ -5,8 +5,9 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
-from app.common.parser import Argument, ListParser
+from app.common.parser import Argument
 from app.common.parser import JsonParser
+from app.common.parser import ListParser
 from app.script.controller import blueprint
 from app.script.enum import VariableDatasetType
 from app.script.service import variables_service as service

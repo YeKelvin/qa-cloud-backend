@@ -4,6 +4,7 @@
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
 from typing import Iterable
+from typing import List
 
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
@@ -127,9 +128,6 @@ def query_element_info(req):
     # 查询元素属性
     properties = query_element_property(req.elementNo)
 
-    # 查询元素是否有子代
-    has_children = ElementChildRelDao.count_by_parent(req.elementNo) > 0
-
     return {
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
@@ -137,8 +135,7 @@ def query_element_info(req):
         'elementType': element.ELEMENT_TYPE,
         'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
-        'property': properties,
-        'hasChildren': has_children
+        'property': properties
     }
 
 
@@ -225,8 +222,7 @@ def get_root_no(element_no):
 @http_service
 @transactional
 def create_element(req):
-    # 新增测试集合时，工作空间编号不能为空
-    if (req.elementType == 'COLLECTION') and (not req.workspaceNo):
+    if req.elementType == ElementType.COLLECTION.value and not req.workspaceNo:
         raise ServiceError('工作空间编号不能为空')
 
     # 创建元素
@@ -271,6 +267,39 @@ def add_element(element_name, element_remark, element_type, element_class, prope
 
 @http_service
 @transactional
+def create_element_children(req):
+    return add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+
+
+def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
+    """添加元素子代"""
+    result = []
+    for child in children:
+        # 新建子代元素
+        child_no = add_element(
+            element_name=child.get('elementName'),
+            element_remark=child.get('elementRemark'),
+            element_type=child.get('elementType'),
+            element_class=child.get('elementClass'),
+            properties=child.get('property', None)
+        )
+        # 新建子代与父级关联
+        TElementChildRel.insert(
+            ROOT_NO=root_no,
+            PARENT_NO=parent_no,
+            CHILD_NO=child_no,
+            SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(parent_no)
+        )
+        # 新建子代内置元素
+        builtin = child.get('builtIn', None)
+        if builtin:
+            add_element_builtins(parent_no=child_no, children=builtin, root_no=root_no)
+        result.append(child_no)
+    return result
+
+
+@http_service
+@transactional
 def modify_element(req):
     update_element(
         element_no=req.elementNo,
@@ -280,8 +309,23 @@ def modify_element(req):
     )
 
 
-def update_element(element_no, element_name, element_remark, properties: dict = None, children: Iterable[dict] = None):
-    """递归修改元素"""
+@http_service
+@transactional
+def modify_elements(req):
+    for item in req.list:
+        # 更新元素
+        update_element(
+            element_no=item.elementNo,
+            element_name=item.elementName,
+            element_remark=item.elementRemark,
+            properties=item.property
+        )
+        # 更新内置元素
+        if item.builtIn:
+            update_element_builtins(item.builtIn)
+
+
+def update_element(element_no, element_name, element_remark, properties: dict = None):
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
@@ -292,10 +336,6 @@ def update_element(element_no, element_name, element_remark, properties: dict = 
     # 更新元素属性
     if properties:
         update_element_property(element_no, properties)
-
-    # 更新元素子代
-    if children:
-        update_element_children(children)
 
 
 @http_service
@@ -317,7 +357,7 @@ def delete_element(element_no):
     delete_element_child_rel(element_no)
 
     # 如果存在内置元素，一并删除
-    delete_element_builtin_by_parent(element_no)
+    delete_element_builtins_by_parent(element_no)
 
     # 删除元素属性
     delete_element_property(element_no)
@@ -332,7 +372,7 @@ def delete_element_children(parent_no):
     child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
     for child_rel in child_rel_list:
         # 如果子代存在内置元素，一并删除
-        delete_element_builtin_by_parent(child_rel.CHILD_NO)
+        delete_element_builtins_by_parent(child_rel.CHILD_NO)
         # 查询子代元素
         child = TestElementDao.select_by_no(child_rel.CHILD_NO)
         # 递归删除子代元素的子代和关联
@@ -389,17 +429,16 @@ def disable_element(req):
 def add_element_property(element_no, properties: dict):
     """遍历添加元素属性"""
     for name, value in properties.items():
-        value_type = 'STR'
-
+        property_type = 'STR'
         if isinstance(value, dict):
-            value_type = 'DICT'
+            property_type = 'DICT'
             value = to_json(value)
         if isinstance(value, list):
-            value_type = 'LIST'
+            property_type = 'LIST'
             value = to_json(value)
 
         TElementProperty.insert(
-            ELEMENT_NO=element_no, PROPERTY_NAME=name, PROPERTY_VALUE=value, PROPERTY_TYPE=value_type
+            ELEMENT_NO=element_no, PROPERTY_NAME=name, PROPERTY_VALUE=value, PROPERTY_TYPE=property_type
         )
 
 
@@ -408,136 +447,26 @@ def update_element_property(element_no, properties: dict):
     for name, value in properties.items():
         # 查询元素属性
         prop = ElementPropertyDao.select_by_element_and_name(element_no, name)
-        # 属性类型
-        value_type = 'STR'
-        # 更新元素属性值
+        property_type = 'STR'
         if isinstance(value, dict):
-            value_type = 'DICT'
+            property_type = 'DICT'
             value = to_json(value)
         if isinstance(value, list):
-            value_type = 'LIST'
+            property_type = 'LIST'
             value = to_json(value)
 
-        # prop存在就更新，不存在就新增
+        # 有属性就更新，没有就新增
         if prop:
-            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=value_type)
+            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=property_type)
         else:
             TElementProperty.insert(
                 ELEMENT_NO=element_no,
                 PROPERTY_NAME=name,
                 PROPERTY_VALUE=value,
-                PROPERTY_TYPE=value_type
+                PROPERTY_TYPE=property_type
             )
     # 删除请求中没有的属性
     ElementPropertyDao.delete_all_by_element_and_notin_name(element_no, list(properties.keys()))
-
-
-@http_service
-@transactional
-def create_element_children(req):
-    children = add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
-    return {'children': children}
-
-
-def add_element_children(root_no, parent_no, children: Iterable[dict]):
-    """添加元素子代"""
-    result = []
-    for child in children:
-        # 新建子代元素
-        child_no = add_element(
-            element_name=child.get('elementName'),
-            element_remark=child.get('elementRemark'),
-            element_type=child.get('elementType'),
-            element_class=child.get('elementClass'),
-            properties=child.get('property', None)
-        )
-        # 新建子代与父级关联
-        TElementChildRel.insert(
-            ROOT_NO=root_no,
-            PARENT_NO=parent_no,
-            CHILD_NO=child_no,
-            SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(parent_no)
-        )
-        # 新建子代的子代
-        inner_children = child.get('children', None)
-        if inner_children:
-            add_element_children(root_no=root_no, parent_no=child_no, children=inner_children)
-        # 新建子代内置元素
-        builtin = child.get('builtIn', None)
-        if builtin:
-            add_element_builtin_children(parent_no=child_no, children=builtin, root_no=root_no)
-        result.append(child_no)
-    return result
-
-
-@http_service
-@transactional
-def modify_element_children(req):
-    update_element_children(req.children)
-
-
-def update_element_children(children: Iterable[dict]):
-    """遍历修改元素子代"""
-    for child in children:
-        child_no = child.get('elementNo', None)
-        if not child_no:
-            raise ServiceError('子代元素编号不能为空')
-
-        update_element(
-            element_no=child_no,
-            element_name=child.get('elementName'),
-            element_remark=child.get('elementRemark'),
-            properties=child.get('property', None),
-            children=child.get('children', None)
-        )
-
-
-@http_service
-@transactional
-def move_up_element(req):
-    # 查询元素子代关联
-    child_rel = ElementChildRelDao.select_by_child(req.elementNo)
-    check_is_not_blank(child_rel, '子元素不存在')
-
-    # 父元素编号
-    parent_no = child_rel.PARENT_NO
-
-    # 统计子代个数
-    children_count = ElementChildRelDao.count_by_parent(parent_no)
-    serial_no = child_rel.SERIAL_NO
-
-    # 如果元素只有一个子代或该子代元素排第一位则无需上移
-    if children_count == 1 or serial_no == 1:
-        return
-
-    # 重新排序子元素
-    upper_child_rel = ElementChildRelDao.select_by_parent_and_serialno(parent_no, serial_no - 1)
-    upper_child_rel.update(SERIAL_NO=upper_child_rel.SERIAL_NO + 1)
-    child_rel.update(SERIAL_NO=child_rel.SERIAL_NO - 1)
-
-
-@http_service
-@transactional
-def move_down_element(req):
-    # 查询元素子代关联
-    child_rel = ElementChildRelDao.select_by_child(req.elementNo)
-    check_is_not_blank(child_rel, '子元素不存在')
-
-    # 父元素编号
-    parent_no = child_rel.PARENT_NO
-
-    # 统计子代个数
-    children_count = ElementChildRelDao.count_by_parent(parent_no)
-    serial_no = child_rel.SERIAL_NO
-
-    # 如果元素只有一个子代或该子代元素排最后一位则无需下移
-    if children_count == 1 or children_count == serial_no:
-        return
-
-    # 重新排序子元素
-    lower_child_rel = ElementChildRelDao.select_by_parent_and_serialno(parent_no, serial_no + 1)
-    lower_child_rel.update(SERIAL_NO=lower_child_rel.SERIAL_NO - 1)
-    child_rel.update(SERIAL_NO=child_rel.SERIAL_NO + 1)
 
 
 @http_service
@@ -779,7 +708,7 @@ def clone_element(source: TTestElement, rename=False):
 
 
 @http_service
-def query_element_http_headers_template_list(req):
+def query_element_http_headers_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(element, '元素不存在')
@@ -791,12 +720,12 @@ def query_element_http_headers_template_list(req):
 
 
 @http_service
-def create_element_http_headers_template_list(req):
+def create_element_http_headers_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
-    for template_no in req.templateNoList:
+    for template_no in req.templateNumberList:
         # 查询模板
         template = HttpHeadersTemplateDao.select_by_no(template_no)
         if not template:
@@ -807,12 +736,12 @@ def create_element_http_headers_template_list(req):
 
 
 @http_service
-def modify_element_http_headers_template_list(req):
+def modify_element_http_headers_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_is_not_blank(element, '元素不存在')
 
-    for template_no in req.templateNoList:
+    for template_no in req.templateNumberList:
         # 查询模板
         template = HttpHeadersTemplateDao.select_by_no(template_no)
         if not template:
@@ -830,11 +759,11 @@ def modify_element_http_headers_template_list(req):
             )
 
     # 删除不在请求中的模板
-    HttpSamplerHeadersRelDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNoList)
+    HttpSamplerHeadersRelDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNumberList)
 
 
 @http_service
-def query_element_builtin_children(req):
+def query_element_builtins(req):
     result = []
 
     # 查询元素的内置元素关联
@@ -860,18 +789,17 @@ def query_element_builtin_children(req):
 
 @http_service
 @transactional
-def create_element_builtin_children(req):
-    builtin = add_element_builtin_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
-    return {'builtin': builtin}
+def create_element_builtins(req):
+    return add_element_builtins(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
 
 
-def add_element_builtin_children(root_no, parent_no, children):
+def add_element_builtins(root_no, parent_no, children) -> List:
     result = []
-    for builtin in children:
+    for child in children:
         # 查询父级元素
         parent = TestElementDao.select_by_no(parent_no)
-        builtin_type = builtin.get('elementType')
-        builtin_class = builtin.get('elementClass')
+        builtin_type = child.get('elementType')
+        builtin_class = child.get('elementClass')
 
         # HTTPSampler 内置元素仅支持 Pre-Processor 和 Assertion
         if parent.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
@@ -882,15 +810,15 @@ def add_element_builtin_children(root_no, parent_no, children):
         builtin_no = new_id()
         TTestElement.insert(
             ELEMENT_NO=builtin_no,
-            ELEMENT_NAME=builtin.get('elementName'),
-            ELEMENT_REMARK=builtin.get('elementRemark'),
+            ELEMENT_NAME=child.get('elementName'),
+            ELEMENT_REMARK=child.get('elementRemark'),
             ELEMENT_TYPE=builtin_type,
             ELEMENT_CLASS=builtin_class,
             ENABLED=ElementStatus.ENABLE.value
         )
 
         # 创建内置元素属性
-        properties = builtin.get('property', None)
+        properties = child.get('property', None)
         if properties:
             add_element_property(builtin_no, properties)
 
@@ -907,17 +835,14 @@ def add_element_builtin_children(root_no, parent_no, children):
 
 @http_service
 @transactional
-def modify_element_builtin_children(req):
-    update_element_builtin_children(req.children)
+def modify_element_builtins(req):
+    update_element_builtins(req.list)
 
 
-def update_element_builtin_children(children):
+def update_element_builtins(children: Iterable[dict]):
     for child in children:
         # 内置元素编号
-        builtin_no = child.get('elementNo', None)
-        if not builtin_no:
-            raise ServiceError('内置元素编号不能为空')
-
+        builtin_no = child.get('elementNo')
         # 查询内置元素
         builtin = TestElementDao.select_by_no(builtin_no)
         check_is_not_blank(builtin, '内置元素不存在')
@@ -941,7 +866,7 @@ def delete_element_builtin(element_no):
     element.delete()
 
 
-def delete_element_builtin_by_parent(parent_no):
+def delete_element_builtins_by_parent(parent_no):
     # 根据父级删除所有内置元素
     builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(parent_no)
     if builtin_rel_list:

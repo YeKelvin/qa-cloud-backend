@@ -7,6 +7,7 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
+from app.common.parser import ListParser
 from app.script.controller import blueprint
 from app.script.enum import PasteType
 from app.script.service import element_service as service
@@ -99,6 +100,37 @@ def create_element():
     return service.create_element(req)
 
 
+@blueprint.post('/element/children')
+@require_login
+@require_permission
+def create_element_children():
+    """
+    根据父元素编号新增子代元素（支持内置元素）
+    request:
+    {
+        "rootNo": "",
+        "parentNo": "",
+        "children": [
+            {
+                "elementName": "",
+                "elementRemark": "",
+                "elementType": "",
+                "elementClass": "",
+                "property": { ... },
+                "builtIn": [ ... ]
+            }
+            ...
+        ]
+    }
+    """
+    req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
+    ).parse()
+    return service.create_element_children(req)
+
+
 @blueprint.put('/element')
 @require_login
 @require_permission
@@ -112,6 +144,30 @@ def modify_element():
         Argument('property')
     ).parse()
     return service.modify_element(req)
+
+
+@blueprint.put('/elements')
+@require_login
+@require_permission
+def modify_elements():
+    """
+    修改多个元素（包含内置元素）
+    example:
+    [
+        {
+            "elementNo": "",
+            "elementName": "",
+            "elementRemark": "",
+            "elementType": "",
+            "elementClass": "",
+            "property": { ... },
+            "builtIn": [ ... ]
+        }
+        ...
+    ]
+    """
+    req = ListParser().parse()
+    return service.modify_elements(req)
 
 
 @blueprint.delete('/element')
@@ -139,87 +195,6 @@ def disable_element():
     """禁用元素"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.disable_element(req)
-
-
-@blueprint.post('/element/children')
-@require_login
-@require_permission
-def create_element_children():
-    """
-    根据父元素编号新增子代元素（支持内置元素）
-    request:
-    {
-        "rootNo": "",
-        "parentNo": "",
-        "children": [
-            {
-                "elementName": "",
-                "elementRemark": "",
-                "elementType": "",
-                "elementClass": "",
-                "property": { ... },
-                "children": [ ... ],
-                "builtIn": [ ... ]
-            }
-            ...
-        ]
-    }
-    """
-    req = JsonParser(
-        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
-    ).parse()
-    return service.create_element_children(req)
-
-
-@blueprint.put('/element/children')
-@require_login
-@require_permission
-def modify_element_children():
-    """
-    根据父元素编号修改元素子代
-    request:
-    {
-        "children": [
-            {
-                "elementName": "",
-                "elementRemark": "",
-                "elementType": "",
-                "elementClass": "",
-                "property": { ... },
-                "children": [ ... ]
-            }
-            ...
-        ],
-    }
-    """
-    req = JsonParser(
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
-    ).parse()
-    return service.modify_element_children(req)
-
-
-@blueprint.patch('/element/move/up')
-@require_login
-@require_permission
-def move_up_element():
-    """上移元素"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
-    ).parse()
-    return service.move_up_element(req)
-
-
-@blueprint.patch('/element/move/down')
-@require_login
-@require_permission
-def move_down_element():
-    """下移元素"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
-    ).parse()
-    return service.move_down_element(req)
 
 
 @blueprint.post('/element/move')
@@ -258,69 +233,67 @@ def paste_element():
     return service.paste_element(req)
 
 
-@blueprint.get('/element/http/headers/template/list')
+@blueprint.get('/element/http/headers/template/refs')
 @require_login
 @require_permission
-def query_element_http_headers_template_list():
+def query_element_http_headers_template_refs():
     """查询元素关联的HTTP请求头模板列表"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
-    return service.query_element_http_headers_template_list(req)
+    return service.query_element_http_headers_template_refs(req)
 
 
-@blueprint.post('/element/http/headers/template/list')
+@blueprint.post('/element/http/headers/template/refs')
 @require_login
 @require_permission
-def create_element_http_headers_template_list():
+def create_element_http_headers_template_refs():
     """新增元素和HTTP请求头模板列表的关联"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNoList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.create_element_http_headers_template_list(req)
+    return service.create_element_http_headers_template_refs(req)
 
 
-@blueprint.put('/element/http/headers/template/list')
+@blueprint.put('/element/http/headers/template/refs')
 @require_login
 @require_permission
-def modify_element_http_headers_template_list():
+def modify_element_http_headers_template_refs():
     """修改元素关联的HTTP请求头模板关联列表"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNoList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.modify_element_http_headers_template_list(req)
+    return service.modify_element_http_headers_template_refs(req)
 
 
-@blueprint.get('/element/builtin/children')
+@blueprint.get('/element/builtins')
 @require_login
 @require_permission
-def query_element_builtin_children():
+def query_element_builtins():
     """查询内置元素"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.query_element_builtin_children(req)
+    return service.query_element_builtins(req)
 
 
-@blueprint.post('/element/builtin/children')
+@blueprint.post('/element/builtins')
 @require_login
 @require_permission
-def create_element_builtin_children():
+def create_element_builtins():
     """新增内置元素"""
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.create_element_builtin_children(req)
+    return service.create_element_builtins(req)
 
 
-@blueprint.put('/element/builtin/children')
+@blueprint.put('/element/builtins')
 @require_login
 @require_permission
-def modify_element_builtin_children():
+def modify_element_builtins():
     """修改内置元素"""
-    req = JsonParser(
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
-    ).parse()
-    return service.modify_element_builtin_children(req)
+    req = ListParser().parse()
+    return service.modify_element_builtins(req)

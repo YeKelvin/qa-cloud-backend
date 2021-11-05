@@ -103,6 +103,22 @@ class ElementClass(Enum):
 
 
 @unique
+class PropertyType(Enum):
+
+    # 字符串类型
+    STR = 'STR'
+
+    # 字典类型
+    DICT = 'DICT'
+
+    # 列表类型
+    LIST = 'LIST'
+
+    def __eq__(self, other):
+        return self.value == other if isinstance(other, str) else super().__eq__(other)
+
+
+@unique
 class ElementStatus(Enum):
 
     # 启用
