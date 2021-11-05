@@ -7,19 +7,19 @@ import click
 from flask.cli import with_appcontext
 
 from app.common.id_generator import new_id
-from app.extension import db
-from app.script.model import TVariableDataset
-from app.system.model import TActionLog
-from app.public.model import TWorkspace
-from app.public.model import TWorkspaceUserRel
-from app.user.model import TPermission
-from app.user.model import TRole
-from app.user.model import TRolePermissionRel
-from app.user.model import TUser
-from app.user.model import TUserLoginInfo
-from app.user.model import TUserPassword
-from app.user.model import TUserRoleRel
-from app.utils.log_util import get_logger
+from app.extension import db  # noqa
+from app.public.model import TWorkspace  # noqa
+from app.public.model import TWorkspaceUserRel  # noqa
+from app.script.model import TVariableDataset  # noqa
+from app.system.model import TActionLog  # noqa
+from app.user.model import TPermission  # noqa
+from app.user.model import TRole  # noqa
+from app.user.model import TRolePermissionRel  # noqa
+from app.user.model import TUser  # noqa
+from app.user.model import TUserLoginInfo  # noqa
+from app.user.model import TUserPassword  # noqa
+from app.user.model import TUserRoleRel  # noqa
+from app.utils.log_util import get_logger  # noqa
 from app.utils.security import encrypt_password
 
 
@@ -164,9 +164,9 @@ def init_permission():
     _create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
     _create_permission(name='移动元素', method='POST', endpoint='/script/element/move')
     _create_permission(name='复制元素及其子代', method='POST', endpoint='/script/element/duplicate')
-    _create_permission(name='查询HTTP请求头模板关联列表', method='GET', endpoint='/script/element/http/headers/template/refs')
-    _create_permission(name='新增HTTP请求头模板关联列表', method='POST', endpoint='/script/element/http/headers/template/refs')
-    _create_permission(name='修改HTTP请求头模板关联列表', method='PUT', endpoint='/script/element/http/headers/template/refs')
+    _create_permission(name='查询HTTP请求头模板关联列表', method='GET', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='新增HTTP请求头模板关联列表', method='POST', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='修改HTTP请求头模板关联列表', method='PUT', endpoint='/script/element/http/header/template/refs')
     _create_permission(name='查询内置元素', method='GET', endpoint='/script/element/builtins')
     _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtins')
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtins')
@@ -202,11 +202,11 @@ def init_permission():
     _create_permission(name='移动变量集至指定工作空间', method='PATCH', endpoint='/script/variable/dataset/move/to/workspace')
 
     # headers
-    _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/headers/template/list')
-    _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/http/headers/template/all')
-    _create_permission(name='新增请求头模板', method='POST', endpoint='/script/http/headers/template')
-    _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/http/headers/template')
-    _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/http/headers/template')
+    _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/header/template/list')
+    _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/http/header/template/all')
+    _create_permission(name='新增请求头模板', method='POST', endpoint='/script/http/header/template')
+    _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/http/header/template')
+    _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/http/header/template')
     _create_permission(name='新增请求头', method='POST', endpoint='/script/http/header')
     _create_permission(name='修改请求头', method='PUT', endpoint='/script/http/header')
     _create_permission(name='删除请求头', method='DELETE', endpoint='/script/http/header')
@@ -217,9 +217,9 @@ def init_permission():
     _create_permission(name='根据列表批量新增请求头', method='POST', endpoint='/script/http/headers')
     _create_permission(name='根据列表批量修改请求头', method='PUT', endpoint='/script/http/headers')
     _create_permission(name='根据列表批量删除请求头', method='DELETE', endpoint='/script/http/headers')
-    _create_permission(name='复制请求头模板', method='POST', endpoint='/script/http/headers/template/duplicate')
-    _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/http/headers/template/copy/to/workspace')
-    _create_permission(name='移动请求头模板至指定工作空间', method='PATCH', endpoint='/script/http/headers/template/move/to/workspace')
+    _create_permission(name='复制请求头模板', method='POST', endpoint='/script/http/header/template/duplicate')
+    _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/copy/to/workspace')
+    _create_permission(name='移动请求头模板至指定工作空间', method='PATCH', endpoint='/script/http/header/template/move/to/workspace')
 
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
@@ -286,9 +286,10 @@ def _create_permission(name, method, endpoint):
 @click.command('sqlite-to-pgsql')
 @with_appcontext
 def migrate_sqlite_to_pgsql():
-    import app
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session
+
+    import app
     from app.script import model
 
     sqlite_engine = create_engine(app.get_sqlite_url())
