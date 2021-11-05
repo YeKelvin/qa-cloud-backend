@@ -32,6 +32,9 @@ from app.script.enum import is_listener
 from app.script.enum import is_sampler
 from app.script.enum import is_test_collection
 from app.script.enum import is_timer
+from app.script.enum import is_pre_processor
+from app.script.enum import is_post_processor
+from app.script.enum import is_assertion
 from app.script.model import TElementBuiltinChildRel
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
@@ -214,6 +217,8 @@ def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
     rel = ElementChildRelDao.select_by_child(element_no)
     if rel:
+        if not rel.ROOT_NO:
+            raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
         return rel.ROOT_NO
     else:
         return element_no
@@ -597,42 +602,51 @@ def paste_element(req):
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Group
     if is_group(source) and not is_collection(target):
-        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合 ]下剪贴')
-    # Sampler | Controller | Config
-    elif (
-        is_sampler(source) or is_controller(source) or is_config(source)
-    ) and (
-        is_test_collection(target) or not is_group(target) or not is_controller(target)
+        raise ServiceError(f'[分组] 仅支持在 [集合] 下剪贴')
+    # Sampler
+    elif is_sampler(source) and (
+        is_test_collection(target) or not (is_group(target) or is_controller(target))
     ):
-        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器 ]下剪贴')
+        raise ServiceError(f'[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
+    # Controller
+    elif is_controller(source) and (
+        is_test_collection(target) or not (is_group(target) or is_controller(target))
+    ):
+        raise ServiceError(f'[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
+    # Config
+    elif is_config(source) and (
+        is_test_collection(target) or not (is_group(target) or is_controller(target))
+    ):
+        raise ServiceError(f'[配置器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Timer
     elif is_timer(source) and (
-        is_test_collection(target) or  # noqa
-        not is_group(target) or  # noqa
-        not is_sampler(target) or  # noqa
-        not is_controller(target)  # noqa
+        is_test_collection(target) or not (is_group(target) or is_sampler(target) or is_controller(target))
     ):
-        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 片段、分组、控制器、取样器 ]下剪贴')
+        raise ServiceError(f'[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')
     # Listener
-    elif is_listener(source) and (not is_collection(target) or not is_group(target)):
-        raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 集合、片段、分组 ]下剪贴')
-    # PreProcessor | PostProcessor | Assertion
-    else:
-        if not is_sampler(target):
-            raise ServiceError(f'[ {source.ELEMENT_NAME} ]仅支持在[ 取样器 ]下剪贴')
+    elif is_listener(source) and not(is_collection(target) or is_group(target)):
+        raise ServiceError(f'[监听器] 仅支持在 [ 集合|片段|分组 ] 下剪贴')
+    # PreProcessor
+    elif is_pre_processor(source) and not is_sampler(target):
+        raise ServiceError(f'[前置处理器] 仅支持在 [取样器] 下剪贴')
+    # PostProcessor
+    elif is_post_processor(source) and not is_sampler(target):
+        raise ServiceError(f'[后置处理器] 仅支持在 [取样器] 下剪贴')
+    # Assertion
+    elif is_assertion(source) and not is_sampler(target):
+        raise ServiceError(f'[断言器] 仅支持在 [取样器] 下剪贴')
 
 
 def paste_element_by_copy(source: TTestElement, target: TTestElement):
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
-    # 查询 target 元素与父级元素关联
-    target_child_rel = ElementChildRelDao.select_by_child(target.ELEMENT_NO)
     # 将 copy 元素插入 target 元素的最后
+    target_no = target.ELEMENT_NO
     TElementChildRel.insert(
-        ROOT_NO=target_child_rel.ROOT_NO,
-        PARENT_NO=target_child_rel.PARENT_NO,
+        ROOT_NO=get_root_no(target_no),
+        PARENT_NO=target_no,
         CHILD_NO=copied_no,
-        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_child_rel.PARENT_NO)
+        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -648,14 +662,13 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     })
     # 删除 source 父级关联
     source_child_rel.delete()
-    # 查询 target 元素与父级元素关联
-    target_child_rel = ElementChildRelDao.select_by_child(target.ELEMENT_NO)
     # 将 source 元素插入 target 元素的最后
+    target_no = target.ELEMENT_NO
     TElementChildRel.insert(
-        ROOT_NO=target_child_rel.ROOT_NO,
-        PARENT_NO=target_child_rel.PARENT_NO,
+        ROOT_NO=get_root_no(target_no),
+        PARENT_NO=target_no,
         CHILD_NO=source.ELEMENT_NO,
-        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_child_rel.PARENT_NO)
+        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_no)
     )
 
 
