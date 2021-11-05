@@ -375,17 +375,17 @@ def migrate_sqlite_to_pgsql():
         )
         click.echo(f'success insert into TVariable value {entity.VAR_NO}')
 
-    # THttpSamplerHeadersRel
-    for entity in sqlite_session.query(model.THttpSamplerHeadersRel).filter_by(DEL_STATE=0).all():
-        model.THttpSamplerHeadersRel.insert(
+    # THttpSamplerHeaderTemplateRef
+    for entity in sqlite_session.query(model.THttpSamplerHeaderTemplateRef).filter_by(DEL_STATE=0).all():
+        model.THttpSamplerHeaderTemplateRef.insert(
             SAMPLER_NO=entity.SAMPLER_NO,
             TEMPLATE_NO=entity.TEMPLATE_NO
         )
         click.echo(f'success insert into THttpSamplerHeadersRel value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
 
-    # THttpHeadersTemplate
-    for entity in sqlite_session.query(model.THttpHeadersTemplate).filter_by(DEL_STATE=0).all():
-        model.THttpHeadersTemplate.insert(
+    # THttpHeaderTemplate
+    for entity in sqlite_session.query(model.THttpHeaderTemplate).filter_by(DEL_STATE=0).all():
+        model.THttpHeaderTemplate.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
             TEMPLATE_NO=entity.TEMPLATE_NO,
             TEMPLATE_NAME=entity.TEMPLATE_NAME,

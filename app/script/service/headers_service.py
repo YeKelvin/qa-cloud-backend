@@ -9,9 +9,9 @@ from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.script.dao import http_header_dao as HttpHeaderDao
-from app.script.dao import http_headers_template_dao as HttpHeadersTemplateDao
+from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.model import THttpHeader
-from app.script.model import THttpHeadersTemplate
+from app.script.model import THttpHeaderTemplate
 from app.utils.log_util import get_logger
 
 
@@ -19,9 +19,9 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_http_headers_template_list(req):
+def query_http_header_template_list(req):
     # 条件分页查询
-    pagination = HttpHeadersTemplateDao.select_list(
+    pagination = HttpHeaderTemplateDao.select_list(
         workspaceNo=req.workspaceNo,
         templateNo=req.templateNo,
         templateName=req.templateName,
@@ -41,9 +41,9 @@ def query_http_headers_template_list(req):
 
 
 @http_service
-def query_http_headers_template_all(req):
+def query_http_header_template_all(req):
     # 条件查询
-    items = HttpHeadersTemplateDao.select_all(
+    items = HttpHeaderTemplateDao.select_all(
         workspaceNo=req.workspaceNo,
         templateNo=req.templateNo,
         templateName=req.templateName,
@@ -61,14 +61,14 @@ def query_http_headers_template_all(req):
 
 
 @http_service
-def create_http_headers_template(req):
+def create_http_header_template(req):
     # 查询模板
-    template = HttpHeadersTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
+    template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
     check_is_blank(template, '模板已存在')
 
     # 新增模板
     template_no = new_id()
-    THttpHeadersTemplate.insert(
+    THttpHeaderTemplate.insert(
         WORKSPACE_NO=req.workspaceNo,
         TEMPLATE_NO=template_no,
         TEMPLATE_NAME=req.templateName,
@@ -79,9 +79,9 @@ def create_http_headers_template(req):
 
 
 @http_service
-def modify_http_headers_template(req):
+def modify_http_header_template(req):
     # 查询模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
 
     # 更新模板
@@ -92,9 +92,9 @@ def modify_http_headers_template(req):
 
 
 @http_service
-def remove_http_headers_template(req):
+def remove_http_header_template(req):
     # 查询模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
 
     # 删除变量集，TODO: 还要删除模板下的请求头
@@ -108,7 +108,7 @@ def create_http_header(req):
     check_is_blank(header, '请求头已存在')
 
     # 查询模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
 
     # 新增请求头
@@ -194,7 +194,7 @@ def query_http_headers(req):
     result = []
     for template_no in req.list:
         # 查询模板
-        template = HttpHeadersTemplateDao.select_by_no(template_no)
+        template = HttpHeaderTemplateDao.select_by_no(template_no)
         if not template:
             continue
 
@@ -217,7 +217,7 @@ def query_http_headers(req):
 @transactional
 def create_http_headers(req):
     # 查询模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
 
     for header in req.headerList:
@@ -281,14 +281,14 @@ def remove_http_headers(req):
 
 @http_service
 @transactional
-def duplicate_variable_dataset(req):
+def duplicate_http_header_template(req):
     # 查询请求头模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '请求头模板不存在')
 
     # 复制请求头模板
     template_no = new_id()
-    THttpHeadersTemplate.insert(
+    THttpHeaderTemplate.insert(
         WORKSPACE_NO=template.WORKSPACE_NO,
         TEMPLATE_NO=template_no,
         TEMPLATE_NAME=template.TEMPLATE_NAME + ' copy',
@@ -312,14 +312,14 @@ def duplicate_variable_dataset(req):
 
 @http_service
 @transactional
-def copy_variable_dataset_to_workspace(req):
+def copy_http_header_template_to_workspace(req):
     # 查询请求头模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '请求头模板不存在')
 
     # 复制请求头模板
     template_no = new_id()
-    THttpHeadersTemplate.insert(
+    THttpHeaderTemplate.insert(
         WORKSPACE_NO=req.workspaceNo,
         TEMPLATE_NO=template_no,
         TEMPLATE_NAME=template.TEMPLATE_NAME + ' copy',
@@ -342,9 +342,9 @@ def copy_variable_dataset_to_workspace(req):
 
 
 @http_service
-def move_variable_dataset_to_workspace(req):
+def move_http_header_template_to_workspace(req):
     # 查询请求头模板
-    template = HttpHeadersTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '请求头模板不存在')
 
     template.update(WORKSPACE_NO=req.workspaceNo)

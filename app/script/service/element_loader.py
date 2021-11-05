@@ -11,7 +11,7 @@ from app.script.dao import element_builtin_child_rel_dao as ElementBuiltinChildR
 from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_dao as HttpHeaderDao
-from app.script.dao import http_sampler_headers_rel_dao as HttpSamplerHeadersRelDao
+from app.script.dao import http_sampler_header_template_ref_dao as HttpSamplerHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
@@ -227,7 +227,7 @@ def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dic
 
 def add_http_header_manager(sampler: TTestElement, children: list):
     # 查询元素关联的请求头模板
-    rels = HttpSamplerHeadersRelDao.select_all_by_sampler(sampler.ELEMENT_NO)
+    rels = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(sampler.ELEMENT_NO)
 
     # 没有关联模板时直接跳过
     if not rels:

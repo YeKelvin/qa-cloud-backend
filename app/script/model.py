@@ -140,9 +140,9 @@ class TVariable(DBModel):
     UniqueConstraint('DATASET_NO', 'VAR_NAME', 'DEL_STATE', name='unique_set_name')
 
 
-class THttpSamplerHeadersRel(DBModel):
-    """元素请求头模板关联表"""
-    __tablename__ = 'HTTP_SAMPLER_TEMPLATE_REL'
+class THttpSamplerHeaderTemplateRef(DBModel):
+    """HTTP请求头模板关联表"""
+    __tablename__ = 'HTTP_SAMPLER_HEADER_TEMPLATE_REF'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
@@ -155,9 +155,9 @@ class THttpSamplerHeadersRel(DBModel):
     UniqueConstraint('SAMPLER_NO', 'TEMPLATE_NO', 'DEL_STATE', name='unique_sampler_template')
 
 
-class THttpHeadersTemplate(DBModel):
+class THttpHeaderTemplate(DBModel):
     """请求头模板表"""
-    __tablename__ = 'HTTP_HEADERS_TEMPLATE'
+    __tablename__ = 'HTTP_HEADER_TEMPLATE'
     ID = db.Column(db.Integer, primary_key=True)
     DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
