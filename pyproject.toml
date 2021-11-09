@@ -16,22 +16,33 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
+# Flask
 flask = "2.0.2"
 flask-sqlalchemy = "2.5.1"
 flask-socketio = "5.1.1"
 flask-migrate = "3.1.0"
+# Json
 orjson = "3.6.4"
 jsonpath = "0.82"
-pydantic = "1.8.2"
+# Encryption
 pyjwt = { version = "2.3.0", extras=["crypto"] }
 pycryptodome = "3.11.0"
-python-dotenv = "0.19.1"
+# Data validation
+pydantic = "1.8.2"
+# Database
 psycopg2 = "2.9.1"
+# Coroutine
 gevent = "21.8.0"
 gevent-websocket = "0.10.1"
-gunicorn = { version = "*", markers = "platform_system == 'Linux'" }
-uwsgi = { version = "*", markers = "platform_system == 'Linux'" }
+# Deployment
+gunicorn = { version = "*", markers = "sys_platform == 'linux'" }
+uwsgi = { version = "*", markers = "sys_platform == 'linux'" }
+supervisor = { version = "*", markers = "sys_platform == 'linux'" }
+# 私仓依赖
 pymeter = {path = "../pymeter", develop = true}
+# Environment
+python-dotenv = "0.19.1"
+environs = "9.3.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
@@ -52,3 +63,4 @@ profile = "pycharm"
 line_length = 120
 force_single_line = true
 multi_line_output = 3
+skip_glob = ["migrations/*"]

@@ -4,7 +4,10 @@
 # @Time    : 2019/11/7 10:12
 # @Author  : Kelvin.Ye
 import logging
+import multiprocessing
 from logging.config import dictConfig
+from logging.handlers import QueueHandler
+from logging.handlers import QueueListener
 from logging.handlers import TimedRotatingFileHandler
 
 from app import config as CONFIG
@@ -47,16 +50,22 @@ dictConfig({
 })
 
 
-# 控制台 handler
+# 控制台 Handler
 CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
-# 文件 handler
-FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
+# 文件 Handler
+# FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
 # 文件滚动日志（线程不安全）
-# FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
+FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
 FILE_HANDLER.suffix = "%Y-%m-%d_%H-%M-%S.log"
+
+# 队列 Handler
+QUEUE = multiprocessing.Queue(-1)
+QUEUE_HANDLER = QueueHandler(QUEUE)
+QUEUE_LISTENER = QueueListener(QUEUE, FILE_HANDLER)
+QUEUE_LISTENER.start()
 
 # werkzeug 日志配置
 werkzeug_logger = logging.getLogger('werkzeug')
@@ -86,7 +95,8 @@ def get_logger(name, level=LEVEL) -> logging.Logger:
     logger.propagate = False
     logger.setLevel(level)
     logger.addHandler(CONSOLE_HANDLER)
-    logger.addHandler(FILE_HANDLER)
+    # logger.addHandler(FILE_HANDLER)
+    logger.addHandler(QUEUE_HANDLER)
     return logger
 
 
