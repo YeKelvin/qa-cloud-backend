@@ -284,7 +284,7 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
         # 更新项目运行状态
         item.update(RUNNING_STATE=RunningState.RUNNING.value)
         # 加载脚本
-        collection = element_loader.loads_tree(collection_no)
+        collection = element_loader.loads_tree(collection_no, no_debuger=True)
         if not collection:
             log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
 

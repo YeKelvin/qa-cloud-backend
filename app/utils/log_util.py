@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 import logging
 import multiprocessing
+import os
 from logging.config import dictConfig
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
@@ -20,34 +21,7 @@ FORMATTER = logging.Formatter(LOG_FORMAT)
 LEVEL = CONFIG.LOG_LEVEL
 # 日志文件名称
 LOG_FILE_NAME = CONFIG.LOG_NAME
-
-
-# logger全局配置
-dictConfig({
-    'version': 1,
-    'root': {
-        'propagate': False,
-        'level': LEVEL,  # handler的 level 会覆盖掉这里的 level
-        'handlers': ['console', 'file']
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'default'
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'formatter': 'default',
-            'encoding': 'utf-8',
-            'filename': LOG_FILE_NAME
-        }
-    },
-    'formatters': {
-        'default': {
-            'format': LOG_FORMAT
-        }
-    }
-})
+# LOG_FILE_NAME = f'[{os.getpid()}]{CONFIG.LOG_NAME}'
 
 
 # 控制台 Handler
@@ -56,16 +30,45 @@ CONSOLE_HANDLER.setFormatter(FORMATTER)
 
 # 文件 Handler
 # FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
-# 文件滚动日志（线程不安全）
-FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8')
+# 文件滚动日志（进程不安全）
+FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='D', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
-FILE_HANDLER.suffix = "%Y-%m-%d_%H-%M-%S.log"
+FILE_HANDLER.namer = lambda name: name.replace('.log', '') + '.log'
 
 # 队列 Handler
 QUEUE = multiprocessing.Queue(-1)
 QUEUE_HANDLER = QueueHandler(QUEUE)
-QUEUE_LISTENER = QueueListener(QUEUE, FILE_HANDLER)
+QUEUE_LISTENER = QueueListener(QUEUE, FILE_HANDLER, respect_handler_level=True)
 QUEUE_LISTENER.start()
+
+
+# logger全局配置
+dictConfig({
+    'version': 1,
+    # 'disable_existing_loggers': True,
+    'formatters': {
+        'default': {
+            'format': LOG_FORMAT
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'default'
+        },
+        'queue': {
+            'class': 'logging.handlers.QueueHandler',
+            'queue': QUEUE_HANDLER,
+        }
+    },
+    'root': {
+        'propagate': False,
+        'level': LEVEL,
+        'handlers': ['console', 'queue']
+    }
+})
+
 
 # werkzeug 日志配置
 werkzeug_logger = logging.getLogger('werkzeug')
@@ -74,7 +77,8 @@ werkzeug_logger.setLevel(logging.INFO)
 for handler in werkzeug_logger.handlers:
     werkzeug_logger.removeHandler(handler)
 werkzeug_logger.addHandler(CONSOLE_HANDLER)
-werkzeug_logger.addHandler(FILE_HANDLER)
+werkzeug_logger.addHandler(QUEUE_HANDLER)
+
 
 # sqlalchemy 日志配置
 sqlalchemy_logger = logging.getLogger('sqlalchemy')
@@ -83,7 +87,7 @@ sqlalchemy_logger.setLevel(logging.INFO)
 for handler in sqlalchemy_logger.handlers:
     sqlalchemy_logger.removeHandler(handler)
 sqlalchemy_logger.addHandler(CONSOLE_HANDLER)
-sqlalchemy_logger.addHandler(FILE_HANDLER)
+sqlalchemy_logger.addHandler(QUEUE_HANDLER)
 logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
@@ -95,7 +99,6 @@ def get_logger(name, level=LEVEL) -> logging.Logger:
     logger.propagate = False
     logger.setLevel(level)
     logger.addHandler(CONSOLE_HANDLER)
-    # logger.addHandler(FILE_HANDLER)
     logger.addHandler(QUEUE_HANDLER)
     return logger
 

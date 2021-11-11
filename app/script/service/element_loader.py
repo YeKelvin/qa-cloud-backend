@@ -17,10 +17,13 @@ from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementType
+from app.script.enum import is_debuger
 from app.script.enum import is_group
 from app.script.enum import is_http_sampler
 from app.script.enum import is_sampler
+from app.script.enum import is_setup_group_debuger
 from app.script.enum import is_snippet_sampler
+from app.script.enum import is_teardown_group_debuger
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
@@ -30,27 +33,20 @@ log = get_logger(__name__)
 
 
 def loads_tree(
-    element_no, specified_group_no=None, specified_sampler_no=None, specified_self_only=False, no_sampler=False
+        element_no,
+        specified_group_no=None,
+        specified_sampler_no=None,
+        specified_self_only=False,
+        no_sampler=False,
+        no_debuger=False
 ):
     """根据元素编号加载脚本"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
 
-    # 元素为禁用状态时返回 None
-    if not element.ENABLED:
-        log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
-        return None
-
-    # 加载指定元素，如果当前元素非指定元素时返回空
-    if (
-        specified_group_no
-        and not is_specified_group_or_passable_element(element, specified_group_no, specified_self_only)  # noqa
-    ):
-        return None
-
-    # 标记为不需要 Sampler 时返回空
-    if no_sampler and is_sampler(element):
+    # 检查是否为运行加载的元素，不允许时直接返回 None
+    if is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
         return None
 
     # 元素子代
@@ -78,15 +74,43 @@ def loads_tree(
     return {
         'name': element.ELEMENT_NAME,
         'remark': element.ELEMENT_REMARK,
-        'class': (
-            element.ELEMENT_CLASS
-            if not is_snippet_sampler(element)
-            else ElementClass.TRANSACTION_CONTROLLER.value
-        ),
+        'class': get_real_class(element),
         'enabled': element.ENABLED,
         'property': properties,
         'children': children
     }
+
+
+def is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
+    # 元素为禁用状态时返回 None
+    if not element.ENABLED:
+        log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
+        return True
+
+    # 加载指定元素，如果当前元素非指定元素时返回空
+    if specified_group_no and not is_specified_group(element, specified_group_no, specified_self_only):
+        return True
+
+    # 不需要 Sampler 时返回 None
+    if no_sampler and is_sampler(element):
+        return True
+
+    # 不需要 Debuger 时返回 None
+    if no_debuger and is_debuger(element):
+        return True
+
+    return False
+
+
+def get_real_class(element):
+    if is_snippet_sampler(element):
+        return ElementClass.TRANSACTION_CONTROLLER.value
+    elif is_setup_group_debuger(element):
+        return ElementClass.SETUP_GROUP_DEBUGER.value
+    elif is_teardown_group_debuger(element):
+        return ElementClass.TEARDOWN_GROUP_DEBUGER.value
+    else:
+        return element.ELEMENT_CLASS
 
 
 def loads_property(element_no):
@@ -126,7 +150,11 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
             # 非独立运行
             else:
                 child = loads_tree(
-                    element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only, found
+                    element_child_rel.CHILD_NO,
+                    specified_group_no,
+                    specified_sampler_no,
+                    specified_self_only,
+                    no_sampler=found
                 )
                 if child:
                     children.append(child)
@@ -366,7 +394,7 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
 
 
-def is_specified_group_or_passable_element(element, specified_no, self_only):
+def is_specified_group(element, specified_no, self_only):
     # 非 Group 时加载
     if not is_group(element):
         return True  # pass

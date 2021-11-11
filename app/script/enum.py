@@ -55,9 +55,11 @@ class ElementClass(Enum):
 
     # 前置分组
     SETUP_GROUP = 'SetupGroup'
+    SETUP_GROUP_DEBUGER = 'SetupGroupDebuger'
 
     # 后置分组
     TEARDOWN_GROUP = 'TeardownGroup'
+    TEARDOWN_GROUP_DEBUGER = 'TeardownGroupDebuger'
 
     # HTTP取样器
     HTTP_SAMPLER = 'HTTPSampler'
@@ -276,3 +278,15 @@ def is_http_sampler(element):
 
 def is_snippet_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
+
+
+def is_setup_group_debuger(element):
+    return element.ELEMENT_CLASS == ElementClass.SETUP_GROUP_DEBUGER.value
+
+
+def is_teardown_group_debuger(element):
+    return element.ELEMENT_CLASS == ElementClass.TEARDOWN_GROUP_DEBUGER.value
+
+
+def is_debuger(element):
+    return is_setup_group_debuger(element) or is_teardown_group_debuger(element)
