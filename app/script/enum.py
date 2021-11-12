@@ -76,6 +76,9 @@ class ElementClass(Enum):
     # HTTP头部配置器
     HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
 
+    # ForIn控制器
+    FOR_IN_CONTROLLER = 'ForInController'
+
     # Loop控制器
     LOOP_CONTROLLER = 'LoopController'
 
