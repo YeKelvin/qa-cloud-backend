@@ -19,37 +19,29 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_user_role_rel_list():
-    """分页查询用户角色关联列表"""
+    """分页查询用户角色列表"""
     req = JsonParser(
         Argument('userNo'),
         Argument('roleNo'),
         Argument('userName'),
         Argument('roleName'),
+        Argument('roleCode'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_user_role_rel_list(req)
 
 
-@blueprint.post('/role/rel')
+@blueprint.get('/role/rel/all')
 @require_login
 @require_permission
-def create_user_role_rel():
-    """新增用户角色关联"""
+def query_user_role_rel_all():
+    """查询所有用户角色"""
     req = JsonParser(
         Argument('userNo'),
-        Argument('roleNo')
+        Argument('roleNo'),
+        Argument('userName'),
+        Argument('roleName'),
+        Argument('roleCode')
     ).parse()
-    return service.create_user_role_rel(req)
-
-
-@blueprint.delete('/role/rel')
-@require_login
-@require_permission
-def remove_user_role_rel():
-    """删除用户角色关联"""
-    req = JsonParser(
-        Argument('userNo'),
-        Argument('roleNo')
-    ).parse()
-    return service.remove_user_role_rel(req)
+    return service.query_user_role_rel_all(req)

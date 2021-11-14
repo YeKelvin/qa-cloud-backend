@@ -12,7 +12,7 @@ def select_by_userno(user_no) -> TUserRoleRel:
     return TUserRoleRel.filter_by(USER_NO=user_no).first()
 
 
-def select_by_userno_and_roleno(user_no, role_no) -> TUserRoleRel:
+def select_by_user_and_role(user_no, role_no) -> TUserRoleRel:
     return TUserRoleRel.filter_by(USER_NO=user_no, ROLE_NO=role_no).first()
 
 
@@ -28,3 +28,10 @@ def delete_all_by_userno(user_no):
     entities = TUserRoleRel.filter_by(USER_NO=user_no).all()
     for entity in entities:
         entity.delete()
+
+
+def delete_all_by_user_and_notin_role(user_no, *role_number_list) -> None:
+    TUserRoleRel.filter(
+        TUserRoleRel.USER_NO == user_no,
+        TUserRoleRel.ROLE_NO.notin_(*role_number_list)
+    ).update({TUserRoleRel.DEL_STATE: 1})

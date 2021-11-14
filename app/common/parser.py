@@ -7,6 +7,7 @@ import traceback
 from enum import Enum
 from typing import List
 from typing import Tuple
+from typing import Type
 
 from flask import request
 
@@ -25,14 +26,14 @@ class Argument:
     def __init__(
         self,
         name: str,
-        type: type = str,
+        type: type = str,  # noqa
         default: any = None,
         required: bool = False,
         nullable: bool = False,
-        min: int = None,
-        max: int = None,
-        enum: Enum = None,
-        help: str = None
+        min: int = None,  # noqa
+        max: int = None,  # noqa
+        enum: Type[Enum] = None,
+        help: str = None  # noqa
     ):
         self.name = name            # 参数名称
         self.type = type            # 参数类型

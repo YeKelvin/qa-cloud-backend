@@ -4,6 +4,8 @@
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
 import decimal
+from typing import Type
+
 from sqlalchemy import func
 
 from app.extension import db
@@ -14,36 +16,39 @@ from app.utils.time_util import datetime_now_by_utc8
 log = get_logger(__name__)
 
 
+MODEL = Type[db.Model]
+
+
 class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
 
     @classmethod
-    def insert(cls, **kwargs):
+    def insert(cls: MODEL, **kwargs):
         entity = cls(**kwargs)
         entity.submit()
 
     @classmethod
-    def filter(cls, *args):
+    def filter(cls: MODEL, *args):
         return cls.query.filter(cls.DEL_STATE == 0, *args)
 
     @classmethod
-    def filter_by(cls, **kwargs):
+    def filter_by(cls: MODEL, **kwargs):
         return cls.query.filter_by(DEL_STATE=0, **kwargs)
 
     @classmethod
-    def count_by(cls, **kwargs) -> int:
+    def count_by(cls: MODEL, **kwargs) -> int:
         return cls.query.session.query(func.count(cls.ID)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
 
     @classmethod
-    def avg_by(cls, field, **kwargs) -> decimal.Decimal:
+    def avg_by(cls: MODEL, field, **kwargs) -> decimal.Decimal:
         return cls.query.session.query(func.avg(field)).filter_by(DEL_STATE=0, **kwargs).scalar() or 0
 
     @classmethod
-    def delete_filter(cls, *args):
+    def delete_filter(cls: MODEL, *args):
         cls.filter(*args).update({cls.DEL_STATE: 1})
 
     @classmethod
-    def delete_filter_by(cls, **kwargs):
+    def delete_filter_by(cls: MODEL, **kwargs):
         cls.filter_by(**kwargs).update({cls.DEL_STATE: 1})
 
     def update(self, **kwargs):
@@ -74,11 +79,11 @@ class DBModel(CRUDMixin, db.Model):
         return str(self.__dict__)
 
 
-class BaseColumnMixin:
+class BaseColumn:
 
     ID = db.Column(db.Integer, primary_key=True)
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
+    DELETED = db.Column(db.Integer, nullable=False, default=0, comment='是否已删除')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')

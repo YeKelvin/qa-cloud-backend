@@ -27,6 +27,7 @@ from app.user.model import TUser
 from app.user.model import TUserLoginInfo
 from app.user.model import TUserLoginLog
 from app.user.model import TUserPassword
+from app.user.model import TUserRoleRel
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
@@ -150,6 +151,10 @@ def register(req):
     )
     TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
+    # 绑定用户角色
+    for role_no in req.roleNumberList:
+        TUserRoleRel.insert(USER_NO=user_no, ROLE_NO=role_no)
+
 
 @http_service
 def reset_login_password(req):
@@ -196,7 +201,7 @@ def query_user_list(req):
         roles = []
         for user_role in user_role_list:
             # 查询角色
-            role = RoleDao.select_by_roleno(user_role.ROLE_NO)
+            role = RoleDao.select_by_no(user_role.ROLE_NO)
             if not role:
                 continue
             roles.append(role.ROLE_NAME)
@@ -241,10 +246,10 @@ def query_user_info():
     roles = []
     for user_role in user_role_list:
         # 查询角色
-        role = RoleDao.select_by_roleno(user_role.ROLE_NO)
+        role = RoleDao.select_by_no(user_role.ROLE_NO)
         if not role:
             continue
-        roles.append(role.ROLE_NAME)
+        roles.append(role.ROLE_CODE)
 
     return {
         'userNo': user_no,
@@ -269,6 +274,16 @@ def modify_user(req):
         EMAIL=req.email
     )
     # TODO: workspaceName也要同步修改
+
+    # 绑定用户角色
+    for role_no in req.roleNumberList:
+        # 查询用户角色
+        user_role = UserRoleRelDao.select_by_user_and_role(req.userNo, role_no)
+        if not user_role:
+            TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=role_no)
+
+    # 解绑非勾选的角色
+    UserRoleRelDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberList)
 
 
 @http_service

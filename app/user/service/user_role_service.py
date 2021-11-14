@@ -4,10 +4,7 @@
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
 from app.extension import db
-from app.user.dao import user_role_rel_dao as UserRoleRelDao
 from app.user.model import TRole
 from app.user.model import TUser
 from app.user.model import TUserRoleRel
@@ -26,6 +23,7 @@ def query_user_role_rel_list(req):
     conds.equal(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
     conds.like(TUser.USER_NAME, req.userName)
     conds.like(TRole.ROLE_NAME, req.roleName)
+    conds.like(TRole.ROLE_CODE, req.roleCode)
     conds.like(TUserRoleRel.USER_NO, req.userNo)
     conds.like(TUserRoleRel.ROLE_NO, req.roleNo)
 
@@ -33,6 +31,7 @@ def query_user_role_rel_list(req):
     pagination = db.session.query(
         TUser.USER_NAME,
         TRole.ROLE_NAME,
+        TRole.ROLE_CODE,
         TUserRoleRel.USER_NO,
         TUserRoleRel.ROLE_NO,
         TUserRoleRel.CREATED_TIME
@@ -45,26 +44,42 @@ def query_user_role_rel_list(req):
             'roleNo': item.ROLE_NO,
             'userName': item.USER_NAME,
             'roleName': item.ROLE_NAME,
+            'roleCode': item.ROLE_CODE,
         })
 
     return {'data': data, 'total': pagination.total}
 
 
 @http_service
-def create_user_role_rel(req):
-    # 查询用户角色
-    user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
-    check_is_blank(user_role, '用户角色关联已存在')
+def query_user_role_rel_all(req):
+    # 查询条件
+    conds = QueryCondition(TUser, TRole, TUserRoleRel)
+    conds.equal(TUser.USER_NO, TUserRoleRel.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
+    conds.like(TUser.USER_NAME, req.userName)
+    conds.like(TRole.ROLE_NAME, req.roleName)
+    conds.like(TRole.ROLE_CODE, req.roleCode)
+    conds.like(TUserRoleRel.USER_NO, req.userNo)
+    conds.like(TUserRoleRel.ROLE_NO, req.roleNo)
 
-    # 绑定用户和角色
-    TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=req.roleNo)
+    # TUser，TRole，TUserRoleRel连表查询
+    entities = db.session.query(
+        TUser.USER_NAME,
+        TRole.ROLE_NAME,
+        TRole.ROLE_CODE,
+        TUserRoleRel.USER_NO,
+        TUserRoleRel.ROLE_NO,
+        TUserRoleRel.CREATED_TIME
+    ).filter(*conds).order_by(TUserRoleRel.CREATED_TIME.desc()).all()
 
+    result = []
+    for entity in entities:
+        result.append({
+            'userNo': entity.USER_NO,
+            'roleNo': entity.ROLE_NO,
+            'userName': entity.USER_NAME,
+            'roleName': entity.ROLE_NAME,
+            'roleCode': entity.ROLE_CODE,
+        })
 
-@http_service
-def remove_user_role_rel(req):
-    # 查询用户角色
-    user_role = UserRoleRelDao.select_by_userno_and_roleno(req.userNo, req.roleNo)
-    check_is_not_blank(user_role, '用户角色关联不存在')
-
-    # 解绑用户和角色
-    user_role.delete()
+    return result

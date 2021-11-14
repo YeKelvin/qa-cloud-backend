@@ -61,7 +61,7 @@ def initdata():
 def init_user():
     """初始化用户"""
     user_no = new_id()
-    TUser.insert(USER_NO=user_no, USER_NAME='超级管理员', STATE='ENABLE')
+    TUser.insert(USER_NO=user_no, USER_NAME='超级管理员')
     TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
     TUserPassword.insert(
         USER_NO=user_no,
@@ -85,10 +85,10 @@ def init_user():
 @with_appcontext
 def init_role():
     """初始化角色"""
-    _create_role(name='SuperAdmin', role_desc='超级管理员')
-    _create_role(name='Admin', role_desc='管理员')
-    _create_role(name='Leader', role_desc='组长')
-    _create_role(name='General', role_desc='用户')
+    _create_role(name='超级管理员', code='SuperAdmin')
+    _create_role(name='管理员', code='Admin')
+    _create_role(name='组长', code='Leader')
+    _create_role(name='用户', code='General')
 
     click.echo('创建角色成功')
 
@@ -119,12 +119,11 @@ def init_permission():
     _create_permission(name='更新角色信息', method='PUT', endpoint='/user/role')
     _create_permission(name='更新角色状态', method='PATCH', endpoint='/user/role/state')
     _create_permission(name='删除角色', method='DELETE', endpoint='/user/role')
-    _create_permission(name='分页查询用户角色关联列表', method='GET', endpoint='/user/role/rel/list')
-    _create_permission(name='新增用户角色关联', method='POST', endpoint='/user/role/rel')
-    _create_permission(name='删除用户角色关联', method='DELETE', endpoint='/user/role/rel')
-    _create_permission(name='分页查询角色权限关联列表', method='GET', endpoint='/user/role/permission/rel/list')
-    _create_permission(name='新增角色权限关联', method='POST', endpoint='/user/role/permission/rel')
-    _create_permission(name='删除角色权限关联', method='DELETE', endpoint='/user/role/permission/rel')
+    _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/rel/list')
+    _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/rel/all')
+    _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/rel/list')
+    _create_permission(name='新增角色权限', method='POST', endpoint='/user/role/permission/rel')
+    _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission/rel')
 
     # system模块路由
     # log
@@ -164,9 +163,9 @@ def init_permission():
     _create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
     _create_permission(name='移动元素', method='POST', endpoint='/script/element/move')
     _create_permission(name='复制元素及其子代', method='POST', endpoint='/script/element/duplicate')
-    _create_permission(name='查询HTTP请求头模板关联列表', method='GET', endpoint='/script/element/http/header/template/refs')
-    _create_permission(name='新增HTTP请求头模板关联列表', method='POST', endpoint='/script/element/http/header/template/refs')
-    _create_permission(name='修改HTTP请求头模板关联列表', method='PUT', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='查询HTTP请求头模板列表', method='GET', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='新增HTTP请求头模板列表', method='POST', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='修改HTTP请求头模板列表', method='PUT', endpoint='/script/element/http/header/template/refs')
     _create_permission(name='查询内置元素', method='GET', endpoint='/script/element/builtins')
     _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtins')
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtins')
@@ -248,7 +247,7 @@ def init_permission():
 def init_user_role_rel():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
-    role = TRole.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
+    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
     TUserRoleRel.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
 
@@ -257,7 +256,7 @@ def init_user_role_rel():
 def init_role_permission_rel():
     """初始化角色权限关联"""
     permissions = TPermission.query.all()
-    role = TRole.filter_by(ROLE_NAME='SuperAdmin', ROLE_DESC='超级管理员').first()
+    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
     for permission in permissions:
         TRolePermissionRel.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联成功')
@@ -275,12 +274,12 @@ def init_action_log():
     click.echo('初始化操作日志数据成功')
 
 
-def _create_role(name, role_desc):
-    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_DESC=role_desc, STATE='ENABLE')
+def _create_role(name, code, desc=''):
+    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_DESC=desc)
 
 
 def _create_permission(name, method, endpoint):
-    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, STATE='ENABLE')
+    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint)
 
 
 @click.command('sqlite-to-pgsql')
