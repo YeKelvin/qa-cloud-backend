@@ -4,9 +4,9 @@
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
+from app.user.dao import role_dao as RoleDao  # noqa
 from app.user.dao import role_permission_rel_dao as RolePermissionRelDao
 from app.user.model import TPermission
 from app.user.model import TRole
@@ -57,20 +57,37 @@ def query_role_permission_rel_list(req):
 
 
 @http_service
-def create_role_permission_rel(req):
-    # 查询角色权限
-    role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo)
-    check_is_blank(role_permission, '角色权限关联已存在')
+def create_role_permissions(req):
+    # 查询角色
+    role = RoleDao.select_by_no(req.roleNo)
+    check_is_not_blank(role, '角色不存在')
 
-    # 绑定角色和权限
-    TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=req.permissionNo)
+    for permission_no in req.permissionNumberList:
+        # 查询角色权限
+        role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, permission_no)
+        # 绑定角色权限
+        if not role_permission:
+            TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=permission_no)
 
 
 @http_service
-def remove_role_permission_rel(req):
+def remove_role_permission(req):
     # 查询角色权限
-    role_permission = RolePermissionRelDao.select_by_roleno_and_permissionno(req.roleNo, req.permissionNo)
-    check_is_not_blank(role_permission, '角色权限关联不存在')
+    role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, req.permissionNo)
+    # 解绑角色权限
+    if role_permission:
+        role_permission.delete()
 
-    # 解绑角色和权限
-    role_permission.delete()
+
+@http_service
+def remove_role_permissions(req):
+    # 查询角色
+    role = RoleDao.select_by_no(req.roleNo)
+    check_is_not_blank(role, '角色不存在')
+
+    for permission_no in req.permissionNumberList:
+        # 查询角色权限
+        role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, permission_no)
+        # 解绑角色权限
+        if role_permission:
+            role_permission.delete()

@@ -63,6 +63,22 @@ def query_role_all():
 
 
 @http_service
+def query_role_info(req):
+    # 查询角色
+    role = RoleDao.select_by_no(req.roleNo)
+    check_is_not_blank(role, '角色不存在')
+
+    return {
+        'roleNo': role.ROLE_NO,
+        'roleName': role.ROLE_NAME,
+        'roleCode': role.ROLE_CODE,
+        'roleDesc': role.ROLE_DESC,
+        'roleType': role.ROLE_TYPE,
+        'state': role.STATE
+    }
+
+
+@http_service
 def create_role(req):
     # 查询角色
     role = RoleDao.select_by_name_and_code(req.roleName, req.roleCode)

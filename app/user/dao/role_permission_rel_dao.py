@@ -6,7 +6,7 @@
 from app.user.model import TRolePermissionRel
 
 
-def select_by_roleno_and_permissionno(role_no, permission_no) -> TRolePermissionRel:
+def select_by_role_and_permission(role_no, permission_no) -> TRolePermissionRel:
     return TRolePermissionRel.filter_by(ROLE_NO=role_no, PERMISSION_NO=permission_no).first()
 
 

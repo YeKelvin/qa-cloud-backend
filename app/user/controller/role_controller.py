@@ -41,6 +41,17 @@ def query_role_all():
     return service.query_role_all()
 
 
+@blueprint.get('/role/info')
+@require_login
+@require_permission
+def query_role_info():
+    """查询角色信息"""
+    req = JsonParser(
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空')
+    ).parse()
+    return service.query_role_info(req)
+
+
 @blueprint.post('/role')
 @require_login
 @require_permission

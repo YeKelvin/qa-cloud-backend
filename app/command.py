@@ -115,6 +115,7 @@ def init_permission():
     _create_permission(name='删除权限', method='DELETE', endpoint='/user/permission')
     _create_permission(name='分页查询角色列表', method='GET', endpoint='/user/role/list')
     _create_permission(name='查询所有角色', method='GET', endpoint='/user/role/all')
+    _create_permission(name='查询角色信息', method='GET', endpoint='/user/role/info')
     _create_permission(name='新增角色', method='POST', endpoint='/user/role')
     _create_permission(name='更新角色信息', method='PUT', endpoint='/user/role')
     _create_permission(name='更新角色状态', method='PATCH', endpoint='/user/role/state')
@@ -122,8 +123,9 @@ def init_permission():
     _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/rel/list')
     _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/rel/all')
     _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/rel/list')
-    _create_permission(name='新增角色权限', method='POST', endpoint='/user/role/permission/rel')
-    _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission/rel')
+    _create_permission(name='批量新增角色权限', method='POST', endpoint='/user/role/permissions')
+    _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission')
+    _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/user/role/permissions')
 
     # system模块路由
     # log

@@ -33,25 +33,37 @@ def query_role_permission_rel_list():
     return service.query_role_permission_rel_list(req)
 
 
-@blueprint.post('/role/permission/rel')
+@blueprint.post('/role/permissions')
 @require_login
 @require_permission
-def create_role_permission_rel():
-    """新增角色权限关联"""
+def create_role_permissions():
+    """批量新增角色权限"""
+    req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionNumberList')
+    ).parse()
+    return service.create_role_permissions(req)
+
+
+@blueprint.delete('/role/permission')
+@require_login
+@require_permission
+def remove_role_permission():
+    """删除角色权限"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo')
     ).parse()
-    return service.create_role_permission_rel(req)
+    return service.remove_role_permission(req)
 
 
-@blueprint.delete('/role/permission/rel')
+@blueprint.delete('/role/permissions')
 @require_login
 @require_permission
-def remove_role_permission_rel():
-    """删除角色权限关联"""
+def remove_role_permissions():
+    """批量删除角色权限"""
     req = JsonParser(
         Argument('roleNo'),
-        Argument('permissionNo')
+        Argument('permissionNumberList')
     ).parse()
-    return service.remove_role_permission_rel(req)
+    return service.remove_role_permissions(req)
