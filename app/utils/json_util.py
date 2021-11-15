@@ -27,7 +27,7 @@ def from_json(val):
     try:
         return orjson.loads(val)
     except JSONDecodeError as e:
-        e.args = e.args + (f'value:[ {val} ]',)
+        e.args = e.args + (f'value: {val}',)
         raise e
 
 

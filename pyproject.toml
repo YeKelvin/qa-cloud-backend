@@ -30,10 +30,9 @@ pycryptodome = "3.11.0"
 # Data validation
 pydantic = "1.8.2"
 # Database
-psycopg2 = "2.9.1"
+psycopg2 = "2.9.2"
 # Coroutine
 gevent = "21.8.0"
-gevent-websocket = "0.10.1"
 # Deployment
 gunicorn = { version = "*", markers = "sys_platform == 'linux'" }
 uwsgi = { version = "*", markers = "sys_platform == 'linux'" }
