@@ -5,20 +5,18 @@
 # @Author  : Kelvin.Ye
 from sqlalchemy import UniqueConstraint
 
+from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
-from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
 
 
-class TUser(DBModel):
+class TUser(DBModel, BaseColumn):
     """用户表"""
     __tablename__ = 'USER'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
     USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
     MOBILE_NO = db.Column(db.String(16), comment='手机号')
@@ -26,119 +24,70 @@ class TUser(DBModel):
     AVATAR = db.Column(db.String(256), comment='头像URL')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='用户状态(ENABLE:启用, CLOSE:禁用)')
     LOGGED_IN = db.Column(db.Boolean, nullable=False, default=False, comment='是否已登录')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('USER_NAME', 'DEL_STATE', name='unique_username')
+    UniqueConstraint('USER_NAME', 'DELETED', name='unique_username')
 
 
-class TRole(DBModel):
+class TRole(DBModel, BaseColumn):
     """角色表"""
     __tablename__ = 'ROLE'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
     ROLE_NAME = db.Column(db.String(128), nullable=False, comment='角色名称')
-    ROLE_CODE = db.Column(db.String(128), nullable=False, comment='角色代码')
+    ROLE_CODE = db.Column(db.String(64), nullable=False, comment='角色代码')
     ROLE_DESC = db.Column(db.String(256), comment='角色描述')
-    ROLE_TYPE = db.Column(db.String(256), default='SYSTEM', comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
+    ROLE_TYPE = db.Column(db.String(64), default='SYSTEM', comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, CLOSE:禁用)')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('ROLE_NAME', 'DEL_STATE', name='unique_rolename')
+    UniqueConstraint('ROLE_NAME', 'DELETED', name='unique_rolename')
 
 
-class TUserRoleRel(DBModel):
+class TUserRoleRel(DBModel, BaseColumn):
     """用户角色关联表"""
     __tablename__ = 'USER_ROLE_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), nullable=False, comment='角色编号')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('USER_NO', 'ROLE_NO', 'DEL_STATE', name='unique_user_role')
+    UniqueConstraint('USER_NO', 'ROLE_NO', 'DELETED', name='unique_user_role')
 
 
-class TPermission(DBModel):
+class TPermission(DBModel, BaseColumn):
     """权限表"""
     __tablename__ = 'PERMISSION'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     PERMISSION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='权限编号')
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
     METHOD = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
     ENDPOINT = db.Column(db.String(128), nullable=False, comment='路由路径')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, CLOSE:禁用)')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('PERMISSION_NAME', 'METHOD', 'ENDPOINT', 'DEL_STATE', name='unique_permission_method_endpoint')
+    UniqueConstraint('PERMISSION_NAME', 'METHOD', 'ENDPOINT', 'DELETED', name='unique_permission_method_endpoint')
 
 
-class TRolePermissionRel(DBModel):
+class TRolePermissionRel(DBModel, BaseColumn):
     """角色权限关联表"""
     __tablename__ = 'ROLE_PERMISSION_REL'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), nullable=False, comment='权限编号')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DEL_STATE', name='unique_role_permission')
+    UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DELETED', name='unique_role_permission')
 
 
-class TUserLoginInfo(DBModel):
+class TUserLoginInfo(DBModel, BaseColumn):
     """用户登陆号表"""
     __tablename__ = 'USER_LOGIN_INFO'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), nullable=False, comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DEL_STATE', name='unique_user_loginname_logintype')
+    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DELETED', name='unique_user_loginname_logintype')
 
 
-class TUserLoginLog(DBModel):
+class TUserLoginLog(DBModel, BaseColumn):
     """用户登陆日志表"""
     __tablename__ = 'USER_LOGIN_LOG'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
     IP = db.Column(db.String(256), comment='IP地址')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
-class TUserPassword(DBModel):
+class TUserPassword(DBModel, BaseColumn):
     """用户密码表"""
     __tablename__ = 'USER_PASSWORD'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='密码')
     PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
@@ -147,23 +96,11 @@ class TUserPassword(DBModel):
     ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
     UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DEL_STATE', name='unique_user_password_passwordtype')
+    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DELETED', name='unique_user_password_passwordtype')
 
 
-class TUserPasswordKey(DBModel):
+class TUserPasswordKey(DBModel, BaseColumn):
     """用户密码密钥表"""
     __tablename__ = 'USER_PASSWORD_KEY'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')

@@ -20,4 +20,4 @@ def delete_all_by_plan_and_not_in_dataset(plan_no, *args):
     TTestplanDatasetRel.filter(
         TTestplanDatasetRel.PLAN_NO == plan_no,
         TTestplanDatasetRel.DATASET_NO.notin_(*args)
-    ).update({TTestplanDatasetRel.DEL_STATE: 1})
+    ).update({TTestplanDatasetRel.DELETED: 1})

@@ -34,4 +34,4 @@ def delete_all_by_user_and_notin_role(user_no, *role_number_list) -> None:
     TUserRoleRel.filter(
         TUserRoleRel.USER_NO == user_no,
         TUserRoleRel.ROLE_NO.notin_(*role_number_list)
-    ).update({TUserRoleRel.DEL_STATE: 1})
+    ).update({TUserRoleRel.DELETED: 1})

@@ -92,9 +92,9 @@ def require_permission(func):
 
         # 查询用户角色权限信息
         conds = [
-            TRole.DEL_STATE == 0,
-            TPermission.DEL_STATE == 0,
-            TRolePermissionRel.DEL_STATE == 0,
+            TRole.DELETED == 0,
+            TPermission.DELETED == 0,
+            TRolePermissionRel.DELETED == 0,
             TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
             TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO,
             TRole.STATE == 'ENABLE',

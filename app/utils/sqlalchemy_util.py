@@ -20,7 +20,7 @@ class QueryCondition(list):
 
     def add_table(self, table):
         if table:
-            self.append(table.DEL_STATE == 0)
+            self.append(table.DELETED == 0)
 
     def like(self, column, value):
         """模糊匹配"""

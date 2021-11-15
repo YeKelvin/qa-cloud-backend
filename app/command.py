@@ -295,7 +295,7 @@ def migrate_sqlite_to_pgsql():
     sqlite_session = Session(sqlite_engine)
 
     # TWorkspaceCollectionRel
-    for entity in sqlite_session.query(model.TWorkspaceCollectionRel).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TWorkspaceCollectionRel).filter_by(DELETED=0).all():
         model.TWorkspaceCollectionRel.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
             COLLECTION_NO=entity.COLLECTION_NO
@@ -303,7 +303,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TWorkspaceCollectionRel value {entity.WORKSPACE_NO} {entity.COLLECTION_NO}')
 
     # TTestElement
-    for entity in sqlite_session.query(model.TTestElement).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TTestElement).filter_by(DELETED=0).all():
         model.TTestElement.insert(
             ELEMENT_NO=entity.ELEMENT_NO,
             ELEMENT_NAME=entity.ELEMENT_NAME,
@@ -316,7 +316,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TTestElement value {entity.ELEMENT_NO}')
 
     # TElementProperty
-    for entity in sqlite_session.query(model.TElementProperty).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TElementProperty).filter_by(DELETED=0).all():
         model.TElementProperty.insert(
             ELEMENT_NO=entity.ELEMENT_NO,
             PROPERTY_NAME=entity.PROPERTY_NAME,
@@ -331,7 +331,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TElementProperty value {entity.ELEMENT_NO}')
 
     # TElementChildRel
-    for entity in sqlite_session.query(model.TElementChildRel).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TElementChildRel).filter_by(DELETED=0).all():
         model.TElementChildRel.insert(
             ROOT_NO=entity.ROOT_NO,
             PARENT_NO=entity.PARENT_NO,
@@ -341,7 +341,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TElementChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
 
     # TElementBuiltinChildRel
-    for entity in sqlite_session.query(model.TElementBuiltinChildRel).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TElementBuiltinChildRel).filter_by(DELETED=0).all():
         model.TElementBuiltinChildRel.insert(
             ROOT_NO=entity.ROOT_NO,
             PARENT_NO=entity.PARENT_NO,
@@ -351,7 +351,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TElementBuiltinChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
 
     # TVariableDataset
-    for entity in sqlite_session.query(model.TVariableDataset).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TVariableDataset).filter_by(DELETED=0).all():
         model.TVariableDataset.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
             DATASET_NO=entity.DATASET_NO,
@@ -363,7 +363,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TVariableDataset value {entity.DATASET_NO}')
 
     # TVariable
-    for entity in sqlite_session.query(model.TVariable).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.TVariable).filter_by(DELETED=0).all():
         model.TVariable.insert(
             DATASET_NO=entity.DATASET_NO,
             VAR_NO=entity.VAR_NO,
@@ -376,7 +376,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TVariable value {entity.VAR_NO}')
 
     # THttpSamplerHeaderTemplateRef
-    for entity in sqlite_session.query(model.THttpSamplerHeaderTemplateRef).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.THttpSamplerHeaderTemplateRef).filter_by(DELETED=0).all():
         model.THttpSamplerHeaderTemplateRef.insert(
             SAMPLER_NO=entity.SAMPLER_NO,
             TEMPLATE_NO=entity.TEMPLATE_NO
@@ -384,7 +384,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into THttpSamplerHeadersRel value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
 
     # THttpHeaderTemplate
-    for entity in sqlite_session.query(model.THttpHeaderTemplate).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.THttpHeaderTemplate).filter_by(DELETED=0).all():
         model.THttpHeaderTemplate.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
             TEMPLATE_NO=entity.TEMPLATE_NO,
@@ -394,7 +394,7 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into THttpHeadersTemplate value {entity.TEMPLATE_NO}')
 
     # THttpHeader
-    for entity in sqlite_session.query(model.THttpHeader).filter_by(DEL_STATE=0).all():
+    for entity in sqlite_session.query(model.THttpHeader).filter_by(DELETED=0).all():
         model.THttpHeader.insert(
             TEMPLATE_NO=entity.TEMPLATE_NO,
             HEADER_NO=entity.HEADER_NO,

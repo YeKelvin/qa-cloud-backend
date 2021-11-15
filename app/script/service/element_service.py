@@ -68,7 +68,7 @@ def query_element_list(req):
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
-        conds.equal(TWorkspaceCollectionRel.DEL_STATE, 0)
+        conds.equal(TWorkspaceCollectionRel.DELETED, 0)
         conds.equal(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
         conds.equal(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)

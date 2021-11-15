@@ -3,36 +3,28 @@
 # @File    : model.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
+from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
-from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
 
 
-class TActionLog(DBModel):
+class TActionLog(DBModel, BaseColumn):
     """系统操作日志表"""
     __tablename__ = 'ACTION_LOG'
-    ID = db.Column(db.Integer, primary_key=True)
     ACTION_DESC = db.Column(db.String(256), comment='操作描述')
     ACTION_METHOD = db.Column(db.String(32), comment='操作方法')
     ACTION_ENDPOINT = db.Column(db.String(256), comment='操作路由')
     OLD_VALUE = db.Column(db.String(512), comment='旧值')
     NEW_VALUE = db.Column(db.String(512), comment='新值')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
 
 
-class TSystemOperationLog(DBModel):
+class TSystemOperationLog(DBModel, BaseColumn):
     """操作日志记录表"""
     __tablename__ = 'SYSTEM_OPERATION_LOG'
-    ID = db.Column(db.Integer, primary_key=True)
-    DEL_STATE = db.Column(db.Integer, nullable=False, default=0, comment='数据状态')
     LOG_NO = db.Column(db.String(32), index=True, nullable=False, comment='日志编号')
     USER_NO = db.Column(db.String(32), comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), comment='登录账号')
@@ -45,8 +37,3 @@ class TSystemOperationLog(DBModel):
     REQ_TIME = db.Column(db.DateTime, comment='请求时间')
     RES_TIME = db.Column(db.DateTime, comment='响应时间')
     TIME_CONSUMING = db.Column(db.Integer, comment='耗时(ms)')
-    REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), comment='创建人')
-    CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')

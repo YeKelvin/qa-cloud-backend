@@ -20,4 +20,4 @@ def delete_all_by_plan_and_not_in_collection(plan_no, *args):
     TTestplanItems.filter(
         TTestplanItems.PLAN_NO == plan_no,
         TTestplanItems.COLLECTION_NO.notin_(*args)
-    ).update({TTestplanItems.DEL_STATE: 1})
+    ).update({TTestplanItems.DELETED: 1})

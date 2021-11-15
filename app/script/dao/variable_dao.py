@@ -29,4 +29,4 @@ def select_list_in_dataset(*dataset_no) -> List[TVariable]:
 
 
 def delete_in_no(*args):
-    TVariable.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DEL_STATE: 1})
+    TVariable.filter(TVariable.VAR_NO.in_(*args)).update({TVariable.DELETED: 1})

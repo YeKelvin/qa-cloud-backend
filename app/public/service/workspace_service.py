@@ -64,7 +64,7 @@ def query_workspace_all(req):
             TWorkspace.WORKSPACE_DESC,
             TWorkspace.CREATED_TIME
         ).filter(
-            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC', TWorkspace.DEL_STATE == 0
+            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC', TWorkspace.DELETED == 0
         )
         workspaces = workspaces.union(public_workspaces).filter().order_by(TWorkspace.CREATED_TIME.desc()).all()
 

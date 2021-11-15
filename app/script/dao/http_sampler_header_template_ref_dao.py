@@ -20,4 +20,4 @@ def delete_all_by_sampler_and_not_in_template(sampler_no, *args):
     THttpSamplerHeaderTemplateRef.filter(
         THttpSamplerHeaderTemplateRef.SAMPLER_NO == sampler_no,
         THttpSamplerHeaderTemplateRef.TEMPLATE_NO.notin_(*args)
-    ).update({THttpSamplerHeaderTemplateRef.DEL_STATE: 1})
+    ).update({THttpSamplerHeaderTemplateRef.DELETED: 1})
