@@ -9,7 +9,6 @@ from app.extension import db
 from app.user.dao import role_dao as RoleDao  # noqa
 from app.user.dao import role_permission_rel_dao as RolePermissionRelDao
 from app.user.model import TPermission
-from app.user.model import TRole
 from app.user.model import TRolePermissionRel
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
@@ -21,19 +20,16 @@ log = get_logger(__name__)
 @http_service
 def query_role_permission_rel_list(req):
     # 查询条件
-    conds = QueryCondition(TRole, TPermission, TRolePermissionRel)
-    conds.like(TRole.ROLE_NAME, req.roleName)
+    conds = QueryCondition(TPermission, TRolePermissionRel)
     conds.like(TPermission.PERMISSION_NAME, req.permissionName)
     conds.like(TPermission.ENDPOINT, req.endpoint)
     conds.like(TPermission.METHOD, req.method)
     conds.like(TRolePermissionRel.ROLE_NO, req.roleNo)
     conds.like(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
-    conds.equal(TRolePermissionRel.ROLE_NO, TRole.ROLE_NO)
     conds.equal(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
 
     # TRole，TPermission，TRolePermissionRel连表查询
     pagination = db.session.query(
-        TRole.ROLE_NAME,
         TPermission.PERMISSION_NAME,
         TPermission.ENDPOINT,
         TPermission.METHOD,
@@ -46,7 +42,39 @@ def query_role_permission_rel_list(req):
     for item in pagination.items:
         data.append({
             'roleNo': item.ROLE_NO,
-            'roleName': item.ROLE_NAME,
+            'permissionNo': item.PERMISSION_NO,
+            'permissionName': item.PERMISSION_NAME,
+            'endpoint': item.ENDPOINT,
+            'method': item.METHOD
+        })
+
+    return {'data': data, 'total': pagination.total}
+
+
+@http_service
+def query_role_permission_unbound_list(req):
+    # 查询条件
+    bound_conds = QueryCondition(TPermission, TRolePermissionRel)
+    bound_conds.like(TRolePermissionRel.ROLE_NO, req.roleNo)
+
+    unbound_conds = QueryCondition(TPermission)
+    unbound_conds.like(TPermission.PERMISSION_NO, req.permissionNo)
+    unbound_conds.like(TPermission.PERMISSION_NAME, req.permissionName)
+    unbound_conds.like(TPermission.ENDPOINT, req.endpoint)
+    unbound_conds.like(TPermission.METHOD, req.method)
+
+    # TRole，TPermission，TRolePermissionRel连表查询
+    pagination = db.session.query(
+        TPermission
+    ).filter(
+        ~db.session.query(TPermission).filter(*bound_conds).exists()
+    ).filter(
+        *unbound_conds
+    ).order_by(TPermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+
+    data = []
+    for item in pagination.items:
+        data.append({
             'permissionNo': item.PERMISSION_NO,
             'permissionName': item.PERMISSION_NAME,
             'endpoint': item.ENDPOINT,

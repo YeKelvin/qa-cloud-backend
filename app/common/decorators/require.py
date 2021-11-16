@@ -8,6 +8,7 @@ from functools import wraps
 
 from flask import g
 from flask import request
+from sqlalchemy import or_
 
 from app.common import global_variables as gvars
 from app.common.exceptions import ErrorCode
@@ -82,8 +83,8 @@ def require_permission(func):
             return check_failed_response(ErrorCode.E401002)
 
         # 查询用户角色关联
-        user_role_rel_list = TUserRoleRel.filter_by(USER_NO=user_no).all()
-        if not user_role_rel_list:
+        user_role_list = TUserRoleRel.filter_by(USER_NO=user_no).all()
+        if not user_role_list:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
                 f'userNo:[ {user_no} ] 查询用户角色失败'
@@ -98,21 +99,15 @@ def require_permission(func):
             TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
             TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO,
             TRole.STATE == 'ENABLE',
-            TRole.ROLE_NO.in_([rel.ROLE_NO for rel in user_role_rel_list]),
+            TRole.ROLE_NO.in_([rel.ROLE_NO for rel in user_role_list]),
             TPermission.STATE == 'ENABLE',
             TPermission.METHOD == request.method,
             TPermission.ENDPOINT == request.path
         ]
         role_permission_list = db.session.query(
-            TRole.ROLE_NO,
-            # TRole.ROLE_NAME,
-            # TRole.STATE.label('Role_STATE'),
             TPermission.PERMISSION_NO,
-            # TPermission.PERMISSION_NAME,
-            # TPermission.STATE.label('Permission_STATE'),
-            # TPermission.METHOD,
-            # TPermission.ENDPOINT
-        ).filter(*conds).all()
+            # ).filter(*conds).all()
+        ).filter(or_(*conds, TRole.ROLE_CODE == 'SuperAdmin')).first()
 
         # 判断权限是否存在且状态正常
         if not role_permission_list:

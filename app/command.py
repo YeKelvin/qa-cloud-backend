@@ -123,6 +123,7 @@ def init_permission():
     _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/rel/list')
     _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/rel/all')
     _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/rel/list')
+    _create_permission(name='分页查询角色未绑定的权限列表', method='GET', endpoint='/user/role/permission/unbound/list')
     _create_permission(name='批量新增角色权限', method='POST', endpoint='/user/role/permissions')
     _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission')
     _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/user/role/permissions')

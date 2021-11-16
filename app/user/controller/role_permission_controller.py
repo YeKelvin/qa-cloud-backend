@@ -19,7 +19,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_role_permission_rel_list():
-    """分页查询角色权限关联列表"""
+    """分页查询角色权限列表"""
     req = JsonParser(
         Argument('roleNo'),
         Argument('permissionNo'),
@@ -31,6 +31,22 @@ def query_role_permission_rel_list():
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_role_permission_rel_list(req)
+
+
+@blueprint.get('/role/permission/unbound/list')
+@require_login
+@require_permission
+def query_role_permission_unbound_list():
+    """分页查询角色未绑定的权限列表"""
+    req = JsonParser(
+        Argument('roleNo'),
+        Argument('permissionName'),
+        Argument('endpoint'),
+        Argument('method'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
+    ).parse()
+    return service.query_role_permission_unbound_list(req)
 
 
 @blueprint.post('/role/permissions')
