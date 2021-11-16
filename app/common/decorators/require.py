@@ -8,6 +8,7 @@ from functools import wraps
 
 from flask import g
 from flask import request
+from sqlalchemy import and_
 from sqlalchemy import or_
 
 from app.common import global_variables as gvars
@@ -107,7 +108,7 @@ def require_permission(func):
         role_permission_list = db.session.query(
             TPermission.PERMISSION_NO,
             # ).filter(*conds).all()
-        ).filter(or_(*conds, TRole.ROLE_CODE == 'SuperAdmin')).first()
+        ).filter(or_(and_(*conds), TRole.ROLE_CODE == 'SuperAdmin')).first()
 
         # 判断权限是否存在且状态正常
         if not role_permission_list:
