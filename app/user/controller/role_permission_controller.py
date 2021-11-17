@@ -40,6 +40,7 @@ def query_role_permission_unbound_list():
     """分页查询角色未绑定的权限列表"""
     req = JsonParser(
         Argument('roleNo'),
+        Argument('permissionNo'),
         Argument('permissionName'),
         Argument('endpoint'),
         Argument('method'),

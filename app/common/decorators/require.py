@@ -93,28 +93,31 @@ def require_permission(func):
             return check_failed_response(ErrorCode.E401002)
 
         # 查询用户角色权限信息
+        roles = [rel.ROLE_NO for rel in user_role_list]
         conds = [
             TRole.DELETED == 0,
-            TPermission.DELETED == 0,
-            TRolePermissionRel.DELETED == 0,
-            TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
-            TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO,
             TRole.STATE == 'ENABLE',
-            TRole.ROLE_NO.in_([rel.ROLE_NO for rel in user_role_list]),
+            TRole.ROLE_NO.in_(roles),
+            TPermission.DELETED == 0,
             TPermission.STATE == 'ENABLE',
             TPermission.METHOD == request.method,
-            TPermission.ENDPOINT == request.path
+            TPermission.ENDPOINT == request.path,
+            TRolePermissionRel.DELETED == 0,
+            TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
+            TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO
         ]
         role_permission_list = db.session.query(
             TPermission.PERMISSION_NO,
-            # ).filter(*conds).all()
-        ).filter(or_(and_(*conds), TRole.ROLE_CODE == 'SuperAdmin')).first()
+        ).filter(or_(  # 超级管理员无需校验权限
+            and_(*conds),
+            and_(TRole.ROLE_NO.in_(roles), TRole.ROLE_CODE == 'SuperAdmin')
+        )).first()
 
         # 判断权限是否存在且状态正常
         if not role_permission_list:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'查询请求路由权限失败，或角色权限状态异常'
+                f'角色无此权限，或状态异常'
             )
             return check_failed_response(ErrorCode.E401002)
 
