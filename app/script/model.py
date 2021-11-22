@@ -280,5 +280,5 @@ class TTestSamplerResult(DBModel, BaseColumn):
     RESPONSE_CODE = db.Column(db.Text, comment='响应码')
     RESPONSE_HEADERS = db.Column(db.Text, comment='响应头')
     RESPONSE_DATA = db.Column(db.Text, comment='响应数据')
-    ERROR_ASSERTION = db.Column(db.Text, comment='失败断言数据')  # TODO: rename FAILED_ASSERTION
+    FAILED_ASSERTION = db.Column(db.Text, comment='失败断言数据')
  

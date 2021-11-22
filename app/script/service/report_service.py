@@ -128,7 +128,7 @@ def query_sampler_result(req):
         'responseCode': result.RESPONSE_CODE,
         'responseHeaders': result.RESPONSE_HEADERS,
         'responseData': result.RESPONSE_DATA,
-        'errorAssertion': result.ERROR_ASSERTION
+        'failedAssertion': result.FAILED_ASSERTION
     }
 
 
