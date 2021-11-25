@@ -142,6 +142,7 @@ class JsonParser:
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
         dto = RequestDTO(dict)
+        # noinspection PyBroadException
         try:
             if not self.args:
                 raise ParseError('arguments are not allowed to be empty')
