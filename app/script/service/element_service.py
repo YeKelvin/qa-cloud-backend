@@ -24,17 +24,18 @@ from app.script.enum import ElementClass
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
 from app.script.enum import PasteType
+from app.script.enum import is_assertion
 from app.script.enum import is_collection
 from app.script.enum import is_config
 from app.script.enum import is_controller
 from app.script.enum import is_group
 from app.script.enum import is_listener
+from app.script.enum import is_post_processor
+from app.script.enum import is_pre_processor
 from app.script.enum import is_sampler
 from app.script.enum import is_test_collection
+from app.script.enum import is_test_snippets
 from app.script.enum import is_timer
-from app.script.enum import is_pre_processor
-from app.script.enum import is_post_processor
-from app.script.enum import is_assertion
 from app.script.model import TElementBuiltinChildRel
 from app.script.model import TElementChildRel
 from app.script.model import TElementProperty
@@ -605,12 +606,12 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
         raise ServiceError(f'[分组] 仅支持在 [集合] 下剪贴')
     # Sampler
     elif is_sampler(source) and (
-        is_test_collection(target) or not (is_group(target) or is_controller(target))
+        is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
     ):
         raise ServiceError(f'[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Controller
     elif is_controller(source) and (
-        is_test_collection(target) or not (is_group(target) or is_controller(target))
+        is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
     ):
         raise ServiceError(f'[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Config
@@ -619,8 +620,10 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
     ):
         raise ServiceError(f'[配置器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Timer
-    elif is_timer(source) and (
-        is_test_collection(target) or not (is_group(target) or is_sampler(target) or is_controller(target))
+    elif is_timer(source) and (is_test_collection(target)
+        or not (  # noqa
+            is_test_snippets(target) or is_group(target) or is_sampler(target) or is_controller(target)
+        )
     ):
         raise ServiceError(f'[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')
     # Listener
