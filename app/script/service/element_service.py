@@ -29,6 +29,7 @@ from app.script.enum import is_collection
 from app.script.enum import is_config
 from app.script.enum import is_controller
 from app.script.enum import is_group
+from app.script.enum import is_http_sampler
 from app.script.enum import is_listener
 from app.script.enum import is_post_processor
 from app.script.enum import is_pre_processor
@@ -705,6 +706,7 @@ def copy_element(source: TTestElement, rename=False):
 
 def clone_element(source: TTestElement, rename=False):
     cloned_no = new_id()
+    # 克隆元素
     TTestElement.insert(
         ELEMENT_NO=cloned_no,
         ELEMENT_NAME=source.ELEMENT_NAME + ' copy' if rename else source.ELEMENT_NAME,
@@ -712,6 +714,7 @@ def clone_element(source: TTestElement, rename=False):
         ELEMENT_TYPE=source.ELEMENT_TYPE,
         ELEMENT_CLASS=source.ELEMENT_CLASS
     )
+    # 克隆元素属性
     props = ElementPropertyDao.select_all_by_element(source.ELEMENT_NO)
     for prop in props:
         TElementProperty.insert(
@@ -720,6 +723,12 @@ def clone_element(source: TTestElement, rename=False):
             PROPERTY_VALUE=prop.PROPERTY_VALUE,
             PROPERTY_TYPE=prop.PROPERTY_TYPE
         )
+    # 如果是 HTTPSampler ，克隆请求头模板
+    if is_http_sampler(source):
+        refs = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(source.ELEMENT_NO)
+        for ref in refs:
+            THttpSamplerHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
+
     return cloned_no
 
 
@@ -730,9 +739,9 @@ def query_element_http_header_template_refs(req):
     check_is_not_blank(element, '元素不存在')
 
     # 查询所有关联的模板
-    rels = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
+    refs = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
 
-    return [rel.TEMPLATE_NO for rel in rels]
+    return [ref.TEMPLATE_NO for ref in refs]
 
 
 @http_service
