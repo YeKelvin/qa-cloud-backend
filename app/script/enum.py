@@ -82,6 +82,9 @@ class ElementClass(Enum):
     # Loop控制器
     LOOP_CONTROLLER = 'LoopController'
 
+    # Retry控制器
+    RETRY_CONTROLLER = 'RetryController'
+
     # If控制器
     IF_CONTROLLER = 'IfController'
 
