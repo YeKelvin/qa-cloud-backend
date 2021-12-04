@@ -274,6 +274,7 @@ class TTestSamplerResult(DBModel, BaseColumn):
     END_TIME = db.Column(db.DateTime, comment='结束时间')
     ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
+    RETRYING = db.Column(db.Boolean, comment='重试中')
     REQUEST_URL = db.Column(db.Text, comment='请求地址')
     REQUEST_HEADERS = db.Column(db.Text, comment='请求头')
     REQUEST_DATA = db.Column(db.Text, comment='请求数据')
@@ -281,4 +282,3 @@ class TTestSamplerResult(DBModel, BaseColumn):
     RESPONSE_HEADERS = db.Column(db.Text, comment='响应头')
     RESPONSE_DATA = db.Column(db.Text, comment='响应数据')
     FAILED_ASSERTION = db.Column(db.Text, comment='失败断言数据')
- 
