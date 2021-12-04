@@ -122,6 +122,7 @@ def query_sampler_result(req):
         'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
         'elapsedTime': f'{result.ELAPSED_TIME}ms',
         'success': result.SUCCESS,
+        'retrying': result.RETRYING,
         'requestUrl': result.REQUEST_URL,
         'requestHeaders': result.REQUEST_HEADERS,
         'requestData': result.REQUEST_DATA,
@@ -164,6 +165,7 @@ def get_sampler_result_list(group_id):
             'endTime': result.END_TIME.strftime('%H:%M:%S') if result.END_TIME else 0,
             'elapsedTime': f'{result.ELAPSED_TIME}ms',
             'success': result.SUCCESS,
+            'retrying': result.RETRYING,
             'children': get_subsampler_result_list(result.SAMPLER_ID)
         })
     return samplers
@@ -183,6 +185,7 @@ def get_subsampler_result_list(parent_id):
             'endTime': result.END_TIME.strftime('%H:%M:%S') if result.END_TIME else 0,
             'elapsedTime': f'{result.ELAPSED_TIME}ms',
             'success': result.SUCCESS,
+            'retrying': result.RETRYING,
             'children': get_subsampler_result_list(result.SAMPLER_ID)
         })
     return sub_samplers
