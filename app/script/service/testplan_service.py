@@ -10,6 +10,7 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
+from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
 from app.script.dao import testplan_dataset_rel_dao as TestPlanDatasetRelDao
@@ -278,15 +279,18 @@ def query_testplan_execution_details(req):
     collection_list = []
     for item in items:
         result = TestCollectionResultDao.select_by_report_and_collectionno(report.REPORT_NO, item.COLLECTION_NO)
+        collection = None
+        if not result:
+            collection = TestElementDao.select_by_no(item.COLLECTION_NO)
         collection_list.append({
             'elementNo': item.COLLECTION_NO,
-            'elementName': result.COLLECTION_NAME,
-            'elementRemark': result.COLLECTION_REMARK,
+            'elementName': result.COLLECTION_NAME if result else collection.ELEMENT_NAME,
+            'elementRemark': result.COLLECTION_REMARK if result else collection.ELEMENT_REMARK,
             'runningState': item.RUNNING_STATE,
-            'success': result.SUCCESS,
-            'startTime': result.START_TIME,
-            'endTime': result.END_TIME,
-            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME)
+            'success': result.SUCCESS if result else None,
+            'startTime': result.START_TIME if result else None,
+            'endTime': result.END_TIME if result else None,
+            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result else None,
         })
 
     # 查询测试计划关联的变量集
@@ -294,7 +298,7 @@ def query_testplan_execution_details(req):
     dataset_list = []
     for dataset_no in dataset_number_list:
         dataset = VariableDatasetDao.select_by_no(dataset_no)
-        dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
+        dataset and dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
 
     return {
         'collectionList': collection_list,
