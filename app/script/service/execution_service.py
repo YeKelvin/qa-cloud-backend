@@ -20,7 +20,7 @@ from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
-from app.script.dao import testplan_dataset_rel_dao as TestPlanDatasetRelDao
+from app.script.dao import testplan_dataset_dao as TestPlanDatasetDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
 from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
@@ -198,7 +198,7 @@ def execute_testplan(req):
     collection_number_list = [item.COLLECTION_NO for item in items]
 
     # 查询测试计划关联的变量集
-    plan_dataset_rel_list = TestPlanDatasetRelDao.select_all_by_plan(req.planNo)
+    plan_dataset_rel_list = TestPlanDatasetDao.select_all_by_plan(req.planNo)
     dataset_number_list = [rel.DATASET_NO for rel in plan_dataset_rel_list]
 
     # 创建执行编号

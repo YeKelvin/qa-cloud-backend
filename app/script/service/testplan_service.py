@@ -13,7 +13,7 @@ from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
-from app.script.dao import testplan_dataset_rel_dao as TestPlanDatasetRelDao
+from app.script.dao import testplan_dataset_dao as TestPlanDatasetDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
 from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_execution_settings_dao as TestPlanExecutionSettingsDao
@@ -24,7 +24,7 @@ from app.script.enum import TestPhase
 from app.script.enum import TestplanState
 from app.script.enum import VariableDatasetType
 from app.script.model import TTestplan
-from app.script.model import TTestplanDatasetRel
+from app.script.model import TTestplanDataset
 from app.script.model import TTestplanItems
 from app.script.model import TTestplanSettings
 from app.utils.json_util import from_json
@@ -44,7 +44,6 @@ def query_testplan_list(req):
     conds.like(TTestplan.PLAN_NO, req.planNo)
     conds.like(TTestplan.PLAN_NAME, req.planName)
     conds.like(TTestplan.VERSION_NUMBER, req.versionNumber)
-    conds.like(TTestplan.ENVIRONMENT, req.environment)
     conds.like(TTestplan.STATE, req.state)
     conds.like(TTestplan.TEST_PHASE, req.testPhase)
 
@@ -59,7 +58,6 @@ def query_testplan_list(req):
             'planName': item.PLAN_NAME,
             'planDesc': item.PLAN_DESC,
             'versionNumber': item.VERSION_NUMBER,
-            'environment': item.ENVIRONMENT,
             'collectionTotal': item.COLLECTION_TOTAL,
             'testPhase': item.TEST_PHASE,
             'state': item.STATE,
@@ -84,7 +82,7 @@ def query_testplan(req):
     collection_number_list = [item.COLLECTION_NO for item in items]
 
     # 查询测试计划关联的变量集
-    plan_dataset_rel_list = TestPlanDatasetRelDao.select_all_by_plan(req.planNo)
+    plan_dataset_rel_list = TestPlanDatasetDao.select_all_by_plan(req.planNo)
     dataset_number_list = [rel.DATASET_NO for rel in plan_dataset_rel_list]
 
     return {
@@ -127,12 +125,8 @@ def create_testplan(req):
     )
 
     # 新增测试计划与数据集关联
-    environment = ''
     for dataset_no in req.datasetNumberList:
-        dataset = VariableDatasetDao.select_by_no(dataset_no)
-        if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
-            environment = dataset.DATASET_NAME
-        TTestplanDatasetRel.insert(
+        TTestplanDataset.insert(
             PLAN_NO=plan_no,
             DATASET_NO=dataset_no
         )
@@ -152,7 +146,6 @@ def create_testplan(req):
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
         VERSION_NUMBER=req.versionNumber,
-        ENVIRONMENT=environment,
         COLLECTION_TOTAL=len(req.collectionList),
         TEST_PHASE=TestPhase.INITIAL.value,
         STATE=TestplanState.INITIAL.value
@@ -173,19 +166,14 @@ def modify_testplan(req):
     check_is_not_blank(settings, '计划设置不存在')
 
     # 修改测试计划与数据集关联
-    environment = ''
     for dataset_no in req.datasetNumberList:
-        # 查询变量集
-        dataset = VariableDatasetDao.select_by_no(dataset_no)
-        if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
-            environment = dataset.DATASET_NAME
         # 查询测试计划关联的变量集
-        plan_dataset_rel = TestPlanDatasetRelDao.select_by_plan_and_dataset(req.planNo, dataset_no)
+        plan_dataset_rel = TestPlanDatasetDao.select_by_plan_and_dataset(req.planNo, dataset_no)
         # 不存在则新增
         if not plan_dataset_rel:
-            TTestplanDatasetRel.insert(PLAN_NO=req.planNo, DATASET_NO=dataset_no)
+            TTestplanDataset.insert(PLAN_NO=req.planNo, DATASET_NO=dataset_no)
     # 删除不在请求中的数据集关联
-    TestPlanDatasetRelDao.delete_all_by_plan_and_not_in_dataset(req.planNo, req.datasetNumberList)
+    TestPlanDatasetDao.delete_all_by_plan_and_not_in_dataset(req.planNo, req.datasetNumberList)
 
     # 修改测试计划项目明细
     collection_no_list = []
@@ -209,7 +197,6 @@ def modify_testplan(req):
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
         VERSION_NUMBER=req.versionNumber,
-        ENVIRONMENT=environment,
         COLLECTION_TOTAL=len(req.collectionList)
     )
 

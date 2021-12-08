@@ -146,8 +146,7 @@ class TTestplan(DBModel, BaseColumn):
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
-    VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')
-    ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
+    VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')  # TODO: rename PRODUCT_REQUIREMENTS_VERSION
     COLLECTION_TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
@@ -168,7 +167,7 @@ class TTestplanSettings(DBModel, BaseColumn):
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
 
 
-class TTestplanDatasetRel(DBModel, BaseColumn):
+class TTestplanDataset(DBModel, BaseColumn):
     """测试计划数据集关联表"""
     __tablename__ = 'TESTPLAN_DATASET_REL'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
@@ -191,10 +190,12 @@ class TTestplanExecution(DBModel, BaseColumn):
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
+    ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
+    TEST_PHASE = db.Column(db.String(64), comment='测试阶段')
 
 
 class TTestplanExecutionSettings(DBModel, BaseColumn):
-    """测试计划执行设置表"""
+    """测试计划执行记录设置表"""
     __tablename__ = 'TESTPLAN_EXECUTION_SETTINGS'
     EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
     CONCURRENCY = db.Column(db.Integer, nullable=False, default=1, comment='并发数')
@@ -207,8 +208,16 @@ class TTestplanExecutionSettings(DBModel, BaseColumn):
     DATASETS = db.Column(db.Text, comment='关联的数据集字典')
 
 
+class TTestplanExecutionDataset(DBModel, BaseColumn):
+    """测试计划执行记录数据集关联表"""
+    __tablename__ = 'TESTPLAN_EXECUTION_DATASET'
+    EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
+    DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
+    UniqueConstraint('EXECUTION_NO', 'DATASET_NO', 'DELETED', name='unique_execution_dataset')
+
+
 class TTestplanExecutionItems(DBModel, BaseColumn):
-    """测试计划执行项目明细表"""
+    """测试计划执行记录项目明细表"""
     __tablename__ = 'TESTPLAN_EXECUTION_ITEMS'
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
