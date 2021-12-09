@@ -150,8 +150,8 @@ class TTestplan(DBModel, BaseColumn):
     COLLECTION_TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
-    START_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='开始时间')
-    END_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='结束时间')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
 
 
 class TTestplanSettings(DBModel, BaseColumn):
@@ -165,14 +165,6 @@ class TTestplanSettings(DBModel, BaseColumn):
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
     STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-
-
-class TTestplanDataset(DBModel, BaseColumn):
-    """测试计划数据集关联表"""
-    __tablename__ = 'TESTPLAN_DATASET_REL'
-    PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
-    DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
-    UniqueConstraint('PLAN_NO', 'DATASET_NO', 'DELETED', name='unique_plan_dataset')
 
 
 class TTestplanItems(DBModel, BaseColumn):
@@ -205,7 +197,6 @@ class TTestplanExecutionSettings(DBModel, BaseColumn):
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
     STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-    DATASETS = db.Column(db.Text, comment='关联的数据集字典')
 
 
 class TTestplanExecutionDataset(DBModel, BaseColumn):

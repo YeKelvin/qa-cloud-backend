@@ -55,15 +55,12 @@ def create_testplan():
         Argument('planDesc'),
         Argument('versionNumber'),
         Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
-        Argument('datasetNumberList', type=list),
         Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('saveOnError', default=False),
         Argument('stopTestOnErrorCount', default=3),
-        Argument('useCurrentValue', default=False),
-        Argument('executeNow', default=True)
     ).parse()
     return service.create_testplan(req)
 
@@ -79,14 +76,12 @@ def modify_testplan():
         Argument('planDesc'),
         Argument('versionNumber'),
         Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
-        Argument('datasetNumberList', type=list),
         Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('saveOnError', default=False),
-        Argument('stopTestOnErrorCount', default=3),
-        Argument('useCurrentValue', default=False)
+        Argument('stopTestOnErrorCount', default=3)
     ).parse()
     return service.modify_testplan(req)
 

@@ -13,8 +13,8 @@ from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
-from app.script.dao import testplan_dataset_dao as TestPlanDatasetDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
+from app.script.dao import testplan_execution_dataset_dao as TestplanExecutionDatasetDao
 from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_execution_settings_dao as TestPlanExecutionSettingsDao
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
@@ -22,14 +22,12 @@ from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import TestPhase
 from app.script.enum import TestplanState
-from app.script.enum import VariableDatasetType
 from app.script.model import TTestplan
-from app.script.model import TTestplanDataset
 from app.script.model import TTestplanItems
 from app.script.model import TTestplanSettings
-from app.utils.json_util import from_json
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
+from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_m_s
 
 
@@ -81,10 +79,6 @@ def query_testplan(req):
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
     collection_number_list = [item.COLLECTION_NO for item in items]
 
-    # 查询测试计划关联的变量集
-    plan_dataset_rel_list = TestPlanDatasetDao.select_all_by_plan(req.planNo)
-    dataset_number_list = [rel.DATASET_NO for rel in plan_dataset_rel_list]
-
     return {
         'planNo': testplan.PLAN_NO,
         'planName': testplan.PLAN_NAME,
@@ -96,9 +90,7 @@ def query_testplan(req):
         'save': settings.SAVE,
         'saveOnError': settings.SAVE_ON_ERROR,
         'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
-        'useCurrentValue': settings.USE_CURRENT_VALUE,
-        'collectionNumberList': collection_number_list,
-        'datasetNumberList': dataset_number_list
+        'collectionNumberList': collection_number_list
     }
 
 
@@ -123,13 +115,6 @@ def create_testplan(req):
         STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
         USE_CURRENT_VALUE=req.useCurrentValue,
     )
-
-    # 新增测试计划与数据集关联
-    for dataset_no in req.datasetNumberList:
-        TTestplanDataset.insert(
-            PLAN_NO=plan_no,
-            DATASET_NO=dataset_no
-        )
 
     # 新增测试计划项目明细
     for collection in req.collectionList:
@@ -165,20 +150,10 @@ def modify_testplan(req):
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
     check_is_not_blank(settings, '计划设置不存在')
 
-    # 修改测试计划与数据集关联
-    for dataset_no in req.datasetNumberList:
-        # 查询测试计划关联的变量集
-        plan_dataset_rel = TestPlanDatasetDao.select_by_plan_and_dataset(req.planNo, dataset_no)
-        # 不存在则新增
-        if not plan_dataset_rel:
-            TTestplanDataset.insert(PLAN_NO=req.planNo, DATASET_NO=dataset_no)
-    # 删除不在请求中的数据集关联
-    TestPlanDatasetDao.delete_all_by_plan_and_not_in_dataset(req.planNo, req.datasetNumberList)
-
     # 修改测试计划项目明细
-    collection_no_list = []
+    collection_number_list = []
     for collection in req.collectionList:
-        collection_no_list.append(collection.elementNo)
+        collection_number_list.append(collection.elementNo)
         # 查询测试计划关联的集合
         item = TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo)
         if item:
@@ -190,7 +165,7 @@ def modify_testplan(req):
                 SERIAL_NO=collection.serialNo
             )
     # 删除不在请求中的集合
-    TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_no_list)
+    TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_number_list)
 
     # 修改测试计划
     testplan.update(
@@ -217,7 +192,12 @@ def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')
-    testplan.update(STATE=req.state)
+    if req.state == TestplanState.TESTING.value:
+        testplan.update(STATE=req.state, START_TIME=datetime_now_by_utc8())
+    elif req.state == TestplanState.COMPLETED.value:
+        testplan.update(STATE=req.state, END_TIME=datetime_now_by_utc8())
+    else:
+        testplan.update(STATE=req.state)
 
 
 @http_service
@@ -242,8 +222,10 @@ def query_testplan_execution_all(req):
         result.append({
             'executionNo': execution.EXECUTION_NO,
             'runningState': execution.RUNNING_STATE,
-            'createdTime': execution.CREATED_TIME,
-            'reportNo': report.REPORT_NO if report else None
+            'environment': execution.ENVIRONMENT,
+            'testPhase': execution.TEST_PHASE,
+            'reportNo': report.REPORT_NO if report else None,
+            'createdTime': execution.CREATED_TIME
         })
     return result
 
@@ -261,7 +243,7 @@ def query_testplan_execution_details(req):
     # 查询测试报告
     report = TestReportDao.select_by_execution(execution.EXECUTION_NO)
 
-    # 查询测试计划关联的集合
+    # 查询执行记录关联的集合
     items = TestPlanExecutionItemsDao.select_all_by_execution(req.executionNo)
     collection_list = []
     for item in items:
@@ -280,11 +262,11 @@ def query_testplan_execution_details(req):
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result else None,
         })
 
-    # 查询测试计划关联的变量集
-    dataset_number_list = from_json(settings.DATASETS)
+    # 查询执行记录关联的变量集
+    execution_dataset_list = TestplanExecutionDatasetDao.select_all_by_execution(req.executionNo)
     dataset_list = []
-    for dataset_no in dataset_number_list:
-        dataset = VariableDatasetDao.select_by_no(dataset_no)
+    for execution_dataset in execution_dataset_list:
+        dataset = VariableDatasetDao.select_by_no(execution_dataset.DATASET_NO)
         dataset and dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
 
     return {

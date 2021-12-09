@@ -26,7 +26,7 @@ def timestamp_now() -> float:
     return time.time()
 
 
-def timestamp_to_utc8_datetime(timestmp):
+def timestamp_to_utc8_datetime(timestmp) -> datetime:
     """时间戳转北京时间的 datetime 对象"""
     return datetime.fromtimestamp(timestmp, tz=timezone(timedelta(hours=8)))
 

@@ -20,19 +20,21 @@ from app.script.dao import element_child_rel_dao as ElementChildRelDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
-from app.script.dao import testplan_dataset_dao as TestPlanDatasetDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
 from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
 from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
+from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import ElementType
 from app.script.enum import RunningState
+from app.script.enum import VariableDatasetType
+from app.script.enum import is_test_snippets
 from app.script.model import TTestplanExecution
+from app.script.model import TTestplanExecutionDataset
 from app.script.model import TTestplanExecutionItems
 from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
-from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
@@ -152,7 +154,7 @@ def execute_snippet_collection(req):
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
-    if not element_loader.is_test_snippet(collection):
+    if not is_test_snippets(collection):
         raise ServiceError('仅支持运行 TestSnippets 元素')
 
     # 根据 collectionNo 递归加载脚本
@@ -193,21 +195,31 @@ def execute_testplan(req):
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
+    if not items:
+        raise ServiceError('测试计划中无关联的脚本')
     # 根据序号排序
     items.sort(key=lambda k: k.SERIAL_NO)
     collection_number_list = [item.COLLECTION_NO for item in items]
 
-    # 查询测试计划关联的变量集
-    plan_dataset_rel_list = TestPlanDatasetDao.select_all_by_plan(req.planNo)
-    dataset_number_list = [rel.DATASET_NO for rel in plan_dataset_rel_list]
-
     # 创建执行编号
     execution_no = new_id()
+    # 创建执行记录与数据集关联
+    environment = None
+    for dataset_no in req.datasetNumberList:
+        dataset = VariableDatasetDao.select_by_no(dataset_no)
+        if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
+            environment = dataset.DATASET_NAME
+        TTestplanExecutionDataset.insert(
+            EXECUTION_NO=execution_no,
+            DATASET_NO=dataset_no
+        )
     # 创建执行记录
     TTestplanExecution.insert(
         PLAN_NO=req.planNo,
         EXECUTION_NO=execution_no,
-        RUNNING_STATE=RunningState.WAITING.value
+        RUNNING_STATE=RunningState.WAITING.value,
+        ENVIRONMENT=environment,
+        TEST_PHASE=testplan.TEST_PHASE
     )
     # 创建计划执行设置
     TTestplanExecutionSettings.insert(
@@ -218,8 +230,7 @@ def execute_testplan(req):
         SAVE=settings.SAVE,
         SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
         STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
-        USE_CURRENT_VALUE=settings.USE_CURRENT_VALUE,
-        DATASETS=to_json(dataset_number_list)
+        USE_CURRENT_VALUE=req.useCurrentValue
     )
     # 创建计划执行项目明细
     for item in items:
@@ -229,7 +240,6 @@ def execute_testplan(req):
             SERIAL_NO=item.SERIAL_NO,
             RUNNING_STATE=RunningState.WAITING.value
         )
-
     # 新增测试报告
     report_no = None
     if settings.SAVE:
@@ -249,7 +259,7 @@ def execute_testplan(req):
             with app.app_context():
                 run_testplan(
                     app,
-                    collection_number_list, dataset_number_list, settings.USE_CURRENT_VALUE, execution_no, report_no
+                    collection_number_list, req.datasetNumberList, req.useCurrentValue, execution_no, report_no
                 )
         except Exception:
             log.error(f'执行编号:[ {execution_no} ] 发生异常\n{traceback.format_exc()}')
@@ -276,6 +286,7 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
     execution = TestplanExecutionDao.select_by_no(execution_no)
     # 更新运行状态
     execution.update(RUNNING_STATE=RunningState.RUNNING.value)
+    db.session.commit()  # 这里要实时更新
 
     # 顺序执行脚本
     for collection_no in collection_number_list:
@@ -283,6 +294,7 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
         item = TestPlanExecutionItemsDao.select_by_execution_and_collection(execution_no, collection_no)
         # 更新项目运行状态
         item.update(RUNNING_STATE=RunningState.RUNNING.value)
+        db.session.commit()  # 这里要实时更新
         # 加载脚本
         collection = element_loader.loads_tree(collection_no, no_debuger=True)
         if not collection:
@@ -315,6 +327,7 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
         task.result()  # 阻塞等待脚本执行完成
         # 更新项目运行状态
         item.update(RUNNING_STATE=RunningState.COMPLETED.value)
+        db.session.commit()  # 这里要实时更新
         log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
 
     if report_no:
@@ -331,4 +344,5 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
 
     # 更新运行状态
     execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
+    db.session.commit()  # 这里要实时更新
     log.info(f'执行编号:[ {execution_no} ] 测试计划执行完成')
