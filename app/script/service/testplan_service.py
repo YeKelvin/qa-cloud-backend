@@ -41,7 +41,7 @@ def query_testplan_list(req):
     conds.like(TTestplan.WORKSPACE_NO, req.workspaceNo)
     conds.like(TTestplan.PLAN_NO, req.planNo)
     conds.like(TTestplan.PLAN_NAME, req.planName)
-    conds.like(TTestplan.VERSION_NUMBER, req.versionNumber)
+    conds.like(TTestplan.PRODUCT_REQUIREMENTS_VERSION, req.productRequirementsVersion)
     conds.like(TTestplan.STATE, req.state)
     conds.like(TTestplan.TEST_PHASE, req.testPhase)
 
@@ -55,12 +55,12 @@ def query_testplan_list(req):
             'planNo': item.PLAN_NO,
             'planName': item.PLAN_NAME,
             'planDesc': item.PLAN_DESC,
-            'versionNumber': item.VERSION_NUMBER,
+            'productRequirementsVersion': item.PRODUCT_REQUIREMENTS_VERSION,
             'collectionTotal': item.COLLECTION_TOTAL,
             'testPhase': item.TEST_PHASE,
             'state': item.STATE,
-            'startTime': item.START_TIME,
-            'endTime': item.END_TIME,
+            'startTime': item.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.START_TIME else None,
+            'endTime': item.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.END_TIME else None,
         })
     return {'data': data, 'total': pagination.total}
 
@@ -83,7 +83,7 @@ def query_testplan(req):
         'planNo': testplan.PLAN_NO,
         'planName': testplan.PLAN_NAME,
         'planDesc': testplan.PLAN_DESC,
-        'versionNumber': testplan.VERSION_NUMBER,
+        'productRequirementsVersion': testplan.PRODUCT_REQUIREMENTS_VERSION,
         'concurrency': settings.CONCURRENCY,
         'iterations': settings.ITERATIONS,
         'delay': settings.DELAY,
@@ -112,8 +112,7 @@ def create_testplan(req):
         DELAY=req.delay,
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        USE_CURRENT_VALUE=req.useCurrentValue,
+        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount
     )
 
     # 新增测试计划项目明细
@@ -130,7 +129,7 @@ def create_testplan(req):
         PLAN_NO=plan_no,
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
-        VERSION_NUMBER=req.versionNumber,
+        PRODUCT_REQUIREMENTS_VERSION=req.productRequirementsVersion,
         COLLECTION_TOTAL=len(req.collectionList),
         TEST_PHASE=TestPhase.INITIAL.value,
         STATE=TestplanState.INITIAL.value
@@ -171,7 +170,7 @@ def modify_testplan(req):
     testplan.update(
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
-        VERSION_NUMBER=req.versionNumber,
+        PRODUCT_REQUIREMENTS_VERSION=req.productRequirementsVersion,
         COLLECTION_TOTAL=len(req.collectionList)
     )
 
@@ -192,7 +191,7 @@ def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')
-    if req.state == TestplanState.TESTING.value:
+    if req.state == TestplanState.TESTING.value and not testplan.START_TIME:
         testplan.update(STATE=req.state, START_TIME=datetime_now_by_utc8())
     elif req.state == TestplanState.COMPLETED.value:
         testplan.update(STATE=req.state, END_TIME=datetime_now_by_utc8())
@@ -225,7 +224,7 @@ def query_testplan_execution_all(req):
             'environment': execution.ENVIRONMENT,
             'testPhase': execution.TEST_PHASE,
             'reportNo': report.REPORT_NO if report else None,
-            'createdTime': execution.CREATED_TIME
+            'createdTime': execution.CREATED_TIME.strftime('%Y-%m-%d %H:%M:%S')
         })
     return result
 
@@ -257,9 +256,9 @@ def query_testplan_execution_details(req):
             'elementRemark': result.COLLECTION_REMARK if result else collection.ELEMENT_REMARK,
             'runningState': item.RUNNING_STATE,
             'success': result.SUCCESS if result else None,
-            'startTime': result.START_TIME if result else None,
-            'endTime': result.END_TIME if result else None,
-            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result else None,
+            'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.START_TIME else None,
+            'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.END_TIME else None,
+            'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result and result.ELAPSED_TIME else None,
         })
 
     # 查询执行记录关联的变量集

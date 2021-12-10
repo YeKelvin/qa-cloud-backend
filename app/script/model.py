@@ -146,7 +146,7 @@ class TTestplan(DBModel, BaseColumn):
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
-    VERSION_NUMBER = db.Column(db.String(128), comment='需求版本号')  # TODO: rename PRODUCT_REQUIREMENTS_VERSION
+    PRODUCT_REQUIREMENTS_VERSION = db.Column(db.String(128), comment='需求版本号')
     COLLECTION_TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
