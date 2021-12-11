@@ -181,8 +181,7 @@ def modify_testplan(req):
         DELAY=req.delay,
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        USE_CURRENT_VALUE=req.useCurrentValue,
+        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount
     )
 
 
@@ -191,6 +190,7 @@ def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_is_not_blank(testplan, '测试计划不存在')
+
     if req.state == TestplanState.TESTING.value and not testplan.START_TIME:
         testplan.update(STATE=req.state, START_TIME=datetime_now_by_utc8())
     elif req.state == TestplanState.COMPLETED.value:
