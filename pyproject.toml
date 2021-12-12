@@ -34,7 +34,7 @@ psycopg2 = "2.9.2"
 # Coroutine
 gevent = "21.8.0"
 # Deployment
-uwsgi = { version = "*", markers = "sys_platform == 'linux'" }
+uwsgi = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
 #supervisor = { version = "*", markers = "sys_platform == 'linux'" }
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }

@@ -88,17 +88,8 @@ def record_action(response):
     return response
 
 
-access_control_allow_Headers = (
-    'Accept,Accept-Encoding,Accept-Language,'
-    'Access-Control-Allow-Origin,Authorization,'
-    'Content-Type,Connection,Cache-Control,'
-    'Host,Origin,Referer,User-Agent'
-)
-
-
 def cross_domain_access(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    # response.headers['Access-Control-Allow-Headers'] = access_control_allow_Headers
     response.headers['Access-Control-Allow-Headers'] = '*'
 
     if request.method == 'OPTIONS':
