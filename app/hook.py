@@ -11,7 +11,7 @@ import jwt
 from flask import g
 from flask import request
 
-from app.common import global_variables as gvars
+from app.common import globals
 from app.common.response import http_response
 from app.system.model import TActionLog
 from app.user.model import TPermission
@@ -58,12 +58,13 @@ def set_user():
             log.info(f'logId:[ {g.logid} ] 暂不支持的 schema')
             return
 
+        # noinspection PyBroadException
         try:
             # 解析token，获取payload
             payload = JWTAuth.decode_auth_token(auth_token)
             # 设置全局属性
-            gvars.put('user_no', payload['data']['id'])
-            gvars.put('issued_at', payload['iat'])
+            globals.put('user_no', payload['data']['id'])
+            globals.put('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
             log.info(f'logId:[ {g.logid} ] token已失效')
         except jwt.InvalidTokenError:
@@ -77,7 +78,7 @@ def record_action(response):
     after_request
     记录请求日志，只记录成功的非GET请求
     """
-    success = gvars.get_success()
+    success = globals.get_success()
     if success and 'GET' not in request.method:
         permission = TPermission.filter_by(ENDPOINT=request.path).first()
         TActionLog.insert(
@@ -107,4 +108,4 @@ def page_not_found(_):
 # app.register_error_handler(Exception, exception_handler)
 def exception_handler(ex):
     log.exception(str(ex).replace('\n', '#'))
-    return http_response(errorMsg='服务开小差')
+    return http_response(errorMsg='服务器开小差')

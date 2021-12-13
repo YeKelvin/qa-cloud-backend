@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : flask_helper.py
+# @File    : globals.py
 # @Time    : 2020/1/8 10:56
 # @Author  : Kelvin.Ye
 from flask import g
 
 
-# global_variables:
 def get_logid():
     return getattr(g, 'logid', None)
 

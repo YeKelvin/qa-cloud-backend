@@ -20,6 +20,8 @@ log = get_logger(__name__)
 
 __app__ = None
 
+FLASK_ENV = os.environ.get('FLASK_ENV')
+
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -109,12 +111,8 @@ def register_hooks(app: Flask):
     app.before_request(hook.set_user)
 
     app.after_request(hook.record_action)
-    app.after_request(hook.cross_domain_access)
-
-    # TODO: 添加errorhandler
-    # @app.errorhandler(Exception)
-    # def error_handler(e):
-    #     ...
+    if FLASK_ENV == 'development':
+        app.after_request(hook.cross_domain_access)
 
 
 def register_shell_context(app: Flask):

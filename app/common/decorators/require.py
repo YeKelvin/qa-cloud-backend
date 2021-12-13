@@ -11,7 +11,7 @@ from flask import request
 from sqlalchemy import and_
 from sqlalchemy import or_
 
-from app.common import global_variables as gvars
+from app.common import globals
 from app.common.exceptions import ErrorCode
 from app.common.response import ResponseDTO
 from app.common.response import http_response
@@ -33,8 +33,8 @@ def require_login(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        user_no = gvars.get_userno()
-        issued_at = gvars.get_issued_at()
+        user_no = globals.get_userno()
+        issued_at = globals.get_issued_at()
 
         # 用户不存在
         user = TUser.filter_by(USER_NO=user_no).first()
@@ -63,7 +63,7 @@ def require_login(func):
             )
             return check_failed_response(ErrorCode.E401001)
 
-        gvars.put('operator', user.USER_NAME)
+        globals.put('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -75,7 +75,7 @@ def require_permission(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # 获取登录用户
-        user_no = gvars.get_userno()
+        user_no = globals.get_userno()
         if not user_no:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -127,7 +127,7 @@ def require_permission(func):
 
 
 def check_failed_response(error: ErrorCode):
-    user_no = gvars.get_userno()
+    user_no = globals.get_userno()
     log.info(
         f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
         f'header:[ {dict(request.headers)} ] userNo:[ {user_no} ]'

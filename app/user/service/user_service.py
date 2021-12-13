@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
-from app.common import global_variables as gvars
+from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
@@ -97,13 +97,13 @@ def login(req):
     user.update(LOGGED_IN=True)
 
     # 设置全局操作员
-    gvars.put('operator', user.USER_NAME)
+    globals.put('operator', user.USER_NAME)
     return {'accessToken': access_token}
 
 
 @http_service
 def logout():
-    UserDao.logout(gvars.get_userno())
+    UserDao.logout(globals.get_userno())
 
 
 @http_service
@@ -236,7 +236,7 @@ def query_user_all():
 
 @http_service
 def query_user_info():
-    user_no = gvars.get_userno()
+    user_no = globals.get_userno()
 
     # 查询用户
     user = UserDao.select_by_userno(user_no)
