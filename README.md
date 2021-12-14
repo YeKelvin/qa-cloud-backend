@@ -47,6 +47,11 @@ Nginx, uWSGI, Systemd / Supervisor
 uwsgi --ini uwsgi.ini
 ```
 
+## 启动Gunicorn
+```bash
+gunicorn -c gunicorn.conf main:app
+```
+
 ## 技术说明
 
 站在巨人的肩上，主要使用了以下开源项目：

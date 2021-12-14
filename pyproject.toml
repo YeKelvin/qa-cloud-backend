@@ -35,7 +35,8 @@ psycopg2 = "2.9.2"
 gevent = "21.8.0"
 # Deployment
 uwsgi = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
-#supervisor = { version = "*", markers = "sys_platform == 'linux'" }
+gunicorn = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
+supervisor = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
 # Environment
