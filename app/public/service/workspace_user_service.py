@@ -8,9 +8,9 @@ from app.common.decorators.transaction import transactional
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
-from app.public.dao import workspace_user_rel_dao as WorkspaceUserRelDao
+from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.model import TWorkspace
-from app.public.model import TWorkspaceUserRel
+from app.public.model import TWorkspaceUser
 from app.user.model import TUser
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
@@ -22,18 +22,18 @@ log = get_logger(__name__)
 @http_service
 def query_workspace_user_list(req):
     # 查询条件
-    conds = QueryCondition(TUser, TWorkspace, TWorkspaceUserRel)
-    conds.equal(TUser.USER_NO, TWorkspaceUserRel.USER_NO)
-    conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUserRel.WORKSPACE_NO)
-    conds.like(TWorkspaceUserRel.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TUser, TWorkspace, TWorkspaceUser)
+    conds.equal(TUser.USER_NO, TWorkspaceUser.USER_NO)
+    conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    conds.like(TWorkspaceUser.WORKSPACE_NO, req.workspaceNo)
 
-    # TUser, TWorkspace, TWorkspaceUserRel 连表查询
+    # TUser, TWorkspace, TWorkspaceUser 连表查询
     pagination = db.session.query(
         TWorkspace.WORKSPACE_NO,
         TWorkspace.WORKSPACE_NAME,
         TUser.USER_NO,
         TUser.USER_NAME
-    ).filter(*conds).order_by(TWorkspaceUserRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TWorkspaceUser.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:
@@ -50,9 +50,9 @@ def query_workspace_user_list(req):
 @http_service
 def query_workspace_user_all(req):
     # 查询条件
-    conds = QueryCondition(TUser, TWorkspaceUserRel)
-    conds.equal(TUser.USER_NO, TWorkspaceUserRel.USER_NO)
-    conds.equal(TWorkspaceUserRel.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TUser, TWorkspaceUser)
+    conds.equal(TUser.USER_NO, TWorkspaceUser.USER_NO)
+    conds.equal(TWorkspaceUser.WORKSPACE_NO, req.workspaceNo)
 
     # 查询所有空间成员
     workspace_user_list = db.session.query(
@@ -78,12 +78,12 @@ def modify_workspace_user(req):
 
     for user_no in req.userNumberList:
         # 查询空间成员
-        workspace_user = WorkspaceUserRelDao.select_by_workspace_and_user(req.workspaceNo, user_no)
+        workspace_user = WorkspaceUserDao.select_by_workspace_and_user(req.workspaceNo, user_no)
         if workspace_user:
             continue
         else:
             # 新增空间成员
-            TWorkspaceUserRel.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
+            TWorkspaceUser.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
 
     # 删除不在请求中的空间成员
-    WorkspaceUserRelDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, req.userNumberList)
+    WorkspaceUserDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, req.userNumberList)

@@ -16,7 +16,7 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
-from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
@@ -91,10 +91,10 @@ def execute_group(req):
         raise ServiceError('仅支持运行 Group 元素')
 
     # 获取 collectionNo
-    group_parent_rel = ElementChildRelDao.select_by_child(req.groupNo)
-    if not group_parent_rel:
+    group_parent_link = ElementChildrenDao.select_by_child(req.groupNo)
+    if not group_parent_link:
         raise ServiceError('元素父级关联不存在')
-    collection_no = group_parent_rel.PARENT_NO
+    collection_no = group_parent_link.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo, specified_self_only=req.selfOnly)
@@ -124,11 +124,11 @@ def execute_sampler(req):
         raise ServiceError('仅支持运行 Sampler 元素')
 
     # 获取 collectionNo 和 groupNo
-    sampler_parent_rel = ElementChildRelDao.select_by_child(req.samplerNo)
-    if not sampler_parent_rel:
+    sampler_parent_link = ElementChildrenDao.select_by_child(req.samplerNo)
+    if not sampler_parent_link:
         raise ServiceError('元素父级关联不存在')
-    collection_no = sampler_parent_rel.ROOT_NO
-    group_no = sampler_parent_rel.PARENT_NO
+    collection_no = sampler_parent_link.ROOT_NO
+    group_no = sampler_parent_link.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfOnly)

@@ -9,16 +9,16 @@ from flask.cli import with_appcontext
 from app.common.id_generator import new_id
 from app.extension import db  # noqa
 from app.public.model import TWorkspace  # noqa
-from app.public.model import TWorkspaceUserRel  # noqa
+from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
 from app.system.model import TActionLog  # noqa
 from app.user.model import TPermission  # noqa
 from app.user.model import TRole  # noqa
-from app.user.model import TRolePermissionRel  # noqa
+from app.user.model import TRolePermission  # noqa
 from app.user.model import TUser  # noqa
 from app.user.model import TUserLoginInfo  # noqa
 from app.user.model import TUserPassword  # noqa
-from app.user.model import TUserRoleRel  # noqa
+from app.user.model import TUserRole  # noqa
 from app.utils.log_util import get_logger  # noqa
 from app.utils.security import encrypt_password
 
@@ -50,8 +50,8 @@ def initdata():
     init_user()
     init_role()
     init_permission()
-    init_user_role_rel()
-    init_role_permission_rel()
+    init_user_role()
+    init_role_permission()
     init_script_global_variable_set()
     init_action_log()
     click.echo('初始化数据成功')
@@ -77,7 +77,7 @@ def init_user():
         WORKSPACE_NAME='超级管理员的私有空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
-    TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
     click.echo('创建 admin用户成功')
 
@@ -120,9 +120,9 @@ def init_permission():
     _create_permission(name='更新角色信息', method='PUT', endpoint='/user/role')
     _create_permission(name='更新角色状态', method='PATCH', endpoint='/user/role/state')
     _create_permission(name='删除角色', method='DELETE', endpoint='/user/role')
-    _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/rel/list')
-    _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/rel/all')
-    _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/rel/list')
+    _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/list')
+    _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/all')
+    _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/list')
     _create_permission(name='分页查询角色未绑定的权限列表', method='GET', endpoint='/user/role/permission/unbound/list')
     _create_permission(name='批量新增角色权限', method='POST', endpoint='/user/role/permissions')
     _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission')
@@ -247,21 +247,21 @@ def init_permission():
 
 
 @with_appcontext
-def init_user_role_rel():
+def init_user_role():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
     role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
-    TUserRoleRel.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
+    TUserRole.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
 
 
 @with_appcontext
-def init_role_permission_rel():
+def init_role_permission():
     """初始化角色权限关联"""
     permissions = TPermission.query.all()
     role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
     for permission in permissions:
-        TRolePermissionRel.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
+        TRolePermission.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联成功')
 
 
@@ -297,13 +297,13 @@ def migrate_sqlite_to_pgsql():
     sqlite_engine = create_engine(app.get_sqlite_url())
     sqlite_session = Session(sqlite_engine)
 
-    # TWorkspaceCollectionRel
-    for entity in sqlite_session.query(model.TWorkspaceCollectionRel).filter_by(DELETED=0).all():
-        model.TWorkspaceCollectionRel.insert(
+    # TWorkspaceCollection
+    for entity in sqlite_session.query(model.TWorkspaceCollection).filter_by(DELETED=0).all():
+        model.TWorkspaceCollection.insert(
             WORKSPACE_NO=entity.WORKSPACE_NO,
             COLLECTION_NO=entity.COLLECTION_NO
         )
-        click.echo(f'success insert into TWorkspaceCollectionRel value {entity.WORKSPACE_NO} {entity.COLLECTION_NO}')
+        click.echo(f'success insert into TWorkspaceCollection value {entity.WORKSPACE_NO} {entity.COLLECTION_NO}')
 
     # TTestElement
     for entity in sqlite_session.query(model.TTestElement).filter_by(DELETED=0).all():
@@ -333,25 +333,25 @@ def migrate_sqlite_to_pgsql():
         )
         click.echo(f'success insert into TElementProperty value {entity.ELEMENT_NO}')
 
-    # TElementChildRel
-    for entity in sqlite_session.query(model.TElementChildRel).filter_by(DELETED=0).all():
-        model.TElementChildRel.insert(
+    # TElementChildren
+    for entity in sqlite_session.query(model.TElementChildren).filter_by(DELETED=0).all():
+        model.TElementChildren.insert(
             ROOT_NO=entity.ROOT_NO,
             PARENT_NO=entity.PARENT_NO,
             CHILD_NO=entity.CHILD_NO,
             SERIAL_NO=entity.SERIAL_NO
         )
-        click.echo(f'success insert into TElementChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
+        click.echo(f'success insert into TElementChildren value {entity.PARENT_NO} {entity.CHILD_NO}')
 
-    # TElementBuiltinChildRel
-    for entity in sqlite_session.query(model.TElementBuiltinChildRel).filter_by(DELETED=0).all():
-        model.TElementBuiltinChildRel.insert(
+    # TElementBuiltinChildren
+    for entity in sqlite_session.query(model.TElementBuiltinChildren).filter_by(DELETED=0).all():
+        model.TElementBuiltinChildren.insert(
             ROOT_NO=entity.ROOT_NO,
             PARENT_NO=entity.PARENT_NO,
             CHILD_NO=entity.CHILD_NO,
             CHILD_TYPE=entity.CHILD_TYPE
         )
-        click.echo(f'success insert into TElementBuiltinChildRel value {entity.PARENT_NO} {entity.CHILD_NO}')
+        click.echo(f'success insert into TElementBuiltinChildren value {entity.PARENT_NO} {entity.CHILD_NO}')
 
     # TVariableDataset
     for entity in sqlite_session.query(model.TVariableDataset).filter_by(DELETED=0).all():
@@ -379,12 +379,12 @@ def migrate_sqlite_to_pgsql():
         click.echo(f'success insert into TVariable value {entity.VAR_NO}')
 
     # THttpSamplerHeaderTemplateRef
-    for entity in sqlite_session.query(model.THttpSamplerHeaderTemplateRef).filter_by(DELETED=0).all():
-        model.THttpSamplerHeaderTemplateRef.insert(
+    for entity in sqlite_session.query(model.THttpHeaderTemplateRef).filter_by(DELETED=0).all():
+        model.THttpHeaderTemplateRef.insert(
             SAMPLER_NO=entity.SAMPLER_NO,
             TEMPLATE_NO=entity.TEMPLATE_NO
         )
-        click.echo(f'success insert into THttpSamplerHeadersRel value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
+        click.echo(f'success insert into THttpHeaderTemplateRef value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
 
     # THttpHeaderTemplate
     for entity in sqlite_session.query(model.THttpHeaderTemplate).filter_by(DELETED=0).all():

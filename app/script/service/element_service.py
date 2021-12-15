@@ -14,11 +14,11 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
-from app.script.dao import element_builtin_child_rel_dao as ElementBuiltinChildRelDao
-from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
+from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
-from app.script.dao import http_sampler_header_template_ref_dao as HttpSamplerHeaderTemplateRefDao
+from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementStatus
@@ -37,12 +37,12 @@ from app.script.enum import is_sampler
 from app.script.enum import is_test_collection
 from app.script.enum import is_test_snippets
 from app.script.enum import is_timer
-from app.script.model import TElementBuiltinChildRel
-from app.script.model import TElementChildRel
+from app.script.model import TElementBuiltinChildren
+from app.script.model import TElementChildren
 from app.script.model import TElementProperty
-from app.script.model import THttpSamplerHeaderTemplateRef
+from app.script.model import THttpHeaderTemplateRef
 from app.script.model import TTestElement
-from app.script.model import TWorkspaceCollectionRel
+from app.script.model import TWorkspaceCollection
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
@@ -64,18 +64,18 @@ def query_element_list(req):
     conds.like(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo:
-        conds.add_table(TWorkspaceCollectionRel)
-        conds.equal(TWorkspaceCollectionRel.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
-        conds.like(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+        conds.add_table(TWorkspaceCollection)
+        conds.equal(TWorkspaceCollection.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
+        conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
-        conds.equal(TWorkspaceCollectionRel.DELETED, 0)
-        conds.equal(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-        conds.equal(TWorkspaceCollectionRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.equal(TWorkspaceCollection.DELETED, 0)
+        conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+        conds.equal(TWorkspaceCollection.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
 
-    # TTestElement，TWorkspace，TWorkspaceCollectionRel连表查询
+    # TTestElement，TWorkspace，TWorkspaceCollection连表查询
     pagination = db.session.query(
         TTestElement.ELEMENT_NO, TTestElement.ELEMENT_NAME, TTestElement.ELEMENT_REMARK, TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
@@ -95,14 +95,14 @@ def query_element_list(req):
 @http_service
 def query_element_all(req):
     # 查询条件
-    conds = QueryCondition(TTestElement, TWorkspaceCollectionRel)
-    conds.equal(TWorkspaceCollectionRel.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conds.like(TWorkspaceCollectionRel.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TTestElement, TWorkspaceCollection)
+    conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
     conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
     conds.like(TTestElement.ENABLED, req.enabled)
 
-    # TTestElement，TWorkspaceCollectionRel连表查询
+    # TTestElement，TWorkspaceCollection连表查询
     items = db.session.query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
@@ -189,26 +189,26 @@ def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
     # 查询元素所有子代关系
-    child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
-    if not child_rel_list:
+    children_links = ElementChildrenDao.select_all_by_parent(parent_no)
+    if not children_links:
         return result
 
     # 根据序号排序
-    child_rel_list.sort(key=lambda k: k.SERIAL_NO)
-    for child_rel in child_rel_list:
+    children_links.sort(key=lambda k: k.SERIAL_NO)
+    for link in children_links:
         # 查询子代元素
-        element = TestElementDao.select_by_no(child_rel.CHILD_NO)
+        element = TestElementDao.select_by_no(link.CHILD_NO)
         if element:
             # 递归查询子代
-            children = depth and get_element_children(child_rel.CHILD_NO, depth) or []
+            children = depth and get_element_children(link.CHILD_NO, depth) or []
             result.append({
-                'rootNo': child_rel.ROOT_NO,
+                'rootNo': link.ROOT_NO,
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
-                'serialNo': child_rel.SERIAL_NO,
+                'serialNo': link.SERIAL_NO,
                 'children': children
             })
 
@@ -217,11 +217,11 @@ def get_element_children(parent_no, depth):
 
 def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
-    rel = ElementChildRelDao.select_by_child(element_no)
-    if rel:
-        if not rel.ROOT_NO:
+    link = ElementChildrenDao.select_by_child(element_no)
+    if link:
+        if not link.ROOT_NO:
             raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-        return rel.ROOT_NO
+        return link.ROOT_NO
     else:
         return element_no
 
@@ -247,7 +247,7 @@ def create_element(req):
         workspace = WorkspaceDao.select_by_no(req.workspaceNo)
         check_is_not_blank(workspace, '工作空间不存在')
         # 关联工作空间和测试集合
-        TWorkspaceCollectionRel.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
+        TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
 
     return {'elementNo': element_no}
 
@@ -291,11 +291,11 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
             properties=child.get('property', None)
         )
         # 新建子代与父级关联
-        TElementChildRel.insert(
+        TElementChildren.insert(
             ROOT_NO=root_no,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(parent_no)
+            SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
         )
         # 新建子代内置元素
         builtin = child.get('builtIn', None)
@@ -361,7 +361,7 @@ def delete_element(element_no):
     delete_element_children(element_no)
 
     # 如果元素存在父级关联，则删除关联并重新排序子代元素
-    delete_element_child_rel(element_no)
+    delete_element_child(element_no)
 
     # 如果存在内置元素，一并删除
     delete_element_builtins_by_parent(element_no)
@@ -376,34 +376,34 @@ def delete_element(element_no):
 def delete_element_children(parent_no):
     """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、子代内置元素和子代内置元素属性）"""
     # 查询所有子代关联列表
-    child_rel_list = ElementChildRelDao.select_all_by_parent(parent_no)
-    for child_rel in child_rel_list:
+    children_links = ElementChildrenDao.select_all_by_parent(parent_no)
+    for link in children_links:
         # 如果子代存在内置元素，一并删除
-        delete_element_builtins_by_parent(child_rel.CHILD_NO)
+        delete_element_builtins_by_parent(link.CHILD_NO)
         # 查询子代元素
-        child = TestElementDao.select_by_no(child_rel.CHILD_NO)
+        child = TestElementDao.select_by_no(link.CHILD_NO)
         # 递归删除子代元素的子代和关联
-        delete_element_children(child_rel.CHILD_NO)
+        delete_element_children(link.CHILD_NO)
         # 删除子代元素属性
-        delete_element_property(child_rel.CHILD_NO)
+        delete_element_property(link.CHILD_NO)
         # 删除父子关联
-        child_rel.delete()
+        link.delete()
         # 删除子代元素
         child.delete()
 
 
-def delete_element_child_rel(child_no):
+def delete_element_child(child_no):
     # 如果子代存在父级关联，则删除关联并重新排序子代元素
-    child_rel = ElementChildRelDao.select_by_child(child_no)
-    if child_rel:
+    link = ElementChildrenDao.select_by_child(child_no)
+    if link:
         # 重新排序父级子代
-        TElementChildRel.filter(
-            TElementChildRel.PARENT_NO == child_rel.PARENT_NO, TElementChildRel.SERIAL_NO > child_rel.SERIAL_NO
+        TElementChildren.filter(
+            TElementChildren.PARENT_NO == link.PARENT_NO, TElementChildren.SERIAL_NO > link.SERIAL_NO
         ).update(
-            {TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1}
+            {TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1}
         )
         # 删除父级关联
-        child_rel.delete()
+        link.delete()
 
 
 def delete_element_property(element_no):
@@ -480,69 +480,69 @@ def update_element_property(element_no, properties: dict):
 @transactional
 def move_element(req):
     # 查询 source 元素子代关联
-    source_child_rel = ElementChildRelDao.select_by_child(req.sourceNo)
-    check_is_not_blank(source_child_rel, 'source元素关联不存在')
+    source_link = ElementChildrenDao.select_by_child(req.sourceNo)
+    check_is_not_blank(source_link, 'source元素关联不存在')
 
     # 校验
     if req.targetSerialNo < 0:
         raise ServiceError('target元素序号不能小于0')
 
     # source 父元素编号
-    source_parent_no = source_child_rel.PARENT_NO
+    source_parent_no = source_link.PARENT_NO
     # source 元素序号
-    source_serial_no = source_child_rel.SERIAL_NO
+    source_serial_no = source_link.SERIAL_NO
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
         # 序号相等时直接跳过
-        if req.targetSerialNo == source_child_rel.SERIAL_NO:
+        if req.targetSerialNo == source_link.SERIAL_NO:
             return
 
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_serial_no > req.targetSerialNo else 'DOWN'
         if move_type == 'UP':
             # 下移  [target, source) 区间元素
-            TElementChildRel.filter(
-                TElementChildRel.PARENT_NO == source_parent_no,
-                TElementChildRel.SERIAL_NO < source_serial_no,
-                TElementChildRel.SERIAL_NO >= req.targetSerialNo
-            ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+            TElementChildren.filter(
+                TElementChildren.PARENT_NO == source_parent_no,
+                TElementChildren.SERIAL_NO < source_serial_no,
+                TElementChildren.SERIAL_NO >= req.targetSerialNo
+            ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
         else:
             # 上移  (source, target] 区间元素
-            TElementChildRel.filter(
-                TElementChildRel.PARENT_NO == source_parent_no,
-                TElementChildRel.SERIAL_NO > source_serial_no,
-                TElementChildRel.SERIAL_NO <= req.targetSerialNo,
-            ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1})
+            TElementChildren.filter(
+                TElementChildren.PARENT_NO == source_parent_no,
+                TElementChildren.SERIAL_NO > source_serial_no,
+                TElementChildren.SERIAL_NO <= req.targetSerialNo,
+            ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1})
         # 更新 target 元素序号
-        source_child_rel.update(SERIAL_NO=req.targetSerialNo)
+        source_link.update(SERIAL_NO=req.targetSerialNo)
     # source 元素移动至不同的父元素下
     else:
         # source 元素下方的同级元素序号 - 1（上移元素）
-        TElementChildRel.filter(
-            TElementChildRel.PARENT_NO == source_parent_no,
-            TElementChildRel.SERIAL_NO > source_serial_no
-        ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1})
+        TElementChildren.filter(
+            TElementChildren.PARENT_NO == source_parent_no,
+            TElementChildren.SERIAL_NO > source_serial_no
+        ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1})
         # target 元素下方（包含 target 自身位置）的同级元素序号 + 1（下移元素）
-        TElementChildRel.filter(
-            TElementChildRel.PARENT_NO == req.targetParentNo,
-            TElementChildRel.SERIAL_NO >= req.targetSerialNo
-        ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+        TElementChildren.filter(
+            TElementChildren.PARENT_NO == req.targetParentNo,
+            TElementChildren.SERIAL_NO >= req.targetSerialNo
+        ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
         # 移动 source 元素至 target 位置
-        source_child_rel.update(
+        source_link.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
             SERIAL_NO=req.targetSerialNo
         )
 
     # 校验 target 父级子代元素序号的连续性，避免埋坑
-    target_child_rel_list = ElementChildRelDao.select_all_by_parent(req.targetParentNo)
-    for index, target_child_rel in enumerate(target_child_rel_list):
-        if target_child_rel.SERIAL_NO != index + 1:
+    target_children_links = ElementChildrenDao.select_all_by_parent(req.targetParentNo)
+    for index, target_link in enumerate(target_children_links):
+        if target_link.SERIAL_NO != index + 1:
             log.error(
                 f'parentNo:[ {req.targetParentNo} ] '
-                f'elementNo:[ {target_child_rel.CHILD_NO} ] '
-                f'serialNo:[ {target_child_rel.SERIAL_NO} ]'
+                f'elementNo:[ {target_link.CHILD_NO} ] '
+                f'serialNo:[ {target_link.SERIAL_NO} ]'
                 f'序号连续性错误 '
             )
             raise ServiceError('Target 父级子代序号连续性有误')
@@ -562,17 +562,17 @@ def duplicate_element(req):
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
     # 下移 source 元素的下方的元素
-    source_child_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
-    TElementChildRel.filter(
-        TElementChildRel.PARENT_NO == source_child_rel.PARENT_NO,
-        TElementChildRel.SERIAL_NO > source_child_rel.SERIAL_NO
-    ).update({TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO + 1})
+    source_link = ElementChildrenDao.select_by_child(source.ELEMENT_NO)
+    TElementChildren.filter(
+        TElementChildren.PARENT_NO == source_link.PARENT_NO,
+        TElementChildren.SERIAL_NO > source_link.SERIAL_NO
+    ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
     # 将 copy 元素插入 source 元素的下方
-    TElementChildRel.insert(
-        ROOT_NO=source_child_rel.ROOT_NO,
-        PARENT_NO=source_child_rel.PARENT_NO,
+    TElementChildren.insert(
+        ROOT_NO=source_link.ROOT_NO,
+        PARENT_NO=source_link.PARENT_NO,
         CHILD_NO=copied_no,
-        SERIAL_NO=source_child_rel.SERIAL_NO + 1
+        SERIAL_NO=source_link.SERIAL_NO + 1
     )
     return {'elementNo': copied_no}
 
@@ -646,33 +646,33 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
     copied_no = copy_element(source, rename=True)
     # 将 copy 元素插入 target 元素的最后
     target_no = target.ELEMENT_NO
-    TElementChildRel.insert(
+    TElementChildren.insert(
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=copied_no,
-        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_no)
+        SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
     )
 
 
 def paste_element_by_cut(source: TTestElement, target: TTestElement):
     # 查询 source 元素与父级元素关联
-    source_child_rel = ElementChildRelDao.select_by_child(source.ELEMENT_NO)
+    source_link = ElementChildrenDao.select_by_child(source.ELEMENT_NO)
     # 上移 source 元素下方的元素
-    TElementChildRel.filter(
-        TElementChildRel.PARENT_NO == source_child_rel.PARENT_NO,
-        TElementChildRel.SERIAL_NO > source_child_rel.SERIAL_NO
+    TElementChildren.filter(
+        TElementChildren.PARENT_NO == source_link.PARENT_NO,
+        TElementChildren.SERIAL_NO > source_link.SERIAL_NO
     ).update({
-        TElementChildRel.SERIAL_NO: TElementChildRel.SERIAL_NO - 1
+        TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1
     })
     # 删除 source 父级关联
-    source_child_rel.delete()
+    source_link.delete()
     # 将 source 元素插入 target 元素的最后
     target_no = target.ELEMENT_NO
-    TElementChildRel.insert(
+    TElementChildren.insert(
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=source.ELEMENT_NO,
-        SERIAL_NO=ElementChildRelDao.next_serial_number_by_parent(target_no)
+        SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -680,26 +680,26 @@ def copy_element(source: TTestElement, rename=False):
     # 克隆元素和属性
     copied_no = clone_element(source, rename)
     # 遍历克隆元素子代
-    source_child_rel_list = ElementChildRelDao.select_all_by_parent(source.ELEMENT_NO)
-    for source_child_rel in source_child_rel_list:
-        source_child = TestElementDao.select_by_no(source_child_rel.CHILD_NO)
+    source_children_links = ElementChildrenDao.select_all_by_parent(source.ELEMENT_NO)
+    for source_link in source_children_links:
+        source_child = TestElementDao.select_by_no(source_link.CHILD_NO)
         copied_child_no = copy_element(source_child)
-        TElementChildRel.insert(
-            ROOT_NO=source_child_rel.ROOT_NO,
+        TElementChildren.insert(
+            ROOT_NO=source_link.ROOT_NO,
             PARENT_NO=copied_no,
             CHILD_NO=copied_child_no,
-            SERIAL_NO=source_child_rel.SERIAL_NO
+            SERIAL_NO=source_link.SERIAL_NO
         )
     # 遍历克隆内建元素
-    source_builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(source.ELEMENT_NO)
-    for source_builtin_rel in source_builtin_rel_list:
-        source_builtin = TestElementDao.select_by_no(source_builtin_rel.CHILD_NO)
+    source_builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(source.ELEMENT_NO)
+    for source_link in source_builtin_links:
+        source_builtin = TestElementDao.select_by_no(source_link.CHILD_NO)
         copied_builtin_no = copy_element(source_builtin)
-        TElementBuiltinChildRel.insert(
-            ROOT_NO=source_builtin_rel.ROOT_NO,
+        TElementBuiltinChildren.insert(
+            ROOT_NO=source_link.ROOT_NO,
             PARENT_NO=copied_no,
             CHILD_NO=copied_builtin_no,
-            CHILD_TYPE=source_builtin_rel.CHILD_TYPE
+            CHILD_TYPE=source_link.CHILD_TYPE
         )
     return copied_no
 
@@ -725,9 +725,9 @@ def clone_element(source: TTestElement, rename=False):
         )
     # 如果是 HTTPSampler ，克隆请求头模板
     if is_http_sampler(source):
-        refs = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(source.ELEMENT_NO)
+        refs = HttpHeaderTemplateRefDao.select_all_by_sampler(source.ELEMENT_NO)
         for ref in refs:
-            THttpSamplerHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
+            THttpHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
 
     return cloned_no
 
@@ -739,7 +739,7 @@ def query_element_http_header_template_refs(req):
     check_is_not_blank(element, '元素不存在')
 
     # 查询所有关联的模板
-    refs = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
+    refs = HttpHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
 
     return [ref.TEMPLATE_NO for ref in refs]
 
@@ -757,7 +757,7 @@ def create_element_http_header_template_refs(req):
             continue
 
         # 添加模板关联
-        THttpSamplerHeaderTemplateRef.insert(SAMPLER_NO=req.elementNo, TEMPLATE_NO=template_no)
+        THttpHeaderTemplateRef.insert(SAMPLER_NO=req.elementNo, TEMPLATE_NO=template_no)
 
 
 @http_service
@@ -773,18 +773,18 @@ def modify_element_http_header_template_refs(req):
             continue
 
         # 查询模板关联
-        rel = HttpSamplerHeaderTemplateRefDao.select_by_sampler_and_template(req.elementNo, template_no)
-        if rel:
+        ref = HttpHeaderTemplateRefDao.select_by_sampler_and_template(req.elementNo, template_no)
+        if ref:
             continue
         else:
             # 添加模板关联
-            THttpSamplerHeaderTemplateRef.insert(
+            THttpHeaderTemplateRef.insert(
                 SAMPLER_NO=req.elementNo,
                 TEMPLATE_NO=template_no
             )
 
     # 删除不在请求中的模板
-    HttpSamplerHeaderTemplateRefDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNumberList)
+    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNumberList)
 
 
 @http_service
@@ -792,13 +792,13 @@ def query_element_builtins(req):
     result = []
 
     # 查询元素的内置元素关联
-    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(req.elementNo)
-    if not builtin_rel_list:
+    builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(req.elementNo)
+    if not builtin_links:
         return result
 
-    for rel in builtin_rel_list:
+    for link in builtin_links:
         # 查询内置元素
-        builtin = TestElementDao.select_by_no(rel.CHILD_NO)
+        builtin = TestElementDao.select_by_no(link.CHILD_NO)
         if builtin:
             result.append({
                 'elementNo': builtin.ELEMENT_NO,
@@ -848,7 +848,7 @@ def add_element_builtins(root_no, parent_no, children) -> List:
             add_element_property(builtin_no, properties)
 
         # 创建内置元素关联
-        TElementBuiltinChildRel.insert(
+        TElementBuiltinChildren.insert(
             ROOT_NO=root_no,
             PARENT_NO=parent_no,
             CHILD_NO=builtin_no,
@@ -893,10 +893,10 @@ def delete_element_builtin(element_no):
 
 def delete_element_builtins_by_parent(parent_no):
     # 根据父级删除所有内置元素
-    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(parent_no)
-    if builtin_rel_list:
-        for builtin_rel in builtin_rel_list:
+    builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(parent_no)
+    if builtin_links:
+        for link in builtin_links:
             # 删除内置元素
-            delete_element_builtin(builtin_rel.CHILD_NO)
+            delete_element_builtin(link.CHILD_NO)
             # 删除内置元素关联
-            builtin_rel.delete()
+            link.delete()

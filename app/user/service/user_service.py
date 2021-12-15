@@ -14,20 +14,20 @@ from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.model import TWorkspace
-from app.public.model import TWorkspaceUserRel
+from app.public.model import TWorkspaceUser
 from app.user.dao import role_dao as RoleDao
 from app.user.dao import user_dao as UserDao
 from app.user.dao import user_login_info_dao as UserLoginInfoDao
 from app.user.dao import user_login_log_dao as UserLoginLogDao
 from app.user.dao import user_password_dao as UserPasswordDao
 from app.user.dao import user_password_key_dao as UserPasswordKeyDao
-from app.user.dao import user_role_rel_dao as UserRoleRelDao
+from app.user.dao import user_role_dao as UserRoleDao
 from app.user.enum import UserState
 from app.user.model import TUser
 from app.user.model import TUserLoginInfo
 from app.user.model import TUserLoginLog
 from app.user.model import TUserPassword
-from app.user.model import TUserRoleRel
+from app.user.model import TUserRole
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
@@ -149,11 +149,11 @@ def register(req):
         WORKSPACE_NAME=f'{req.userName}的私有空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
-    TWorkspaceUserRel.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
     # 绑定用户角色
     for role_no in req.roleNumberList:
-        TUserRoleRel.insert(USER_NO=user_no, ROLE_NO=role_no)
+        TUserRole.insert(USER_NO=user_no, ROLE_NO=role_no)
 
 
 @http_service
@@ -197,7 +197,7 @@ def query_user_list(req):
     data = []
     for user in pagination.items:
         # 查询用户绑定的角色列表
-        user_role_list = UserRoleRelDao.select_all_by_userno(user.USER_NO)
+        user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
         roles = []
         for user_role in user_role_list:
             # 查询角色
@@ -241,7 +241,7 @@ def query_user_info():
     # 查询用户
     user = UserDao.select_by_userno(user_no)
     # 查询用户绑定的角色列表
-    user_role_list = UserRoleRelDao.select_all_by_userno(user_no)
+    user_role_list = UserRoleDao.select_all_by_userno(user_no)
 
     roles = []
     for user_role in user_role_list:
@@ -278,12 +278,12 @@ def modify_user(req):
     # 绑定用户角色
     for role_no in req.roleNumberList:
         # 查询用户角色
-        user_role = UserRoleRelDao.select_by_user_and_role(req.userNo, role_no)
+        user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
         if not user_role:
-            TUserRoleRel.insert(USER_NO=req.userNo, ROLE_NO=role_no)
+            TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
 
     # 解绑非勾选的角色
-    UserRoleRelDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberList)
+    UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberList)
 
 
 @http_service
@@ -304,7 +304,7 @@ def remove_user(req):
     check_is_not_blank(user, '用户不存在')
 
     # 解绑用户和角色
-    UserRoleRelDao.delete_all_by_userno(req.userNo)
+    UserRoleDao.delete_all_by_userno(req.userNo)
 
     # 删除用户密码
     UserPasswordDao.delete_all_by_user_no(req.userNo)

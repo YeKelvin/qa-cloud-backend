@@ -39,9 +39,9 @@ class TRole(DBModel, BaseColumn):
     UniqueConstraint('ROLE_NAME', 'DELETED', name='unique_rolename')
 
 
-class TUserRoleRel(DBModel, BaseColumn):
+class TUserRole(DBModel, BaseColumn):
     """用户角色关联表"""
-    __tablename__ = 'USER_ROLE_REL'
+    __tablename__ = 'USER_ROLE'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), nullable=False, comment='角色编号')
     UniqueConstraint('USER_NO', 'ROLE_NO', 'DELETED', name='unique_user_role')
@@ -59,9 +59,9 @@ class TPermission(DBModel, BaseColumn):
     UniqueConstraint('PERMISSION_NAME', 'METHOD', 'ENDPOINT', 'DELETED', name='unique_permission_method_endpoint')
 
 
-class TRolePermissionRel(DBModel, BaseColumn):
+class TRolePermission(DBModel, BaseColumn):
     """角色权限关联表"""
-    __tablename__ = 'ROLE_PERMISSION_REL'
+    __tablename__ = 'ROLE_PERMISSION'
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), nullable=False, comment='权限编号')
     UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DELETED', name='unique_role_permission')

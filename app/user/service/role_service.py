@@ -8,8 +8,8 @@ from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.user.dao import role_dao as RoleDao  # noqa
-from app.user.dao import role_permission_rel_dao as RolePermissionRelDao  # noqa
-from app.user.dao import user_role_rel_dao as UserRoleRelDao  # noqa
+from app.user.dao import role_permission_dao as RolePermissionDao  # noqa
+from app.user.dao import user_role_dao as UserRoleDao  # noqa
 from app.user.enum import RoleState
 from app.user.model import TRole
 from app.utils.log_util import get_logger
@@ -126,11 +126,11 @@ def remove_role(req):
     check_is_not_blank(role, '角色不存在')
 
     # 查询用户角色列表
-    user_role_list = UserRoleRelDao.select_all_by_roleno(req.roleNo)
+    user_role_list = UserRoleDao.select_all_by_roleno(req.roleNo)
     check_is_blank(user_role_list, '角色与用户存在关联，请先解除关联')
 
     # 解绑角色和权限
-    RolePermissionRelDao.delete_by_roleno(req.roleNo)
+    RolePermissionDao.delete_by_roleno(req.roleNo)
 
     # 删除角色
     role.delete()

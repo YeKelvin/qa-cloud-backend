@@ -15,10 +15,10 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.get('/role/rel/list')
+@blueprint.get('/role/list')
 @require_login
 @require_permission
-def query_user_role_rel_list():
+def query_user_role_list():
     """分页查询用户角色列表"""
     req = JsonParser(
         Argument('userNo'),
@@ -29,13 +29,13 @@ def query_user_role_rel_list():
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
-    return service.query_user_role_rel_list(req)
+    return service.query_user_role_list(req)
 
 
-@blueprint.get('/role/rel/all')
+@blueprint.get('/role/all')
 @require_login
 @require_permission
-def query_user_role_rel_all():
+def query_user_role_all():
     """查询所有用户角色"""
     req = JsonParser(
         Argument('userNo'),
@@ -44,4 +44,4 @@ def query_user_role_rel_all():
         Argument('roleName'),
         Argument('roleCode')
     ).parse()
-    return service.query_user_role_rel_all(req)
+    return service.query_user_role_all(req)

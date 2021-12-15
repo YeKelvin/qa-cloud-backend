@@ -9,15 +9,14 @@ from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
-from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
 
 
-class TWorkspaceCollectionRel(DBModel, BaseColumn):
+class TWorkspaceCollection(DBModel, BaseColumn):
     """空间集合关联表"""
-    __tablename__ = 'WORKSPACE_COLLECTION_REL'
+    __tablename__ = 'WORKSPACE_COLLECTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
 
@@ -45,18 +44,18 @@ class TElementProperty(DBModel, BaseColumn):
     UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', 'DELETED', name='unique_element_property')
 
 
-class TElementChildRel(DBModel, BaseColumn):
+class TElementChildren(DBModel, BaseColumn):
     """元素子代关联表"""
-    __tablename__ = 'ELEMENT_CHILD_REL'
+    __tablename__ = 'ELEMENT_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     SERIAL_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')  # TODO: SORT_NO
 
 
-class TElementBuiltinChildRel(DBModel, BaseColumn):
+class TElementBuiltinChildren(DBModel, BaseColumn):
     """内置元素关联表"""
-    __tablename__ = 'ELEMENT_BUILTIN_CHILD_REL'
+    __tablename__ = 'ELEMENT_BUILTIN_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
@@ -72,7 +71,7 @@ class TVariableDataset(DBModel, BaseColumn):
     DATASET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
     DATASET_DESC = db.Column(db.String(256), comment='变量集描述')
     WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
-    UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_name_type')
+    UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_dataset')
 
 
 class TVariable(DBModel, BaseColumn):
@@ -85,12 +84,12 @@ class TVariable(DBModel, BaseColumn):
     INITIAL_VALUE = db.Column(db.String(2048), comment='变量值')
     CURRENT_VALUE = db.Column(db.String(2048), comment='当前值')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
-    UniqueConstraint('DATASET_NO', 'VAR_NAME', 'DELETED', name='unique_set_name')
+    UniqueConstraint('DATASET_NO', 'VAR_NAME', 'DELETED', name='unique_dataset_variable')
 
 
-class THttpSamplerHeaderTemplateRef(DBModel, BaseColumn):
+class THttpHeaderTemplateRef(DBModel, BaseColumn):
     """HTTP请求头模板关联表"""
-    __tablename__ = 'HTTP_SAMPLER_HEADER_TEMPLATE_REF'
+    __tablename__ = 'HTTP_HEADER_TEMPLATE_REF'
     SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
     UniqueConstraint('SAMPLER_NO', 'TEMPLATE_NO', 'DELETED', name='unique_sampler_template')
@@ -131,9 +130,9 @@ class TDataBaseConfiguration(DBModel, BaseColumn):
     CONNECTION_NAME = db.Column(db.String(256), nullable=False, comment='数据库连接变量')
 
 
-class TElementTagRel(DBModel, BaseColumn):
+class TElementTag(DBModel, BaseColumn):
     """元素标签关联表"""
-    __tablename__ = 'ELEMENT_TAG_REL'
+    __tablename__ = 'ELEMENT_TAG'
     ELEMENT_NO = db.Column(db.String(32), comment='元素编号')
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
     UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DELETED', name='unique_element_tag')

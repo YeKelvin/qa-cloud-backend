@@ -7,9 +7,9 @@ from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.user.dao import role_dao as RoleDao  # noqa
-from app.user.dao import role_permission_rel_dao as RolePermissionRelDao
+from app.user.dao import role_permission_dao as RolePermissionDao
 from app.user.model import TPermission
-from app.user.model import TRolePermissionRel
+from app.user.model import TRolePermission
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -18,25 +18,25 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_role_permission_rel_list(req):
+def query_role_permission_list(req):
     # 查询条件
-    conds = QueryCondition(TPermission, TRolePermissionRel)
+    conds = QueryCondition(TPermission, TRolePermission)
     conds.like(TPermission.PERMISSION_NAME, req.permissionName)
     conds.like(TPermission.ENDPOINT, req.endpoint)
     conds.like(TPermission.METHOD, req.method)
-    conds.like(TRolePermissionRel.ROLE_NO, req.roleNo)
-    conds.like(TRolePermissionRel.PERMISSION_NO, req.permissionNo)
-    conds.equal(TRolePermissionRel.PERMISSION_NO, TPermission.PERMISSION_NO)
+    conds.like(TRolePermission.ROLE_NO, req.roleNo)
+    conds.like(TRolePermission.PERMISSION_NO, req.permissionNo)
+    conds.equal(TRolePermission.PERMISSION_NO, TPermission.PERMISSION_NO)
 
-    # TRole，TPermission，TRolePermissionRel连表查询
+    # TRole，TPermission，TRolePermission连表查询
     pagination = db.session.query(
         TPermission.PERMISSION_NAME,
         TPermission.ENDPOINT,
         TPermission.METHOD,
-        TRolePermissionRel.ROLE_NO,
-        TRolePermissionRel.PERMISSION_NO,
-        TRolePermissionRel.CREATED_TIME
-    ).filter(*conds).order_by(TRolePermissionRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+        TRolePermission.ROLE_NO,
+        TRolePermission.PERMISSION_NO,
+        TRolePermission.CREATED_TIME
+    ).filter(*conds).order_by(TRolePermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:
@@ -54,8 +54,8 @@ def query_role_permission_rel_list(req):
 @http_service
 def query_role_permission_unbound_list(req):
     # 查询条件
-    bound_conds = QueryCondition(TPermission, TRolePermissionRel)
-    bound_conds.like(TRolePermissionRel.ROLE_NO, req.roleNo)
+    bound_conds = QueryCondition(TPermission, TRolePermission)
+    bound_conds.like(TRolePermission.ROLE_NO, req.roleNo)
 
     unbound_conds = QueryCondition(TPermission)
     unbound_conds.like(TPermission.PERMISSION_NO, req.permissionNo)
@@ -63,7 +63,7 @@ def query_role_permission_unbound_list(req):
     unbound_conds.like(TPermission.ENDPOINT, req.endpoint)
     unbound_conds.like(TPermission.METHOD, req.method)
 
-    # TRole，TPermission，TRolePermissionRel连表查询
+    # TRole，TPermission，TRolePermission连表查询
     pagination = db.session.query(
         TPermission
     ).filter(
@@ -92,16 +92,16 @@ def create_role_permissions(req):
 
     for permission_no in req.permissionNumberList:
         # 查询角色权限
-        role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, permission_no)
+        role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, permission_no)
         # 绑定角色权限
         if not role_permission:
-            TRolePermissionRel.insert(ROLE_NO=req.roleNo, PERMISSION_NO=permission_no)
+            TRolePermission.insert(ROLE_NO=req.roleNo, PERMISSION_NO=permission_no)
 
 
 @http_service
 def remove_role_permission(req):
     # 查询角色权限
-    role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, req.permissionNo)
+    role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, req.permissionNo)
     # 解绑角色权限
     if role_permission:
         role_permission.delete()
@@ -115,7 +115,7 @@ def remove_role_permissions(req):
 
     for permission_no in req.permissionNumberList:
         # 查询角色权限
-        role_permission = RolePermissionRelDao.select_by_role_and_permission(req.roleNo, permission_no)
+        role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, permission_no)
         # 解绑角色权限
         if role_permission:
             role_permission.delete()

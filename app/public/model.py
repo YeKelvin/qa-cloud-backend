@@ -24,9 +24,9 @@ class TWorkspace(DBModel, BaseColumn):
     UniqueConstraint('WORKSPACE_NAME', 'WORKSPACE_SCOPE', 'DELETED', name='unique_name_type_scope')
 
 
-class TWorkspaceUserRel(DBModel, BaseColumn):
+class TWorkspaceUser(DBModel, BaseColumn):
     """工作空间用户关联表"""
-    __tablename__ = 'WORKSPACE_USER_REL'
+    __tablename__ = 'WORKSPACE_USER'
     WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     UniqueConstraint('WORKSPACE_NO', 'USER_NO', 'DELETED', name='unique_workspace_user')

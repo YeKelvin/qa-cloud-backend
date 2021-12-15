@@ -18,10 +18,10 @@ from app.common.response import http_response
 from app.extension import db
 from app.user.model import TPermission
 from app.user.model import TRole
-from app.user.model import TRolePermissionRel
+from app.user.model import TRolePermission
 from app.user.model import TUser
 from app.user.model import TUserPassword
-from app.user.model import TUserRoleRel
+from app.user.model import TUserRole
 from app.utils.log_util import get_logger
 
 
@@ -84,7 +84,7 @@ def require_permission(func):
             return check_failed_response(ErrorCode.E401002)
 
         # 查询用户角色关联
-        user_role_list = TUserRoleRel.filter_by(USER_NO=user_no).all()
+        user_role_list = TUserRole.filter_by(USER_NO=user_no).all()
         if not user_role_list:
             log.info(
                 f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
@@ -93,7 +93,7 @@ def require_permission(func):
             return check_failed_response(ErrorCode.E401002)
 
         # 查询用户角色权限信息
-        roles = [rel.ROLE_NO for rel in user_role_list]
+        roles = [user_role.ROLE_NO for user_role in user_role_list]
         conds = [
             TRole.DELETED == 0,
             TRole.STATE == 'ENABLE',
@@ -102,9 +102,9 @@ def require_permission(func):
             TPermission.STATE == 'ENABLE',
             TPermission.METHOD == request.method,
             TPermission.ENDPOINT == request.path,
-            TRolePermissionRel.DELETED == 0,
-            TRolePermissionRel.ROLE_NO == TRole.ROLE_NO,
-            TRolePermissionRel.PERMISSION_NO == TPermission.PERMISSION_NO
+            TRolePermission.DELETED == 0,
+            TRolePermission.ROLE_NO == TRole.ROLE_NO,
+            TRolePermission.PERMISSION_NO == TPermission.PERMISSION_NO
         ]
         role_permission_list = db.session.query(
             TPermission.PERMISSION_NO,

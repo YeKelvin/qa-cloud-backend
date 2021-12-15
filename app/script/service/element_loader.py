@@ -7,11 +7,11 @@ from typing import Dict
 
 from app.common.exceptions import ServiceError
 from app.common.validator import check_is_not_blank
-from app.script.dao import element_builtin_child_rel_dao as ElementBuiltinChildRelDao
-from app.script.dao import element_child_rel_dao as ElementChildRelDao
+from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
+from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_dao as HttpHeaderDao
-from app.script.dao import http_sampler_header_template_ref_dao as HttpSamplerHeaderTemplateRefDao
+from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
@@ -134,23 +134,23 @@ def loads_property(element_no):
 
 def loads_children(element_no, specified_group_no, specified_sampler_no, specified_self_only):
     # 递归查询子代，并根据序号正序排序
-    child_rel_list = ElementChildRelDao.select_all_by_parent(element_no)
+    children_links = ElementChildrenDao.select_all_by_parent(element_no)
     children = []
     # 添加子代
-    for element_child_rel in child_rel_list:
+    for link in children_links:
         found = False
         # 需要指定 Sampler
         if specified_sampler_no:
             # 独立运行
             if specified_self_only:
-                if element_child_rel.CHILD_NO == specified_sampler_no:
-                    child = loads_tree(element_child_rel.CHILD_NO)
+                if link.CHILD_NO == specified_sampler_no:
+                    child = loads_tree(link.CHILD_NO)
                     if child:
                         children.append(child)
             # 非独立运行
             else:
                 child = loads_tree(
-                    element_child_rel.CHILD_NO,
+                    link.CHILD_NO,
                     specified_group_no,
                     specified_sampler_no,
                     specified_self_only,
@@ -158,12 +158,12 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
                 )
                 if child:
                     children.append(child)
-                if element_child_rel.CHILD_NO == specified_sampler_no:
+                if link.CHILD_NO == specified_sampler_no:
                     found = True
 
         # 无需指定 Sampler
         else:
-            child = loads_tree(element_child_rel.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
+            child = loads_tree(link.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
             if child:
                 children.append(child)
 
@@ -184,16 +184,16 @@ def add_snippets(properties, children: list):
 
 def add_builtin_children(element_no, children: list):
     # 查询内置元素关联
-    builtin_rel_list = ElementBuiltinChildRelDao.select_all_by_parent(element_no)
-    for builtin_rel in builtin_rel_list:
-        if builtin_rel.CHILD_TYPE == ElementType.ASSERTION.value:
+    builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(element_no)
+    for link in builtin_links:
+        if link.CHILD_TYPE == ElementType.ASSERTION.value:
             # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
-            builtin = loads_tree(builtin_rel.CHILD_NO)
+            builtin = loads_tree(link.CHILD_NO)
             if builtin:
                 children.insert(0, builtin)
         else:
             # 其余内置元素添加至最后（最后一个运行）
-            builtin = loads_tree(builtin_rel.CHILD_NO)
+            builtin = loads_tree(link.CHILD_NO)
             if builtin:
                 children.append(builtin)
 
@@ -255,16 +255,16 @@ def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dic
 
 def add_http_header_manager(sampler: TTestElement, children: list):
     # 查询元素关联的请求头模板
-    rels = HttpSamplerHeaderTemplateRefDao.select_all_by_sampler(sampler.ELEMENT_NO)
+    refs = HttpHeaderTemplateRefDao.select_all_by_sampler(sampler.ELEMENT_NO)
 
     # 没有关联模板时直接跳过
-    if not rels:
+    if not refs:
         return
 
     # 遍历添加请求头
     property = []
-    for rel in rels:
-        headers = HttpHeaderDao.select_list_by_template(rel.TEMPLATE_NO)
+    for ref in refs:
+        headers = HttpHeaderDao.select_list_by_template(ref.TEMPLATE_NO)
         for header in headers:
             property.append({
                 'class': 'HTTPHeader',
@@ -340,7 +340,7 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
     properties = loads_property(snippets_no)
     use_http_session = properties.get('useHTTPSession', 'false')
     # 递归查询子代，并根据序号正序排序
-    child_rel_list = ElementChildRelDao.select_all_by_parent(snippets_no)
+    children_links = ElementChildrenDao.select_all_by_parent(snippets_no)
     children = []
     # 添加 HTTP Session 组件
     if use_http_session:
@@ -352,8 +352,8 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
             'property': {}
         })
     # 添加子代
-    for element_child_rel in child_rel_list:
-        child = loads_tree(element_child_rel.CHILD_NO)
+    for link in children_links:
+        child = loads_tree(link.CHILD_NO)
         if child:
             children.append(child)
     # 创建一个临时的 Group

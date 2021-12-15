@@ -7,7 +7,7 @@ from app.common.decorators.service import http_service
 from app.extension import db
 from app.user.model import TRole
 from app.user.model import TUser
-from app.user.model import TUserRoleRel
+from app.user.model import TUserRole
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -16,26 +16,26 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_user_role_rel_list(req):
+def query_user_role_list(req):
     # 查询条件
-    conds = QueryCondition(TUser, TRole, TUserRoleRel)
-    conds.equal(TUser.USER_NO, TUserRoleRel.USER_NO)
-    conds.equal(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
+    conds = QueryCondition(TUser, TRole, TUserRole)
+    conds.equal(TUser.USER_NO, TUserRole.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
     conds.like(TUser.USER_NAME, req.userName)
     conds.like(TRole.ROLE_NAME, req.roleName)
     conds.like(TRole.ROLE_CODE, req.roleCode)
-    conds.like(TUserRoleRel.USER_NO, req.userNo)
-    conds.like(TUserRoleRel.ROLE_NO, req.roleNo)
+    conds.like(TUserRole.USER_NO, req.userNo)
+    conds.like(TUserRole.ROLE_NO, req.roleNo)
 
-    # TUser，TRole，TUserRoleRel连表查询
+    # TUser，TRole，TUserRole连表查询
     pagination = db.session.query(
         TUser.USER_NAME,
         TRole.ROLE_NAME,
         TRole.ROLE_CODE,
-        TUserRoleRel.USER_NO,
-        TUserRoleRel.ROLE_NO,
-        TUserRoleRel.CREATED_TIME
-    ).filter(*conds).order_by(TUserRoleRel.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+        TUserRole.USER_NO,
+        TUserRole.ROLE_NO,
+        TUserRole.CREATED_TIME
+    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:
@@ -51,26 +51,26 @@ def query_user_role_rel_list(req):
 
 
 @http_service
-def query_user_role_rel_all(req):
+def query_user_role_all(req):
     # 查询条件
-    conds = QueryCondition(TUser, TRole, TUserRoleRel)
-    conds.equal(TUser.USER_NO, TUserRoleRel.USER_NO)
-    conds.equal(TRole.ROLE_NO, TUserRoleRel.ROLE_NO)
+    conds = QueryCondition(TUser, TRole, TUserRole)
+    conds.equal(TUser.USER_NO, TUserRole.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
     conds.like(TUser.USER_NAME, req.userName)
     conds.like(TRole.ROLE_NAME, req.roleName)
     conds.like(TRole.ROLE_CODE, req.roleCode)
-    conds.like(TUserRoleRel.USER_NO, req.userNo)
-    conds.like(TUserRoleRel.ROLE_NO, req.roleNo)
+    conds.like(TUserRole.USER_NO, req.userNo)
+    conds.like(TUserRole.ROLE_NO, req.roleNo)
 
-    # TUser，TRole，TUserRoleRel连表查询
+    # TUser，TRole，TUserRole连表查询
     entities = db.session.query(
         TUser.USER_NAME,
         TRole.ROLE_NAME,
         TRole.ROLE_CODE,
-        TUserRoleRel.USER_NO,
-        TUserRoleRel.ROLE_NO,
-        TUserRoleRel.CREATED_TIME
-    ).filter(*conds).order_by(TUserRoleRel.CREATED_TIME.desc()).all()
+        TUserRole.USER_NO,
+        TUserRole.ROLE_NO,
+        TUserRole.CREATED_TIME
+    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).all()
 
     result = []
     for entity in entities:

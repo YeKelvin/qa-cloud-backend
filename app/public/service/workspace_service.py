@@ -10,7 +10,7 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
-from app.public.model import TWorkspaceUserRel
+from app.public.model import TWorkspaceUser
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -45,8 +45,8 @@ def query_workspace_all(req):
     # 查询条件
     conds = QueryCondition(TWorkspace)
     if req.userNo:
-        conds.equal(TWorkspaceUserRel.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
-        conds.equal(TWorkspaceUserRel.USER_NO, req.userNo)
+        conds.equal(TWorkspaceUser.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.equal(TWorkspaceUser.USER_NO, req.userNo)
 
     workspaces = db.session.query(
         TWorkspace.WORKSPACE_NO,

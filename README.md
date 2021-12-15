@@ -1,10 +1,10 @@
-# test-platform-server
+# QA CLOUD
 
 ## 安装依赖
 
 ```shell
 pip install --upgrade poetry
-cd test-platform-server/
+cd qa-cloud-backend/
 python3 -m poetry install
 ```
 
@@ -13,7 +13,7 @@ python3 -m poetry install
 ### bash
 
 ```bash
-set FLASK_APP=main.py;set FLASK_ENV=development
+set FLASK_APP=main.py;set FLASK_ENV=development;
 ```
 
 ### 虚拟环境添加pth
@@ -21,7 +21,8 @@ set FLASK_APP=main.py;set FLASK_ENV=development
 ```shell
 cd venv/Lib/site-packages
 new file myproject.pth
-添加项目绝对路径
+
+# 将项目绝对路径添加至pth文件中
 ```
 
 ## 初始化
@@ -51,8 +52,3 @@ uwsgi --ini uwsgi.ini
 ```bash
 gunicorn -c gunicorn.conf main:app
 ```
-
-## 技术说明
-
-站在巨人的肩上，主要使用了以下开源项目：
-...
