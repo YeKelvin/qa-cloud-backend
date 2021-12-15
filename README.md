@@ -42,6 +42,14 @@ flask initdata
 
 Nginx, uWSGI, Systemd / Supervisor
 
+## MacOS安装uWSGI
+
+MacOS下需要通过以下命令来安装，否则会报错，提示`OSError: unable to complete websocket handshake`
+
+```bash
+CFLAGS="-I/usr/local/opt/openssl/include" LDFLAGS="-L/usr/local/opt/openssl/lib" UWSGI_PROFILE_OVERRIDE=ssl=true pip install uwsgi -Iv
+```
+
 ## 启动uWSGI
 
 ```bash
