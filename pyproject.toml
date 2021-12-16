@@ -4,6 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Kelvin.Ye <testmankelvin@163.com>"]
 
+# https://pypi.org/classifiers/
+#classifiers = [
+#    ""
+#]
+
 # [[tool.poetry.source]]
 # name = "aliyun"
 # url = "https://mirrors.aliyun.com/pypi/simple/"
@@ -38,7 +43,10 @@ uwsgi = { version = "*", markers = "sys_platform=='linux'" }
 #gunicorn = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
 #supervisor = { version = "*", markers = "sys_platform=='linux' or sys_platform=='darwin" }
 # 私仓依赖
-pymeter = { path = "../pymeter", develop = true }
+pymeter = [
+    { path = "../pymeter", develop = true, markers = "sys_platform=='win32' or sys_platform=='darwin" },
+    { git = "https://github.com/YeKelvin/pymeter.git", branch = "dev", markers = "sys_platform=='linux'" }
+]
 # Environment
 python-dotenv = "0.19.1"
 environs = "9.3.4"

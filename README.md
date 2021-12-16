@@ -2,7 +2,7 @@
 
 ## 安装依赖
 
-```shell
+```bash
 pip install --upgrade poetry
 cd qa-cloud-backend/
 python3 -m poetry install
@@ -18,9 +18,9 @@ set FLASK_APP=main.py;set FLASK_ENV=development;
 
 ### 虚拟环境添加pth
 
-```shell
+```bash
 cd venv/Lib/site-packages
-new file myproject.pth
+touch myproject.pth
 
 # 将项目绝对路径添加至pth文件中
 ```
@@ -59,4 +59,14 @@ uwsgi --ini uwsgi.ini
 ## 启动Gunicorn
 ```bash
 gunicorn -c gunicorn.conf main:app
+```
+
+## Docker构建
+```bash
+docker build -t qa-cloud-backend .
+```
+
+## 生产运行
+```bash
+docker run --ip 192.168.65.20 qa-cloud-frontend
 ```
