@@ -40,7 +40,7 @@ flask initdata
 
 ## 服务端部署
 
-Nginx, uWSGI, Systemd / Supervisor
+Nginx, uWSGI, Systemd / Supervisor / Docker
 
 ## MacOS安装uWSGI
 
