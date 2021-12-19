@@ -63,10 +63,16 @@ gunicorn -c gunicorn.conf main:app
 
 ## Docker构建
 ```bash
-docker build -t qa-cloud-backend .
+docker build --build-arg HTTP_PROXY=http://docker.for.mac.host.internal:1087 --build-arg HTTPS_PROXY=http://docker.for.mac.host.internal:1087 -t qa-cloud-backend .
 ```
 
 ## 生产运行
 ```bash
-docker run --ip 192.168.65.20 qa-cloud-frontend
+docker run -d --network main -p 5000:5000 --name uwsgi.app qa-cloud-backend
+```
+
+## 创建容器网络
+
+```bash
+docker network create main
 ```
