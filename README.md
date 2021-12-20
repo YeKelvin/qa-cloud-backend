@@ -40,7 +40,7 @@ flask initdata
 
 ## 服务端部署
 
-Nginx, uWSGI, Systemd / Supervisor / Docker
+Nginx, uWSGI, Docker
 
 ## MacOS安装uWSGI
 
@@ -55,15 +55,17 @@ CFLAGS="-I/usr/local/opt/openssl/include" LDFLAGS="-L/usr/local/opt/openssl/lib"
 ```bash
 uwsgi --ini uwsgi.ini
 ```
+## Docker构建
+#### MacOS
 
-## 启动Gunicorn
 ```bash
-gunicorn -c gunicorn.conf main:app
+docker build -t qa-cloud-backend . --build-arg HTTP_PROXY=http://docker.for.mac.host.internal:1087 --build-arg HTTPS_PROXY=http://docker.for.mac.host.internal:1087
 ```
 
-## Docker构建
+#### Windows
+
 ```bash
-docker build --build-arg HTTP_PROXY=http://docker.for.mac.host.internal:1087 --build-arg HTTPS_PROXY=http://docker.for.mac.host.internal:1087 -t qa-cloud-backend .
+docker build -t qa-cloud-backend . --build-arg HTTP_PROXY=http://host.docker.internal:10809 --build-arg HTTPS_PROXY=http://host.docker.internal:10809
 ```
 
 ## 生产运行
