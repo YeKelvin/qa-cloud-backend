@@ -206,7 +206,7 @@ def move_element():
         Argument('sourceNo', required=True, nullable=False, help='source元素编号不能为空'),
         Argument('targetRootNo', required=True, nullable=False, help='target根元素编号不能为空'),
         Argument('targetParentNo', required=True, nullable=False, help='target父元素编号不能为空'),
-        Argument('targetSerialNo', type=int, required=True, nullable=False, help='target元素序号不能为空')
+        Argument('targetSortNo', type=int, required=True, nullable=False, help='target元素序号不能为空')
     ).parse()
     return service.move_element(req)
 

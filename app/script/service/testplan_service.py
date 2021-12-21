@@ -120,7 +120,7 @@ def create_testplan(req):
         TTestplanItems.insert(
             PLAN_NO=plan_no,
             COLLECTION_NO=collection.elementNo,
-            SERIAL_NO=collection.serialNo
+            SORT_NO=collection.sortNo
         )
 
     # 新增测试计划
@@ -156,12 +156,12 @@ def modify_testplan(req):
         # 查询测试计划关联的集合
         item = TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo)
         if item:
-            item.update(SERIAL_NO=collection.serialNo)
+            item.update(SORT_NO=collection.sortNo)
         else:
             TTestplanItems.insert(
                 PLAN_NO=req.planNo,
                 COLLECTION_NO=collection.elementNo,
-                SERIAL_NO=collection.serialNo
+                SORT_NO=collection.sortNo
             )
     # 删除不在请求中的集合
     TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_number_list)

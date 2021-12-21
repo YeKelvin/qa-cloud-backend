@@ -339,7 +339,7 @@ def migrate_sqlite_to_pgsql():
             ROOT_NO=entity.ROOT_NO,
             PARENT_NO=entity.PARENT_NO,
             CHILD_NO=entity.CHILD_NO,
-            SERIAL_NO=entity.SERIAL_NO
+            SORT_NO=entity.SORT_NO
         )
         click.echo(f'success insert into TElementChildren value {entity.PARENT_NO} {entity.CHILD_NO}')
 

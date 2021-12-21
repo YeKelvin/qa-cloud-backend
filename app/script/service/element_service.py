@@ -194,7 +194,7 @@ def get_element_children(parent_no, depth):
         return result
 
     # 根据序号排序
-    children_links.sort(key=lambda k: k.SERIAL_NO)
+    children_links.sort(key=lambda k: k.SORT_NO)
     for link in children_links:
         # 查询子代元素
         element = TestElementDao.select_by_no(link.CHILD_NO)
@@ -208,7 +208,7 @@ def get_element_children(parent_no, depth):
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
-                'serialNo': link.SERIAL_NO,
+                'sortNo': link.SORT_NO,
                 'children': children
             })
 
@@ -295,7 +295,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
             ROOT_NO=root_no,
             PARENT_NO=parent_no,
             CHILD_NO=child_no,
-            SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
+            SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
         )
         # 新建子代内置元素
         builtin = child.get('builtIn', None)
@@ -398,9 +398,9 @@ def delete_element_child(child_no):
     if link:
         # 重新排序父级子代
         TElementChildren.filter(
-            TElementChildren.PARENT_NO == link.PARENT_NO, TElementChildren.SERIAL_NO > link.SERIAL_NO
+            TElementChildren.PARENT_NO == link.PARENT_NO, TElementChildren.SORT_NO > link.SORT_NO
         ).update(
-            {TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1}
+            {TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1}
         )
         # 删除父级关联
         link.delete()
@@ -484,65 +484,65 @@ def move_element(req):
     check_is_not_blank(source_link, 'source元素关联不存在')
 
     # 校验
-    if req.targetSerialNo < 0:
+    if req.targetSortNo < 0:
         raise ServiceError('target元素序号不能小于0')
 
     # source 父元素编号
     source_parent_no = source_link.PARENT_NO
     # source 元素序号
-    source_serial_no = source_link.SERIAL_NO
+    source_sort_no = source_link.SORT_NO
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
         # 序号相等时直接跳过
-        if req.targetSerialNo == source_link.SERIAL_NO:
+        if req.targetSortNo == source_link.SORT_NO:
             return
 
         # 元素移动类型，上移或下移
-        move_type = 'UP' if source_serial_no > req.targetSerialNo else 'DOWN'
+        move_type = 'UP' if source_sort_no > req.targetSortNo else 'DOWN'
         if move_type == 'UP':
             # 下移  [target, source) 区间元素
             TElementChildren.filter(
                 TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.SERIAL_NO < source_serial_no,
-                TElementChildren.SERIAL_NO >= req.targetSerialNo
-            ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
+                TElementChildren.SORT_NO < source_sort_no,
+                TElementChildren.SORT_NO >= req.targetSortNo
+            ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
         else:
             # 上移  (source, target] 区间元素
             TElementChildren.filter(
                 TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.SERIAL_NO > source_serial_no,
-                TElementChildren.SERIAL_NO <= req.targetSerialNo,
-            ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1})
+                TElementChildren.SORT_NO > source_sort_no,
+                TElementChildren.SORT_NO <= req.targetSortNo,
+            ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1})
         # 更新 target 元素序号
-        source_link.update(SERIAL_NO=req.targetSerialNo)
+        source_link.update(SORT_NO=req.targetSortNo)
     # source 元素移动至不同的父元素下
     else:
         # source 元素下方的同级元素序号 - 1（上移元素）
         TElementChildren.filter(
             TElementChildren.PARENT_NO == source_parent_no,
-            TElementChildren.SERIAL_NO > source_serial_no
-        ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1})
+            TElementChildren.SORT_NO > source_sort_no
+        ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1})
         # target 元素下方（包含 target 自身位置）的同级元素序号 + 1（下移元素）
         TElementChildren.filter(
             TElementChildren.PARENT_NO == req.targetParentNo,
-            TElementChildren.SERIAL_NO >= req.targetSerialNo
-        ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
+            TElementChildren.SORT_NO >= req.targetSortNo
+        ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
         # 移动 source 元素至 target 位置
         source_link.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
-            SERIAL_NO=req.targetSerialNo
+            SORT_NO=req.targetSortNo
         )
 
     # 校验 target 父级子代元素序号的连续性，避免埋坑
     target_children_links = ElementChildrenDao.select_all_by_parent(req.targetParentNo)
     for index, target_link in enumerate(target_children_links):
-        if target_link.SERIAL_NO != index + 1:
+        if target_link.SORT_NO != index + 1:
             log.error(
                 f'parentNo:[ {req.targetParentNo} ] '
                 f'elementNo:[ {target_link.CHILD_NO} ] '
-                f'serialNo:[ {target_link.SERIAL_NO} ]'
+                f'sortNo:[ {target_link.SORT_NO} ]'
                 f'序号连续性错误 '
             )
             raise ServiceError('Target 父级子代序号连续性有误')
@@ -565,14 +565,14 @@ def duplicate_element(req):
     source_link = ElementChildrenDao.select_by_child(source.ELEMENT_NO)
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_link.PARENT_NO,
-        TElementChildren.SERIAL_NO > source_link.SERIAL_NO
-    ).update({TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO + 1})
+        TElementChildren.SORT_NO > source_link.SORT_NO
+    ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
     # 将 copy 元素插入 source 元素的下方
     TElementChildren.insert(
         ROOT_NO=source_link.ROOT_NO,
         PARENT_NO=source_link.PARENT_NO,
         CHILD_NO=copied_no,
-        SERIAL_NO=source_link.SERIAL_NO + 1
+        SORT_NO=source_link.SORT_NO + 1
     )
     return {'elementNo': copied_no}
 
@@ -650,7 +650,7 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=copied_no,
-        SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
+        SORT_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -660,9 +660,9 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     # 上移 source 元素下方的元素
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_link.PARENT_NO,
-        TElementChildren.SERIAL_NO > source_link.SERIAL_NO
+        TElementChildren.SORT_NO > source_link.SORT_NO
     ).update({
-        TElementChildren.SERIAL_NO: TElementChildren.SERIAL_NO - 1
+        TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1
     })
     # 删除 source 父级关联
     source_link.delete()
@@ -672,7 +672,7 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=source.ELEMENT_NO,
-        SERIAL_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
+        SORT_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -688,7 +688,7 @@ def copy_element(source: TTestElement, rename=False):
             ROOT_NO=source_link.ROOT_NO,
             PARENT_NO=copied_no,
             CHILD_NO=copied_child_no,
-            SERIAL_NO=source_link.SERIAL_NO
+            SORT_NO=source_link.SORT_NO
         )
     # 遍历克隆内建元素
     source_builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(source.ELEMENT_NO)

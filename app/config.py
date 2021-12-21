@@ -10,16 +10,16 @@ import os
 # 项目路径
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 # 配置文件路径
-if 'CONFIG_PATH' not in os.environ:
-    CONFIG_PATH = os.path.join(PROJECT_PATH, 'config.ini')
-    os.environ['CONFIG_PATH'] = CONFIG_PATH
+if 'APP_CONFIG_FILE' not in os.environ:
+    APP_CONFIG_FILE = os.path.join(PROJECT_PATH, 'config.ini')
+    os.environ['APP_CONFIG_FILE'] = APP_CONFIG_FILE
 else:
-    CONFIG_PATH = os.environ.get('CONFIG_PATH')
+    APP_CONFIG_FILE = os.environ.get('APP_CONFIG_FILE')
 
 
 # 配置对象
 __config__ = configparser.ConfigParser()
-__config__.read(CONFIG_PATH)
+__config__.read(APP_CONFIG_FILE)
 
 
 # 配置项
@@ -29,8 +29,10 @@ SERVICE_HTTP_HOST = __config__.get('service', 'http.host')
 SERVICE_HTTP_PORT = __config__.get('service', 'http.port')
 
 # 日志相关配置
-LOG_NAME = __config__.get('log', 'name')
+LOG_FILE = __config__.get('log', 'file')
 LOG_LEVEL = __config__.get('log', 'level')
+if os.environ.get('FLASK_ENV') == 'development':
+    LOG_FILE = 'app.log'
 
 # 数据库相关配置
 DB_TYPE = __config__.get('db', 'type')

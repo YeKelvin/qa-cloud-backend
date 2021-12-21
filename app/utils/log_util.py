@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 import logging
 import multiprocessing
-import os
 from logging.config import dictConfig
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
@@ -20,7 +19,7 @@ FORMATTER = logging.Formatter(LOG_FORMAT)
 # 日志级别
 LEVEL = CONFIG.LOG_LEVEL
 # 日志文件名称
-LOG_FILE_NAME = CONFIG.LOG_NAME
+LOG_FILE_NAME = CONFIG.LOG_FILE
 # LOG_FILE_NAME = f'[{os.getpid()}]{CONFIG.LOG_NAME}'
 
 

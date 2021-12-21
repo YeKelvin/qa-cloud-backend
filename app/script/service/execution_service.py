@@ -198,7 +198,7 @@ def execute_testplan(req):
     if not items:
         raise ServiceError('测试计划中无关联的脚本')
     # 根据序号排序
-    items.sort(key=lambda k: k.SERIAL_NO)
+    items.sort(key=lambda k: k.SORT_NO)
     collection_number_list = [item.COLLECTION_NO for item in items]
 
     # 创建执行编号
@@ -237,7 +237,7 @@ def execute_testplan(req):
         TTestplanExecutionItems.insert(
             EXECUTION_NO=execution_no,
             COLLECTION_NO=item.COLLECTION_NO,
-            SERIAL_NO=item.SERIAL_NO,
+            SORT_NO=item.SORT_NO,
             RUNNING_STATE=RunningState.WAITING.value
         )
     # 新增测试报告

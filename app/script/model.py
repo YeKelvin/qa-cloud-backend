@@ -50,7 +50,7 @@ class TElementChildren(DBModel, BaseColumn):
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    SERIAL_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')  # TODO: SORT_NO
+    SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')  # TODO: SORT_NO
 
 
 class TElementBuiltinChildren(DBModel, BaseColumn):
@@ -171,7 +171,7 @@ class TTestplanItems(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_ITEMS'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    SERIAL_NO = db.Column(db.Integer, nullable=False, comment='序号')
+    SORT_NO = db.Column(db.Integer, nullable=False, comment='序号')
     UniqueConstraint('PLAN_NO', 'COLLECTION_NO', 'DELETED', name='unique_plan_collection')
 
 
@@ -211,7 +211,7 @@ class TTestplanExecutionItems(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_EXECUTION_ITEMS'
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    SERIAL_NO = db.Column(db.Integer, nullable=False, comment='序号')
+    SORT_NO = db.Column(db.Integer, nullable=False, comment='序号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
     UniqueConstraint('EXECUTION_NO', 'COLLECTION_NO', 'DELETED', name='unique_execution_collection')
 
