@@ -10,8 +10,6 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    # from werkzeug.debug import DebuggedApplication
-    # app = DebuggedApplication(app, evalex=True)
     from gevent.pywsgi import WSGIServer
     server = WSGIServer(('', 5000), app)
     try:
