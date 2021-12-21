@@ -9,8 +9,9 @@ COPY . /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH "/app:${PYTHONPATH}"
-ENV CONFIG_PATH "/app/config.ini"
+ENV APP_CONFIG_FILE "/app/config.ini"
 RUN python -m pip install --upgrade pip --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && pip install -r requirements.txt --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple
 EXPOSE 5000
+#CMD ["python", "main.py"]
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
