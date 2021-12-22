@@ -97,7 +97,9 @@ def remove_http_header_template(req):
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_is_not_blank(template, '模板不存在')
 
-    # 删除变量集，TODO: 还要删除模板下的请求头
+    # 删除模板下的所有请求头
+    HttpHeaderDao.delete_all_by_template(req.templateNo)
+    # 删除模板
     template.delete()
 
 

@@ -110,11 +110,13 @@ def modify_variable_dataset(req):
 @http_service
 def remove_variable_dataset(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(varset, '变量集不存在')
+    dataset = VariableDatasetDao.select_by_no(req.datasetNo)
+    check_is_not_blank(dataset, '变量集不存在')
 
-    # 删除变量集，TODO: 还要删除变量集下的变量
-    varset.delete()
+    # 删除变量集下的所有变量
+    VariableDao.delete_all_by_dataset(req.datasetNo)
+    # 删除变量集
+    dataset.delete()
 
 
 @http_service

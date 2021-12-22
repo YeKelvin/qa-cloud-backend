@@ -50,7 +50,7 @@ class TElementChildren(DBModel, BaseColumn):
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')  # TODO: SORT_NO
+    SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
 
 
 class TElementBuiltinChildren(DBModel, BaseColumn):
