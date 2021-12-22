@@ -1,8 +1,9 @@
 FROM python:3.8-slim-buster
 RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list \
     && apt-get update \
-    && apt-get install --no-install-recommends -y gcc git build-essential libpq-dev libssl-dev uwsgi \
+    && apt-get install --no-install-recommends -y gcc git build-essential libpq-dev libssl-dev \
     && apt-get clean \
+    && rm -rf /tmp/* \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
 WORKDIR /app
 COPY . /app
