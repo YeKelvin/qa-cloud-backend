@@ -3,6 +3,7 @@
 # @File    : main.py
 # @Time    : 2019/11/7 11:18
 # @Author  : Kelvin.Ye
+# from gevent import monkey; monkey.patch_all()  # noqa
 from app import create_app
 
 

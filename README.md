@@ -55,5 +55,5 @@ docker build -t qa-cloud-backend .
 ### Docker运行
 
 ```bash
-docker run -d --network main -p 5000:5000 --name flask.app qa-cloud-backend
+docker run -d --network main -p 5000:5000 --name svc-qa-cloud-service qa-cloud-backend
 ```
