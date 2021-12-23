@@ -204,7 +204,10 @@ def query_user_list(req):
             role = RoleDao.select_by_no(user_role.ROLE_NO)
             if not role:
                 continue
-            roles.append(role.ROLE_NAME)
+            roles.append({
+                'roleNo': role.ROLE_NO,
+                'roleName': role.ROLE_NAME
+            })
 
         data.append({
             'userNo': user.USER_NO,
