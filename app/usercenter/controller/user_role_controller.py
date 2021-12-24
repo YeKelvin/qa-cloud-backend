@@ -7,15 +7,15 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.user.controller import blueprint
-from app.user.service import user_role_service as service
+from app.usercenter.controller import blueprint
+from app.usercenter.service import user_role_service as service
 from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)
 
 
-@blueprint.get('/role/list')
+@blueprint.get('/user/role/list')
 @require_login
 @require_permission
 def query_user_role_list():
@@ -32,7 +32,7 @@ def query_user_role_list():
     return service.query_user_role_list(req)
 
 
-@blueprint.get('/role/all')
+@blueprint.get('/user/role/all')
 @require_login
 @require_permission
 def query_user_role_all():

@@ -16,12 +16,12 @@ from app.common.exceptions import ErrorCode
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.extension import db
-from app.user.model import TPermission
-from app.user.model import TRole
-from app.user.model import TRolePermission
-from app.user.model import TUser
-from app.user.model import TUserPassword
-from app.user.model import TUserRole
+from app.usercenter.model import TPermission
+from app.usercenter.model import TRole
+from app.usercenter.model import TRolePermission
+from app.usercenter.model import TUser
+from app.usercenter.model import TUserPassword
+from app.usercenter.model import TUserRole
 from app.utils.log_util import get_logger
 
 

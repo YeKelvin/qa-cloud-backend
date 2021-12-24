@@ -7,11 +7,11 @@ from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
-from app.user.dao import role_dao as RoleDao  # noqa
-from app.user.dao import role_permission_dao as RolePermissionDao  # noqa
-from app.user.dao import user_role_dao as UserRoleDao  # noqa
-from app.user.enum import RoleState
-from app.user.model import TRole
+from app.usercenter.dao import role_dao as RoleDao  # noqa
+from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
+from app.usercenter.dao import user_role_dao as UserRoleDao  # noqa
+from app.usercenter.enum import RoleState
+from app.usercenter.model import TRole
 from app.utils.log_util import get_logger
 
 

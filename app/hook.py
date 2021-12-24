@@ -14,7 +14,7 @@ from flask import request
 from app.common import globals
 from app.common.response import http_response
 from app.system.model import TActionLog
-from app.user.model import TPermission
+from app.usercenter.model import TPermission
 from app.utils import randoms
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger

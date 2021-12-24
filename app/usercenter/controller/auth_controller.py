@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.user.controller import blueprint
-from app.user.service import auth_service as service
+from app.usercenter.controller import blueprint
+from app.usercenter.service import auth_service as service
 from app.utils.log_util import get_logger
 
 

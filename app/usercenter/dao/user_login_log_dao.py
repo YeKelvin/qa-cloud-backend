@@ -4,7 +4,7 @@
 # @Time    : 2021/6/3 14:17
 # @Author  : Kelvin.Ye
 from typing import List
-from app.user.model import TUserLoginLog
+from app.usercenter.model import TUserLoginLog
 
 
 def select_all_by_userno(user_no) -> List[TUserLoginLog]:

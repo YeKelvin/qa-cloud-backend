@@ -12,13 +12,13 @@ from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
 from app.system.model import TActionLog  # noqa
-from app.user.model import TPermission  # noqa
-from app.user.model import TRole  # noqa
-from app.user.model import TRolePermission  # noqa
-from app.user.model import TUser  # noqa
-from app.user.model import TUserLoginInfo  # noqa
-from app.user.model import TUserPassword  # noqa
-from app.user.model import TUserRole  # noqa
+from app.usercenter.model import TPermission  # noqa
+from app.usercenter.model import TRole  # noqa
+from app.usercenter.model import TRolePermission  # noqa
+from app.usercenter.model import TUser  # noqa
+from app.usercenter.model import TUserLoginInfo  # noqa
+from app.usercenter.model import TUserPassword  # noqa
+from app.usercenter.model import TUserRole  # noqa
 from app.utils.log_util import get_logger  # noqa
 from app.utils.security import encrypt_password
 
@@ -26,7 +26,7 @@ from app.utils.security import encrypt_password
 from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
 from app.public.model import *  # noqa isort:skip
-from app.user.model import *  # noqa isort:skip
+from app.usercenter.model import *  # noqa isort:skip
 
 
 log = get_logger(__name__)
@@ -96,37 +96,37 @@ def init_role():
 @with_appcontext
 def init_permission():
     """初始化权限"""
-    # user模块路由
-    _create_permission(name='用户登录', method='POST', endpoint='/user/login')
-    _create_permission(name='用户登出', method='POST', endpoint='/user/logout')
-    _create_permission(name='用户注册', method='POST', endpoint='/user/register')
-    _create_permission(name='重置密码', method='PATCH', endpoint='/user/password/reset')
-    _create_permission(name='查询用户信息', method='GET', endpoint='/user/info')
-    _create_permission(name='分页查询用户列表', method='GET', endpoint='/user/list')
-    _create_permission(name='查询所有用户', method='GET', endpoint='/user/all')
-    _create_permission(name='更新用户信息', method='PUT', endpoint='/user/info')
-    _create_permission(name='更新用户状态', method='PATCH', endpoint='/user/info/state')
-    _create_permission(name='删除用户', method='DELETE', endpoint='/user')
-    _create_permission(name='分页查询权限列表', method='GET', endpoint='/user/permission/list')
-    _create_permission(name='查询所有权限', method='GET', endpoint='/user/permission/all')
-    _create_permission(name='新增权限', method='POST', endpoint='/user/permission')
-    _create_permission(name='更新权限信息', method='PUT', endpoint='/user/permission')
-    _create_permission(name='更新权限状态', method='PATCH', endpoint='/user/permission/state')
-    _create_permission(name='删除权限', method='DELETE', endpoint='/user/permission')
-    _create_permission(name='分页查询角色列表', method='GET', endpoint='/user/role/list')
-    _create_permission(name='查询所有角色', method='GET', endpoint='/user/role/all')
-    _create_permission(name='查询角色信息', method='GET', endpoint='/user/role/info')
-    _create_permission(name='新增角色', method='POST', endpoint='/user/role')
-    _create_permission(name='更新角色信息', method='PUT', endpoint='/user/role')
-    _create_permission(name='更新角色状态', method='PATCH', endpoint='/user/role/state')
-    _create_permission(name='删除角色', method='DELETE', endpoint='/user/role')
-    _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/user/role/list')
-    _create_permission(name='查询所有用户角色', method='GET', endpoint='/user/role/all')
-    _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/user/role/permission/list')
-    _create_permission(name='分页查询角色未绑定的权限列表', method='GET', endpoint='/user/role/permission/unbound/list')
-    _create_permission(name='批量新增角色权限', method='POST', endpoint='/user/role/permissions')
-    _create_permission(name='删除角色权限', method='DELETE', endpoint='/user/role/permission')
-    _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/user/role/permissions')
+    # usercenter模块路由
+    _create_permission(name='用户登录', method='POST', endpoint='/usercenter/user/login')
+    _create_permission(name='用户登出', method='POST', endpoint='/usercenter/user/logout')
+    _create_permission(name='用户注册', method='POST', endpoint='/usercenter/user/register')
+    _create_permission(name='重置密码', method='PATCH', endpoint='/usercenter/user/password/reset')
+    _create_permission(name='查询用户信息', method='GET', endpoint='/usercenter/user/info')
+    _create_permission(name='分页查询用户列表', method='GET', endpoint='/usercenter/user/list')
+    _create_permission(name='查询所有用户', method='GET', endpoint='/usercenter/user/all')
+    _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user/info')
+    _create_permission(name='更新用户状态', method='PATCH', endpoint='/usercenter/user/state')
+    _create_permission(name='删除用户', method='DELETE', endpoint='/usercenter/user')
+    _create_permission(name='分页查询权限列表', method='GET', endpoint='/usercenter/permission/list')
+    _create_permission(name='查询所有权限', method='GET', endpoint='/usercenter/permission/all')
+    _create_permission(name='新增权限', method='POST', endpoint='/usercenter/permission')
+    _create_permission(name='更新权限信息', method='PUT', endpoint='/usercenter/permission')
+    _create_permission(name='更新权限状态', method='PATCH', endpoint='/usercenter/permission/state')
+    _create_permission(name='删除权限', method='DELETE', endpoint='/usercenter/permission')
+    _create_permission(name='分页查询角色列表', method='GET', endpoint='/usercenter/role/list')
+    _create_permission(name='查询所有角色', method='GET', endpoint='/usercenter/role/all')
+    _create_permission(name='查询角色信息', method='GET', endpoint='/usercenter/role/info')
+    _create_permission(name='新增角色', method='POST', endpoint='/usercenter/role')
+    _create_permission(name='更新角色信息', method='PUT', endpoint='/usercenter/role')
+    _create_permission(name='更新角色状态', method='PATCH', endpoint='/usercenter/role/state')
+    _create_permission(name='删除角色', method='DELETE', endpoint='/usercenter/role')
+    _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/usercenter/user/role/list')
+    _create_permission(name='查询所有用户角色', method='GET', endpoint='/usercenter/user/role/all')
+    _create_permission(name='分页查询角色权限列表', method='GET', endpoint='/usercenter/role/permission/list')
+    _create_permission(name='分页查询角色未绑定的权限列表', method='GET', endpoint='/usercenter/role/permission/unbound/list')
+    _create_permission(name='批量新增角色权限', method='POST', endpoint='/usercenter/role/permissions')
+    _create_permission(name='删除角色权限', method='DELETE', endpoint='/usercenter/role/permission')
+    _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/usercenter/role/permissions')
 
     # system模块路由
     # log

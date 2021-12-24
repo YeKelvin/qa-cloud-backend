@@ -7,9 +7,9 @@ from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
-from app.user.dao import permission_dao as PermissionDao
-from app.user.enum import PermissionState
-from app.user.model import TPermission
+from app.usercenter.dao import permission_dao as PermissionDao
+from app.usercenter.enum import PermissionState
+from app.usercenter.model import TPermission
 from app.utils.log_util import get_logger
 
 

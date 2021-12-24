@@ -4,7 +4,7 @@
 # @Time    : 2021/6/2 18:05
 # @Author  : Kelvin.Ye
 from typing import List
-from app.user.model import TUserPassword
+from app.usercenter.model import TUserPassword
 
 
 def select_loginpwd_by_userno(user_no) -> TUserPassword:

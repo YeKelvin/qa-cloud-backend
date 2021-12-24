@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
-from app.user.model import TUserRole
+from app.usercenter.model import TUserRole
 
 
 def select_by_userno(user_no) -> TUserRole:

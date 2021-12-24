@@ -7,7 +7,7 @@ from typing import List
 
 from flask_sqlalchemy import Pagination
 
-from app.user.model import TRole
+from app.usercenter.model import TRole
 from app.utils.sqlalchemy_util import QueryCondition
 
 

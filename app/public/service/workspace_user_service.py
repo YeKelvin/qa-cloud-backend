@@ -11,7 +11,7 @@ from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
-from app.user.model import TUser
+from app.usercenter.model import TUser
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 

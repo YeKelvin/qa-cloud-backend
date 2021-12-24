@@ -6,10 +6,10 @@
 from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import db
-from app.user.dao import role_dao as RoleDao  # noqa
-from app.user.dao import role_permission_dao as RolePermissionDao
-from app.user.model import TPermission
-from app.user.model import TRolePermission
+from app.usercenter.dao import role_dao as RoleDao  # noqa
+from app.usercenter.dao import role_permission_dao as RolePermissionDao
+from app.usercenter.model import TPermission
+from app.usercenter.model import TRolePermission
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 

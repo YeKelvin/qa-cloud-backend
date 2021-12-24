@@ -3,6 +3,7 @@
 # @File    : response.py
 # @Time    : 2019/11/7 11:52
 # @Author  : Kelvin.Ye
+from datetime import datetime
 from enum import Enum
 
 from flask import make_response
@@ -21,8 +22,8 @@ class ResponseDTO:
         result: any = None,
         success: bool = True,
         error: ErrorCode = None,
-        errorCode: str = None,
-        errorMsg: str = None
+        errorCode: str = None,  # noqa
+        errorMsg: str = None  # noqa
     ):
         self.result = result
         self.success = success
@@ -34,15 +35,7 @@ class ResponseDTO:
             self.errorMsg = error.value
         if error or errorCode or errorMsg:
             self.success = False
-
-    def set_result(self, result: any) -> None:
-        self.result = result
-        self.success = True
-
-    def set_error(self, error: Enum) -> None:
-        self.errorCode = error.name
-        self.errorMsg = error.value
-        self.success = False
+        self.responseTm = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
 
     def __repr__(self):
         return str(self.__dict__)
@@ -55,8 +48,8 @@ def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, *
     if not res:
         res = ResponseDTO(**kwargs)
 
+    globals.put('success', res.success)
     res_json = to_json(res.__dict__)
     response = make_response(res_json, status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    globals.put('success', res.success)
     return response

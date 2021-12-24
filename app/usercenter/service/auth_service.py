@@ -4,8 +4,8 @@
 # @Time    : 2020/6/12 18:30
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
-from app.user.dao import user_password_key_dao as UserPasswordKeyDao
-from app.user.model import TUserPasswordKey
+from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
+from app.usercenter.model import TUserPasswordKey
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import generate_rsa_key
 

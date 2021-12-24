@@ -7,15 +7,15 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.user.controller import blueprint
-from app.user.service import user_service as service
+from app.usercenter.controller import blueprint
+from app.usercenter.service import user_service as service
 from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)
 
 
-@blueprint.post('/login')
+@blueprint.post('/user/login')
 def login():
     """用户登录"""
     req = JsonParser(
@@ -25,14 +25,14 @@ def login():
     return service.login(req)
 
 
-@blueprint.post('/logout')
+@blueprint.post('/user/logout')
 @require_login
 def logout():
     """用户登出"""
     return service.logout()
 
 
-@blueprint.post('/register')
+@blueprint.post('/user/register')
 @require_login
 @require_permission
 def register():
@@ -48,7 +48,7 @@ def register():
     return service.register(req)
 
 
-@blueprint.patch('/password/reset')
+@blueprint.patch('/user/password/reset')
 @require_login
 @require_permission
 def reset_password():
@@ -59,7 +59,7 @@ def reset_password():
     return service.reset_login_password(req)
 
 
-@blueprint.get('/list')
+@blueprint.get('/user/list')
 @require_login
 @require_permission
 def query_user_list():
@@ -77,7 +77,7 @@ def query_user_list():
     return service.query_user_list(req)
 
 
-@blueprint.get('/all')
+@blueprint.get('/user/all')
 @require_login
 @require_permission
 def query_user_all():
@@ -85,14 +85,14 @@ def query_user_all():
     return service.query_user_all()
 
 
-@blueprint.get('/info')
+@blueprint.get('/user/info')
 @require_login
 def query_user_info():
     """查询个人用户信息"""
     return service.query_user_info()
 
 
-@blueprint.put('/info')
+@blueprint.put('/user/info')
 @require_login
 @require_permission
 def modify_user():
@@ -107,7 +107,7 @@ def modify_user():
     return service.modify_user(req)
 
 
-@blueprint.patch('/info/state')
+@blueprint.patch('/user/state')
 @require_login
 @require_permission
 def modify_user_state():
@@ -119,7 +119,7 @@ def modify_user_state():
     return service.modify_user_state(req)
 
 
-@blueprint.delete('')
+@blueprint.delete('/user')
 @require_login
 @require_permission
 def remove_user():

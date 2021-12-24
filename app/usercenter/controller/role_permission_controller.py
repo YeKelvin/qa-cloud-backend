@@ -7,8 +7,8 @@ from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
-from app.user.controller import blueprint
-from app.user.service import role_permission_service as service
+from app.usercenter.controller import blueprint
+from app.usercenter.service import role_permission_service as service
 from app.utils.log_util import get_logger
 
 

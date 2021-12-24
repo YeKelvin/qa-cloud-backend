@@ -4,7 +4,7 @@
 # @Time    : 2021/6/2 18:04
 # @Author  : Kelvin.Ye
 from typing import List
-from app.user.model import TUserLoginInfo
+from app.usercenter.model import TUserLoginInfo
 
 
 def select_by_loginname(login_name) -> TUserLoginInfo:

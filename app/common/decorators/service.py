@@ -20,7 +20,7 @@ from app.utils.time_util import timestamp_as_ms
 
 def http_service(func):
     """service层装饰器，主要用于记录日志和捕获异常"""
-    log = inspect.getmodule(func).log
+    log = getattr(inspect.getmodule(func), 'log', None)
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -34,6 +34,7 @@ def http_service(func):
             f'header:[ {dict(request.headers)} ] request:[ {req} ]'
         )
         res = None
+        # noinspection PyBroadException
         try:
             # 判断request参数解析是否有异常
             if req.__error__ is not None:

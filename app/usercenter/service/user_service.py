@@ -15,19 +15,19 @@ from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
-from app.user.dao import role_dao as RoleDao
-from app.user.dao import user_dao as UserDao
-from app.user.dao import user_login_info_dao as UserLoginInfoDao
-from app.user.dao import user_login_log_dao as UserLoginLogDao
-from app.user.dao import user_password_dao as UserPasswordDao
-from app.user.dao import user_password_key_dao as UserPasswordKeyDao
-from app.user.dao import user_role_dao as UserRoleDao
-from app.user.enum import UserState
-from app.user.model import TUser
-from app.user.model import TUserLoginInfo
-from app.user.model import TUserLoginLog
-from app.user.model import TUserPassword
-from app.user.model import TUserRole
+from app.usercenter.dao import role_dao as RoleDao
+from app.usercenter.dao import user_dao as UserDao
+from app.usercenter.dao import user_login_info_dao as UserLoginInfoDao
+from app.usercenter.dao import user_login_log_dao as UserLoginLogDao
+from app.usercenter.dao import user_password_dao as UserPasswordDao
+from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
+from app.usercenter.dao import user_role_dao as UserRoleDao
+from app.usercenter.enum import UserState
+from app.usercenter.model import TUser
+from app.usercenter.model import TUserLoginInfo
+from app.usercenter.model import TUserLoginLog
+from app.usercenter.model import TUserPassword
+from app.usercenter.model import TUserRole
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
