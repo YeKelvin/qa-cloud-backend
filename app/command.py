@@ -270,7 +270,7 @@ def _create_role(name, code, desc=''):
 
 
 def _create_permission(name, method, endpoint):
-    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT='/rest/api' + endpoint)
+    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint)
 
 
 @click.command('sqlite-to-pgsql')
