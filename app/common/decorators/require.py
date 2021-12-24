@@ -110,7 +110,7 @@ def require_permission(func):
             TPermission.PERMISSION_NO,
         ).filter(or_(  # 超级管理员无需校验权限
             and_(*conds),
-            and_(TRole.ROLE_NO.in_(roles), TRole.ROLE_CODE == 'SuperAdmin')
+            and_(TRole.ROLE_NO.in_(roles), TRole.ROLE_CODE == 'SUPER_ADMIN')
         )).first()
 
         # 判断权限是否存在且状态正常

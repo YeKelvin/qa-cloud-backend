@@ -51,7 +51,7 @@ def initdata():
     init_role()
     init_permission()
     init_user_role()
-    init_role_permission()
+    # init_role_permission()
     init_script_global_variable_set()
     init_action_log()
     click.echo('初始化数据成功')
@@ -85,10 +85,10 @@ def init_user():
 @with_appcontext
 def init_role():
     """初始化角色"""
-    _create_role(name='超级管理员', code='SuperAdmin')
-    _create_role(name='管理员', code='Admin')
-    _create_role(name='组长', code='Leader')
-    _create_role(name='用户', code='General')
+    _create_role(name='超级管理员', code='SUPER_ADMIN')
+    _create_role(name='管理员', code='ADMIN')
+    _create_role(name='组长', code='LEADER')
+    _create_role(name='用户', code='GENERAL')
 
     click.echo('创建角色成功')
 
@@ -250,7 +250,7 @@ def init_permission():
 def init_user_role():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
-    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
+    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
     TUserRole.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
 
@@ -259,7 +259,7 @@ def init_user_role():
 def init_role_permission():
     """初始化角色权限关联"""
     permissions = TPermission.query.all()
-    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SuperAdmin').first()
+    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
     for permission in permissions:
         TRolePermission.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
     click.echo('创建角色权限关联成功')

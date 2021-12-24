@@ -34,6 +34,8 @@ def query_role_list(req):
 
     data = []
     for role in pagination.items:
+        if role.ROLE_CODE == 'SUPER_ADMIN':
+            continue
         data.append({
             'roleNo': role.ROLE_NO,
             'roleName': role.ROLE_NAME,
@@ -51,6 +53,8 @@ def query_role_all():
     roles = RoleDao.select_all()
     result = []
     for role in roles:
+        if role.ROLE_CODE == 'SUPER_ADMIN':
+            continue
         result.append({
             'roleNo': role.ROLE_NO,
             'roleName': role.ROLE_NAME,
