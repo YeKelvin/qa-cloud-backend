@@ -55,10 +55,12 @@ class ElementClass(Enum):
 
     # 前置分组
     SETUP_GROUP = 'SetupGroup'
+    # 前置调试分组
     SETUP_GROUP_DEBUGER = 'SetupGroupDebuger'
 
     # 后置分组
     TEARDOWN_GROUP = 'TeardownGroup'
+    # 后置调试分组
     TEARDOWN_GROUP_DEBUGER = 'TeardownGroupDebuger'
 
     # HTTP取样器

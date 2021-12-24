@@ -51,7 +51,6 @@ def initdata():
     init_role()
     init_permission()
     init_user_role()
-    # init_role_permission()
     init_script_global_variable_set()
     init_action_log()
     click.echo('初始化数据成功')
@@ -175,12 +174,11 @@ def init_permission():
     _create_permission(name='剪贴元素', method='POST', endpoint='/script/element/paste')
 
     # execution
-    _create_permission(name='执行集合', method='POST', endpoint='/script/execute/collection')
-    _create_permission(name='执行分组', method='POST', endpoint='/script/execute/group')
-    _create_permission(name='执行取样器', method='POST', endpoint='/script/execute/sampler')
-    _create_permission(name='执行片段集合', method='POST', endpoint='/script/execute/snippet/collection')
-    _create_permission(name='执行片段取样器', method='POST', endpoint='/script/execute/snippet/sampler')
-    _create_permission(name='执行测试计划', method='POST', endpoint='/script/execute/testplan')
+    _create_permission(name='运行测试集合', method='POST', endpoint='/script/collection/execute')
+    _create_permission(name='运行测试分组', method='POST', endpoint='/script/group/execute')
+    _create_permission(name='运行请求取样器', method='POST', endpoint='/script/sampler/execute')
+    _create_permission(name='运行片段集合', method='POST', endpoint='/script/snippets/execute')
+    _create_permission(name='运行测试计划', method='POST', endpoint='/script/testplan/execute')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/dataset/list')
@@ -253,16 +251,6 @@ def init_user_role():
     role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
     TUserRole.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
-
-
-@with_appcontext
-def init_role_permission():
-    """初始化角色权限关联"""
-    permissions = TPermission.query.all()
-    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
-    for permission in permissions:
-        TRolePermission.insert(ROLE_NO=role.ROLE_NO, PERMISSION_NO=permission.PERMISSION_NO)
-    click.echo('创建角色权限关联成功')
 
 
 @with_appcontext

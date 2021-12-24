@@ -149,7 +149,7 @@ def execute_sampler(req):
 
 
 @http_service
-def execute_snippet_collection(req):
+def execute_snippets(req):
     # 查询元素
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:

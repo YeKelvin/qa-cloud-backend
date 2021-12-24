@@ -15,11 +15,11 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.post('/execute/collection')
+@blueprint.post('/collection/execute')
 @require_login
 @require_permission
 def execute_collection():
-    """运行脚本
+    """运行测试集合
 
     example:
     {
@@ -39,10 +39,11 @@ def execute_collection():
     return service.execute_collection(req)
 
 
-@blueprint.post('/execute/group')
+@blueprint.post('/group/execute')
 @require_login
 @require_permission
 def execute_group():
+    """运行测试分组"""
     req = JsonParser(
         Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
@@ -52,10 +53,11 @@ def execute_group():
     return service.execute_group(req)
 
 
-@blueprint.post('/execute/sampler')
+@blueprint.post('/sampler/execute')
 @require_login
 @require_permission
 def execute_sampler():
+    """运行请求取样器"""
     req = JsonParser(
         Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
@@ -65,24 +67,11 @@ def execute_sampler():
     return service.execute_sampler(req)
 
 
-@blueprint.post('/execute/testplan')
+@blueprint.post('/snippets/execute')
 @require_login
 @require_permission
-def execute_testplan():
-    """运行测试计划"""
-    req = JsonParser(
-        Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('datasetNumberList', type=list),
-        Argument('useCurrentValue', default=False)
-    ).parse()
-    return service.execute_testplan(req)
-
-
-@blueprint.post('/execute/snippet/collection')
-@require_login
-@require_permission
-def execute_snippet_collection():
-    """运行脚本
+def execute_snippets():
+    """运行片段集合
 
     example:
     {
@@ -101,4 +90,17 @@ def execute_snippet_collection():
         Argument('variableDataSet', type=dict),
         Argument('variables', type=dict)
     ).parse()
-    return service.execute_snippet_collection(req)
+    return service.execute_snippets(req)
+
+
+@blueprint.post('/testplan/execute')
+@require_login
+@require_permission
+def execute_testplan():
+    """运行测试计划"""
+    req = JsonParser(
+        Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
+        Argument('datasetNumberList', type=list),
+        Argument('useCurrentValue', default=False)
+    ).parse()
+    return service.execute_testplan(req)
