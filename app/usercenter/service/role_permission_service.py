@@ -3,11 +3,14 @@
 # @File    : role_permission_service.py
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye
+from sqlalchemy import and_
+from sqlalchemy import exists
+
 from app.common.decorators.service import http_service
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.usercenter.dao import role_dao as RoleDao  # noqa
-from app.usercenter.dao import role_permission_dao as RolePermissionDao
+from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
 from app.usercenter.model import TPermission
 from app.usercenter.model import TRolePermission
 from app.utils.log_util import get_logger
@@ -55,6 +58,7 @@ def query_role_permission_list(req):
 def query_role_permission_unbound_list(req):
     # 查询条件
     bound_conds = QueryCondition(TPermission, TRolePermission)
+    bound_conds.equal(TRolePermission.PERMISSION_NO, TPermission.PERMISSION_NO)
     bound_conds.like(TRolePermission.ROLE_NO, req.roleNo)
 
     unbound_conds = QueryCondition(TPermission)
@@ -63,11 +67,11 @@ def query_role_permission_unbound_list(req):
     unbound_conds.like(TPermission.ENDPOINT, req.endpoint)
     unbound_conds.like(TPermission.METHOD, req.method)
 
-    # TRole，TPermission，TRolePermission连表查询
+    # TPermission，TRolePermission连表查询
     pagination = db.session.query(
         TPermission
     ).filter(
-        ~db.session.query(TPermission).filter(*bound_conds).exists()
+        ~exists().where(and_(*bound_conds))
     ).filter(
         *unbound_conds
     ).order_by(TPermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
