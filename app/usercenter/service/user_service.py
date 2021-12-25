@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from datetime import datetime
 
+from flask import request
+
 from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
@@ -75,7 +77,7 @@ def login(req):
 
     # 密码校验通过后生成token
     issued_at = timestamp_now()
-    access_token = JWTAuth.encode_auth_token(user.USER_NO, issued_at)
+    token = JWTAuth.encode_auth_token(user.USER_NO, issued_at)
 
     # 更新用户登录时间
     # 清空用户登录失败次数
@@ -85,20 +87,26 @@ def login(req):
     )
 
     # 记录用户登录日志
-    # TODO: 记录用户IP
     TUserLoginLog.insert(
         USER_NO=login_info.USER_NO,
         LOGIN_NAME=login_info.LOGIN_NAME,
         LOGIN_TYPE=login_info.LOGIN_TYPE,
-        IP=''
+        IP=remote_addr()
     )
 
     # 更新用户登录状态
     user.update(LOGGED_IN=True)
 
-    # 设置全局操作员
-    globals.put('operator', user.USER_NAME)
-    return {'accessToken': access_token}
+    return {'accessToken': token}
+
+
+def remote_addr():
+    x_forwarded_for = request.headers.get('X-Forwarded-For')
+    if x_forwarded_for:
+        ip_list = x_forwarded_for.split(',')
+        return ip_list[0]
+    else:
+        return request.remote_addr
 
 
 @http_service

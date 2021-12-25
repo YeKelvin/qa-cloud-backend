@@ -18,10 +18,6 @@ def get_issued_at():
     return getattr(g, 'issued_at', None)
 
 
-def get_operator():
-    return getattr(g, 'operator', None)
-
-
 def get_success():
     return getattr(g, 'success', None)
 

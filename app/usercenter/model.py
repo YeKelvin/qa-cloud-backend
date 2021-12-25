@@ -35,8 +35,10 @@ class TRole(DBModel, BaseColumn):
     ROLE_CODE = db.Column(db.String(64), nullable=False, comment='角色代码')
     ROLE_DESC = db.Column(db.String(256), comment='角色描述')
     ROLE_TYPE = db.Column(db.String(64), default='SYSTEM', comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
+    ROLE_RANK = db.Column(db.String(8), comment='角色等级')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, CLOSE:禁用)')
     UniqueConstraint('ROLE_NAME', 'DELETED', name='unique_rolename')
+    UniqueConstraint('ROLE_CODE', 'DELETED', name='unique_rolecode')
 
 
 class TUserRole(DBModel, BaseColumn):
@@ -56,7 +58,7 @@ class TPermission(DBModel, BaseColumn):
     METHOD = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
     ENDPOINT = db.Column(db.String(128), nullable=False, comment='路由路径')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, CLOSE:禁用)')
-    UniqueConstraint('PERMISSION_NAME', 'METHOD', 'ENDPOINT', 'DELETED', name='unique_permission_method_endpoint')
+    UniqueConstraint('METHOD', 'ENDPOINT', 'DELETED', name='unique_method_endpoint')
 
 
 class TRolePermission(DBModel, BaseColumn):
@@ -73,7 +75,7 @@ class TUserLoginInfo(DBModel, BaseColumn):
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), nullable=False, comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
-    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DELETED', name='unique_user_loginname_logintype')
+    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DELETED', name='unique_userno_loginname_logintype')
 
 
 class TUserLoginLog(DBModel, BaseColumn):
@@ -96,7 +98,7 @@ class TUserPassword(DBModel, BaseColumn):
     ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
     UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)')
-    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DELETED', name='unique_user_password_passwordtype')
+    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DELETED', name='unique_userno_password_pwdtype')
 
 
 class TUserPasswordKey(DBModel, BaseColumn):
