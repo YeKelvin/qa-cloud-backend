@@ -33,15 +33,25 @@ log = get_logger(__name__)
 
 
 @click.command()
-@click.option('-d', '--drop', default=False, help='初始化数据库前是否先删除所有表，默认False')
 @with_appcontext
-def initdb(drop):
+def initdb():
     """创建表"""
-    if drop:
-        db.drop_all()
-        click.echo('删除所有数据库表成功')
     db.create_all()
     click.echo('创建所有数据库表成功')
+
+
+@click.command()
+@click.option('-m', '--confirm', help='删除所有表，删除前需要输入确认信息，注意：该命令仅用于开发环境！！！')
+@with_appcontext
+def dropdb(confirm):
+    if not confirm:
+        click.echo('请输入删除表格的确认信息')
+        return
+    if confirm != 'only use on development!!!':
+        click.echo('确认信息不正确，请重试')
+        return
+    db.drop_all()
+    click.echo('删除所有数据库表成功')
 
 
 @click.command()
@@ -51,8 +61,7 @@ def initdata():
     init_role()
     init_permission()
     init_user_role()
-    init_script_global_variable_set()
-    init_action_log()
+    init_global_variable_dataset()
     click.echo('初始化数据成功')
 
 
@@ -84,10 +93,10 @@ def init_user():
 @with_appcontext
 def init_role():
     """初始化角色"""
-    _create_role(name='超级管理员', code='SUPER_ADMIN')
-    _create_role(name='管理员', code='ADMIN')
-    _create_role(name='组长', code='LEADER')
-    _create_role(name='用户', code='GENERAL')
+    _create_role(name='超级管理员', code='SUPER_ADMIN', rank='9999')
+    _create_role(name='管理员', code='ADMIN', rank='9000')
+    _create_role(name='组长', code='LEADER', rank='1000')
+    _create_role(name='用户', code='GENERAL', rank='1')
 
     click.echo('创建角色成功')
 
@@ -254,146 +263,14 @@ def init_user_role():
 
 
 @with_appcontext
-def init_script_global_variable_set():
+def init_global_variable_dataset():
     TVariableDataset.insert(DATASET_NO=new_id(), DATASET_NAME='public', DATASET_TYPE='GLOBAL', WEIGHT=1)
     click.echo('初始化PyMeter全局变量成功')
 
 
-@with_appcontext
-def init_action_log():
-    TActionLog.insert(ACTION_DESC='INIT DB')
-    click.echo('初始化操作日志数据成功')
-
-
-def _create_role(name, code, desc=''):
-    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_DESC=desc)
+def _create_role(name, code, rank, desc=''):
+    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_DESC=desc)
 
 
 def _create_permission(name, method, endpoint):
     TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint)
-
-
-@click.command('sqlite-to-pgsql')
-@with_appcontext
-def migrate_sqlite_to_pgsql():
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
-
-    import app
-    from app.script import model
-
-    sqlite_engine = create_engine(app.get_sqlite_url())
-    sqlite_session = Session(sqlite_engine)
-
-    # TWorkspaceCollection
-    for entity in sqlite_session.query(model.TWorkspaceCollection).filter_by(DELETED=0).all():
-        model.TWorkspaceCollection.insert(
-            WORKSPACE_NO=entity.WORKSPACE_NO,
-            COLLECTION_NO=entity.COLLECTION_NO
-        )
-        click.echo(f'success insert into TWorkspaceCollection value {entity.WORKSPACE_NO} {entity.COLLECTION_NO}')
-
-    # TTestElement
-    for entity in sqlite_session.query(model.TTestElement).filter_by(DELETED=0).all():
-        model.TTestElement.insert(
-            ELEMENT_NO=entity.ELEMENT_NO,
-            ELEMENT_NAME=entity.ELEMENT_NAME,
-            ELEMENT_REMARK=entity.ELEMENT_REMARK,
-            ELEMENT_TYPE=entity.ELEMENT_TYPE,
-            ELEMENT_CLASS=entity.ELEMENT_CLASS,
-            ENABLED=entity.ENABLED,
-            META_DATA=entity.META_DATA
-        )
-        click.echo(f'success insert into TTestElement value {entity.ELEMENT_NO}')
-
-    # TElementProperty
-    for entity in sqlite_session.query(model.TElementProperty).filter_by(DELETED=0).all():
-        model.TElementProperty.insert(
-            ELEMENT_NO=entity.ELEMENT_NO,
-            PROPERTY_NAME=entity.PROPERTY_NAME,
-            PROPERTY_VALUE=(
-                entity.PROPERTY_VALUE
-                if not isinstance(entity.PROPERTY_VALUE, bytes)
-                else str(entity.PROPERTY_VALUE, encoding='utf8')
-            ),
-            PROPERTY_TYPE=entity.PROPERTY_TYPE,
-            ENABLED=entity.ENABLED
-        )
-        click.echo(f'success insert into TElementProperty value {entity.ELEMENT_NO}')
-
-    # TElementChildren
-    for entity in sqlite_session.query(model.TElementChildren).filter_by(DELETED=0).all():
-        model.TElementChildren.insert(
-            ROOT_NO=entity.ROOT_NO,
-            PARENT_NO=entity.PARENT_NO,
-            CHILD_NO=entity.CHILD_NO,
-            SORT_NO=entity.SORT_NO
-        )
-        click.echo(f'success insert into TElementChildren value {entity.PARENT_NO} {entity.CHILD_NO}')
-
-    # TElementBuiltinChildren
-    for entity in sqlite_session.query(model.TElementBuiltinChildren).filter_by(DELETED=0).all():
-        model.TElementBuiltinChildren.insert(
-            ROOT_NO=entity.ROOT_NO,
-            PARENT_NO=entity.PARENT_NO,
-            CHILD_NO=entity.CHILD_NO,
-            CHILD_TYPE=entity.CHILD_TYPE
-        )
-        click.echo(f'success insert into TElementBuiltinChildren value {entity.PARENT_NO} {entity.CHILD_NO}')
-
-    # TVariableDataset
-    for entity in sqlite_session.query(model.TVariableDataset).filter_by(DELETED=0).all():
-        model.TVariableDataset.insert(
-            WORKSPACE_NO=entity.WORKSPACE_NO,
-            DATASET_NO=entity.DATASET_NO,
-            DATASET_NAME=entity.DATASET_NAME,
-            DATASET_TYPE=entity.DATASET_TYPE,
-            DATASET_DESC=entity.DATASET_DESC,
-            WEIGHT=entity.WEIGHT
-        )
-        click.echo(f'success insert into TVariableDataset value {entity.DATASET_NO}')
-
-    # TVariable
-    for entity in sqlite_session.query(model.TVariable).filter_by(DELETED=0).all():
-        model.TVariable.insert(
-            DATASET_NO=entity.DATASET_NO,
-            VAR_NO=entity.VAR_NO,
-            VAR_NAME=entity.VAR_NAME,
-            VAR_DESC=entity.VAR_DESC,
-            INITIAL_VALUE=entity.INITIAL_VALUE,
-            CURRENT_VALUE=entity.CURRENT_VALUE,
-            ENABLED=entity.ENABLED
-        )
-        click.echo(f'success insert into TVariable value {entity.VAR_NO}')
-
-    # THttpSamplerHeaderTemplateRef
-    for entity in sqlite_session.query(model.THttpHeaderTemplateRef).filter_by(DELETED=0).all():
-        model.THttpHeaderTemplateRef.insert(
-            SAMPLER_NO=entity.SAMPLER_NO,
-            TEMPLATE_NO=entity.TEMPLATE_NO
-        )
-        click.echo(f'success insert into THttpHeaderTemplateRef value {entity.SAMPLER_NO} {entity.TEMPLATE_NO}')
-
-    # THttpHeaderTemplate
-    for entity in sqlite_session.query(model.THttpHeaderTemplate).filter_by(DELETED=0).all():
-        model.THttpHeaderTemplate.insert(
-            WORKSPACE_NO=entity.WORKSPACE_NO,
-            TEMPLATE_NO=entity.TEMPLATE_NO,
-            TEMPLATE_NAME=entity.TEMPLATE_NAME,
-            TEMPLATE_DESC=entity.TEMPLATE_DESC
-        )
-        click.echo(f'success insert into THttpHeadersTemplate value {entity.TEMPLATE_NO}')
-
-    # THttpHeader
-    for entity in sqlite_session.query(model.THttpHeader).filter_by(DELETED=0).all():
-        model.THttpHeader.insert(
-            TEMPLATE_NO=entity.TEMPLATE_NO,
-            HEADER_NO=entity.HEADER_NO,
-            HEADER_NAME=entity.HEADER_NAME,
-            HEADER_VALUE=entity.HEADER_VALUE,
-            HEADER_DESC=entity.HEADER_DESC,
-            ENABLED=entity.ENABLED
-        )
-        click.echo(f'success insert into THttpHeader value {entity.HEADER_NO}')
-
-    sqlite_session.close()
