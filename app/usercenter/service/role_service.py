@@ -99,9 +99,9 @@ def create_role(req):
         ROLE_NO=new_id(),
         ROLE_NAME=req.roleName,
         ROLE_CODE=req.roleCode,
+        ROLE_RANK=req.roleRank,
         ROLE_DESC=req.roleDesc,
         ROLE_TYPE='CUSTOM',
-        ROLE_RANK=req.roleRank,
         STATE=RoleState.ENABLE.value
     )
 
@@ -122,8 +122,8 @@ def modify_role(req):
     role.update(
         ROLE_NAME=req.roleName,
         ROLE_CODE=req.roleCode,
-        ROLE_DESC=req.roleDesc,
         ROLE_RANK=req.roleRank,
+        ROLE_DESC=req.roleDesc
     )
 
 

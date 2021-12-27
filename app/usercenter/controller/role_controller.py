@@ -60,8 +60,8 @@ def create_role():
     req = JsonParser(
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
         Argument('roleCode', required=True, nullable=False, help='角色代码不能为空'),
-        Argument('roleDesc'),
-        Argument('roleRank', type=int, max=9000, min=1, required=True, nullable=False, help='角色等级不能为空')
+        Argument('roleRank', type=int, max=9000, min=1, required=True, nullable=False, help='角色等级不能为空'),
+        Argument('roleDesc')
     ).parse()
     return service.create_role(req)
 
@@ -75,8 +75,8 @@ def modify_role():
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
         Argument('roleName', required=True, nullable=False, help='角色名称不能为空'),
         Argument('roleCode', required=True, nullable=False, help='角色代码不能为空'),
-        Argument('roleDesc'),
-        Argument('roleRank', type=int, max=9000, min=1, required=True, nullable=False, help='角色等级不能为空')
+        Argument('roleRank', type=int, max=9000, min=1, required=True, nullable=False, help='角色等级不能为空'),
+        Argument('roleDesc')
     ).parse()
     return service.modify_role(req)
 
