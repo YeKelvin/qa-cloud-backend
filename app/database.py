@@ -8,7 +8,7 @@ from typing import Type
 
 from sqlalchemy import func
 
-from app.common import globals
+from app.common.globals import get_userno
 from app.extension import db
 from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
@@ -86,7 +86,7 @@ class BaseColumn:
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DELETED = db.Column(db.Integer, nullable=False, default=0, comment='是否为已删除的数据')
     REMARK = db.Column(db.String(64), comment='备注')
-    CREATED_BY = db.Column(db.String(64), default=globals.get_userno(), comment='创建人')
+    CREATED_BY = db.Column(db.String(64), default=get_userno, comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), default=globals.get_userno(), comment='更新人')
+    UPDATED_BY = db.Column(db.String(64), default=get_userno, onupdate=get_userno, comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')

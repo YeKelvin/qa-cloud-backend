@@ -130,7 +130,7 @@ def register_commands(app: Flask):
 
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
-    app.cli.add_command(command.migrate_sqlite_to_pgsql)
+    app.cli.add_command(command.dropdb)
 
 
 def get_db_url() -> str:

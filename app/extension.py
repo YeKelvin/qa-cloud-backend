@@ -10,12 +10,17 @@ from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 
+from app import config as CONFIG
+
+
 FLASK_ENV = os.environ.get('FLASK_ENV')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
 
+
 db = SQLAlchemy()
 migrate = Migrate()
-executor = ThreadPoolExecutor(max_workers=10)
+executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
+
 
 sio_kwargs = {}
 if FLASK_ENV == 'development':

@@ -47,3 +47,6 @@ JWT_EXPIRE_TIME = __config__.get('jwt', 'expire.time')
 SNOWFLAKE_DATACENTER_ID = __config__.get('snowflake', 'datacenter.id')
 SNOWFLAKE_WORKER_ID = __config__.get('snowflake', 'worker.id')
 SNOWFLAKE_SEQUENCE = __config__.get('snowflake', 'sequence')
+
+# 线程相关配置
+THREAD_EXECUTOR_WORKERS_MAX = int(__config__.get('thread', 'executor.workers.max'))
