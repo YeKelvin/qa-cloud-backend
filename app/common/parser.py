@@ -107,6 +107,13 @@ class Argument:
                     # 参数值不在枚举中则抛异常
                     raise ParseError(self.help or f'value error: {self.name} invalid enumeration')
 
+            # 整型最大最小值校验
+            if self.type == int:
+                if value < self.min:
+                    raise ParseError(f'value error: {self.name} cannot be less than {self.min}')
+                if value > self.max:
+                    raise ParseError(f'value error: {self.name} cannot be greater than {self.max}')
+
         return value
 
 

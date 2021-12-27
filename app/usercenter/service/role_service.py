@@ -4,6 +4,7 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
@@ -42,6 +43,7 @@ def query_role_list(req):
             'roleCode': role.ROLE_CODE,
             'roleDesc': role.ROLE_DESC,
             'roleType': role.ROLE_TYPE,
+            'roleRank': role.ROLE_RANK,
             'state': role.STATE
         })
     return {'data': data, 'total': pagination.total}
@@ -61,6 +63,7 @@ def query_role_all():
             'roleCode': role.ROLE_CODE,
             'roleDesc': role.ROLE_DESC,
             'roleType': role.ROLE_TYPE,
+            'roleRank': role.ROLE_RANK,
             'state': role.STATE
         })
     return result
@@ -78,15 +81,18 @@ def query_role_info(req):
         'roleCode': role.ROLE_CODE,
         'roleDesc': role.ROLE_DESC,
         'roleType': role.ROLE_TYPE,
+        'roleRank': role.ROLE_RANK,
         'state': role.STATE
     }
 
 
 @http_service
 def create_role(req):
-    # 查询角色
-    role = RoleDao.select_by_name_and_code(req.roleName, req.roleCode)
-    check_is_blank(role, '角色已存在')
+    # 唯一性校验
+    if RoleDao.select_by_name(req.roleName):
+        raise ServiceError('角色名称已存在')
+    if RoleDao.select_by_code(req.roleCode):
+        raise ServiceError('角色代码已存在')
 
     # 创建角色
     TRole.insert(
@@ -95,6 +101,7 @@ def create_role(req):
         ROLE_CODE=req.roleCode,
         ROLE_DESC=req.roleDesc,
         ROLE_TYPE='CUSTOM',
+        ROLE_RANK=req.roleRank,
         STATE=RoleState.ENABLE.value
     )
 
@@ -105,11 +112,18 @@ def modify_role(req):
     role = RoleDao.select_by_no(req.roleNo)
     check_is_not_blank(role, '角色不存在')
 
+    # 唯一性校验
+    if RoleDao.select_by_name(req.roleName):
+        raise ServiceError('角色名称已存在')
+    if RoleDao.select_by_code(req.roleCode):
+        raise ServiceError('角色代码已存在')
+
     # 更新角色信息
     role.update(
         ROLE_NAME=req.roleName,
         ROLE_CODE=req.roleCode,
-        ROLE_DESC=req.roleDesc
+        ROLE_DESC=req.roleDesc,
+        ROLE_RANK=req.roleRank,
     )
 
 

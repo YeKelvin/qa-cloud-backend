@@ -19,6 +19,10 @@ def select_by_name(role_name) -> TRole:
     return TRole.filter_by(ROLE_NAME=role_name).first()
 
 
+def select_by_code(role_code) -> TRole:
+    return TRole.filter_by(ROLE_CODE=role_code).first()
+
+
 def select_by_name_and_code(role_name, role_code) -> TRole:
     return TRole.filter_by(ROLE_NAME=role_name, ROLE_CODE=role_code).first()
 
