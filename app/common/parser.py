@@ -109,10 +109,17 @@ class Argument:
 
             # 整型最大最小值校验
             if self.type == int:
-                if value < self.min:
+                if self.min is not None and value < self.min:
                     raise ParseError(f'value error: {self.name} cannot be less than {self.min}')
-                if value > self.max:
+                if self.max is not None and value > self.max:
                     raise ParseError(f'value error: {self.name} cannot be greater than {self.max}')
+
+            # 字符串最大最小长度校验
+            if self.type == str:
+                if self.min is not None and len(value) < self.min:
+                    raise ParseError(f'value error: {self.name} length cannot be less than {self.min}')
+                if self.max is not None and len(value) > self.max:
+                    raise ParseError(f'value error: {self.name} length cannot be greater than {self.max}')
 
         return value
 
