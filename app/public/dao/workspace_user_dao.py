@@ -18,8 +18,8 @@ def select_list_by_workspace(**kwargs) -> Pagination:
             TWorkspaceUser.CREATED_TIME.desc()).paginate(kwargs.pop('page'), kwargs.pop('pageSize'))
 
 
-def delete_all_by_workspace_and_notin_user(workspace_no, *uset_number_list) -> None:
+def delete_all_by_workspace_and_notin_user(workspace_no, *user_no) -> None:
     TWorkspaceUser.filter(
         TWorkspaceUser.WORKSPACE_NO == workspace_no,
-        TWorkspaceUser.USER_NO.notin_(*uset_number_list)
+        TWorkspaceUser.USER_NO.notin_(*user_no)
     ).update({TWorkspaceUser.DELETED: 1})

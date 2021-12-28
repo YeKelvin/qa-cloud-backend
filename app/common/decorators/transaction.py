@@ -10,11 +10,15 @@ from flask import g
 from flask import request
 
 from app.extension import db
+from app.utils.log_util import get_logger
+
+
+glog = get_logger(__name__)
 
 
 def transactional(func):
     """DB事务装饰器"""
-    log = inspect.getmodule(func).log
+    log = getattr(inspect.getmodule(func), 'log', glog)
 
     @wraps(func)
     def wrapper(*args, **kwargs):

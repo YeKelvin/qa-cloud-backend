@@ -44,6 +44,7 @@ log = get_logger(__name__)
 
 
 @http_service
+@transactional
 def login(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
@@ -204,6 +205,9 @@ def query_user_list(req):
 
     data = []
     for user in pagination.items:
+        # 跳过 administrator 用户
+        if user.LOGIN_NAME == 'admin':
+            continue
         # 查询用户绑定的角色列表
         user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
         roles = []
@@ -237,6 +241,9 @@ def query_user_all():
 
     result = []
     for user in users:
+        # 跳过 administrator 用户
+        if user.LOGIN_NAME == 'admin':
+            continue
         result.append({
             'userNo': user.USER_NO,
             'userName': user.USER_NAME,
@@ -273,6 +280,7 @@ def query_user_info():
 
 
 @http_service
+@transactional
 def modify_user(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
@@ -284,7 +292,10 @@ def modify_user(req):
         MOBILE_NO=req.mobileNo,
         EMAIL=req.email
     )
-    # TODO: workspaceName也要同步修改
+
+    # 同步修改私人空间名称
+    workspace = get_private_workspace_by_user(req.userNo)
+    workspace.update(WORKSPACE_NAME=f'{req.userName}的私有空间')
 
     # 绑定用户角色
     for role_no in req.roleNumberList:
@@ -295,6 +306,17 @@ def modify_user(req):
 
     # 解绑非勾选的角色
     UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberList)
+
+
+def get_private_workspace_by_user(user_no):
+    # 查询条件
+    conds = QueryCondition(TWorkspace, TWorkspaceUser)
+    conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    conds.equal(TWorkspace.WORKSPACE_SCOPE, 'PRIVATE')
+    conds.equal(TWorkspaceUser.USER_NO, user_no)
+
+    # 查询私人空间
+    return db.session.query(TWorkspace).filter(*conds).first()
 
 
 @http_service
@@ -320,16 +342,23 @@ def remove_user(req):
     # 删除用户密码
     UserPasswordDao.delete_all_by_user_no(req.userNo)
 
-    # 删除用户密码秘钥 TODO: 优化删除逻辑
-    for login_info in UserLoginInfoDao.select_all_by_userno(req.userNo):
+    # 删除用户密码秘钥
+    login_info_list = UserLoginInfoDao.select_all_by_userno(req.userNo)
+    for login_info in login_info_list:
         UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
 
     # 删除用户登录历史记录
     UserLoginLogDao.delete_all_by_userno(req.userNo)
 
-    # 删除用户登录信息
+    # 删除用户登录账号
     UserLoginInfoDao.delete_all_by_userno(req.userNo)
+
+    # 同步删除私人空间
+    workspace = get_private_workspace_by_user(req.userNo)
+    workspace.delete()
+
+    # 删除空间成员
+    TWorkspaceUser.filter(TWorkspaceUser.USER_NO == req.userNo).update({TWorkspaceUser.DELETED: 1})
 
     # 删除用户
     user.delete()
-    # TODO: 私有空间也要删除
