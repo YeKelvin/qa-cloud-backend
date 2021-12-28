@@ -8,8 +8,6 @@ from functools import wraps
 
 from flask import g
 from flask import request
-from sqlalchemy import and_
-from sqlalchemy import or_
 
 from app.common import globals
 from app.common.exceptions import ErrorCode
@@ -94,7 +92,12 @@ def require_permission(func):
 
         # 查询用户角色权限信息
         roles = [user_role.ROLE_NO for user_role in user_role_list]
-        conds = [
+        # 查询角色权限
+        required_permission = db.session.query(
+            TRole.ROLE_NO,
+            TRolePermission.ROLE_NO,
+            TRolePermission.PERMISSION_NO
+        ).filter(
             TRole.DELETED == 0,
             TRole.STATE == 'ENABLE',
             TRole.ROLE_NO.in_(roles),
@@ -105,23 +108,23 @@ def require_permission(func):
             TRolePermission.DELETED == 0,
             TRolePermission.ROLE_NO == TRole.ROLE_NO,
             TRolePermission.PERMISSION_NO == TPermission.PERMISSION_NO
-        ]
-        role_permission_list = db.session.query(
-            TPermission.PERMISSION_NO,
-        ).filter(or_(  # 超级管理员无需校验权限
-            and_(*conds),
-            and_(TRole.ROLE_NO.in_(roles), TRole.ROLE_CODE == 'SUPER_ADMIN')
-        )).first()
+        ).first()
 
         # 判断权限是否存在且状态正常
-        if not role_permission_list:
-            log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
-                f'角色无此权限，或状态异常'
-            )
-            return check_failed_response(ErrorCode.E401002)
+        if required_permission:
+            return func(*args, **kwargs)
 
-        return func(*args, **kwargs)
+        # 超级管理员无需校验权限
+        super_admin = TRole.filter(TRole.ROLE_NO.in_(roles), TRole.ROLE_CODE == 'SUPER_ADMIN').first()
+        if super_admin:
+            return func(*args, **kwargs)
+
+        # 其余情况校验不通过
+        log.info(
+            f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+            f'角色无此权限，或状态异常'
+        )
+        return check_failed_response(ErrorCode.E401002)
 
     return wrapper
 

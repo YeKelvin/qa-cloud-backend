@@ -85,7 +85,6 @@ sqlalchemy_logger.propagate = False
 sqlalchemy_logger.setLevel(logging.INFO)
 for handler in sqlalchemy_logger.handlers:
     sqlalchemy_logger.removeHandler(handler)
-sqlalchemy_logger.addHandler(CONSOLE_HANDLER)
 sqlalchemy_logger.addHandler(QUEUE_HANDLER)
 logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
