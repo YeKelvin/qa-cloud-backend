@@ -11,6 +11,7 @@ RUN python -m pip install --upgrade pip --no-cache-dir -i https://pypi.tuna.tsin
     && pip install -r requirements.txt --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
 ENV APP_CONFIG_FILE=/app/config.ini
 EXPOSE 5000
