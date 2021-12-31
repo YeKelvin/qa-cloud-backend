@@ -11,7 +11,7 @@ authors = ["Kelvin.Ye <testmankelvin@163.com>"]
 
 # [[tool.poetry.source]]
 # name = "aliyun"
-# url = "https://mirrors.aliyun.com/pypi/simple/"
+# url = "https://mirrors.aliyun.com/pypi/simple"
 # default = true
 
 [[tool.poetry.source]]
