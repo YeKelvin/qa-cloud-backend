@@ -236,8 +236,17 @@ def query_user_list(req):
 
 @http_service
 def query_user_all():
-    # 查询所有用户
-    users = UserDao.select_all()
+    # 查询条件
+    conds = QueryCondition(TUser, TUserLoginInfo)
+    conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
+
+    # 查询所有用户列表
+    users = db.session.query(
+        TUser.USER_NO,
+        TUser.USER_NAME,
+        TUser.STATE,
+        TUserLoginInfo.LOGIN_NAME
+    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
 
     result = []
     for user in users:
