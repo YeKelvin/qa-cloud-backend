@@ -255,7 +255,7 @@ def create_variables(req):
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
     check_is_not_blank(dataset, '变量集不存在')
 
-    for vari in req.varList:
+    for vari in req.variableList:
         # 跳过变量名为空的数据
         if not vari.varName:
             continue
@@ -279,7 +279,7 @@ def create_variables(req):
 @http_service
 @transactional
 def modify_variables(req):
-    for vari in req.varList:
+    for vari in req.variableList:
         # 跳过变量名为空的数据
         if not vari.varName:
             continue

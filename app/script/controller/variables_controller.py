@@ -195,7 +195,7 @@ def create_variables():
     example:
     {
         "datasetNo": "",
-        "varList": [
+        "variableList": [
             {
                 "varName": "",
                 "varDesc": "",
@@ -208,7 +208,7 @@ def create_variables():
     """
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
-        Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
+        Argument('variableList', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.create_variables(req)
 
@@ -223,7 +223,7 @@ def modify_variables():
     example:
     {
         "datasetNo": "",
-        "varList": [
+        "variableList": [
             {
                 "varNo": "",
                 "varName": "",
@@ -237,7 +237,7 @@ def modify_variables():
     """
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
-        Argument('varList', type=list, required=True, nullable=False, help='变量列表不能为空')
+        Argument('variableList', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.modify_variables(req)
 
