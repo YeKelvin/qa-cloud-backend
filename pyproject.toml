@@ -33,12 +33,12 @@ jsonpath = "0.82"
 pyjwt = { version = "2.3.0", extras=["crypto"] }
 pycryptodome = "3.12.0"
 # Data validation
-pydantic = "1.8.2"
+pydantic = "1.9.0"
 # Database
-psycopg2 = "2.9.2"
+psycopg2 = "2.9.3"
 # Environment
-python-dotenv = "0.19.1"
-environs = "9.3.4"
+python-dotenv = "0.19.2"
+environs = "9.3.5"
 # Coroutine
 gevent = "*"
 # 私仓依赖
