@@ -38,7 +38,7 @@ pydantic = "1.9.0"
 psycopg2 = "2.9.3"
 # Environment
 python-dotenv = "0.19.2"
-environs = "9.3.5"
+environs = "9.4.0"
 # Coroutine
 gevent = "*"
 # 私仓依赖
