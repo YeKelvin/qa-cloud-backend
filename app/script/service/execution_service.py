@@ -53,6 +53,23 @@ def debug_pymeter(script, sid):
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
+def debug_pymeter_with_loader(loader, app, sid):
+    # noinspection PyBroadException
+    try:
+        script = loader(app)
+        socketio.emit('pymeter_message', '脚本加载成功，开始执行', namespace='/', to=sid)
+        Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
+        socketio.emit('pymeter_completed', namespace='/', to=sid)
+    except Exception:
+        log.error(traceback.format_exc())
+        socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
+
+
+def get_flask_app():
+    """获取当前 flask 实例"""
+    return flask.current_app._get_current_object()  # noqa
+
+
 @http_service
 def execute_collection(req):
     # 查询元素
@@ -62,23 +79,25 @@ def execute_collection(req):
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅支持运行 Collecion 元素')
 
-    # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(req.collectionNo)
-    if not script:
-        raise ServiceError('脚本异常，请检查后重试')
+    def script_loads_function(app):
+        with app.app_context():
+            # 根据 collectionNo 递归加载脚本
+            script = element_loader.loads_tree(req.collectionNo)
+            if not script:
+                raise ServiceError('脚本异常，请重试')
+            # 添加 socket 组件
+            element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
+            # 添加变量组件
+            if req.variableDataSet:
+                element_loader.add_variable_data_set(
+                    script,
+                    req.variableDataSet.numberList,
+                    req.variableDataSet.useCurrentValue
+                )
+            return script
 
-    # 添加 socket 组件
-    element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
-
-    # 添加变量组件
-    if req.variableDataSet:
-        element_loader.add_variable_data_set(
-            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
-        )
-
-    # TODO: 暂时用ThreadPoolExecutor，后面改用Celery，https://www.celerycn.io/
     # 新建线程执行脚本
-    executor.submit(debug_pymeter, script, req.socketId)
+    executor.submit(debug_pymeter_with_loader, script_loads_function, get_flask_app(), req.socketId)
 
 
 @http_service
@@ -96,22 +115,29 @@ def execute_group(req):
         raise ServiceError('元素父级关联不存在')
     collection_no = group_parent_link.PARENT_NO
 
-    # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo, specified_self_only=req.selfOnly)
-    if not script:
-        raise ServiceError('脚本异常，请检查后重试')
-
-    # 添加 socket 组件
-    element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
-
-    # 添加变量组件
-    if req.variableDataSet:
-        element_loader.add_variable_data_set(
-            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
-        )
+    def script_loads_function(app):
+        with app.app_context():
+            # 根据 collectionNo 递归加载脚本
+            script = element_loader.loads_tree(
+                collection_no,
+                specified_group_no=req.groupNo,
+                specified_self_only=req.selfOnly
+            )
+            if not script:
+                raise ServiceError('脚本异常，请检查后重试')
+            # 添加 socket 组件
+            element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
+            # 添加变量组件
+            if req.variableDataSet:
+                element_loader.add_variable_data_set(
+                    script,
+                    req.variableDataSet.numberList,
+                    req.variableDataSet.useCurrentValue
+                )
+            return script
 
     # 新建线程执行脚本
-    executor.submit(debug_pymeter, script, req.socketId)
+    executor.submit(debug_pymeter_with_loader, script_loads_function, get_flask_app(), req.socketId)
 
 
 @http_service
@@ -141,7 +167,9 @@ def execute_sampler(req):
     # 添加变量组件
     if req.variableDataSet:
         element_loader.add_variable_data_set(
-            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue
+            script,
+            req.variableDataSet.numberList,
+            req.variableDataSet.useCurrentValue
         )
 
     # 新建线程执行脚本
@@ -159,7 +187,9 @@ def execute_snippets(req):
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_snippet_collecion(
-        collection.ELEMENT_NO, collection.ELEMENT_NAME, collection.ELEMENT_REMARK
+        collection.ELEMENT_NO,
+        collection.ELEMENT_NAME,
+        collection.ELEMENT_REMARK
     )
     if not script:
         raise ServiceError('脚本异常，请检查后重试')
@@ -170,7 +200,10 @@ def execute_snippets(req):
     # 添加变量组件
     if req.variableDataSet:
         element_loader.add_variable_data_set(
-            script, req.variableDataSet.numberList, req.variableDataSet.useCurrentValue, req.variables
+            script,
+            req.variableDataSet.numberList,
+            req.variableDataSet.useCurrentValue,
+            req.variables
         )
 
     # 新建线程执行脚本
@@ -273,7 +306,7 @@ def execute_testplan(req):
     # 先提交事务，防止新线程查询计划时拿不到
     db.session.commit()
     # 异步执行脚本
-    executor.submit(start, flask.current_app._get_current_object())
+    executor.submit(start, get_flask_app())
 
     return {'executionNo': execution_no, 'total': len(items)}
 
