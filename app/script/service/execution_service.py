@@ -53,11 +53,13 @@ def debug_pymeter(script, sid):
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
-def debug_pymeter_with_loader(loader, app, sid):
+def debug_pymeter_with_loader(loader, app, element_no, element_name, sid):
     # noinspection PyBroadException
     try:
-        script = loader(app)
-        socketio.emit('pymeter_message', '脚本加载成功，开始执行', namespace='/', to=sid)
+        socketio.emit('pymeter_message', '开始加载脚本', namespace='/', to=sid)
+        script = loader(app, element_no, element_name, sid)
+        socketio.emit('pymeter_message', '脚本加载成功', namespace='/', to=sid)
+        socketio.emit('pymeter_message', '开始执行脚本', namespace='/', to=sid)
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
@@ -79,25 +81,54 @@ def execute_collection(req):
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅支持运行 Collecion 元素')
 
-    def script_loads_function(app):
-        with app.app_context():
-            # 根据 collectionNo 递归加载脚本
-            script = element_loader.loads_tree(req.collectionNo)
-            if not script:
-                raise ServiceError('脚本异常，请重试')
-            # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
-            # 添加变量组件
-            if req.variableDataSet:
-                element_loader.add_variable_data_set(
-                    script,
-                    req.variableDataSet.numberList,
-                    req.variableDataSet.useCurrentValue
-                )
-            return script
+    # 统计脚本中元素的个数，小于等于100时同步加载脚本，大于100时异步加载脚本，防止超时
+    # 这里只能统计常规元素的个数，片段的个数无法统计
+    element_total = ElementChildrenDao.count_by_root(req.collectionNo)
 
-    # 新建线程执行脚本
-    executor.submit(debug_pymeter_with_loader, script_loads_function, get_flask_app(), req.socketId)
+    # 执行脚本
+    if element_total <= 20:
+        # 根据 collectionNo 递归加载脚本
+        script = element_loader.loads_tree(req.collectionNo)
+        if not script:
+            raise ServiceError('脚本异常，请检查后重试')
+        # 添加 socket 组件
+        element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
+        # 添加变量组件
+        if req.variableDataSet:
+            element_loader.add_variable_data_set(
+                script,
+                req.variableDataSet.numberList,
+                req.variableDataSet.useCurrentValue
+            )
+        # 新建线程执行脚本
+        executor.submit(debug_pymeter, script, req.socketId)
+    else:
+        # 定义 loader 函数
+        def script_loader(app, element_no, element_name, sid):
+            with app.app_context():
+                # 根据 collectionNo 递归加载脚本
+                script = element_loader.loads_tree(element_no)
+                if not script:
+                    raise ServiceError('脚本异常，请重试')
+                # 添加 socket 组件
+                element_loader.add_flask_sio_result_collector(script, sid, element_name)
+                # 添加变量组件
+                if req.variableDataSet:
+                    element_loader.add_variable_data_set(
+                        script,
+                        req.variableDataSet.numberList,
+                        req.variableDataSet.useCurrentValue
+                    )
+                return script
+        # 新建线程执行脚本
+        executor.submit(
+            debug_pymeter_with_loader,
+            script_loader,
+            get_flask_app(),
+            req.collectionNo,
+            collection.ELEMENT_NAME,
+            req.socketId
+        )
 
 
 @http_service
@@ -115,29 +146,63 @@ def execute_group(req):
         raise ServiceError('元素父级关联不存在')
     collection_no = group_parent_link.PARENT_NO
 
-    def script_loads_function(app):
-        with app.app_context():
-            # 根据 collectionNo 递归加载脚本
-            script = element_loader.loads_tree(
-                collection_no,
-                specified_group_no=req.groupNo,
-                specified_self_only=req.selfOnly
-            )
-            if not script:
-                raise ServiceError('脚本异常，请检查后重试')
-            # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
-            # 添加变量组件
-            if req.variableDataSet:
-                element_loader.add_variable_data_set(
-                    script,
-                    req.variableDataSet.numberList,
-                    req.variableDataSet.useCurrentValue
-                )
-            return script
+    # 统计脚本中元素的个数，小于等于100时同步加载脚本，大于100时异步加载脚本，防止超时
+    # 这里只能统计常规元素的个数，片段的个数无法统计
+    element_total = ElementChildrenDao.count_by_parent(req.groupNo)
 
-    # 新建线程执行脚本
-    executor.submit(debug_pymeter_with_loader, script_loads_function, get_flask_app(), req.socketId)
+    # 执行脚本
+    if element_total <= 20:
+        # 根据 collectionNo 递归加载脚本
+        script = element_loader.loads_tree(
+            collection_no,
+            specified_group_no=req.groupNo,
+            specified_self_only=req.selfOnly
+        )
+        if not script:
+            raise ServiceError('脚本异常，请检查后重试')
+        # 添加 socket 组件
+        element_loader.add_flask_sio_result_collector(script, req.socketId, group.ELEMENT_NAME)
+        # 添加变量组件
+        if req.variableDataSet:
+            element_loader.add_variable_data_set(
+                script,
+                req.variableDataSet.numberList,
+                req.variableDataSet.useCurrentValue
+            )
+        # 新建线程执行脚本
+        executor.submit(debug_pymeter, script, req.socketId)
+    else:
+        # 定义 loader 函数
+        def script_loads_function(app, element_no, element_name, sid):
+            with app.app_context():
+                # 根据 collectionNo 递归加载脚本
+                script = element_loader.loads_tree(
+                    element_no,
+                    specified_group_no=req.groupNo,
+                    specified_self_only=req.selfOnly
+                )
+                if not script:
+                    raise ServiceError('脚本异常，请检查后重试')
+                # 添加 socket 组件
+                element_loader.add_flask_sio_result_collector(script, sid, element_name)
+                # 添加变量组件
+                if req.variableDataSet:
+                    element_loader.add_variable_data_set(
+                        script,
+                        req.variableDataSet.numberList,
+                        req.variableDataSet.useCurrentValue
+                    )
+                return script
+
+        # 新建线程执行脚本
+        executor.submit(
+            debug_pymeter_with_loader,
+            script_loads_function,
+            get_flask_app(),
+            collection_no,
+            group.ELEMENT_NAME,
+            req.socketId
+        )
 
 
 @http_service

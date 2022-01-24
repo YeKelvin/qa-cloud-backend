@@ -24,6 +24,10 @@ def count_by_parent(parent_no) -> int:
     return TElementChildren.count_by(PARENT_NO=parent_no)
 
 
+def count_by_root(root_no) -> int:
+    return TElementChildren.count_by(ROOT_NO=root_no)
+
+
 def next_serial_number_by_parent(parent_no) -> int:
     return TElementChildren.count_by(PARENT_NO=parent_no) + 1
 
