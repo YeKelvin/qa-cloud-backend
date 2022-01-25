@@ -211,10 +211,20 @@ def add_flask_sio_result_collector(script: dict, sid: str, name: str):
     })
 
 
-def add_variable_data_set(script: dict, dataset_number_list, use_current_value, additional=None):
+def add_variable_data_set(script: dict, dataset_number_list, use_current_value, additional: dict = None):
+    # 获取变量集
     variables = get_variables_by_dataset_list(dataset_number_list, use_current_value)
+
+    # 添加额外的变量
     if additional:
-        variables.update(additional)
+        for name, value in additional.items():
+            # 如果额外变量的值还是变量，则先在变量集中查找真实值并替换
+            if value.startswith('${') and value.endswith('}'):
+                variables[name] = variables.get(value[2:-1])
+            else:
+                variables[name] = value
+
+    # 组装为元素
     arguments = []
     for name, value in variables.items():
         arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})
