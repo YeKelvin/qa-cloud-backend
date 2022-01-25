@@ -3,7 +3,14 @@
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
+from common.exceptions import ServiceError
+from public.enum import WorkspaceScope
+from usercenter.model import TRole
+from usercenter.model import TUser
+from usercenter.model import TUserRole
+
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
@@ -80,16 +87,24 @@ def query_workspace_all(req):
 
 
 @http_service
+@transactional
 def create_workspace(req):
     workspace = WorkspaceDao.select_by_name(req.workspaceName)
     check_is_blank(workspace, '工作空间已存在')
 
+    workspace_no = new_id()
     TWorkspace.insert(
-        WORKSPACE_NO=new_id(),
+        WORKSPACE_NO=workspace_no,
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
     )
+
+    if req.workspaceScope == WorkspaceScope.PROTECTED.value:
+        TWorkspaceUser.insert(
+            WORKSPACE_NO=workspace_no,
+            USER_NO=get_super_admin_userno()
+        )
 
 
 @http_service
@@ -110,3 +125,18 @@ def remove_workspace(req):
     check_is_not_blank(workspace, '工作空间不存在')
 
     workspace.delete()
+
+
+def get_super_admin_userno():
+    # 查询条件
+    conds = QueryCondition(TUser, TRole, TUserRole)
+    conds.equal(TUser.USER_NO, TUserRole.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
+    conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
+
+    # 查询超级管理员的用户编号
+    user_no = db.session.query(TUser.USER_NO).filter(*conds).first()
+    if not user_no:
+        raise ServiceError('查询超级管理员用户失败')
+
+    return user_no
