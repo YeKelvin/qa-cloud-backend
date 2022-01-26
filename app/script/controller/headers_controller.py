@@ -253,7 +253,7 @@ def copy_http_header_template_to_workspace():
     return service.copy_http_header_template_to_workspace(req)
 
 
-@blueprint.patch('/http/header/template/move/to/workspace')
+@blueprint.post('/http/header/template/move/to/workspace')
 @require_login
 @require_permission
 def move_http_header_template_to_workspace():

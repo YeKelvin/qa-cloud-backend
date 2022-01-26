@@ -278,7 +278,7 @@ def copy_variable_dataset_to_workspace():
     return service.copy_variable_dataset_to_workspace(req)
 
 
-@blueprint.patch('/variable/dataset/move/to/workspace')
+@blueprint.post('/variable/dataset/move/to/workspace')
 @require_login
 @require_permission
 def move_variable_dataset_to_workspace():

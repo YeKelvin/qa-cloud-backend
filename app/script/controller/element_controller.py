@@ -297,3 +297,27 @@ def modify_element_builtins():
     """修改内置元素"""
     req = ListParser().parse()
     return service.modify_element_builtins(req)
+
+
+@blueprint.post('/element/collection/copy/to/workspace')
+@require_login
+@require_permission
+def copy_collection_to_workspace():
+    """复制集合至指定空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
+    return service.copy_collection_to_workspace(req)
+
+
+@blueprint.post('/element/collection/move/to/workspace')
+@require_login
+@require_permission
+def move_collection_to_workspace():
+    """移动集合至指定空间"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
+    return service.move_collection_to_workspace(req)

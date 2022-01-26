@@ -181,6 +181,8 @@ def init_permission():
     _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtins')
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtins')
     _create_permission(name='剪贴元素', method='POST', endpoint='/script/element/paste')
+    _create_permission(name='复制集合到指定空间', method='POST', endpoint='/script/element/collection/copy/to/workspace')
+    _create_permission(name='移动集合到指定空间', method='POST', endpoint='/script/element/collection/move/to/workspace')
 
     # execution
     _create_permission(name='运行测试集合', method='POST', endpoint='/script/collection/execute')
@@ -208,7 +210,7 @@ def init_permission():
     _create_permission(name='根据列表批量删除变量', method='DELETE', endpoint='/script/variables')
     _create_permission(name='复制变量集', method='POST', endpoint='/script/variable/dataset/duplicate')
     _create_permission(name='复制变量集至指定工作空间', method='POST', endpoint='/script/variable/dataset/copy/to/workspace')
-    _create_permission(name='移动变量集至指定工作空间', method='PATCH', endpoint='/script/variable/dataset/move/to/workspace')
+    _create_permission(name='移动变量集至指定工作空间', method='POST', endpoint='/script/variable/dataset/move/to/workspace')
 
     # headers
     _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/header/template/list')
@@ -228,7 +230,7 @@ def init_permission():
     _create_permission(name='根据列表批量删除请求头', method='DELETE', endpoint='/script/http/headers')
     _create_permission(name='复制请求头模板', method='POST', endpoint='/script/http/header/template/duplicate')
     _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/copy/to/workspace')
-    _create_permission(name='移动请求头模板至指定工作空间', method='PATCH', endpoint='/script/http/header/template/move/to/workspace')
+    _create_permission(name='移动请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/move/to/workspace')
 
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')

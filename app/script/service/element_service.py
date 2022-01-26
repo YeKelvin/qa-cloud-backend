@@ -20,6 +20,7 @@ from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
+from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
@@ -900,3 +901,37 @@ def delete_element_builtins_by_parent(parent_no):
             delete_element_builtin(link.CHILD_NO)
             # 删除内置元素关联
             link.delete()
+
+
+@http_service
+@transactional
+def copy_collection_to_workspace(req):
+    # 查询集合
+    collection = TestElementDao.select_by_no(req.elementNo)
+    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
+        raise ServiceError('仅支持移动集合元素')
+
+    # 查询集合的空间
+    workspace_collection = WorkspaceCollectionDao.select_by_collection(req.elementNo)
+    if not workspace_collection:
+        raise ServiceError('集合空间不存在')
+
+    # 复制集合到指定的空间
+    copied_no = copy_element(collection)
+    TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=copied_no)
+
+
+@http_service
+def move_collection_to_workspace(req):
+    # 查询集合
+    collection = TestElementDao.select_by_no(req.elementNo)
+    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
+        raise ServiceError('仅运行移动集合元素')
+
+    # 查询集合的空间
+    workspace_collection = WorkspaceCollectionDao.select_by_collection(req.elementNo)
+    if not workspace_collection:
+        raise ServiceError('集合没有指定空间')
+
+    # 移动空间
+    workspace_collection.update(WORKSPACE_NO=req.workspaceNo)

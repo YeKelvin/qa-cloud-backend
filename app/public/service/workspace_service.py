@@ -3,21 +3,20 @@
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from common.exceptions import ServiceError
-from public.enum import WorkspaceScope
-from usercenter.model import TRole
-from usercenter.model import TUser
-from usercenter.model import TUserRole
-
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
+from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
 from app.common.validator import check_is_not_blank
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
+from app.usercenter.model import TRole
+from app.usercenter.model import TUser
+from app.usercenter.model import TUserRole
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -135,8 +134,8 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
 
     # 查询超级管理员的用户编号
-    user_no = db.session.query(TUser.USER_NO).filter(*conds).first()
-    if not user_no:
+    result = db.session.query(TUser.USER_NO).filter(*conds).first()
+    if not result:
         raise ServiceError('查询超级管理员用户失败')
 
-    return user_no
+    return result[0]
