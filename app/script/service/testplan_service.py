@@ -239,14 +239,16 @@ def query_testplan_execution_details(req):
     settings = TestPlanExecutionSettingsDao.select_by_no(req.executionNo)
     check_is_not_blank(settings, '计划设置不存在')
 
-    # 查询测试报告
+    # 查询测试报告，如果没有勾选保存结果就没有测试报告
     report = TestReportDao.select_by_execution(execution.EXECUTION_NO)
 
     # 查询执行记录关联的集合
     items = TestPlanExecutionItemsDao.select_all_by_execution(req.executionNo)
     collection_list = []
     for item in items:
-        result = TestCollectionResultDao.select_by_report_and_collectionno(report.REPORT_NO, item.COLLECTION_NO)
+        result = None
+        if report:
+            result = TestCollectionResultDao.select_by_report_and_collectionno(report.REPORT_NO, item.COLLECTION_NO)
         collection = None
         if not result:
             collection = TestElementDao.select_by_no(item.COLLECTION_NO)
