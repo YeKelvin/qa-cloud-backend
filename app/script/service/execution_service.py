@@ -395,3 +395,12 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
     execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
     db.session.commit()  # 这里要实时更新
     log.info(f'执行编号:[ {execution_no} ] 测试计划执行完成')
+
+
+def interrupt_testplan_execution(req):
+    # 查询执行记录
+    execution = TestplanExecutionDao.select_by_no(req.executionNo)
+    check_is_not_blank(execution, '执行记录不存在')
+
+    # 标记执行中断
+    execution.update(INTERRUPT=True)

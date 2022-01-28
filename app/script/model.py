@@ -180,9 +180,11 @@ class TTestplanExecution(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_EXECUTION'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
-    RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
+    RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/迭代中/已完成/已中断')
     ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段')
+    ITERATION_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='迭代次数')
+    INTERRUPT = db.Column(db.Boolean, nullable=False, default=False, comment='是否中断运行')
 
 
 class TTestplanExecutionSettings(DBModel, BaseColumn):
@@ -213,6 +215,9 @@ class TTestplanExecutionItems(DBModel, BaseColumn):
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
     SORT_NO = db.Column(db.Integer, nullable=False, comment='序号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
+    ITERATION_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='迭代次数')
+    SUCCESS_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='成功次数')
+    FAILURE_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='失败次数')
     UniqueConstraint('EXECUTION_NO', 'COLLECTION_NO', 'DELETED', name='unique_execution_collection')
 
 

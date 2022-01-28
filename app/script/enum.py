@@ -173,8 +173,14 @@ class RunningState(Enum):
     # 运行中
     RUNNING = 'RUNNING'
 
+    # 迭代中
+    ITERATING = 'ITERATING'
+
     # 已完成
     COMPLETED = 'COMPLETED'
+
+    # 已中断
+    INTERRUPTED = 'INTERRUPTED'
 
     # 异常
     ERROR = 'ERROR'

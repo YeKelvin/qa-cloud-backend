@@ -104,3 +104,13 @@ def execute_testplan():
         Argument('useCurrentValue', default=False)
     ).parse()
     return service.execute_testplan(req)
+
+
+@blueprint.post('/testplan/execution/interrupt')
+@require_login
+@require_permission
+def interrupt_testplan_execution():
+    req = JsonParser(
+        Argument('executionNo', required=True, nullable=False, help='执行编号不能为空'),
+    ).parse()
+    return service.interrupt_testplan_execution(req)
