@@ -9,10 +9,10 @@ authors = ["Kelvin.Ye <testmankelvin@163.com>"]
 #    ""
 #]
 
- [[tool.poetry.source]]
- name = "aliyun"
- url = "https://mirrors.aliyun.com/pypi/simple"
- default = true
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple"
+default = true
 
 #[[tool.poetry.source]]
 #name = "tsinghua"
@@ -27,18 +27,19 @@ flask-sqlalchemy = "2.5.1"
 flask-socketio = "5.1.1"
 flask-migrate = "3.1.0"
 # Json
-orjson = "3.6.5"
+orjson = "3.6.6"
 jsonpath = "0.82"
 # Encryption
-pyjwt = { version = "2.3.0", extras=["crypto"] }
-pycryptodome = "3.12.0"
+pyjwt = { version = "2.3.0", extras = ["crypto"] }
+pycryptodome = "3.14.1"
 # Data validation
 pydantic = "1.9.0"
 # Database
-psycopg2 = "2.9.3"
+psycopg2 = { version = "2.9.3", markers = "platform_system=='Windows' or platform_system=='Linux'"}
+psycopg2-binary = { version = "2.9.3", markers = "sys_platform=='darwin'" }
 # Environment
 python-dotenv = "0.19.2"
-environs = "9.4.0"
+environs = "9.5.0"
 # Coroutine
 gevent = "*"
 # 私仓依赖
