@@ -389,7 +389,9 @@ def run_testplan(
             collection_number_list,
             dataset_number_list,
             use_current_value,
-            execution_no
+            execution_no,
+            iterations,
+            delay
         )
 
     if report_no:
@@ -410,15 +412,94 @@ def run_testplan(
     log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
 
 
+class TestplanInterruptError(Exception):
+    ...
+
+
 def run_testplan_by_loop(
         app,
         collection_number_list,
         dataset_number_list,
         use_current_value,
-        execution_no
+        execution_no,
+        iterations,
+        delay
 ):
     """循环运行测试计划"""
-    ...
+    # 批量更新计划项目的运行状态至 RUNNING
+    TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.RUNNING.value)
+    db.session.commit()  # 这里要实时更新
+
+    # 批量解析脚本并临时存储
+    scripts = {}
+    for collection_no in collection_number_list:
+        # 加载脚本
+        collection = element_loader.loads_tree(collection_no, no_debuger=True)
+        if not collection:
+            log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+            continue
+        # 添加自定义变量组件
+        if dataset_number_list:
+            element_loader.add_variable_data_set(collection, dataset_number_list, use_current_value)
+        # 添加迭代记录器组件
+        element_loader.add_flask_db_iteration_storage(collection, execution_no)
+        # 存储解析后的脚本，不需要每次迭代都重新解析一遍
+        scripts[collection_no] = collection
+
+    try:
+        # 循环运行
+        for i in range(iterations):
+            # 记录迭代次数
+            execution = TestplanExecutionDao.select_by_no(execution_no)
+            execution.update(ITERATION_COUNT=execution.ITERATION_COUNT + 1)
+            # delay
+            ...
+            # 顺序执行脚本
+            for collection_no, collection in scripts.items():
+                # 检查是否需要中断执行
+                execution = TestplanExecutionDao.select_by_no(execution_no)
+                if execution.INTERRUPT:
+                    raise TestplanInterruptError()
+
+                # 异步函数
+                def start(app):
+                    # noinspection PyBroadException
+                    try:
+                        log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
+                        Runner.start([collection], throw_ex=True)
+                    except Exception:
+                        log.error(
+                            f'执行编号:[ {execution_no} ] '
+                            f'集合编号:[ {collection_no} ] '
+                            f'脚本执行异常\n{traceback.format_exc()}'
+                        )
+                        with app.app_context():
+                            # noinspection PyBroadException
+                            try:
+                                item = TestPlanExecutionItemsDao.select_by_execution_and_collection(
+                                    execution_no,
+                                    collection_no
+                                )
+                                item.update(ERROR_COUNT=item.ERROR_COUNT + 1)
+                            except Exception:
+                                log.error(
+                                    f'执行编号:[ {execution_no} ] '
+                                    f'集合编号:[ {collection_no} ] '
+                                    f'更新异常\n{traceback.format_exc()}'
+                                )
+
+                task = executor.submit(start, app)  # 异步执行脚本
+                task.result()  # 阻塞等待脚本执行完成
+    except TestplanInterruptError:
+        execution = TestplanExecutionDao.select_by_no(execution_no)
+        execution.update(RUNNING_STATE=RunningState.INTERRUPTED.value)
+    except Exception:
+        raise
+
+    # 批量更新计划项目的运行状态至 COMPLETED
+    TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.COMPLETED.value)
+    db.session.commit()  # 这里要实时更新
+    log.info(f'执行编号:[ {execution_no} ] 计划迭代完成')
 
 
 def run_testplan_and_save_report(
@@ -447,8 +528,7 @@ def run_testplan_and_save_report(
             element_loader.add_variable_data_set(collection, dataset_number_list, use_current_value)
 
         # 添加报告存储器组件
-        if report_no:
-            element_loader.add_flask_db_result_storage(collection, execution_no, report_no, collection_no)
+        element_loader.add_flask_db_result_storage(collection, report_no, collection_no)
 
         # 异步函数
         def start(app):
@@ -461,6 +541,7 @@ def run_testplan_and_save_report(
                 with app.app_context():
                     # noinspection PyBroadException
                     try:
+                        item = TestPlanExecutionItemsDao.select_by_execution_and_collection(execution_no, collection_no)
                         item.update(RUNNING_STATE=RunningState.ERROR.value)
                     except Exception:
                         log.error(

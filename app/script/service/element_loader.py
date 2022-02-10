@@ -296,16 +296,28 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     })
 
 
-def add_flask_db_result_storage(script: dict, plan_no, report_no, collection_no):
+def add_flask_db_result_storage(script: dict, report_no, collection_no):
     script['children'].insert(0, {
         'name': 'Dynamic FlaskDBResultStorage',
         'remark': '',
         'class': 'FlaskDBResultStorage',
         'enabled': True,
         'property': {
-            'FlaskDBResultStorage__plan_no': plan_no,
             'FlaskDBResultStorage__report_no': report_no,
             'FlaskDBResultStorage__collection_no': collection_no
+        }
+    })
+
+
+def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
+    script['children'].insert(0, {
+        'name': 'Dynamic FlaskDBIterationStorage',
+        'remark': '',
+        'class': 'FlaskDBIterationStorage',
+        'enabled': True,
+        'property': {
+            'FlaskDBIterationStorage__execution_no': execution_no,
+            'FlaskDBIterationStorage__collection_no': collection_no
         }
     })
 

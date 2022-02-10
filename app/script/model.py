@@ -218,6 +218,7 @@ class TTestplanExecutionItems(DBModel, BaseColumn):
     ITERATION_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='迭代次数')
     SUCCESS_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='成功次数')
     FAILURE_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='失败次数')
+    ERROR_COUNT = db.Column(db.Integer, nullable=False, default=0, comment='异常次数')
     UniqueConstraint('EXECUTION_NO', 'COLLECTION_NO', 'DELETED', name='unique_execution_collection')
 
 
