@@ -20,7 +20,7 @@ def select_by_dataset_and_name(dataset_no, var_name) -> TVariable:
     return TVariable.filter_by(DATASET_NO=dataset_no, VAR_NAME=var_name).first()
 
 
-def select_list_by_dataset(dataset_no) -> List[TVariable]:
+def select_all_by_dataset(dataset_no) -> List[TVariable]:
     return TVariable.filter_by(DATASET_NO=dataset_no).all()
 
 

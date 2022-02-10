@@ -207,7 +207,7 @@ def update_current_value(req):
 
 @http_service
 def query_variable_by_dataset(req):
-    variables = VariableDao.select_list_by_dataset(req.datasetNo)
+    variables = VariableDao.select_all_by_dataset(req.datasetNo)
 
     result = []
     for variable in variables:
@@ -232,7 +232,7 @@ def query_variables(req):
             continue
 
         # 查询变量列表
-        variables = VariableDao.select_list_by_dataset(dataset_no)
+        variables = VariableDao.select_all_by_dataset(dataset_no)
 
         for variable in variables:
             result.append({
@@ -336,7 +336,7 @@ def duplicate_variable_dataset(req):
     )
 
     # 复制变量
-    variables = VariableDao.select_list_by_dataset(req.datasetNo)
+    variables = VariableDao.select_all_by_dataset(req.datasetNo)
     for variable in variables:
         TVariable.insert(
             DATASET_NO=dataset_no,
@@ -370,7 +370,7 @@ def copy_variable_dataset_to_workspace(req):
     )
 
     # 复制变量
-    variables = VariableDao.select_list_by_dataset(req.datasetNo)
+    variables = VariableDao.select_all_by_dataset(req.datasetNo)
     for variable in variables:
         TVariable.insert(
             DATASET_NO=dataset_no,

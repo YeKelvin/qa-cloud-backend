@@ -20,7 +20,7 @@ def select_by_template_and_name(template_no, header_name) -> THttpHeader:
     return THttpHeader.filter_by(TEMPLATE_NO=template_no, HEADER_NAME=header_name).first()
 
 
-def select_list_by_template(template_no) -> List[THttpHeader]:
+def select_all_by_template(template_no) -> List[THttpHeader]:
     return THttpHeader.filter_by(TEMPLATE_NO=template_no).all()
 
 

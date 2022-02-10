@@ -249,7 +249,7 @@ def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dic
 
     for dataset in dataset_list:
         # 查询变量列表
-        variables = VariableDao.select_list_by_dataset(dataset.DATASET_NO)
+        variables = VariableDao.select_all_by_dataset(dataset.DATASET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量
@@ -274,7 +274,7 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     # 遍历添加请求头
     property = []
     for ref in refs:
-        headers = HttpHeaderDao.select_list_by_template(ref.TEMPLATE_NO)
+        headers = HttpHeaderDao.select_all_by_template(ref.TEMPLATE_NO)
         for header in headers:
             property.append({
                 'class': 'HTTPHeader',

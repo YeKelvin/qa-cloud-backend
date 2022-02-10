@@ -177,7 +177,7 @@ def disable_http_header(req):
 
 @http_service
 def query_http_headers_by_template(req):
-    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+    headers = HttpHeaderDao.select_all_by_template(req.templateNo)
 
     result = []
     for header in headers:
@@ -201,7 +201,7 @@ def query_http_headers(req):
             continue
 
         # 查询请求头列表
-        headers = HttpHeaderDao.select_list_by_template(template_no)
+        headers = HttpHeaderDao.select_all_by_template(template_no)
 
         for header in headers:
             result.append({
@@ -298,7 +298,7 @@ def duplicate_http_header_template(req):
     )
 
     # 复制请求头
-    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+    headers = HttpHeaderDao.select_all_by_template(req.templateNo)
     for header in headers:
         THttpHeader.insert(
             TEMPLATE_NO=req.templateNo,
@@ -329,10 +329,10 @@ def copy_http_header_template_to_workspace(req):
     )
 
     # 复制请求头
-    headers = HttpHeaderDao.select_list_by_template(req.templateNo)
+    headers = HttpHeaderDao.select_all_by_template(req.templateNo)
     for header in headers:
         THttpHeader.insert(
-            TEMPLATE_NO=req.templateNo,
+            TEMPLATE_NO=template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.HEADER_NAME,
             HEADER_VALUE=header.HEADER_VALUE,
