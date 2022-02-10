@@ -72,7 +72,7 @@ def modify_http_header_template():
     return service.modify_http_header_template(req)
 
 
-@blueprint.delete('/http/headers/template')
+@blueprint.delete('/http/header/template')
 @require_login
 @require_permission
 def remove_http_header_template():
