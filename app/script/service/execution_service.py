@@ -246,6 +246,7 @@ def execute_testplan(req):
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
     if not items:
         raise ServiceError('测试计划中无关联的脚本')
+
     # 根据序号排序
     items.sort(key=lambda k: k.SORT_NO)
     collection_number_list = [item.COLLECTION_NO for item in items]
@@ -302,13 +303,21 @@ def execute_testplan(req):
         )
 
     # 异步函数
-    def start(app):
+    def start(app, dataset_number_list, use_current_value, iterations, delay, save, save_on_error):
         # noinspection PyBroadException
         try:
             with app.app_context():
                 run_testplan(
                     app,
-                    collection_number_list, req.datasetNumberList, req.useCurrentValue, execution_no, report_no
+                    collection_number_list,
+                    dataset_number_list,
+                    use_current_value,
+                    execution_no,
+                    report_no,
+                    iterations,
+                    delay,
+                    save,
+                    save_on_error
                 )
         except Exception:
             log.error(f'执行编号:[ {execution_no} ] 发生异常\n{traceback.format_exc()}')
@@ -322,12 +331,30 @@ def execute_testplan(req):
     # 先提交事务，防止新线程查询计划时拿不到
     db.session.commit()
     # 异步执行脚本
-    executor.submit(start, get_flask_app())
+    executor.submit(start,
+                    get_flask_app(),
+                    req.datasetNumberList,
+                    req.useCurrentValue,
+                    settings.ITERATIONS,
+                    settings.DELAY,
+                    settings.SAVE,
+                    settings.SAVE_ON_ERROR)
 
     return {'executionNo': execution_no, 'total': len(items)}
 
 
-def run_testplan(app, collection_number_list, dataset_number_list, use_current_value, execution_no, report_no=None):
+def run_testplan(
+        app,
+        collection_number_list,
+        dataset_number_list,
+        use_current_value,
+        execution_no,
+        report_no,
+        iterations,
+        delay,
+        save,
+        save_on_error
+):
     log.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
     # 记录开始时间
     start_time = timestamp_now()
@@ -337,6 +364,72 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
     execution.update(RUNNING_STATE=RunningState.RUNNING.value)
     db.session.commit()  # 这里要实时更新
 
+    if save:
+        if save_on_error:
+            run_testplan_and_save_report_on_error(
+                app,
+                collection_number_list,
+                dataset_number_list,
+                use_current_value,
+                execution_no,
+                report_no
+            )
+        else:
+            run_testplan_and_save_report(
+                app,
+                collection_number_list,
+                dataset_number_list,
+                use_current_value,
+                execution_no,
+                report_no
+            )
+    else:
+        run_testplan_by_loop(
+            app,
+            collection_number_list,
+            dataset_number_list,
+            use_current_value,
+            execution_no
+        )
+
+    if report_no:
+        # 记录结束时间
+        end_time = timestamp_now()
+        # 计算耗时
+        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
+        # 更新报告的开始时间、结束时间和耗时
+        TestReportDao.select_by_no(report_no).update(
+            START_TIME=timestamp_to_utc8_datetime(start_time),
+            END_TIME=timestamp_to_utc8_datetime(end_time),
+            ELAPSED_TIME=elapsed_time
+        )
+
+    # 更新运行状态
+    execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
+    db.session.commit()  # 这里要实时更新
+    log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
+
+
+def run_testplan_by_loop(
+        app,
+        collection_number_list,
+        dataset_number_list,
+        use_current_value,
+        execution_no
+):
+    """循环运行测试计划"""
+    ...
+
+
+def run_testplan_and_save_report(
+        app,
+        collection_number_list,
+        dataset_number_list,
+        use_current_value,
+        execution_no,
+        report_no
+):
+    """运行测试计划并保存测试结果"""
     # 顺序执行脚本
     for collection_no in collection_number_list:
         # 查询计划项目
@@ -370,7 +463,8 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
                     try:
                         item.update(RUNNING_STATE=RunningState.ERROR.value)
                     except Exception:
-                        log.error(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 发生异常\n{traceback.format_exc()}')
+                        log.error(
+                            f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 更新异常\n{traceback.format_exc()}')
 
         task = executor.submit(start, app)  # 异步执行脚本
         task.result()  # 阻塞等待脚本执行完成
@@ -379,22 +473,17 @@ def run_testplan(app, collection_number_list, dataset_number_list, use_current_v
         db.session.commit()  # 这里要实时更新
         log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
 
-    if report_no:
-        # 记录结束时间
-        end_time = timestamp_now()
-        # 计算耗时
-        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
-        # 更新报告的开始时间、结束时间和耗时
-        TestReportDao.select_by_no(report_no).update(
-            START_TIME=timestamp_to_utc8_datetime(start_time),
-            END_TIME=timestamp_to_utc8_datetime(end_time),
-            ELAPSED_TIME=elapsed_time
-        )
 
-    # 更新运行状态
-    execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
-    db.session.commit()  # 这里要实时更新
-    log.info(f'执行编号:[ {execution_no} ] 测试计划执行完成')
+def run_testplan_and_save_report_on_error(
+        app,
+        collection_number_list,
+        dataset_number_list,
+        use_current_value,
+        execution_no,
+        report_no
+):
+    """运行测试计划，但仅保存失败的测试结果"""
+    ...
 
 
 def interrupt_testplan_execution(req):
