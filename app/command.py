@@ -190,6 +190,7 @@ def init_permission():
     _create_permission(name='运行请求取样器', method='POST', endpoint='/script/sampler/execute')
     _create_permission(name='运行片段集合', method='POST', endpoint='/script/snippets/execute')
     _create_permission(name='运行测试计划', method='POST', endpoint='/script/testplan/execute')
+    _create_permission(name='中断运行测试计划', method='POST', endpoint='/script/testplan/execution/interrupt')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/dataset/list')

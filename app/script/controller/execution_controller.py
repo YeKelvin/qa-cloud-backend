@@ -110,7 +110,8 @@ def execute_testplan():
 @require_login
 @require_permission
 def interrupt_testplan_execution():
+    """中断运行测试计划"""
     req = JsonParser(
-        Argument('executionNo', required=True, nullable=False, help='执行编号不能为空'),
+        Argument('executionNo', required=True, nullable=False, help='执行编号不能为空')
     ).parse()
     return service.interrupt_testplan_execution(req)

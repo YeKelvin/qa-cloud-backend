@@ -1,7 +1,4 @@
-# FROM python:3.8-slim-buster
 FROM python:3.8-slim-buster sed -i s/deb.debian.org/mirrors.aliyun.com/g /etc/apt/sources.list
-# RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list \
-#     && apt-get update \
 RUN apt-get update \
     && apt-get install --no-install-recommends -y build-essential gcc git libpq-dev libssl-dev \
     && apt-get clean \

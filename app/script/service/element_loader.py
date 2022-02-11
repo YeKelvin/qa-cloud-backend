@@ -158,7 +158,7 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
                 )
                 if child:
                     children.append(child)
-                if link.CHILD_NO == specified_sampler_no:
+                if link.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
                     found = True
 
         # 无需指定 Sampler
@@ -170,15 +170,15 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
     return children
 
 
-def add_snippets(properties, children: list):
-    snippet_no = properties.get('snippetNo', None)
+def add_snippets(snippet_sampler_properties, children: list):
+    snippet_no = snippet_sampler_properties.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
     snippets = loads_tree(snippet_no)
     if not snippets:
         return
     transaction = snippets['children']
-    add_snippet_config(snippets, transaction, properties.get('arguments', []))
+    add_snippet_config(snippets, transaction, snippet_sampler_properties.get('arguments', []))
     children.extend(transaction)
 
 
@@ -199,6 +199,7 @@ def add_builtin_children(element_no, children: list):
 
 
 def add_flask_sio_result_collector(script: dict, sid: str, name: str):
+    # 添加 FlaskSIOResultCollector 组件
     script['children'].insert(0, {
         'name': 'Dynamic FlaskSIOResultCollector',
         'remark': '',
@@ -211,7 +212,11 @@ def add_flask_sio_result_collector(script: dict, sid: str, name: str):
     })
 
 
-def add_variable_data_set(script: dict, dataset_number_list, use_current_value, additional: dict = None):
+def add_variable_data_set(script: dict, dataset_number_list: list, use_current_value: bool, additional: dict = None):
+    # 不存在变量集就忽略了
+    if not dataset_number_list:
+        return
+
     # 获取变量集
     variables = get_variables_by_dataset_list(dataset_number_list, use_current_value)
 
@@ -227,8 +232,15 @@ def add_variable_data_set(script: dict, dataset_number_list, use_current_value, 
     # 组装为元素
     arguments = []
     for name, value in variables.items():
-        arguments.append({'class': 'Argument', 'property': {'Argument__name': name, 'Argument__value': value}})
+        arguments.append({
+            'class': 'Argument',
+            'property': {
+                'Argument__name': name,
+                'Argument__value': value
+            }
+        })
 
+    # 添加 VariableDataSet 组件
     script['children'].insert(0, {
         'name': 'Dynamic VariableDataSet',
         'remark': '',
@@ -240,7 +252,7 @@ def add_variable_data_set(script: dict, dataset_number_list, use_current_value, 
     })
 
 
-def get_variables_by_dataset_list(dataset_number_list, use_current_value) -> Dict:
+def get_variables_by_dataset_list(dataset_number_list: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
     dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_number_list)
@@ -272,11 +284,11 @@ def add_http_header_manager(sampler: TTestElement, children: list):
         return
 
     # 遍历添加请求头
-    property = []
+    properties = []
     for ref in refs:
         headers = HttpHeaderDao.select_all_by_template(ref.TEMPLATE_NO)
         for header in headers:
-            property.append({
+            properties.append({
                 'class': 'HTTPHeader',
                 'property': {
                     'Header__name': header.HEADER_NAME,
@@ -291,12 +303,13 @@ def add_http_header_manager(sampler: TTestElement, children: list):
         'class': 'HTTPHeaderManager',
         'enabled': True,
         'property': {
-            'HeaderManager__headers': property
+            'HeaderManager__headers': properties
         }
     })
 
 
 def add_flask_db_result_storage(script: dict, report_no, collection_no):
+    # 添加 FlaskDBResultStorage 组件
     script['children'].insert(0, {
         'name': 'Dynamic FlaskDBResultStorage',
         'remark': '',
@@ -310,6 +323,7 @@ def add_flask_db_result_storage(script: dict, report_no, collection_no):
 
 
 def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
+    # 添加 FlaskDBIterationStorage 组件
     script['children'].insert(0, {
         'name': 'Dynamic FlaskDBIterationStorage',
         'remark': '',
@@ -325,6 +339,8 @@ def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
 def add_snippet_config(snippet_collection, snippet_children, transaction_parameters):
     snippet_arguments = snippet_collection['property'].get('arguments', [])
     use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
+
+    # 添加 TransactionHTTPSessionManager 组件
     if use_http_session == 'true':
         snippet_children.insert(0, {
             'name': 'Dynamic TransactionHTTPSessionManager',
@@ -346,6 +362,7 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
                 }
             })
 
+        # 添加 TransactionParameter 组件
         snippet_children.insert(0, {
             'name': 'Dynamic TransactionParameter',
             'remark': '',

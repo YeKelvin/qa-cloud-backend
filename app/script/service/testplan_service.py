@@ -20,7 +20,8 @@ from app.script.dao import testplan_execution_settings_dao as TestPlanExecutionS
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
 from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
-from app.script.enum import TestPhase, RunningState
+from app.script.enum import RunningState
+from app.script.enum import TestPhase
 from app.script.enum import TestplanState
 from app.script.model import TTestplan
 from app.script.model import TTestplanItems
@@ -259,15 +260,16 @@ def query_testplan_execution_details(req):
             'runningState': item.RUNNING_STATE,
             'success': (
                 result.SUCCESS
-                if result and (
-                    item.RUNNING_STATE != RunningState.WAITING.value or
-                    item.RUNNING_STATE != RunningState.RUNNING.value
-                )
+                if result and item.RUNNING_STATE not in (RunningState.WAITING.value, RunningState.RUNNING.value)
                 else None
             ),
             'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.START_TIME else None,
             'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.END_TIME else None,
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result and result.ELAPSED_TIME else None,
+            'iterationCount': item.ITERATION_COUNT,
+            'successCount': item.SUCCESS_COUNT,
+            'failureCount': item.FAILURE_COUNT,
+            'errorCount': item.ERROR_COUNT
         })
 
     # 查询执行记录关联的变量集
@@ -287,5 +289,9 @@ def query_testplan_execution_details(req):
         'saveOnError': settings.SAVE_ON_ERROR,
         'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
         'useCurrentValue': settings.USE_CURRENT_VALUE,
+        'iterationCount': execution.ITERATION_COUNT,
+        'interrupt': execution.INTERRUPT,
+        'interruptBy': execution.INTERRUPT_BY,
+        'interruptTime': execution.INTERRUPT_TIME,
         'reportNo': report.REPORT_NO if report else None
     }
