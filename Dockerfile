@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM public.ecr.aws/docker/library/python:3.8-slim-buster
 RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list \
     && apt-get update \
     && apt-get install --no-install-recommends -y build-essential gcc git libpq-dev libssl-dev \
