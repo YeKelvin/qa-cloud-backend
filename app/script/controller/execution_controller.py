@@ -115,3 +115,43 @@ def interrupt_testplan_execution():
         Argument('executionNo', required=True, nullable=False, help='执行编号不能为空')
     ).parse()
     return service.interrupt_testplan_execution(req)
+
+
+@blueprint.get('/collection/json')
+@require_login
+@require_permission
+def query_collection_json():
+    """查询测试集合的脚本（json）"""
+    req = JsonParser(
+        Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('dataSetNumberList', type=list),
+        Argument('useCurrentValue', type=bool)
+    ).parse()
+    return service.query_collection_json(req)
+
+
+@blueprint.get('/group/json')
+@require_login
+@require_permission
+def query_group_json():
+    """查询测试分组的脚本（json）"""
+    req = JsonParser(
+        Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
+        Argument('dataSetNumberList', type=list),
+        Argument('useCurrentValue', type=bool)
+    ).parse()
+    return service.query_group_json(req)
+
+
+@blueprint.get('/snippets/json')
+@require_login
+@require_permission
+def query_snippets_json():
+    """查询片段集合的脚本（json）"""
+    req = JsonParser(
+        Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
+        Argument('dataSetNumberList', type=list),
+        Argument('useCurrentValue', type=bool),
+        Argument('variables', type=dict)
+    ).parse()
+    return service.query_snippets_json(req)

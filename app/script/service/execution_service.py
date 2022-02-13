@@ -614,3 +614,63 @@ def interrupt_testplan_execution(req):
         INTERRUPT_BY=get_userno,
         INTERRUPT_TIME=datetime_now_by_utc8()
     )
+
+
+@http_service
+def query_collection_json(req):
+    # 查询元素
+    collection = TestElementDao.select_by_no(req.collectionNo)
+    if not collection.ENABLED:
+        raise ServiceError('元素已禁用')
+    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
+        raise ServiceError('仅支持 Collecion 元素')
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_tree(req.collectionNo)
+    if not script:
+        raise ServiceError('脚本异常')
+    # 添加变量组件
+    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
+    return script
+
+
+@http_service
+def query_group_json(req):
+    # 查询元素
+    group = TestElementDao.select_by_no(req.groupNo)
+    if not group.ENABLED:
+        raise ServiceError('元素已禁用')
+    if group.ELEMENT_TYPE != ElementType.GROUP.value:
+        raise ServiceError('仅支持 Group 元素')
+    # 获取 collectionNo
+    group_parent_link = ElementChildrenDao.select_by_child(req.groupNo)
+    if not group_parent_link:
+        raise ServiceError('元素父级关联不存在')
+    collection_no = group_parent_link.PARENT_NO
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
+    if not script:
+        raise ServiceError('脚本异常')
+    # 添加变量组件
+    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
+    return script
+
+
+@http_service
+def query_snippets_json(req):
+    # 查询元素
+    collection = TestElementDao.select_by_no(req.collectionNo)
+    if not collection.ENABLED:
+        raise ServiceError('元素已禁用')
+    if not is_test_snippets(collection):
+        raise ServiceError('仅支持 TestSnippets 元素')
+    # 根据 collectionNo 递归加载脚本
+    script = element_loader.loads_snippet_collecion(
+        collection.ELEMENT_NO,
+        collection.ELEMENT_NAME,
+        collection.ELEMENT_REMARK
+    )
+    if not script:
+        raise ServiceError('脚本异常')
+    # 添加变量组件
+    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue, req.variables)
+    return script

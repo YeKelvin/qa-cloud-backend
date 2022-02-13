@@ -191,6 +191,9 @@ def init_permission():
     _create_permission(name='运行片段集合', method='POST', endpoint='/script/snippets/execute')
     _create_permission(name='运行测试计划', method='POST', endpoint='/script/testplan/execute')
     _create_permission(name='中断运行测试计划', method='POST', endpoint='/script/testplan/execution/interrupt')
+    _create_permission(name='查询测试集合的脚本（json）', method='GET', endpoint='/script/collection/json')
+    _create_permission(name='查询测试分组的脚本（json）', method='GET', endpoint='/script/group/json')
+    _create_permission(name='查询片段集合的脚本（json）', method='GET', endpoint='/script/snippets/json')
 
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/dataset/list')
