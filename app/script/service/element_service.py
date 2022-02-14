@@ -605,41 +605,41 @@ def paste_element(req):
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Group
     if is_group(source) and not is_collection(target):
-        raise ServiceError(f'[分组] 仅支持在 [集合] 下剪贴')
+        raise ServiceError('[分组] 仅支持在 [集合] 下剪贴')
     # Sampler
     elif is_sampler(source) and (
         is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
     ):
-        raise ServiceError(f'[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
+        raise ServiceError('[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Controller
     elif is_controller(source) and (
         is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
     ):
-        raise ServiceError(f'[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
+        raise ServiceError('[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Config
     elif is_config(source) and (
         is_test_collection(target) or not (is_group(target) or is_controller(target))
     ):
-        raise ServiceError(f'[配置器] 仅支持在 [片段|分组|控制器] 下剪贴')
+        raise ServiceError('[配置器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Timer
     elif is_timer(source) and (is_test_collection(target)
         or not (  # noqa
             is_test_snippets(target) or is_group(target) or is_sampler(target) or is_controller(target)
-        )
+        )  # noqa
     ):
-        raise ServiceError(f'[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')
+        raise ServiceError('[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')
     # Listener
     elif is_listener(source) and not(is_collection(target) or is_group(target)):
-        raise ServiceError(f'[监听器] 仅支持在 [ 集合|片段|分组 ] 下剪贴')
+        raise ServiceError('[监听器] 仅支持在 [ 集合|片段|分组 ] 下剪贴')
     # PreProcessor
     elif is_pre_processor(source) and not is_sampler(target):
-        raise ServiceError(f'[前置处理器] 仅支持在 [取样器] 下剪贴')
+        raise ServiceError('[前置处理器] 仅支持在 [取样器] 下剪贴')
     # PostProcessor
     elif is_post_processor(source) and not is_sampler(target):
-        raise ServiceError(f'[后置处理器] 仅支持在 [取样器] 下剪贴')
+        raise ServiceError('[后置处理器] 仅支持在 [取样器] 下剪贴')
     # Assertion
     elif is_assertion(source) and not is_sampler(target):
-        raise ServiceError(f'[断言器] 仅支持在 [取样器] 下剪贴')
+        raise ServiceError('[断言器] 仅支持在 [取样器] 下剪贴')
 
 
 def paste_element_by_copy(source: TTestElement, target: TTestElement):

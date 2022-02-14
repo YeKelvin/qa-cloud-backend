@@ -252,8 +252,27 @@ def query_variables(req):
 @transactional
 def create_variables(req):
     # 查询变量集信息
-    dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    varset = VariableDatasetDao.select_first(
+        WORKSPACE_NO=req.workspaceNo,
+        DATASET_NAME=req.datasetName,
+        DATASET_TYPE=req.datasetType
+    )
+    check_is_blank(varset, '变量集已存在')
+
+    # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
+    if req.datasetType != VariableDatasetType.GLOBAL.value:
+        check_is_not_blank(req.workspaceNo, '工作空间编号不能为空')
+
+    # 新增变量集
+    dataset_no = new_id()
+    TVariableDataset.insert(
+        WORKSPACE_NO=req.workspaceNo,
+        DATASET_NO=dataset_no,
+        DATASET_NAME=req.datasetName,
+        DATASET_TYPE=req.datasetType,
+        DATASET_DESC=req.datasetDesc,
+        WEIGHT=VariableDatasetWeight[req.datasetType].value
+    )
 
     for vari in req.variableList:
         # 跳过变量名为空的数据
@@ -261,12 +280,12 @@ def create_variables(req):
             continue
 
         # 查询变量信息
-        variable = VariableDao.select_by_dataset_and_name(req.datasetNo, vari.varName)
+        variable = VariableDao.select_by_dataset_and_name(dataset_no, vari.varName)
         check_is_blank(variable, '变量已存在')
 
         # 新增变量
         TVariable.insert(
-            DATASET_NO=req.datasetNo,
+            DATASET_NO=dataset_no,
             VAR_NO=new_id(),
             VAR_NAME=vari.varName,
             VAR_DESC=vari.varDesc,
@@ -275,10 +294,22 @@ def create_variables(req):
             ENABLED=True
         )
 
+    return {'datasetNo': dataset_no}
+
 
 @http_service
 @transactional
 def modify_variables(req):
+    # 查询变量集信息
+    varset = VariableDatasetDao.select_by_no(req.datasetNo)
+    check_is_not_blank(varset, '变量集不存在')
+
+    # 更新变量集信息
+    varset.update(
+        DATASET_NAME=req.datasetName,
+        DATASET_DESC=req.datasetDesc
+    )
+
     for vari in req.variableList:
         # 跳过变量名为空的数据
         if not vari.varName:

@@ -75,7 +75,7 @@ def create_http_header_template(req):
         TEMPLATE_DESC=req.templateDesc
     )
 
-    return template_no
+    return {'templateNo': template_no}
 
 
 @http_service
@@ -219,8 +219,17 @@ def query_http_headers(req):
 @transactional
 def create_http_headers(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_is_not_blank(template, '模板不存在')
+    template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
+    check_is_blank(template, '模板已存在')
+
+    # 新增模板
+    template_no = new_id()
+    THttpHeaderTemplate.insert(
+        WORKSPACE_NO=req.workspaceNo,
+        TEMPLATE_NO=template_no,
+        TEMPLATE_NAME=req.templateName,
+        TEMPLATE_DESC=req.templateDesc
+    )
 
     for header in req.headerList:
         # 跳过请求头为空的数据
@@ -228,12 +237,12 @@ def create_http_headers(req):
             continue
 
         # 查询请求头
-        entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
+        entity = HttpHeaderDao.select_by_template_and_name(template_no, header.headerName)
         check_is_blank(entity, '请求头已存在')
 
         # 新增请求头
         THttpHeader.insert(
-            TEMPLATE_NO=req.templateNo,
+            TEMPLATE_NO=template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.headerName,
             HEADER_VALUE=header.headerValue,
@@ -241,10 +250,22 @@ def create_http_headers(req):
             ENABLED=True
         )
 
+    return {'templateNo': template_no}
+
 
 @http_service
 @transactional
 def modify_http_headers(req):
+    # 查询模板
+    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
+    check_is_not_blank(template, '模板不存在')
+
+    # 更新模板
+    template.update(
+        TEMPLATE_NAME=req.templateName,
+        TEMPLATE_DESC=req.templateDesc
+    )
+
     for header in req.headerList:
         # 跳过请求头为空的数据
         if not header.headerName:
