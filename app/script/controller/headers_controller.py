@@ -89,6 +89,7 @@ def remove_http_header_template():
 def create_http_header():
     """新增请求头"""
     req = JsonParser(
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
         Argument('headerName', required=True, nullable=False, help='请求头名称不能为空'),
         Argument('headerValue', required=True, nullable=False, help='请求头值不能为空'),
         Argument('headerDesc')
