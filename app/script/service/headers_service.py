@@ -106,7 +106,7 @@ def remove_http_header_template(req):
 @http_service
 def create_http_header(req):
     # 查询请求头
-    header = HttpHeaderDao.select_by_name(req.headerName)
+    header = HttpHeaderDao.select_by_template_and_name(req.templateNo, req.headerName)
     check_is_blank(header, '请求头已存在')
 
     # 查询模板

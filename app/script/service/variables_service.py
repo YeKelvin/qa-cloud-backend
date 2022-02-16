@@ -122,7 +122,7 @@ def remove_variable_dataset(req):
 @http_service
 def create_variable(req):
     # 查询变量信息
-    variable = VariableDao.select_by_name(req.varName)
+    variable = VariableDao.select_by_dataset_and_name(req.datasetNo, req.varName)
     check_is_blank(variable, '变量集已存在')
 
     # 查询变量集信息
