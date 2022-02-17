@@ -54,8 +54,7 @@ class CRUDMixin:
 
     def update(self, **kwargs):
         for attr, value in kwargs.items():
-            if value is not None:
-                setattr(self, attr, value)
+            setattr(self, attr, value)
         self.submit()
 
     def delete(self):
