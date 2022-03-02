@@ -62,3 +62,16 @@ line_length = 120
 force_single_line = true
 multi_line_output = 3
 skip_glob = ["migrations/*"]
+
+#[tool.yapf]
+#based-on_style = "google"
+#arithmetic_precedence_indication = true
+#blank_line_before_nested_class_or_def = true
+#blank_lines_between_top_level_imports_and_variables = 2
+#column_limit = 120
+#coalesce_brackets = true
+#dedent_closing_brackets = true
+#indent_width = 4
+#join_multiple_lines = true
+#spaces_before_comment = 2
+#split_before_dot = true
