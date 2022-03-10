@@ -465,7 +465,7 @@ def run_testplan_by_loop(
             # 延迟迭代
             if delay and i > 0:
                 log.info(f'间隔等待{delay}ms')
-                time.sleep(delay * 1000)
+                time.sleep(float(delay / 1000))
             # 顺序执行脚本
             for collection_no, collection in scripts.items():
                 # 检查是否需要中断执行
