@@ -252,12 +252,12 @@ def query_variables(req):
 @transactional
 def create_variables(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_first(
+    dataset = VariableDatasetDao.select_first(
         WORKSPACE_NO=req.workspaceNo,
         DATASET_NAME=req.datasetName,
         DATASET_TYPE=req.datasetType
     )
-    check_is_blank(varset, '变量集已存在')
+    check_is_blank(dataset, '变量集已存在')
 
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
     if req.datasetType != VariableDatasetType.GLOBAL.value:
@@ -301,11 +301,11 @@ def create_variables(req):
 @transactional
 def modify_variables(req):
     # 查询变量集信息
-    varset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(varset, '变量集不存在')
+    dataset = VariableDatasetDao.select_by_no(req.datasetNo)
+    check_is_not_blank(dataset, '变量集不存在')
 
     # 更新变量集信息
-    varset.update(
+    dataset.update(
         DATASET_NAME=req.datasetName,
         DATASET_DESC=req.datasetDesc
     )

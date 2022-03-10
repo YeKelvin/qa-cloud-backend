@@ -611,7 +611,7 @@ def interrupt_testplan_execution(req):
     # 标记执行中断
     execution.update(
         INTERRUPT=True,
-        INTERRUPT_BY=get_userno,
+        INTERRUPT_BY=get_userno(),
         INTERRUPT_TIME=datetime_now_by_utc8()
     )
 
