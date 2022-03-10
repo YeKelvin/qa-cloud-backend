@@ -471,7 +471,6 @@ def run_testplan_by_loop(
                 # 检查是否需要中断执行
                 execution = TestplanExecutionDao.select_by_no(execution_no)
                 if execution.INTERRUPT:
-                    log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
                     raise TestplanInterruptError()
 
                 # 异步函数
@@ -504,9 +503,7 @@ def run_testplan_by_loop(
                 task = executor.submit(start, app)  # 异步执行脚本
                 task.result()  # 阻塞等待脚本执行完成
     except TestplanInterruptError:
-        # 中断后更新测试计划的状态至 INTERRUPTED
-        execution = TestplanExecutionDao.select_by_no(execution_no)
-        execution.update(RUNNING_STATE=RunningState.INTERRUPTED.value)
+        log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
     except Exception:
         log.error(f'执行编号:[ {execution_no} ] 运行异常\n{traceback.format_exc()}')
         TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ERROR.value)
@@ -533,7 +530,6 @@ def run_testplan_and_save_report(
             # 检查是否需要中断执行
             execution = TestplanExecutionDao.select_by_no(execution_no)
             if execution.INTERRUPT:
-                log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
                 raise TestplanInterruptError()
             # 查询计划项目
             item = TestPlanExecutionItemsDao.select_by_execution_and_collection(execution_no, collection_no)
@@ -582,9 +578,7 @@ def run_testplan_and_save_report(
             db.session.commit()  # 这里要实时更新
             log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
     except TestplanInterruptError:
-        # 中断后更新测试计划的状态至 INTERRUPTED
-        execution = TestplanExecutionDao.select_by_no(execution_no)
-        execution.update(RUNNING_STATE=RunningState.INTERRUPTED.value)
+        log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
     except Exception:
         log.error(f'执行编号:[ {execution_no} ] 运行异常\n{traceback.format_exc()}')
         TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ERROR.value)
@@ -612,7 +606,8 @@ def interrupt_testplan_execution(req):
     execution.update(
         INTERRUPT=True,
         INTERRUPT_BY=get_userno(),
-        INTERRUPT_TIME=datetime_now_by_utc8()
+        INTERRUPT_TIME=datetime_now_by_utc8(),
+        RUNNING_STATE=RunningState.INTERRUPTED.value
     )
 
 
