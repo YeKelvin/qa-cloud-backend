@@ -59,8 +59,14 @@ def debug_pymeter(script, sid):
 def debug_pymeter_with_loader(loader, app, element_no, element_name, sid):
     # noinspection PyBroadException
     try:
-        socketio.emit('pymeter_message', '开始执行脚本', namespace='/', to=sid)
-        script = loader(app, element_no, element_name, sid)
+        result_id = new_id()
+        socketio.emit(
+            'pymeter_start',
+            {'result': {'id': result_id, 'name': '加载中', 'loading': True, 'running': True}},
+            namespace='/',
+            to=sid
+        )
+        script = loader(app, element_no, element_name, sid, result_id)
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
@@ -83,14 +89,19 @@ def execute_collection(req):
         raise ServiceError('仅支持运行 Collecion 元素')
 
     # 定义 loader 函数
-    def script_loader(app, element_no, element_name, sid):
+    def script_loader(app, element_no, element_name, sid, result_id):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(element_no)
             if not script:
                 raise ServiceError('脚本异常，请重试')
             # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(script, sid, element_name)
+            element_loader.add_flask_sio_result_collector(
+                script,
+                sid,
+                result_id=result_id,
+                result_name=element_name
+            )
             # 添加变量组件
             if req.variableDataSet:
                 element_loader.add_variable_data_set(
@@ -127,7 +138,7 @@ def execute_group(req):
     collection_no = group_parent_link.PARENT_NO
 
     # 定义 loader 函数
-    def script_loads_function(app, element_no, element_name, sid):
+    def script_loads_function(app, element_no, element_name, sid, result_id):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
@@ -138,7 +149,12 @@ def execute_group(req):
             if not script:
                 raise ServiceError('脚本异常，请检查后重试')
             # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(script, sid, element_name)
+            element_loader.add_flask_sio_result_collector(
+                script,
+                sid,
+                result_id=result_id,
+                result_name=element_name
+            )
             # 添加变量组件
             if req.variableDataSet:
                 element_loader.add_variable_data_set(
@@ -181,7 +197,13 @@ def execute_sampler(req):
         raise ServiceError('脚本异常，请检查后重试')
 
     # 添加 socket 组件
-    element_loader.add_flask_sio_result_collector(script, req.socketId, sampler.ELEMENT_NAME)
+    result_id = new_id()
+    element_loader.add_flask_sio_result_collector(
+        script,
+        sid=req.socketId,
+        result_id=result_id,
+        result_name=sampler.ELEMENT_NAME
+    )
 
     # 添加变量组件
     if req.variableDataSet:
@@ -214,7 +236,13 @@ def execute_snippets(req):
         raise ServiceError('脚本异常，请检查后重试')
 
     # 添加 socket 组件
-    element_loader.add_flask_sio_result_collector(script, req.socketId, collection.ELEMENT_NAME)
+    result_id = new_id()
+    element_loader.add_flask_sio_result_collector(
+        script,
+        sid=req.socketId,
+        result_id=result_id,
+        result_name=collection.ELEMENT_NAME
+    )
 
     # 添加变量组件
     if req.variableDataSet:

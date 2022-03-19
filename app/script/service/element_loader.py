@@ -198,7 +198,7 @@ def add_builtin_children(element_no, children: list):
                 children.append(builtin)
 
 
-def add_flask_sio_result_collector(script: dict, sid: str, name: str):
+def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, result_name: str):
     # 添加 FlaskSIOResultCollector 组件
     script['children'].insert(0, {
         'name': 'Dynamic FlaskSIOResultCollector',
@@ -207,7 +207,8 @@ def add_flask_sio_result_collector(script: dict, sid: str, name: str):
         'enabled': True,
         'property': {
             'FlaskSIOResultCollector__target_sid': sid,
-            'FlaskSIOResultCollector__result_name': name,
+            'FlaskSIOResultCollector__result_id': result_id,
+            'FlaskSIOResultCollector__result_name': result_name,
         }
     })
 
