@@ -7,6 +7,10 @@ from typing import List
 from app.usercenter.model import TUserLoginInfo
 
 
+def select_by_userno(user_no) -> TUserLoginInfo:
+    return TUserLoginInfo.filter_by(USER_NO=user_no).first()
+
+
 def select_by_loginname(login_name) -> TUserLoginInfo:
     return TUserLoginInfo.filter_by(LOGIN_NAME=login_name).first()
 

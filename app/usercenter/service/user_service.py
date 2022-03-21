@@ -171,12 +171,16 @@ def reset_login_password(req):
     user = UserDao.select_by_userno(req.userNo)
     check_is_not_blank(user, '用户不存在')
 
+    # 查询登录信息
+    user_login_info = UserLoginInfoDao.select_by_userno(req.userNo)
+    check_is_not_blank(user_login_info, '用户登录信息不存在')
+
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
     check_is_not_blank(user_password, '用户登录密码不存在')
 
     # 更新用户密码
-    user_password.update(PASSWORD=encrypt_password(req.loginName, req.password))
+    user_password.update(PASSWORD=encrypt_password(user_login_info.LOGIN_NAME, '123456'))
 
 
 @http_service
