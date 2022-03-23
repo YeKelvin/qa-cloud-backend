@@ -173,9 +173,7 @@ def create_http_headers():
 
     example:
     {
-        "workspaceNo": "",
-        "templateName": "",
-        "templateDesc": "",
+        "templateNo": "",
         "headerList": [
             {
                 "headerName": "",
@@ -187,9 +185,7 @@ def create_http_headers():
     }
     """
     req = JsonParser(
-        Argument('workspaceNo'),
-        Argument('templateName', required=True, nullable=False, help='模板名称不能为空'),
-        Argument('templateDesc'),
+        Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
         Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
     ).parse()
     return service.create_http_headers(req)
@@ -205,8 +201,6 @@ def modify_http_headers():
     example:
     {
         "templateNo": "",
-        "templateName": "",
-        "templateDesc": "",
         "headerList": [
             {
                 "headerName": "",
@@ -219,8 +213,6 @@ def modify_http_headers():
     """
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
-        Argument('templateName', required=True, nullable=False, help='模板名称不能为空'),
-        Argument('templateDesc'),
         Argument('headerList', type=list, required=True, nullable=False, help='请求头列表不能为空')
     ).parse()
     return service.modify_http_headers(req)
