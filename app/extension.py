@@ -6,6 +6,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 
+import sqlalchemy
 from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
@@ -17,7 +18,7 @@ FLASK_ENV = os.environ.get('FLASK_ENV')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
 
 
-db = SQLAlchemy()
+db = SQLAlchemy()  # type: sqlalchemy
 migrate = Migrate()
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
 

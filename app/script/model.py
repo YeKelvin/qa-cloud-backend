@@ -36,6 +36,8 @@ class TTestElement(DBModel, BaseColumn):
 class TElementProperty(DBModel, BaseColumn):
     """测试元素属性表"""
     __tablename__ = 'ELEMENT_PROPERTY'
+    # TODO: ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
+    # TODO: PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.Text, comment='属性值')
