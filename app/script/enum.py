@@ -48,7 +48,7 @@ class ElementClass(Enum):
     TEST_COLLECTION = 'TestCollection'
 
     # 片段集合
-    TEST_SNIPPETS = 'TestSnippets'
+    SNIPPET_COLLECTION = 'TestSnippets'  # TODO: reanme to SnippetCollection
 
     # 测试组
     TEST_GROUP = 'TestGroup'
@@ -278,8 +278,8 @@ def is_test_collection(element):
     return element.ELEMENT_CLASS == ElementClass.TEST_COLLECTION.value
 
 
-def is_test_snippets(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPETS.value
+def is_snippet_collection(element):
+    return element.ELEMENT_CLASS == ElementClass.SNIPPET_COLLECTION.value
 
 
 def is_test_group(element):

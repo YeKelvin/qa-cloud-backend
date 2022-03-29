@@ -30,7 +30,7 @@ from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import ElementType
 from app.script.enum import RunningState
 from app.script.enum import VariableDatasetType
-from app.script.enum import is_test_snippets
+from app.script.enum import is_snippet_collection
 from app.script.model import TTestplanExecution
 from app.script.model import TTestplanExecutionDataset
 from app.script.model import TTestplanExecutionItems
@@ -223,8 +223,8 @@ def execute_snippets(req):
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
-    if not is_test_snippets(collection):
-        raise ServiceError('仅支持运行 TestSnippets 元素')
+    if not is_snippet_collection(collection):
+        raise ServiceError('仅支持运行 SnippetCollection 元素')
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_snippet_collecion(
@@ -684,8 +684,8 @@ def query_snippets_json(req):
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
-    if not is_test_snippets(collection):
-        raise ServiceError('仅支持 TestSnippets 元素')
+    if not is_snippet_collection(collection):
+        raise ServiceError('仅支持 SnippetCollection 元素')
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_snippet_collecion(
         collection.ELEMENT_NO,

@@ -36,7 +36,7 @@ from app.script.enum import is_post_processor
 from app.script.enum import is_pre_processor
 from app.script.enum import is_sampler
 from app.script.enum import is_test_collection
-from app.script.enum import is_test_snippets
+from app.script.enum import is_snippet_collection
 from app.script.enum import is_timer
 from app.script.model import TElementBuiltinChildren
 from app.script.model import TElementChildren
@@ -608,12 +608,12 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
         raise ServiceError('[分组] 仅支持在 [集合] 下剪贴')
     # Sampler
     elif is_sampler(source) and (
-        is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
+        is_test_collection(target) or not (is_snippet_collection(target) or is_group(target) or is_controller(target))
     ):
         raise ServiceError('[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Controller
     elif is_controller(source) and (
-        is_test_collection(target) or not (is_test_snippets(target) or is_group(target) or is_controller(target))
+        is_test_collection(target) or not (is_snippet_collection(target) or is_group(target) or is_controller(target))
     ):
         raise ServiceError('[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
     # Config
@@ -624,7 +624,7 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Timer
     elif is_timer(source) and (is_test_collection(target)
         or not (  # noqa
-            is_test_snippets(target) or is_group(target) or is_sampler(target) or is_controller(target)
+                    is_snippet_collection(target) or is_group(target) or is_sampler(target) or is_controller(target)
         )  # noqa
     ):
         raise ServiceError('[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')

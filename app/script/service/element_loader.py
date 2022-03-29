@@ -170,16 +170,16 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
     return children
 
 
-def add_snippets(snippet_sampler_properties, children: list):
-    snippet_no = snippet_sampler_properties.get('snippetNo', None)
+def add_snippets(sampler_property, children: list):
+    snippet_no = sampler_property.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippets = loads_tree(snippet_no)
-    if not snippets:
+    snippet_collection = loads_tree(snippet_no)
+    if not snippet_collection:
         return
-    transaction = snippets['children']
-    add_snippet_config(snippets, transaction, snippet_sampler_properties.get('arguments', []))
-    children.extend(transaction)
+    snippets = snippet_collection['children']
+    configure_snippets(snippet_collection, snippets, sampler_property)
+    children.extend(snippets)
 
 
 def add_builtin_children(element_no, children: list):
@@ -201,7 +201,7 @@ def add_builtin_children(element_no, children: list):
 def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, result_name: str):
     # 添加 FlaskSIOResultCollector 组件
     script['children'].insert(0, {
-        'name': 'Dynamic FlaskSIOResultCollector',
+        'name': 'FlaskSIOResultCollector',
         'remark': '',
         'class': 'FlaskSIOResultCollector',
         'enabled': True,
@@ -243,7 +243,7 @@ def add_variable_data_set(script: dict, dataset_number_list: list, use_current_v
 
     # 添加 VariableDataSet 组件
     script['children'].insert(0, {
-        'name': 'Dynamic VariableDataSet',
+        'name': 'VariableDataSet',
         'remark': '',
         'class': 'VariableDataSet',
         'enabled': True,
@@ -299,7 +299,7 @@ def add_http_header_manager(sampler: TTestElement, children: list):
 
     # 添加 HTTPHeaderManager 组件
     children.append({
-        'name': 'Dynamic HTTPHeaderManager',
+        'name': 'HTTPHeaderManager',
         'remark': '',
         'class': 'HTTPHeaderManager',
         'enabled': True,
@@ -312,7 +312,7 @@ def add_http_header_manager(sampler: TTestElement, children: list):
 def add_flask_db_result_storage(script: dict, report_no, collection_no):
     # 添加 FlaskDBResultStorage 组件
     script['children'].insert(0, {
-        'name': 'Dynamic FlaskDBResultStorage',
+        'name': 'FlaskDBResultStorage',
         'remark': '',
         'class': 'FlaskDBResultStorage',
         'enabled': True,
@@ -326,7 +326,7 @@ def add_flask_db_result_storage(script: dict, report_no, collection_no):
 def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
     # 添加 FlaskDBIterationStorage 组件
     script['children'].insert(0, {
-        'name': 'Dynamic FlaskDBIterationStorage',
+        'name': 'FlaskDBIterationStorage',
         'remark': '',
         'class': 'FlaskDBIterationStorage',
         'enabled': True,
@@ -337,35 +337,50 @@ def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
     })
 
 
-def add_snippet_config(snippet_collection, snippet_children, transaction_parameters):
-    snippet_arguments = snippet_collection['property'].get('arguments', [])
+def configure_snippets(snippet_collection, snippet_children, sampler_property):
+    # SnippetCollection 属性
+    snippet_parameters = snippet_collection['property'].get('arguments', [])  # TODO: rename to parameters
     use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
+
+    # SnippetSampler 属性
+    sampler_arguments = sampler_property.get('arguments', [])
+    use_default = sampler_property.get('useDefault', 'false') == 'true'
 
     # 添加 TransactionHTTPSessionManager 组件
     if use_http_session == 'true':
         snippet_children.insert(0, {
-            'name': 'Dynamic TransactionHTTPSessionManager',
+            'name': 'TransactionHTTPSessionManager',
             'remark': '',
             'class': 'TransactionHTTPSessionManager',
             'enabled': True,
             'property': {}
         })
 
-    if transaction_parameters or snippet_arguments:
+    if sampler_arguments or snippet_parameters:
         arguments = []
-        param_dict = {param['name']: param['value'] for param in transaction_parameters}
-        for arg in snippet_arguments:
-            arguments.append({
-                'class': 'Argument',
-                'property': {
-                    'Argument__name': arg['name'],
-                    'Argument__value': param_dict.get(arg['name']) or arg['default']
-                }
-            })
+        if use_default:  # 使用片段集合的默认值
+            for param in snippet_parameters:
+                arguments.append({
+                    'class': 'Argument',
+                    'property': {
+                        'Argument__name': param['name'],
+                        'Argument__value': param['default']
+                    }
+                })
+        else:  # 使用自定义的参数值
+            args = {arg['name']: arg['value'] for arg in sampler_arguments}
+            for param in snippet_parameters:
+                arguments.append({
+                    'class': 'Argument',
+                    'property': {
+                        'Argument__name': param['name'],
+                        'Argument__value': args.get(param['name']) or param['default']
+                    }
+                })
 
         # 添加 TransactionParameter 组件
         snippet_children.insert(0, {
-            'name': 'Dynamic TransactionParameter',
+            'name': 'TransactionParameter',
             'remark': '',
             'class': 'TransactionParameter',
             'enabled': True,
@@ -375,17 +390,17 @@ def add_snippet_config(snippet_collection, snippet_children, transaction_paramet
         })
 
 
-def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
+def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     # 读取元素属性
-    properties = loads_property(snippets_no)
+    properties = loads_property(snippet_no)
     use_http_session = properties.get('useHTTPSession', 'false')
     # 递归查询子代，并根据序号正序排序
-    children_links = ElementChildrenDao.select_all_by_parent(snippets_no)
+    children_links = ElementChildrenDao.select_all_by_parent(snippet_no)
     children = []
     # 添加 HTTP Session 组件
     if use_http_session:
         children.append({
-            'name': 'Dynamic HTTPSessionManager',
+            'name': 'HTTPSessionManager',
             'remark': '',
             'class': 'HTTPSessionManager',
             'enabled': True,
@@ -398,8 +413,8 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
             children.append(child)
     # 创建一个临时的 Group
     group = {
-        'name': snippets_name,
-        'remark': snippets_remark,
+        'name': snippet_name,
+        'remark': snippet_remark,
         'class': 'TestGroup',
         'enabled': True,
         'property': {
@@ -417,8 +432,8 @@ def loads_snippet_collecion(snippets_no, snippets_name, snippets_remark):
     }
     # 创建一个临时的 Collection
     collection = {
-        'name': snippets_name,
-        'remark': snippets_remark,
+        'name': snippet_name,
+        'remark': snippet_remark,
         'class': 'TestCollection',
         'enabled': True,
         'property': {
