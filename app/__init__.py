@@ -110,7 +110,6 @@ def register_hooks(app: Flask):
     app.before_request(hook.set_logid)
     app.before_request(hook.set_user)
 
-    app.after_request(hook.record_action)
     if FLASK_ENV == 'development':
         app.after_request(hook.cross_domain_access)
 

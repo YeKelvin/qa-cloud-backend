@@ -73,22 +73,6 @@ def set_user():
             log.error(traceback.format_exc())
 
 
-def record_action(response):
-    """
-    after_request
-    记录请求日志，只记录成功的非GET请求
-    """
-    success = globals.get_success()
-    if success and 'GET' not in request.method:
-        permission = TPermission.filter_by(ENDPOINT=request.path).first()
-        TActionLog.insert(
-            ACTION_DESC=permission.PERMISSION_NAME if permission else None,
-            ACTION_METHOD=request.method,
-            ACTION_ENDPOINT=request.path
-        )
-    return response
-
-
 def cross_domain_access(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = '*'
@@ -107,5 +91,5 @@ def page_not_found(_):
 
 # app.register_error_handler(Exception, exception_handler)
 def exception_handler(ex):
-    log.exception(str(ex).replace('\n', '#'))
+    log.exception(ex)
     return http_response(errorMsg='服务器开小差')
