@@ -1,4 +1,4 @@
-flask==2.0.3
+flask==2.1.1
 flask-sqlalchemy==2.5.1
 flask-socketio==5.1.1
 flask-migrate==3.1.0
@@ -8,7 +8,7 @@ pyjwt[crypto]==2.3.0
 pycryptodome==3.14.1
 pydantic==1.8.2
 psycopg2==2.9.2
-python-dotenv==0.19.2
+python-dotenv==0.20.0
 environs==9.5.0
 gevent
 uwsgi

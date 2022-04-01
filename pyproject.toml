@@ -22,7 +22,7 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.8"
 # Flask
-flask = "2.0.3"
+flask = "2.1.1"
 flask-sqlalchemy = "2.5.1"
 flask-socketio = "5.1.1"
 flask-migrate = "3.1.0"
@@ -38,7 +38,7 @@ pydantic = "1.9.0"
 psycopg2 = { version = "2.9.3", markers = "platform_system=='Windows' or platform_system=='Linux'"}
 psycopg2-binary = { version = "2.9.3", markers = "sys_platform=='darwin'" }
 # Environment
-python-dotenv = "0.19.2"
+python-dotenv = "0.20.0"
 environs = "9.5.0"
 # Coroutine
 gevent = "*"
