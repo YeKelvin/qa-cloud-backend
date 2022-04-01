@@ -126,10 +126,16 @@ class TDataBaseConfiguration(DBModel, BaseColumn):
     DB_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
     DB_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')
     DB_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
-    DB_URL = db.Column(db.String(256), nullable=False, comment='数据库地址')
-    USER_NAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
-    PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库密码')
-    CONNECTION_NAME = db.Column(db.String(256), nullable=False, comment='数据库连接变量')
+    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
+    DRIVER_NAME = db.Column(db.String(256), nullable=False, comment='驱动名称')
+    USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
+    PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
+    HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
+    PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
+    QUERY = db.Column(db.String(128), nullable=False, comment='数据库主机地址')
+    DATABASE = db.Column(db.String(256), nullable=False, comment='数据库名称')
+    CONNECTION_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
+    EXECUTION_TIMEOUT = db.Column(db.String(128), nullable=False, comment='执行超时时间')
 
 
 class TElementTag(DBModel, BaseColumn):
