@@ -234,6 +234,14 @@ class PasteType(Enum):
     CUT = 'CUT'
 
 
+@unique
+class DatabaseType(Enum):
+    ORACLE = 'ORACLE'
+    MYSQL = 'MYSQL'
+    POSTGRESQL = 'POSTGRESQL'
+    MICROSOFT_SQL_SERVER = 'MICROSOFT_SQL_SERVER'
+
+
 def is_collection(element):
     return element.ELEMENT_TYPE == ElementType.COLLECTION.value
 

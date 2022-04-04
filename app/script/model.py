@@ -119,13 +119,14 @@ class THttpHeader(DBModel, BaseColumn):
     UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DELETED', name='unique_template_header')
 
 
-class TDataBaseConfiguration(DBModel, BaseColumn):
+class TDatabaseConfig(DBModel, BaseColumn):
     """SQL配置表"""
-    __tablename__ = 'DATABASE_CONFIGURATION'
-    DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
-    DB_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
-    DB_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')
-    DB_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
+    __tablename__ = 'DATABASE_CONFIG'
+    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
+    DATABASE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
+    DATABASE_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
+    DATABASE_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')
+    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
     VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
     DRIVER_NAME = db.Column(db.String(256), nullable=False, comment='驱动名称')
     USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
@@ -134,8 +135,7 @@ class TDataBaseConfiguration(DBModel, BaseColumn):
     PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
     QUERY = db.Column(db.String(128), nullable=False, comment='数据库主机地址')
     DATABASE = db.Column(db.String(256), nullable=False, comment='数据库名称')
-    CONNECTION_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
-    EXECUTION_TIMEOUT = db.Column(db.String(128), nullable=False, comment='执行超时时间')
+    CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
 
 
 class TElementTag(DBModel, BaseColumn):

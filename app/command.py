@@ -236,6 +236,15 @@ def init_permission():
     _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/copy/to/workspace')
     _create_permission(name='移动请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/move/to/workspace')
 
+    # database
+    _create_permission(name='分页查询数据库引擎列表', method='GET', endpoint='/script/database/engine/list')
+    _create_permission(name='查询所有数据库引擎', method='GET', endpoint='/script/database/engine/all')
+    _create_permission(name='新增数据库引擎', method='POST', endpoint='/script/database/engine')
+    _create_permission(name='修改数据库引擎', method='PUT', endpoint='/script/database/engine')
+    _create_permission(name='删除数据库引擎', method='DELETE', endpoint='/script/database/engine')
+    _create_permission(name='复制数据库引擎至指定工作空间', method='POST', endpoint='/script/database/engine/copy/to/workspace')
+    _create_permission(name='移动数据库引擎至指定工作空间', method='POST', endpoint='/script/database/engine/move/to/workspace')
+
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
     _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan')
