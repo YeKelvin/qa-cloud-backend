@@ -48,6 +48,17 @@ def query_database_engine_all():
     return service.query_database_engine_all(req)
 
 
+@blueprint.get('/database/engine')
+@require_login
+@require_permission
+def query_database_engine_info():
+    """查询数据库引擎"""
+    req = JsonParser(
+        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+    ).parse()
+    return service.query_database_engine_info(req)
+
+
 @blueprint.post('/database/engine')
 @require_login
 @require_permission

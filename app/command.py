@@ -239,6 +239,7 @@ def init_permission():
     # database
     _create_permission(name='分页查询数据库引擎列表', method='GET', endpoint='/script/database/engine/list')
     _create_permission(name='查询所有数据库引擎', method='GET', endpoint='/script/database/engine/all')
+    _create_permission(name='查询数据库引擎', method='GET', endpoint='/script/database/engine')
     _create_permission(name='新增数据库引擎', method='POST', endpoint='/script/database/engine')
     _create_permission(name='修改数据库引擎', method='PUT', endpoint='/script/database/engine')
     _create_permission(name='删除数据库引擎', method='DELETE', endpoint='/script/database/engine')

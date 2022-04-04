@@ -62,6 +62,29 @@ def query_database_engine_all(req):
 
 
 @http_service
+def query_database_engine_info(req):
+    # 查询数据库引擎
+    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    check_is_not_blank(engine, '数据库引擎不存在')
+
+    return {
+        'databaseNo': engine.DATABASE_NO,
+        'databaseName': engine.DATABASE_NAME,
+        'databaseDesc': engine.DATABASE_DESC,
+        'databaseType': engine.DATABASE_TYPE,
+        'variableName': engine.VARIABLE_NAME,
+        'driverName': engine.DRIVER_NAME,
+        'username': engine.USERNAME,
+        'password': engine.PASSWORD,
+        'host': engine.HOST,
+        'port': engine.PORT,
+        'query': engine.QUERY,
+        'database': engine.DATABASE,
+        'connectTimeout': engine.CONNECT_TIMEOUT
+    }
+
+
+@http_service
 def create_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_first(
