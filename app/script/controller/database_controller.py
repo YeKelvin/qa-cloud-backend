@@ -105,6 +105,17 @@ def remove_database_engine():
     return service.remove_database_engine(req)
 
 
+@blueprint.post('/database/engine/duplicate')
+@require_login
+@require_permission
+def duplicate_database_engine():
+    """复制数据库引擎"""
+    req = JsonParser(
+        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+    ).parse()
+    return service.duplicate_database_engine(req)
+
+
 @blueprint.post('/database/engine/copy/to/workspace')
 @require_login
 @require_permission

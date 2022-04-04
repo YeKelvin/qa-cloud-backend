@@ -239,7 +239,7 @@ class DatabaseType(Enum):
     ORACLE = 'ORACLE'
     MYSQL = 'MYSQL'
     POSTGRESQL = 'POSTGRESQL'
-    MICROSOFT_SQL_SERVER = 'MICROSOFT_SQL_SERVER'
+    SQL_SERVER = 'SQL_SERVER'
 
 
 def is_collection(element):

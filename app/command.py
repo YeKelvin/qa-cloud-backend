@@ -242,6 +242,7 @@ def init_permission():
     _create_permission(name='新增数据库引擎', method='POST', endpoint='/script/database/engine')
     _create_permission(name='修改数据库引擎', method='PUT', endpoint='/script/database/engine')
     _create_permission(name='删除数据库引擎', method='DELETE', endpoint='/script/database/engine')
+    _create_permission(name='复制数据库引擎', method='POST', endpoint='/script/database/engine/duplicate')
     _create_permission(name='复制数据库引擎至指定工作空间', method='POST', endpoint='/script/database/engine/copy/to/workspace')
     _create_permission(name='移动数据库引擎至指定工作空间', method='POST', endpoint='/script/database/engine/move/to/workspace')
 

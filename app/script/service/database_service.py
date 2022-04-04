@@ -127,6 +127,34 @@ def remove_database_engine(req):
 
 
 @http_service
+def duplicate_database_engine(req):
+    # 查询数据库引擎
+    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    check_is_not_blank(engine, '数据库引擎不存在')
+
+    # 复制数据库引擎
+    database_no = new_id()
+    TDatabaseConfig.insert(
+        WORKSPACE_NO=engine.WORKSPACE_NO,
+        DATABASE_NO=database_no,
+        DATABASE_NAME=engine.DATABASE_NAME + ' copy',
+        DATABASE_DESC=engine.DATABASE_DESC,
+        DATABASE_TYPE=engine.DATABASE_TYPE,
+        VARIABLE_NAME=engine.VARIABLE_NAME,
+        DRIVER_NAME=engine.DRIVER_NAME,
+        USERNAME=engine.USERNAME,
+        PASSWORD=engine.PASSWORD,
+        HOST=engine.HOST,
+        PORT=engine.PORT,
+        QUERY=engine.QUERY,
+        DATABASE=engine.DATABASE,
+        CONNECT_TIMEOUT=engine.CONNECT_TIMEOUT
+    )
+
+    return {'databaseNo': database_no}
+
+
+@http_service
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.databaseNo)
