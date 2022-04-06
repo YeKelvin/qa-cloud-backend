@@ -34,9 +34,6 @@ pyjwt = { version = "2.3.0", extras = ["crypto"] }
 pycryptodome = "3.14.1"
 # Data validation
 pydantic = "1.9.0"
-# Database
-psycopg2 = { version = "2.9.3", markers = "platform_system=='Windows' or platform_system=='Linux'"}
-psycopg2-binary = { version = "2.9.3", markers = "sys_platform=='darwin'" }
 # Environment
 python-dotenv = "0.20.0"
 environs = "9.5.0"

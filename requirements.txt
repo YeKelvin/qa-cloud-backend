@@ -7,7 +7,6 @@ jsonpath==0.82
 pyjwt[crypto]==2.3.0
 pycryptodome==3.14.1
 pydantic==1.8.2
-psycopg2==2.9.2
 python-dotenv==0.20.0
 environs==9.5.0
 gevent
