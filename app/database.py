@@ -46,11 +46,11 @@ class CRUDMixin:
 
     @classmethod
     def delete_filter(cls: MODEL, *args):
-        cls.filter(*args).update({cls.DELETED: 1})
+        cls.filter(*args).update({cls.DELETED: cls.ID})
 
     @classmethod
     def delete_filter_by(cls: MODEL, **kwargs):
-        cls.filter_by(**kwargs).update({cls.DELETED: 1})
+        cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
 
     def update(self, **kwargs):
         for attr, value in kwargs.items():
@@ -59,7 +59,7 @@ class CRUDMixin:
 
     def delete(self):
         """软删除"""
-        return self.update(DELETED=1)
+        return self.update(DELETED=getattr(self, 'ID'))
 
     def submit(self):
         """写入数据库但不提交"""
