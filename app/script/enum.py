@@ -236,10 +236,10 @@ class PasteType(Enum):
 
 @unique
 class DatabaseType(Enum):
-    ORACLE = 'ORACLE'
-    MYSQL = 'MYSQL'
-    POSTGRESQL = 'POSTGRESQL'
-    SQL_SERVER = 'SQL_SERVER'
+    ORACLE = 'oracle'
+    MYSQL = 'mysql'
+    POSTGRESQL = 'postgresql'
+    Microsoft_SQL_SERVER = 'mssql'
 
 
 def is_collection(element):

@@ -128,7 +128,7 @@ class TDatabaseConfig(DBModel, BaseColumn):
     CONFIG_DESC = db.Column(db.String(256), comment='配置描述')
     VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
     DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
-    DRIVER_NAME = db.Column(db.String(256), nullable=False, comment='驱动名称')
+    DRIVER = db.Column(db.String(256), nullable=False, comment='驱动名称')
     USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
     HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
