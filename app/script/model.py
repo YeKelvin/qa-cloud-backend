@@ -104,7 +104,7 @@ class THttpHeaderTemplate(DBModel, BaseColumn):
     TEMPLATE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模板编号')
     TEMPLATE_NAME = db.Column(db.String(128), nullable=False, comment='模板名称')
     TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
-    UniqueConstraint('TEMPLATE_NAME', 'DELETED', name='unique_templatename')
+    UniqueConstraint('WORKSPACE_NO', 'TEMPLATE_NAME', 'DELETED', name='unique_workspace_template')
 
 
 class THttpHeader(DBModel, BaseColumn):
@@ -123,19 +123,20 @@ class TDatabaseConfig(DBModel, BaseColumn):
     """SQL配置表"""
     __tablename__ = 'DATABASE_CONFIG'
     WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
-    DATABASE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
-    DATABASE_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
-    DATABASE_DESC = db.Column(db.String(256), nullable=False, comment='配置描述')
-    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
+    CONFIG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
+    CONFIG_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
+    CONFIG_DESC = db.Column(db.String(256), comment='配置描述')
     VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
+    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
     DRIVER_NAME = db.Column(db.String(256), nullable=False, comment='驱动名称')
     USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
     HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
     PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
-    QUERY = db.Column(db.String(128), nullable=False, comment='数据库主机地址')
+    QUERY = db.Column(db.String(256), comment='数据库主机地址')
     DATABASE = db.Column(db.String(256), nullable=False, comment='数据库名称')
     CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
+    UniqueConstraint('WORKSPACE_NO', 'CONFIG_NAME', 'DATABASE_TYPE', 'DELETED', name='unique_workspace_db')
 
 
 class TElementTag(DBModel, BaseColumn):

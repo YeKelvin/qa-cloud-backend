@@ -23,9 +23,9 @@ def query_database_engine_list():
     """分页查询数据库引擎列表"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('databaseNo'),
-        Argument('databaseName'),
-        Argument('databaseDesc'),
+        Argument('configNo'),
+        Argument('configName'),
+        Argument('configDesc'),
         Argument('databaseType'),
         Argument('page', required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', required=True, nullable=False, help='每页总数不能为空')
@@ -40,9 +40,9 @@ def query_database_engine_all():
     """查询所有数据库引擎"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('databaseNo'),
-        Argument('databaseName'),
-        Argument('databaseDesc'),
+        Argument('configNo'),
+        Argument('configName'),
+        Argument('configDesc'),
         Argument('databaseType')
     ).parse()
     return service.query_database_engine_all(req)
@@ -54,7 +54,7 @@ def query_database_engine_all():
 def query_database_engine_info():
     """查询数据库引擎"""
     req = JsonParser(
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
     return service.query_database_engine_info(req)
 
@@ -66,8 +66,8 @@ def create_database_engine():
     """新增数据库引擎"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('databaseName', required=True, nullable=False, help='数据库名称不能为空'),
-        Argument('databaseDesc'),
+        Argument('configName', required=True, nullable=False, help='数据库名称不能为空'),
+        Argument('configDesc'),
         Argument('databaseType', required=True, nullable=False, enum=DatabaseType, help='数据库类型不能为空'),
         Argument('variableName', required=True, nullable=False, help='变量名称不能为空'),
         Argument('driverName', required=True, nullable=False, help='驱动名称不能为空'),
@@ -88,9 +88,9 @@ def create_database_engine():
 def modify_database_engine():
     """修改数据库引擎"""
     req = JsonParser(
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空'),
-        Argument('databaseName', required=True, nullable=False, help='数据库名称不能为空'),
-        Argument('databaseDesc'),
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空'),
+        Argument('configName', required=True, nullable=False, help='数据库名称不能为空'),
+        Argument('configDesc'),
         Argument('databaseType', required=True, nullable=False, enum=DatabaseType, help='数据库类型不能为空'),
         Argument('variableName', required=True, nullable=False, help='变量名称不能为空'),
         Argument('driverName', required=True, nullable=False, help='驱动名称不能为空'),
@@ -111,7 +111,7 @@ def modify_database_engine():
 def remove_database_engine():
     """删除数据库引擎"""
     req = JsonParser(
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
     return service.remove_database_engine(req)
 
@@ -122,7 +122,7 @@ def remove_database_engine():
 def duplicate_database_engine():
     """复制数据库引擎"""
     req = JsonParser(
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
     return service.duplicate_database_engine(req)
 
@@ -134,7 +134,7 @@ def copy_database_engine_to_workspace():
     """复制数据库引擎至指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
     return service.copy_database_engine_to_workspace(req)
 
@@ -146,6 +146,6 @@ def move_database_engine_to_workspace():
     """移动数据库引擎至指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('databaseNo', required=True, nullable=False, help='数据库编号不能为空')
+        Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
     return service.move_database_engine_to_workspace(req)

@@ -20,9 +20,9 @@ def query_database_engine_list(req):
     # 条件分页查询
     pagination = DatabaseConfigDao.select_list(
         workspaceNo=req.workspaceNo,
-        databaseNo=req.databaseNo,
-        databaseName=req.databaseName,
-        databaseDesc=req.databaseDesc,
+        configNo=req.configNo,
+        configName=req.configName,
+        configDesc=req.configDesc,
         databaseType=req.databaseType,
         page=req.page,
         pageSize=req.pageSize
@@ -31,9 +31,9 @@ def query_database_engine_list(req):
     data = []
     for item in pagination.items:
         data.append({
-            'databaseNo': item.DATABASE_NO,
-            'databaseName': item.DATABASE_NAME,
-            'databaseDesc': item.DATABASE_DESC,
+            'configNo': item.CONFIG_NO,
+            'configName': item.CONFIG_NAME,
+            'configDesc': item.CONFIG_DESC,
             'databaseType': item.DATABASE_TYPE
         })
     return {'data': data, 'total': pagination.total}
@@ -44,18 +44,18 @@ def query_database_engine_all(req):
     # 条件查询
     items = DatabaseConfigDao.select_all(
         workspaceNo=req.workspaceNo,
-        databaseNo=req.databaseNo,
-        databaseName=req.databaseName,
-        databaseDesc=req.databaseDesc,
+        configNo=req.configNo,
+        configName=req.configName,
+        configDesc=req.configDesc,
         databaseType=req.databaseType
     )
 
     result = []
     for item in items:
         result.append({
-            'databaseNo': item.DATABASE_NO,
-            'databaseName': item.DATABASE_NAME,
-            'databaseDesc': item.DATABASE_DESC,
+            'configNo': item.CONFIG_NO,
+            'configName': item.CONFIG_NAME,
+            'configDesc': item.CONFIG_DESC,
             'databaseType': item.DATABASE_TYPE
         })
     return result
@@ -64,15 +64,15 @@ def query_database_engine_all(req):
 @http_service
 def query_database_engine_info(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_is_not_blank(engine, '数据库引擎不存在')
 
     return {
-        'databaseNo': engine.DATABASE_NO,
-        'databaseName': engine.DATABASE_NAME,
-        'databaseDesc': engine.DATABASE_DESC,
-        'databaseType': engine.DATABASE_TYPE,
+        'configNo': engine.CONFIG_NO,
+        'configName': engine.CONFIG_NAME,
+        'configDesc': engine.CONFIG_DESC,
         'variableName': engine.VARIABLE_NAME,
+        'databaseType': engine.DATABASE_TYPE,
         'driverName': engine.DRIVER_NAME,
         'username': engine.USERNAME,
         'password': engine.PASSWORD,
@@ -89,20 +89,20 @@ def create_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_first(
         WORKSPACE_NO=req.workspaceNo,
-        DATABASE_NAME=req.databaseName,
+        CONFIG_NAME=req.configName,
         DATABASE_TYPE=req.databaseType
     )
     check_is_blank(engine, '数据库引擎已存在')
 
     # 新增数据库引擎
-    database_no = new_id()
+    config_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DATABASE_NO=database_no,
-        DATABASE_NAME=req.databaseName,
-        DATABASE_DESC=req.databaseDesc,
-        DATABASE_TYPE=req.databaseType,
+        CONFIG_NO=config_no,
+        CONFIG_NAME=req.configName,
+        CONFIG_DESC=req.configDesc,
         VARIABLE_NAME=req.variableName,
+        DATABASE_TYPE=req.databaseType,
         DRIVER_NAME=req.driverName,
         USERNAME=req.username,
         PASSWORD=req.password,
@@ -113,7 +113,7 @@ def create_database_engine(req):
         CONNECT_TIMEOUT=req.connectTimeout
     )
 
-    return {'databaseNo': database_no}
+    return {'configNo': config_no}
 
 
 @http_service
@@ -124,10 +124,10 @@ def modify_database_engine(req):
 
     # 更新数据库引擎信息
     engine.update(
-        DATABASE_NAME=req.databaseName,
-        DATABASE_DESC=req.databaseDesc,
-        DATABASE_TYPE=req.databaseType,
+        CONFIG_NAME=req.configName,
+        CONFIG_DESC=req.configDesc,
         VARIABLE_NAME=req.variableName,
+        DATABASE_TYPE=req.databaseType,
         DRIVER_NAME=req.driverName,
         USERNAME=req.username,
         PASSWORD=req.password,
@@ -142,7 +142,7 @@ def modify_database_engine(req):
 @http_service
 def remove_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_is_not_blank(engine, '数据库引擎不存在')
 
     # 删除数据库引擎
@@ -152,18 +152,18 @@ def remove_database_engine(req):
 @http_service
 def duplicate_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_is_not_blank(engine, '数据库引擎不存在')
 
     # 复制数据库引擎
-    database_no = new_id()
+    config_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=engine.WORKSPACE_NO,
-        DATABASE_NO=database_no,
-        DATABASE_NAME=engine.DATABASE_NAME + ' copy',
-        DATABASE_DESC=engine.DATABASE_DESC,
-        DATABASE_TYPE=engine.DATABASE_TYPE,
+        CONFIG_NO=config_no,
+        CONFIG_NAME=engine.CONFIG_NAME + ' copy',
+        CONFIG_DESC=engine.CONFIG_DESC,
         VARIABLE_NAME=engine.VARIABLE_NAME,
+        DATABASE_TYPE=engine.DATABASE_TYPE,
         DRIVER_NAME=engine.DRIVER_NAME,
         USERNAME=engine.USERNAME,
         PASSWORD=engine.PASSWORD,
@@ -174,24 +174,24 @@ def duplicate_database_engine(req):
         CONNECT_TIMEOUT=engine.CONNECT_TIMEOUT
     )
 
-    return {'databaseNo': database_no}
+    return {'configNo': config_no}
 
 
 @http_service
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_is_not_blank(engine, '数据库引擎不存在')
 
     # 复制数据库引擎
-    database_no = new_id()
+    config_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DATABASE_NO=database_no,
-        DATABASE_NAME=engine.DATABASE_NAME + ' copy',
-        DATABASE_DESC=engine.DATABASE_DESC,
-        DATABASE_TYPE=engine.DATABASE_TYPE,
+        CONFIG_NO=config_no,
+        CONFIG_NAME=engine.CONFIG_NAME + ' copy',
+        CONFIG_DESC=engine.CONFIG_DESC,
         VARIABLE_NAME=engine.VARIABLE_NAME,
+        DATABASE_TYPE=engine.DATABASE_TYPE,
         DRIVER_NAME=engine.DRIVER_NAME,
         USERNAME=engine.USERNAME,
         PASSWORD=engine.PASSWORD,
@@ -202,13 +202,13 @@ def copy_database_engine_to_workspace(req):
         CONNECT_TIMEOUT=engine.CONNECT_TIMEOUT
     )
 
-    return {'databaseNo': database_no}
+    return {'configNo': config_no}
 
 
 @http_service
 def move_database_engine_to_workspace(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.databaseNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_is_not_blank(engine, '数据库引擎不存在')
 
     engine.update(WORKSPACE_NO=req.workspaceNo)
