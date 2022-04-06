@@ -36,7 +36,7 @@ log = get_logger(__name__)
 @with_appcontext
 def initdb():
     """创建表"""
-    db.create_all()
+    db.create_all()  # TODO: Person.__table__.create(engine, checkfirst=True)
     click.echo('创建所有数据库表成功')
 
 
