@@ -242,6 +242,14 @@ class DatabaseType(Enum):
     Microsoft_SQL_SERVER = 'mssql'
 
 
+@unique
+class DatabaseDriver(Enum):
+    ORACLE = 'cx_oracle'
+    MYSQL = 'mysqlconnector'
+    POSTGRESQL = 'psycopg2'
+    Microsoft_SQL_SERVER = 'pyodbc'
+
+
 def is_collection(element):
     return element.ELEMENT_TYPE == ElementType.COLLECTION.value
 
