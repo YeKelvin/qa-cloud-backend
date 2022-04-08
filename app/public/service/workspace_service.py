@@ -7,7 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
@@ -89,7 +89,7 @@ def query_workspace_all(req):
 @transactional
 def create_workspace(req):
     workspace = WorkspaceDao.select_by_name(req.workspaceName)
-    check_is_blank(workspace, '工作空间已存在')
+    check_not_exists(workspace, '工作空间已存在')
 
     workspace_no = new_id()
     TWorkspace.insert(

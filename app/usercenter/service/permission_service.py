@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.usercenter.dao import permission_dao as PermissionDao
 from app.usercenter.enum import PermissionState
@@ -65,7 +65,7 @@ def query_permission_all():
 def create_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_endpoint_and_method(req.endpoint, req.method)
-    check_is_blank(permission, '权限已存在')
+    check_not_exists(permission, '权限已存在')
 
     TPermission.insert(
         PERMISSION_NO=new_id(),

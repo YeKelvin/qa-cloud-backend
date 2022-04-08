@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.usercenter.dao import role_dao as RoleDao  # noqa
 from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
@@ -145,7 +145,7 @@ def remove_role(req):
 
     # 查询用户角色列表
     user_role_list = UserRoleDao.select_all_by_roleno(req.roleNo)
-    check_is_blank(user_role_list, '角色与用户存在关联，请先解除关联')
+    check_not_exists(user_role_list, '角色与用户存在关联，请先解除关联')
 
     # 解绑角色和权限
     RolePermissionDao.delete_by_roleno(req.roleNo)

@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.public.dao import tag_dao as TagDao
 from app.public.model import TTag
@@ -51,7 +51,7 @@ def query_tag_all():
 @http_service
 def create_tag(req):
     tag = TagDao.select_by_name(req.tagName)
-    check_is_blank(tag, '标签已存在')
+    check_not_exists(tag, '标签已存在')
 
     TTag.insert(
         WORKSPACE_NO=new_id(),

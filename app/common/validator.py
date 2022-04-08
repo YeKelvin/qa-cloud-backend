@@ -8,7 +8,7 @@ from app.common.exceptions import ErrorCode
 from app.common.exceptions import ServiceError
 
 
-def check_is_blank(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
+def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
     """检查obj对象是否为空，不为空则抛异常"""
     if obj:
         raise ServiceError(error_msg, error)

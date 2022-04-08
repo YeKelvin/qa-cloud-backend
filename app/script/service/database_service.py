@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
@@ -91,7 +91,7 @@ def create_database_engine(req):
         CONFIG_NAME=req.configName,
         DATABASE_TYPE=req.databaseType
     )
-    check_is_blank(engine, '数据库引擎已存在')
+    check_not_exists(engine, '数据库引擎已存在')
 
     # 新增数据库引擎
     config_no = new_id()

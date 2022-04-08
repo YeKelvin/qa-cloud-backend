@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
@@ -74,7 +74,7 @@ def create_variable_dataset(req):
         DATASET_NAME=req.datasetName,
         DATASET_TYPE=req.datasetType
     )
-    check_is_blank(varset, '变量集已存在')
+    check_not_exists(varset, '变量集已存在')
 
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
     if req.datasetType != VariableDatasetType.GLOBAL.value:
@@ -123,7 +123,7 @@ def remove_variable_dataset(req):
 def create_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_dataset_and_name(req.datasetNo, req.varName)
-    check_is_blank(variable, '变量集已存在')
+    check_not_exists(variable, '变量集已存在')
 
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -262,7 +262,7 @@ def create_variables(req):
 
         # 查询变量信息
         variable = VariableDao.select_by_dataset_and_name(req.datasetNo, vari.varName)
-        check_is_blank(variable, '变量已存在')
+        check_not_exists(variable, '变量已存在')
 
         # 新增变量
         TVariable.insert(
@@ -298,7 +298,7 @@ def modify_variables(req):
         else:
             # 查询变量信息
             variable = VariableDao.select_by_dataset_and_name(req.datasetNo, vari.varName)
-            check_is_blank(variable, '变量已存在')
+            check_not_exists(variable, '变量已存在')
             # 新增变量
             TVariable.insert(
                 DATASET_NO=req.datasetNo,

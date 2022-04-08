@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
@@ -64,7 +64,7 @@ def query_http_header_template_all(req):
 def create_http_header_template(req):
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
-    check_is_blank(template, '模板已存在')
+    check_not_exists(template, '模板已存在')
 
     # 新增模板
     template_no = new_id()
@@ -107,7 +107,7 @@ def remove_http_header_template(req):
 def create_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_template_and_name(req.templateNo, req.headerName)
-    check_is_blank(header, '请求头已存在')
+    check_not_exists(header, '请求头已存在')
 
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
@@ -229,7 +229,7 @@ def create_http_headers(req):
 
         # 查询请求头
         entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
-        check_is_blank(entity, '请求头已存在')
+        check_not_exists(entity, '请求头已存在')
 
         # 新增请求头
         THttpHeader.insert(
@@ -263,7 +263,7 @@ def modify_http_headers(req):
         else:
             # 查询请求头
             entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
-            check_is_blank(entity, '请求头已存在')
+            check_not_exists(entity, '请求头已存在')
             # 新增请求头
             THttpHeader.insert(
                 TEMPLATE_NO=req.templateNo,

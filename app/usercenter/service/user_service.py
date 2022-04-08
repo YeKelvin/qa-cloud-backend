@@ -12,7 +12,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_is_blank
+from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.extension import db
 from app.public.model import TWorkspace
@@ -120,11 +120,11 @@ def logout():
 def register(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    check_is_blank(login_info, '登录账号已存在')
+    check_not_exists(login_info, '登录账号已存在')
 
     # 查询用户
     user = UserDao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
-    check_is_blank(user, '用户已存在')
+    check_not_exists(user, '用户已存在')
 
     # 创建用户
     user_no = new_id()
