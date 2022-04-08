@@ -52,12 +52,12 @@ def loads_tree(
     # 递归加载元素
     script = loads_element(
         element_no,
-        config_components=config_components,
         specified_group_no=specified_group_no,
         specified_sampler_no=specified_sampler_no,
         specified_self_only=specified_self_only,
         no_sampler=no_sampler,
-        no_debuger=no_debuger
+        no_debuger=no_debuger,
+        config_components=config_components,
     )
     if not script:
         raise ServiceError('脚本异常，请重试')
@@ -72,12 +72,12 @@ def loads_tree(
 
 def loads_element(
         element_no,
-        config_components: Dict[str, list],
-        specified_group_no: str,
-        specified_sampler_no: str,
-        specified_self_only: bool,
-        no_sampler: bool,
-        no_debuger: bool
+        specified_group_no: str = None,
+        specified_sampler_no: str = None,
+        specified_self_only: bool = False,
+        no_sampler: bool = False,
+        no_debuger: bool = False,
+        config_components: Dict[str, list] = None,
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
@@ -106,14 +106,22 @@ def loads_element(
         # 实时将引擎变量名称写入元素属性中
         properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
         # 添加数据库引擎配置组件
-        add_database_engine(engine.CONFIG_NO, config_components)
+        add_database_engine(engine, config_components)
 
     # 元素为常规 Sampler 时，添加子代
     if not is_snippet_sampler(element):
-        children.extend(loads_children(element_no, specified_group_no, specified_sampler_no, specified_self_only))
+        children.extend(
+            loads_children(
+                element_no,
+                specified_group_no,
+                specified_sampler_no,
+                specified_self_only,
+                config_components
+            )
+        )
     # 元素为 SnippetSampler 时，读取片段内容
     else:
-        add_snippets(properties, children)
+        add_snippets(properties, children, config_components)
         # SnippetSampler 的属性不需要添加至脚本中
         properties = None
 
@@ -182,7 +190,13 @@ def loads_property(element_no):
     return properties
 
 
-def loads_children(element_no, specified_group_no, specified_sampler_no, specified_self_only):
+def loads_children(
+        element_no,
+        specified_group_no,
+        specified_sampler_no,
+        specified_self_only,
+        config_components: Dict[str, list]
+):
     # 递归查询子代，并根据序号正序排序
     children_links = ElementChildrenDao.select_all_by_parent(element_no)
     children = []
@@ -194,7 +208,7 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
             # 独立运行
             if specified_self_only:
                 if link.CHILD_NO == specified_sampler_no:
-                    child = loads_element(link.CHILD_NO)
+                    child = loads_element(link.CHILD_NO, config_components=config_components)
                     if child:
                         children.append(child)
             # 非独立运行
@@ -204,7 +218,8 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
                     specified_group_no,
                     specified_sampler_no,
                     specified_self_only,
-                    no_sampler=found
+                    no_sampler=found,
+                    config_components=config_components
                 )
                 if child:
                     children.append(child)
@@ -213,18 +228,24 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
 
         # 无需指定 Sampler
         else:
-            child = loads_element(link.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
+            child = loads_element(
+                link.CHILD_NO,
+                specified_group_no,
+                specified_sampler_no,
+                specified_self_only,
+                config_components=config_components
+            )
             if child:
                 children.append(child)
 
     return children
 
 
-def add_snippets(sampler_property, children: list):
+def add_snippets(sampler_property, children: list, config_components: Dict[str, list]):
     snippet_no = sampler_property.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippet_collection = loads_element(snippet_no)
+    snippet_collection = loads_element(snippet_no, config_components=config_components)
     if not snippet_collection:
         return
     snippets = snippet_collection['children']
@@ -403,9 +424,9 @@ def add_database_engine(engine, config_components: dict):
         'class': 'DatabaseEngine',
         'enabled': True,
         'property': {
-            'DatabaseEngine__variable_name': DatabaseType[engine.VARIABLE_NAME.name].value,
-            'DatabaseEngine__database_type': engine.DATABASE_TYPE,
-            'DatabaseEngine__driver': DatabaseDriver[engine.VARIABLE_NAME.name].value,
+            'DatabaseEngine__variable_name': engine.VARIABLE_NAME,
+            'DatabaseEngine__database_type': DatabaseType[engine.DATABASE_TYPE].value,
+            'DatabaseEngine__driver': DatabaseDriver[engine.DATABASE_TYPE].value,
             'DatabaseEngine__username': engine.USERNAME,
             'DatabaseEngine__password': engine.PASSWORD,
             'DatabaseEngine__host': engine.HOST,

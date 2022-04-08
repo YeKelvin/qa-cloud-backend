@@ -57,12 +57,12 @@ def debug_pymeter(script, sid):
 
 
 def debug_pymeter_with_loader(loader, app, element_no, element_name, sid):
+    result_id = new_id()
     # noinspection PyBroadException
     try:
-        result_id = new_id()
         socketio.emit(
             'pymeter_start',
-            {'result': {'id': result_id, 'name': '加载中', 'loading': True, 'running': True}},
+            {'id': result_id, 'name': '加载中', 'loading': True, 'running': True},
             namespace='/',
             to=sid
         )
@@ -71,6 +71,12 @@ def debug_pymeter_with_loader(loader, app, element_no, element_name, sid):
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
         log.error(traceback.format_exc())
+        socketio.emit(
+            'pymeter_result_summary',
+            {'resultId': result_id, 'result': {'name': 'error', 'loading': False, 'running': False}},
+            namespace='/',
+            to=sid
+        )
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
