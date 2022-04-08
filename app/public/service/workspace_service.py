@@ -8,7 +8,7 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.enum import WorkspaceScope
@@ -109,7 +109,7 @@ def create_workspace(req):
 @http_service
 def modify_workspace(req):
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_is_not_blank(workspace, '工作空间不存在')
+    check_exists(workspace, '工作空间不存在')
 
     workspace.update(
         WORKSPACE_NAME=req.workspaceName,
@@ -121,7 +121,7 @@ def modify_workspace(req):
 @http_service
 def remove_workspace(req):
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_is_not_blank(workspace, '工作空间不存在')
+    check_exists(workspace, '工作空间不存在')
 
     workspace.delete()
 

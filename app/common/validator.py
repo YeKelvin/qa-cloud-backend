@@ -14,7 +14,7 @@ def check_is_blank(obj: any, error_msg: str = 'validation failed', error: ErrorC
         raise ServiceError(error_msg, error)
 
 
-def check_is_not_blank(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
+def check_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
     """检查obj对象是否不为空，为空则抛异常"""
     if not obj:
         raise ServiceError(error_msg, error)

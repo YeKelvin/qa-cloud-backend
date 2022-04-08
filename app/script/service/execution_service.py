@@ -14,7 +14,7 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.globals import get_userno
 from app.common.id_generator import new_id
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
@@ -259,11 +259,11 @@ def execute_testplan(req):
 
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
-    check_is_not_blank(settings, '计划设置不存在')
+    check_exists(settings, '计划设置不存在')
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
@@ -620,7 +620,7 @@ def run_testplan_and_save_report_on_error(
 def interrupt_testplan_execution(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
-    check_is_not_blank(execution, '执行记录不存在')
+    check_exists(execution, '执行记录不存在')
 
     # 标记执行中断
     execution.update(

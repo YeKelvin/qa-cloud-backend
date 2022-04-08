@@ -6,7 +6,7 @@
 from typing import Dict
 
 from app.common.exceptions import ServiceError
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
 from app.script.dao import element_children_dao as ElementChildrenDao
@@ -82,7 +82,7 @@ def loads_element(
     """根据元素编号加载元素数据"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
-    check_is_not_blank(element, '元素不存在')
+    check_exists(element, '元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
     if is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
@@ -100,7 +100,7 @@ def loads_element(
     if is_sql_sampler(element):
         # 查询数据库引擎
         engine = DatabaseConfigDao.select_by_no(properties.get('engineNo'))
-        check_is_not_blank(engine, '数据库引擎不存在')
+        check_exists(engine, '数据库引擎不存在')
         # 删除引擎编号，PyMeter中不需要
         properties.pop('engineNo')
         # 实时将引擎变量名称写入元素属性中

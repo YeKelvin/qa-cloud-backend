@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
@@ -70,11 +70,11 @@ def query_testplan_list(req):
 def query_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
-    check_is_not_blank(settings, '计划设置不存在')
+    check_exists(settings, '计划设置不存在')
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
@@ -100,7 +100,7 @@ def query_testplan(req):
 def create_testplan(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_is_not_blank(workspace, '工作空间不存在')
+    check_exists(workspace, '工作空间不存在')
 
     # 创建计划编号
     plan_no = new_id()
@@ -144,11 +144,11 @@ def create_testplan(req):
 def modify_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
-    check_is_not_blank(settings, '计划设置不存在')
+    check_exists(settings, '计划设置不存在')
 
     # 修改测试计划项目明细
     collection_number_list = []
@@ -190,7 +190,7 @@ def modify_testplan(req):
 def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
 
     if req.state == TestplanState.TESTING.value and not testplan.START_TIME:
         testplan.update(STATE=req.state, START_TIME=datetime_now_by_utc8())
@@ -204,7 +204,7 @@ def modify_testplan_state(req):
 def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
     testplan.update(TEST_PHASE=req.testPhase)
 
 
@@ -212,7 +212,7 @@ def modify_testplan_testphase(req):
 def query_testplan_execution_all(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_is_not_blank(testplan, '测试计划不存在')
+    check_exists(testplan, '测试计划不存在')
 
     # 查询所有执行记录
     executions = TestplanExecutionDao.select_all_by_plan(req.planNo)
@@ -234,11 +234,11 @@ def query_testplan_execution_all(req):
 def query_testplan_execution_details(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
-    check_is_not_blank(execution, '执行记录不存在')
+    check_exists(execution, '执行记录不存在')
 
     # 查询执行记录设置项
     settings = TestPlanExecutionSettingsDao.select_by_no(req.executionNo)
-    check_is_not_blank(settings, '计划设置不存在')
+    check_exists(settings, '计划设置不存在')
 
     # 查询测试报告，如果没有勾选保存结果就没有测试报告
     report = TestReportDao.select_by_execution(execution.EXECUTION_NO)

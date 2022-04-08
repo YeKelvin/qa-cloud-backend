@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
@@ -74,7 +74,7 @@ def query_workspace_user_all(req):
 def modify_workspace_user(req):
     # 查询元素
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_is_not_blank(workspace, '工作空间不存在')
+    check_exists(workspace, '工作空间不存在')
 
     for user_no in req.userNumberList:
         # 查询空间成员

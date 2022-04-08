@@ -13,7 +13,7 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
@@ -48,11 +48,11 @@ log = get_logger(__name__)
 def login(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    check_is_not_blank(login_info, '账号或密码不正确')
+    check_exists(login_info, '账号或密码不正确')
 
     # 查询用户
     user = UserDao.select_by_userno(login_info.USER_NO)
-    check_is_not_blank(user, '账号或密码不正确')
+    check_exists(user, '账号或密码不正确')
 
     # 校验用户状态
     if user.STATE != UserState.ENABLE.value:
@@ -60,7 +60,7 @@ def login(req):
 
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_userno(user.USER_NO)
-    check_is_not_blank(user_password, '账号或密码不正确')
+    check_exists(user_password, '账号或密码不正确')
 
     # 密码RSA解密
     user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
@@ -169,15 +169,15 @@ def register(req):
 def reset_login_password(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
-    check_is_not_blank(user, '用户不存在')
+    check_exists(user, '用户不存在')
 
     # 查询登录信息
     user_login_info = UserLoginInfoDao.select_by_userno(req.userNo)
-    check_is_not_blank(user_login_info, '用户登录信息不存在')
+    check_exists(user_login_info, '用户登录信息不存在')
 
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
-    check_is_not_blank(user_password, '用户登录密码不存在')
+    check_exists(user_password, '用户登录密码不存在')
 
     # 更新用户密码
     user_password.update(PASSWORD=encrypt_password(user_login_info.LOGIN_NAME, '123456'))
@@ -297,7 +297,7 @@ def query_user_info():
 def modify_user(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
-    check_is_not_blank(user, '用户不存在')
+    check_exists(user, '用户不存在')
 
     # 更新用户信息
     user.update(
@@ -336,7 +336,7 @@ def get_private_workspace_by_user(user_no):
 def modify_user_state(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
-    check_is_not_blank(user, '用户不存在')
+    check_exists(user, '用户不存在')
 
     # 更新用户状态
     user.update(STATE=req.state)
@@ -347,7 +347,7 @@ def modify_user_state(req):
 def remove_user(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
-    check_is_not_blank(user, '用户不存在')
+    check_exists(user, '用户不存在')
 
     # 解绑用户和角色
     UserRoleDao.delete_all_by_userno(req.userNo)

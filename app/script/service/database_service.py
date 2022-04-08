@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
 from app.utils.log_util import get_logger
@@ -65,7 +65,7 @@ def query_database_engine_all(req):
 def query_database_engine_info(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     return {
         'configNo': engine.CONFIG_NO,
@@ -118,7 +118,7 @@ def create_database_engine(req):
 def modify_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.datasetNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     # 更新数据库引擎信息
     engine.update(
@@ -140,7 +140,7 @@ def modify_database_engine(req):
 def remove_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     # 删除数据库引擎
     engine.delete()
@@ -150,7 +150,7 @@ def remove_database_engine(req):
 def duplicate_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     # 复制数据库引擎
     config_no = new_id()
@@ -177,7 +177,7 @@ def duplicate_database_engine(req):
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     # 复制数据库引擎
     config_no = new_id()
@@ -204,6 +204,6 @@ def copy_database_engine_to_workspace(req):
 def move_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_is_not_blank(engine, '数据库引擎不存在')
+    check_exists(engine, '数据库引擎不存在')
 
     engine.update(WORKSPACE_NO=req.workspaceNo)

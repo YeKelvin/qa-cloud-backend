@@ -7,7 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.usercenter.dao import role_dao as RoleDao  # noqa
 from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
 from app.usercenter.dao import user_role_dao as UserRoleDao  # noqa
@@ -73,7 +73,7 @@ def query_role_all():
 def query_role_info(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     return {
         'roleNo': role.ROLE_NO,
@@ -110,7 +110,7 @@ def create_role(req):
 def modify_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     # 唯一性校验
     if RoleDao.select_by_name(req.roleName):
@@ -131,7 +131,7 @@ def modify_role(req):
 def modify_role_state(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     # 更新角色状态
     role.update(STATE=req.state)
@@ -141,7 +141,7 @@ def modify_role_state(req):
 def remove_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     # 查询用户角色列表
     user_role_list = UserRoleDao.select_all_by_roleno(req.roleNo)

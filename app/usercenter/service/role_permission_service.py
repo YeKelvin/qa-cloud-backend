@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from sqlalchemy import exists
 
 from app.common.decorators.service import http_service
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.extension import db
 from app.usercenter.dao import role_dao as RoleDao  # noqa
 from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
@@ -92,7 +92,7 @@ def query_role_permission_unbound_list(req):
 def create_role_permissions(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     for permission_no in req.permissionNumberList:
         # 查询角色权限
@@ -115,7 +115,7 @@ def remove_role_permission(req):
 def remove_role_permissions(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
-    check_is_not_blank(role, '角色不存在')
+    check_exists(role, '角色不存在')
 
     for permission_no in req.permissionNumberList:
         # 查询角色权限

@@ -7,7 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_is_blank
-from app.common.validator import check_is_not_blank
+from app.common.validator import check_exists
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import VariableDatasetType
@@ -78,7 +78,7 @@ def create_variable_dataset(req):
 
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
     if req.datasetType != VariableDatasetType.GLOBAL.value:
-        check_is_not_blank(req.workspaceNo, '工作空间编号不能为空')
+        check_exists(req.workspaceNo, '工作空间编号不能为空')
 
     # 新增变量集
     dataset_no = new_id()
@@ -98,7 +98,7 @@ def create_variable_dataset(req):
 def modify_variable_dataset(req):
     # 查询变量集信息
     varset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(varset, '变量集不存在')
+    check_exists(varset, '变量集不存在')
 
     # 更新变量集信息
     varset.update(
@@ -111,7 +111,7 @@ def modify_variable_dataset(req):
 def remove_variable_dataset(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     # 删除变量集下的所有变量
     VariableDao.delete_all_by_dataset(req.datasetNo)
@@ -127,7 +127,7 @@ def create_variable(req):
 
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     # 新增变量
     var_no = new_id()
@@ -148,7 +148,7 @@ def create_variable(req):
 def modify_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
-    check_is_not_blank(variable, '变量不存在')
+    check_exists(variable, '变量不存在')
 
     # 更新变量信息
     variable.update(
@@ -163,7 +163,7 @@ def modify_variable(req):
 def remove_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
-    check_is_not_blank(variable, '变量不存在')
+    check_exists(variable, '变量不存在')
 
     # 删除变量
     variable.delete()
@@ -173,7 +173,7 @@ def remove_variable(req):
 def enable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
-    check_is_not_blank(variable, '变量不存在')
+    check_exists(variable, '变量不存在')
 
     # 启用变量
     variable.update(
@@ -185,7 +185,7 @@ def enable_variable(req):
 def disable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
-    check_is_not_blank(variable, '变量不存在')
+    check_exists(variable, '变量不存在')
 
     # 禁用变量
     variable.update(
@@ -197,7 +197,7 @@ def disable_variable(req):
 def update_current_value(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
-    check_is_not_blank(variable, '变量不存在')
+    check_exists(variable, '变量不存在')
 
     # 更新当前值
     variable.update(
@@ -253,7 +253,7 @@ def query_variables(req):
 def create_variables(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     for vari in req.variableList:
         # 跳过变量名为空的数据
@@ -287,7 +287,7 @@ def modify_variables(req):
         if 'varNo' in vari:
             # 查询变量信息
             variable = VariableDao.select_by_no(vari.varNo)
-            check_is_not_blank(variable, '变量不存在')
+            check_exists(variable, '变量不存在')
             # 更新变量信息
             variable.update(
                 VAR_NAME=vari.varName,
@@ -322,7 +322,7 @@ def remove_variables(req):
 def duplicate_variable_dataset(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     # 复制变量集
     dataset_no = new_id()
@@ -356,7 +356,7 @@ def duplicate_variable_dataset(req):
 def copy_variable_dataset_to_workspace(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     # 复制变量集
     dataset_no = new_id()
@@ -389,6 +389,6 @@ def copy_variable_dataset_to_workspace(req):
 def move_variable_dataset_to_workspace(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
-    check_is_not_blank(dataset, '变量集不存在')
+    check_exists(dataset, '变量集不存在')
 
     dataset.update(WORKSPACE_NO=req.workspaceNo)
