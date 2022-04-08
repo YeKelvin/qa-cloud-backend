@@ -93,8 +93,6 @@ def execute_collection(req):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(element_no)
-            if not script:
-                raise ServiceError('脚本异常，请重试')
             # 添加 socket 组件
             element_loader.add_flask_sio_result_collector(
                 script,
@@ -146,8 +144,6 @@ def execute_group(req):
                 specified_group_no=req.groupNo,
                 specified_self_only=req.selfOnly
             )
-            if not script:
-                raise ServiceError('脚本异常，请检查后重试')
             # 添加 socket 组件
             element_loader.add_flask_sio_result_collector(
                 script,
@@ -193,8 +189,6 @@ def execute_sampler(req):
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfOnly)
-    if not script:
-        raise ServiceError('脚本异常，请检查后重试')
 
     # 添加 socket 组件
     result_id = new_id()
@@ -232,8 +226,6 @@ def execute_snippets(req):
         collection.ELEMENT_NAME,
         collection.ELEMENT_REMARK
     )
-    if not script:
-        raise ServiceError('脚本异常，请检查后重试')
 
     # 添加 socket 组件
     result_id = new_id()
@@ -649,8 +641,6 @@ def query_collection_json(req):
         raise ServiceError('仅支持 Collecion 元素')
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
-    if not script:
-        raise ServiceError('脚本异常')
     # 添加变量组件
     element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
     return script
@@ -671,8 +661,6 @@ def query_group_json(req):
     collection_no = group_parent_link.PARENT_NO
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
-    if not script:
-        raise ServiceError('脚本异常')
     # 添加变量组件
     element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
     return script
@@ -692,8 +680,6 @@ def query_snippets_json(req):
         collection.ELEMENT_NAME,
         collection.ELEMENT_REMARK
     )
-    if not script:
-        raise ServiceError('脚本异常')
     # 添加变量组件
     element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue, req.variables)
     return script

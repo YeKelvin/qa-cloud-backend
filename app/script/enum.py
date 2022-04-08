@@ -78,6 +78,12 @@ class ElementClass(Enum):
     # HTTP头部配置器
     HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
 
+    # 数据集配置器
+    VARIABLE_DATASET = 'VariableDataset'
+
+    # 数据库引擎配置器
+    DATABASE_ENGINE = 'DatabaseEngine'
+
     # ForIn控制器
     FOR_IN_CONTROLLER = 'ForInController'
 
@@ -304,6 +310,10 @@ def is_test_group(element):
 
 def is_http_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+
+
+def is_sql_sampler(element):
+    return element.ELEMENT_CLASS == ElementClass.SQL_SAMPLER.value
 
 
 def is_snippet_sampler(element):

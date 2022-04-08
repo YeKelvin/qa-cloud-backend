@@ -7,6 +7,7 @@ from typing import Dict
 
 from app.common.exceptions import ServiceError
 from app.common.validator import check_is_not_blank
+from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import element_property_dao as ElementPropertyDao
@@ -15,6 +16,8 @@ from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRef
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
+from app.script.enum import DatabaseDriver
+from app.script.enum import DatabaseType
 from app.script.enum import ElementClass
 from app.script.enum import ElementType
 from app.script.enum import is_debuger
@@ -23,6 +26,7 @@ from app.script.enum import is_http_sampler
 from app.script.enum import is_sampler
 from app.script.enum import is_setup_group_debuger
 from app.script.enum import is_snippet_sampler
+from app.script.enum import is_sql_sampler
 from app.script.enum import is_teardown_group_debuger
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
@@ -38,14 +42,49 @@ def loads_tree(
         specified_sampler_no=None,
         specified_self_only=False,
         no_sampler=False,
-        no_debuger=False
+        no_debuger=False,
 ):
     """根据元素编号加载脚本"""
+    # 临时缓存
+    cache = {}
+    # 全局配置临时变量
+    config_components = {}
+    # 递归加载元素
+    script = loads_element(
+        element_no,
+        config_components=config_components,
+        specified_group_no=specified_group_no,
+        specified_sampler_no=specified_sampler_no,
+        specified_self_only=specified_self_only,
+        no_sampler=no_sampler,
+        no_debuger=no_debuger
+    )
+    if not script:
+        raise ServiceError('脚本异常，请重试')
+    # 添加全局配置
+    if config_components:
+        for configs in config_components.values():
+            for config in configs:
+                script['children'].insert(0, config)
+
+    return script
+
+
+def loads_element(
+        element_no,
+        config_components: Dict[str, list],
+        specified_group_no: str,
+        specified_sampler_no: str,
+        specified_self_only: bool,
+        no_sampler: bool,
+        no_debuger: bool
+):
+    """根据元素编号加载元素数据"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_is_not_blank(element, '元素不存在')
 
-    # 检查是否为运行加载的元素，不允许时直接返回 None
+    # 检查是否为允许加载的元素，不允许时直接返回 None
     if is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
         return None
 
@@ -57,6 +96,17 @@ def loads_tree(
     # 元素为 HttpSampler 时，添加 HTTP 请求头管理器
     if is_http_sampler(element):
         add_http_header_manager(element, children)
+
+    if is_sql_sampler(element):
+        # 查询数据库引擎
+        engine = DatabaseConfigDao.select_by_no(properties.get('engineNo'))
+        check_is_not_blank(engine, '数据库引擎不存在')
+        # 删除引擎编号，PyMeter中不需要
+        properties.pop('engineNo')
+        # 实时将引擎变量名称写入元素属性中
+        properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
+        # 添加数据库引擎配置组件
+        add_database_engine(engine.CONFIG_NO, config_components)
 
     # 元素为常规 Sampler 时，添加子代
     if not is_snippet_sampler(element):
@@ -144,12 +194,12 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
             # 独立运行
             if specified_self_only:
                 if link.CHILD_NO == specified_sampler_no:
-                    child = loads_tree(link.CHILD_NO)
+                    child = loads_element(link.CHILD_NO)
                     if child:
                         children.append(child)
             # 非独立运行
             else:
-                child = loads_tree(
+                child = loads_element(
                     link.CHILD_NO,
                     specified_group_no,
                     specified_sampler_no,
@@ -163,7 +213,7 @@ def loads_children(element_no, specified_group_no, specified_sampler_no, specifi
 
         # 无需指定 Sampler
         else:
-            child = loads_tree(link.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
+            child = loads_element(link.CHILD_NO, specified_group_no, specified_sampler_no, specified_self_only)
             if child:
                 children.append(child)
 
@@ -174,7 +224,7 @@ def add_snippets(sampler_property, children: list):
     snippet_no = sampler_property.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippet_collection = loads_tree(snippet_no)
+    snippet_collection = loads_element(snippet_no)
     if not snippet_collection:
         return
     snippets = snippet_collection['children']
@@ -188,12 +238,12 @@ def add_builtin_children(element_no, children: list):
     for link in builtin_links:
         if link.CHILD_TYPE == ElementType.ASSERTION.value:
             # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
-            builtin = loads_tree(link.CHILD_NO)
+            builtin = loads_element(link.CHILD_NO)
             if builtin:
                 children.insert(0, builtin)
         else:
             # 其余内置元素添加至最后（最后一个运行）
-            builtin = loads_tree(link.CHILD_NO)
+            builtin = loads_element(link.CHILD_NO)
             if builtin:
                 children.append(builtin)
 
@@ -219,7 +269,7 @@ def add_variable_data_set(script: dict, dataset_number_list: list, use_current_v
         return
 
     # 获取变量集
-    variables = get_variables_by_dataset_list(dataset_number_list, use_current_value)
+    variables = get_variables_by_datasets(dataset_number_list, use_current_value)
 
     # 添加额外的变量
     if additional:
@@ -241,11 +291,11 @@ def add_variable_data_set(script: dict, dataset_number_list: list, use_current_v
             }
         })
 
-    # 添加 VariableDataSet 组件
+    # 添加 VariableDataset 组件
     script['children'].insert(0, {
-        'name': 'VariableDataSet',
+        'name': 'VariableDataset',
         'remark': '',
-        'class': 'VariableDataSet',
+        'class': 'VariableDataset',
         'enabled': True,
         'property': {
             'Arguments__arguments': arguments
@@ -253,7 +303,7 @@ def add_variable_data_set(script: dict, dataset_number_list: list, use_current_v
     })
 
 
-def get_variables_by_dataset_list(dataset_number_list: list, use_current_value: bool) -> Dict:
+def get_variables_by_datasets(dataset_number_list: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
     dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_number_list)
@@ -337,6 +387,36 @@ def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
     })
 
 
+def add_root_configs(script: dict, config_components: Dict[str, list]):
+    for configs in config_components.values():
+        for config in configs:
+            script['children'].insert(0, config)
+
+
+def add_database_engine(engine, config_components: dict):
+    engines = config_components.get(ElementClass.DATABASE_ENGINE.value, [])
+    if not engines:
+        config_components[ElementClass.DATABASE_ENGINE.value] = engines
+    engines.append({
+        'name': engine.CONFIG_NAME,
+        'remark': engine.CONFIG_DESC,
+        'class': 'DatabaseEngine',
+        'enabled': True,
+        'property': {
+            'DatabaseEngine__variable_name': DatabaseType[engine.VARIABLE_NAME.name].value,
+            'DatabaseEngine__database_type': engine.DATABASE_TYPE,
+            'DatabaseEngine__driver': DatabaseDriver[engine.VARIABLE_NAME.name].value,
+            'DatabaseEngine__username': engine.USERNAME,
+            'DatabaseEngine__password': engine.PASSWORD,
+            'DatabaseEngine__host': engine.HOST,
+            'DatabaseEngine__port': engine.PORT,
+            'DatabaseEngine__query': engine.QUERY,
+            'DatabaseEngine__database': engine.DATABASE,
+            'DatabaseEngine__connect_timeout': engine.CONNECT_TIMEOUT
+        }
+    })
+
+
 def configure_snippets(snippet_collection, snippet_children, sampler_property):
     # SnippetCollection 属性
     snippet_parameters = snippet_collection['property'].get('arguments', [])  # TODO: rename to parameters
@@ -408,7 +488,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         })
     # 添加子代
     for link in children_links:
-        child = loads_tree(link.CHILD_NO)
+        child = loads_element(link.CHILD_NO)
         if child:
             children.append(child)
     # 创建一个临时的 Group
