@@ -58,6 +58,7 @@ def loads_tree(
         no_sampler=no_sampler,
         no_debuger=no_debuger,
         config_components=config_components,
+        cache=cache
     )
     if not script:
         raise ServiceError('脚本异常，请重试')
@@ -78,6 +79,7 @@ def loads_element(
         no_sampler: bool = False,
         no_debuger: bool = False,
         config_components: Dict[str, list] = None,
+        cache: Dict[str, dict] = None
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
@@ -93,10 +95,15 @@ def loads_element(
     # 读取元素属性
     properties = loads_property(element_no)
 
+    # 过滤空代码的 Python 组件
+    if is_blank_python(element, properties):
+        return None
+
     # 元素为 HttpSampler 时，添加 HTTP 请求头管理器
     if is_http_sampler(element):
-        add_http_header_manager(element, children)
+        add_http_header_manager(element, children, cache)
 
+    # 元素为 SQLSampler 时，添加全局的数据库引擎配置器
     if is_sql_sampler(element):
         # 查询数据库引擎
         engine = DatabaseConfigDao.select_by_no(properties.get('engineNo'))
@@ -116,14 +123,14 @@ def loads_element(
                 specified_group_no,
                 specified_sampler_no,
                 specified_self_only,
-                config_components
+                config_components,
+                cache
             )
         )
     # 元素为 SnippetSampler 时，读取片段内容
     else:
-        add_snippets(properties, children, config_components)
-        # SnippetSampler 的属性不需要添加至脚本中
-        properties = None
+        add_snippets(properties, children, config_components, cache)
+        properties = None  # SnippetSampler 的属性不需要添加至脚本中
 
     # 元素为 Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
     if is_group(element) or is_http_sampler(element):
@@ -195,7 +202,8 @@ def loads_children(
         specified_group_no,
         specified_sampler_no,
         specified_self_only,
-        config_components: Dict[str, list]
+        config_components: Dict[str, list],
+        cache: Dict[str, dict]
 ):
     # 递归查询子代，并根据序号正序排序
     children_links = ElementChildrenDao.select_all_by_parent(element_no)
@@ -208,44 +216,42 @@ def loads_children(
             # 独立运行
             if specified_self_only:
                 if link.CHILD_NO == specified_sampler_no:
-                    child = loads_element(link.CHILD_NO, config_components=config_components)
-                    if child:
+                    if child := loads_element(link.CHILD_NO, config_components=config_components, cache=cache):
                         children.append(child)
             # 非独立运行
             else:
-                child = loads_element(
+                if child := loads_element(
                     link.CHILD_NO,
                     specified_group_no,
                     specified_sampler_no,
                     specified_self_only,
                     no_sampler=found,
-                    config_components=config_components
-                )
-                if child:
+                    config_components=config_components,
+                    cache=cache
+                ):
                     children.append(child)
                 if link.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
                     found = True
-
         # 无需指定 Sampler
         else:
-            child = loads_element(
+            if child := loads_element(
                 link.CHILD_NO,
                 specified_group_no,
                 specified_sampler_no,
                 specified_self_only,
-                config_components=config_components
-            )
-            if child:
+                config_components=config_components,
+                cache=cache
+            ):
                 children.append(child)
 
     return children
 
 
-def add_snippets(sampler_property, children: list, config_components: Dict[str, list]):
+def add_snippets(sampler_property, children: list, config_components: Dict[str, list], cache: Dict[str, dict]):
     snippet_no = sampler_property.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippet_collection = loads_element(snippet_no, config_components=config_components)
+    snippet_collection = loads_element(snippet_no, config_components=config_components, cache=cache)
     if not snippet_collection:
         return
     snippets = snippet_collection['children']
@@ -259,13 +265,11 @@ def add_builtin_children(element_no, children: list):
     for link in builtin_links:
         if link.CHILD_TYPE == ElementType.ASSERTION.value:
             # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
-            builtin = loads_element(link.CHILD_NO)
-            if builtin:
+            if builtin := loads_element(link.CHILD_NO):
                 children.insert(0, builtin)
         else:
             # 其余内置元素添加至最后（最后一个运行）
-            builtin = loads_element(link.CHILD_NO)
-            if builtin:
+            if builtin := loads_element(link.CHILD_NO):
                 children.append(builtin)
 
 
@@ -347,7 +351,7 @@ def get_variables_by_datasets(dataset_number_list: list, use_current_value: bool
     return result
 
 
-def add_http_header_manager(sampler: TTestElement, children: list):
+def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[str, dict]):
     # 查询元素关联的请求头模板
     refs = HttpHeaderTemplateRefDao.select_all_by_sampler(sampler.ELEMENT_NO)
 
@@ -355,18 +359,28 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     if not refs:
         return
 
+    # 获取请求头管理器缓存
+    header_manager_cache = cache.get(ElementClass.HTTP_HEADER_MANAGER.value, {})
+    if not header_manager_cache:
+        cache[ElementClass.HTTP_HEADER_MANAGER.value] = header_manager_cache
+
     # 遍历添加请求头
     properties = []
     for ref in refs:
-        headers = HttpHeaderDao.select_all_by_template(ref.TEMPLATE_NO)
-        for header in headers:
-            properties.append({
-                'class': 'HTTPHeader',
-                'property': {
-                    'Header__name': header.HEADER_NAME,
-                    'Header__value': header.HEADER_VALUE
-                }
-            })
+        # 先查缓存
+        headers_cache = header_manager_cache.get(ref.TEMPLATE_NO, [])
+        if not headers_cache:
+            headers = HttpHeaderDao.select_all_by_template(ref.TEMPLATE_NO)
+            for header in headers:
+                headers_cache.append({
+                    'class': 'HTTPHeader',
+                    'property': {
+                        'Header__name': header.HEADER_NAME,
+                        'Header__value': header.HEADER_VALUE
+                    }
+                })
+            header_manager_cache[ref.TEMPLATE_NO] = headers_cache
+        properties.extend(headers_cache)
 
     # 添加 HTTPHeaderManager 组件
     children.append({
@@ -492,6 +506,8 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
 
 
 def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
+    # 缓存
+    cache = {}
     # 读取元素属性
     properties = loads_property(snippet_no)
     use_http_session = properties.get('useHTTPSession', 'false')
@@ -509,8 +525,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         })
     # 添加子代
     for link in children_links:
-        child = loads_element(link.CHILD_NO)
-        if child:
+        if child := loads_element(link.CHILD_NO, cache=cache):
             children.append(child)
     # 创建一个临时的 Group
     group = {
@@ -532,7 +547,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         'children': children
     }
     # 创建一个临时的 Collection
-    collection = {
+    return {
         'name': snippet_name,
         'remark': snippet_remark,
         'class': 'TestCollection',
@@ -543,8 +558,6 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         },
         'children': [group]
     }
-
-    return collection
 
 
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
@@ -564,4 +577,14 @@ def is_specified_group(element, specified_no, self_only):
         if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
             return True
 
+    return False
+
+
+def is_blank_python(element, properties):
+    if element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value and not properties.get('PythonAssertion__script', '').strip():
+        return True
+    if element.ELEMENT_CLASS == ElementClass.PYTHON_POST_PROCESSOR.value and not properties.get('PythonPreProcessor__script', '').strip():
+        return True
+    if element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value and not properties.get('PythonPostProcessor__script', '').strip():
+        return True
     return False
