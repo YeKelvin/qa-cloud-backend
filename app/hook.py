@@ -13,8 +13,6 @@ from flask import request
 
 from app.common import globals
 from app.common.response import http_response
-from app.system.model import TActionLog
-from app.usercenter.model import TPermission
 from app.utils import randoms
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
@@ -48,12 +46,12 @@ def set_user():
     if 'Authorization' in request.headers:
         # 判断Authorization是否符合规范
         auth_header = request.headers.get('Authorization')
-        auth_array = auth_header.split(' ')
-        if not auth_array or len(auth_array) != 2:
-            log.info(f'logId:[ {g.logid} ] 解析 Authorization 有误')
+        auth_data = auth_header.split(' ')
+        if not auth_data or len(auth_data) != 2:
+            log.info(f'logId:[ {g.logid} ] 解析 Authorization 失败')
             return
 
-        auth_schema, auth_token = auth_array
+        auth_schema, auth_token = auth_data
         if auth_schema != 'Bearer':
             log.info(f'logId:[ {g.logid} ] 暂不支持的 schema')
             return

@@ -72,8 +72,7 @@ class JWTAuth:
                 'id': user_no
             }
         }
-        token = jwt.encode(payload, JWTAuth.SECRET_KEY, algorithm='HS256', headers=header)
-        return token
+        return jwt.encode(payload, JWTAuth.SECRET_KEY, algorithm='HS256', headers=header)
 
     @staticmethod
     def decode_auth_token(auth_token) -> dict:

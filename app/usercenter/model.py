@@ -56,7 +56,7 @@ class TPermission(DBModel, BaseColumn):
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
     METHOD = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
-    ENDPOINT = db.Column(db.String(128), nullable=False, comment='路由路径')  # TODO: 128 to 256
+    ENDPOINT = db.Column(db.String(256), nullable=False, comment='路由路径')  # TODO: 128 to 256
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, CLOSE:禁用)')
     UniqueConstraint('METHOD', 'ENDPOINT', 'DELETED', name='unique_method_endpoint')
 
