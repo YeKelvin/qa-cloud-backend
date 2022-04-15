@@ -45,11 +45,11 @@ class CRUDMixin:
         return cls.query.session.query(func.avg(field)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
-    def delete_filter(cls: MODEL, *args):
+    def deletes(cls: MODEL, *args):
         cls.filter(*args).update({cls.DELETED: cls.ID})
 
     @classmethod
-    def delete_filter_by(cls: MODEL, **kwargs):
+    def deletes_by(cls: MODEL, **kwargs):
         cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
 
     def update(self, **kwargs):

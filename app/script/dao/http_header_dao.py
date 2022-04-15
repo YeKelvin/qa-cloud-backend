@@ -29,4 +29,4 @@ def delete_in_no(*args):
 
 
 def delete_all_by_template(template_no):
-    THttpHeader.delete_filter_by(TEMPLATE_NO=template_no)
+    THttpHeader.deletes_by(TEMPLATE_NO=template_no)

@@ -21,7 +21,7 @@ def select_all_by_enable_element(element_no) -> List[TElementProperty]:
 
 
 def delete_all_by_element_and_notin_name(element_no, *name):
-    TElementProperty.delete_filter(
+    TElementProperty.deletes(
         TElementProperty.ELEMENT_NO == element_no,
         TElementProperty.PROPERTY_NAME.notin_(*name)
     )

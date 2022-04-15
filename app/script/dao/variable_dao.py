@@ -33,4 +33,4 @@ def delete_in_no(*args):
 
 
 def delete_all_by_dataset(dataset_no):
-    TVariable.delete_filter_by(DATASET_NO=dataset_no)
+    TVariable.deletes_by(DATASET_NO=dataset_no)
