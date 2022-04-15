@@ -13,10 +13,7 @@ from app import config as CONFIG
 from app.extension import db
 from app.extension import migrate
 from app.extension import socketio
-from app.utils.log_util import get_logger
 
-
-log = get_logger(__name__)
 
 __app__ = None
 
@@ -107,7 +104,7 @@ def register_blueprints(app: Flask):
 def register_hooks(app: Flask):
     from app import hook
 
-    app.before_request(hook.set_logid)
+    app.before_request(hook.set_trace_id)
     app.before_request(hook.set_user)
 
     if FLASK_ENV == 'development':
@@ -134,10 +131,7 @@ def register_commands(app: Flask):
 
 def get_db_url() -> str:
     """获取dbUrl"""
-    if 'sqlite' in CONFIG.DB_TYPE:
-        return get_sqlite_url()
-
-    return CONFIG.DB_URL
+    return get_sqlite_url() if 'sqlite' in CONFIG.DB_TYPE else CONFIG.DB_URL
 
 
 def get_sqlite_url():

@@ -6,6 +6,7 @@
 import threading
 import traceback
 from datetime import datetime
+from datetime import timezone
 
 import jwt
 from flask import g
@@ -13,7 +14,6 @@ from flask import request
 
 from app.common import globals
 from app.common.response import http_response
-from app.utils import randoms
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 
@@ -21,23 +21,18 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-def set_logid():
-    """
-    before_request
-    设置当前请求的全局logId
-    """
-    g.logid = (
-        f'{threading.current_thread().ident}'
-        f'{datetime.utcnow().strftime("%Y%m%d%H%M%S%f")}'
-        f'{randoms.get_number(4)}'
-    )
+def set_trace_id():
+    """设置当前请求的全局 TraceID"""
+    trace_id = getattr(g, 'trace_id', None)
+    if not trace_id:
+        g.trace_id = (
+            f'{threading.current_thread().ident}'
+            f'{datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")}'
+        )
 
 
 def set_user():
-    """
-    before_request
-    设置当前请求的全局user信息
-    """
+    """设置当前请求的全局user信息"""
     # 排除指定的请求
     if ('/user/login' in request.path) and ('POST' in request.method):
         return
@@ -48,12 +43,12 @@ def set_user():
         auth_header = request.headers.get('Authorization')
         auth_data = auth_header.split(' ')
         if not auth_data or len(auth_data) != 2:
-            log.info(f'logId:[ {g.logid} ] 解析 Authorization 失败')
+            log.info('解析 Authorization 失败')
             return
 
         auth_schema, auth_token = auth_data
         if auth_schema != 'Bearer':
-            log.info(f'logId:[ {g.logid} ] 暂不支持的 schema')
+            log.info('暂不支持的 schema')
             return
 
         # noinspection PyBroadException
@@ -64,9 +59,9 @@ def set_user():
             globals.put('user_no', payload['data']['id'])
             globals.put('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
-            log.info(f'logId:[ {g.logid} ] token已失效')
+            log.info('token已失效')
         except jwt.InvalidTokenError:
-            log.info(f'logId:[ {g.logid} ] 无效的token')
+            log.info('无效的token')
         except Exception:
             log.error(traceback.format_exc())
 

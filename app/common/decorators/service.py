@@ -7,7 +7,6 @@ import inspect
 import traceback
 from functools import wraps
 
-from flask import g
 from flask import request
 
 from app.common.exceptions import ErrorCode
@@ -34,7 +33,7 @@ def http_service(func):
         starttime = timestamp_as_ms()
         # 输出http请求日志
         log.info(
-            f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+            f'method:[ {request.method} ] path:[ {request.path} ] '
             f'header:[ {dict(request.headers)} ] request:[ {req} ]'
         )
         res = None
@@ -49,7 +48,8 @@ def http_service(func):
                 res = ResponseDTO(result)
                 # 输出service执行结果
                 log.info(
-                    f'logId:[ {g.logid} ] service:[ {func.__name__} ] result:[ {result} ]'
+                    f'method:[ {request.method} ] path:[ {request.path} ] '
+                    f'service:[ {func.__name__} ] result:[ {result} ]'
                 )
         except ServiceError as err:
             # 捕获service层的业务异常
@@ -57,7 +57,7 @@ def http_service(func):
         except Exception:
             # 捕获所有异常
             log.error(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'method:[ {request.method} ] path:[ {request.path} ] '
                 f'发生异常\n{traceback.format_exc()}'
             )
             res = ResponseDTO(error=ErrorCode.E500000)
@@ -68,7 +68,7 @@ def http_service(func):
             http_res = http_response(res)
             # 输出http响应日志
             log.info(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] '
+                f'method:[ {request.method} ] path:[ {request.path} ] '
                 f'header:[ {dict(http_res.headers)}] response:[ {res} ] '
                 f'elapsed:[ {elapsed_time}ms ]'
             )

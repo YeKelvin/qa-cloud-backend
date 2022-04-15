@@ -6,8 +6,8 @@
 from flask import g
 
 
-def get_logid():
-    return getattr(g, 'logid', None)
+def get_trace_id():
+    return getattr(g, 'trace_id', None)
 
 
 def get_userno():

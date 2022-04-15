@@ -6,7 +6,6 @@
 import inspect
 from functools import wraps
 
-from flask import g
 from flask import request
 
 from app.extension import db
@@ -32,7 +31,7 @@ def transactional(func):
             return result
         except Exception:
             log.error(
-                f'logId:[ {g.logid} ] method:[ {request.method} ] path:[ {request.path} ] database session rollback'
+                f'method:[ {request.method} ] path:[ {request.path} ] database session rollback'
             )
             db.session.rollback()
             raise  # 重新抛出异常给@http_service

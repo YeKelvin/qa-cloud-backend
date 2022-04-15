@@ -102,8 +102,7 @@ def login(req):
 
 
 def remote_addr():
-    x_forwarded_for = request.headers.get('X-Forwarded-For')
-    if x_forwarded_for:
+    if x_forwarded_for := request.headers.get('X-Forwarded-For'):
         ip_list = x_forwarded_for.split(',')
         return ip_list[0]
     else:

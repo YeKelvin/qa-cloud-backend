@@ -5,30 +5,44 @@
 # @Author  : Kelvin.Ye
 import logging
 import multiprocessing
+import threading
+from datetime import datetime
+from datetime import timezone
 from logging.config import dictConfig
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
 from logging.handlers import TimedRotatingFileHandler
 
+import flask
+
 from app import config as CONFIG
 
 
+logging_record_factory = logging.getLogRecordFactory()
+
+
+def app_record_factory(*args, **kwargs):
+    record = logging_record_factory(*args, **kwargs)
+    record.traceId = 'unknown'
+    return record
+
+
+logging.setLogRecordFactory(app_record_factory)
+
+
 # 日志格式
-LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d] %(message)s'
+LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d][traceId:%(traceId)s] %(message)s'
 FORMATTER = logging.Formatter(LOG_FORMAT)
 # 日志级别
 LEVEL = CONFIG.LOG_LEVEL
 # 日志文件名称
 LOG_FILE_NAME = CONFIG.LOG_FILE
-# LOG_FILE_NAME = f'[{os.getpid()}]{CONFIG.LOG_NAME}'
 
 
 # 控制台 Handler
 CONSOLE_HANDLER = logging.StreamHandler()
 CONSOLE_HANDLER.setFormatter(FORMATTER)
 
-# 文件 Handler
-# FILE_HANDLER = logging.FileHandler(LOG_FILE_NAME, encoding='utf-8')
 # 文件滚动日志（进程不安全）
 FILE_HANDLER = TimedRotatingFileHandler(LOG_FILE_NAME, when='D', interval=1, backupCount=30, encoding='utf-8')
 FILE_HANDLER.setFormatter(FORMATTER)
@@ -85,6 +99,7 @@ sqlalchemy_logger.propagate = False
 sqlalchemy_logger.setLevel(logging.INFO)
 for handler in sqlalchemy_logger.handlers:
     sqlalchemy_logger.removeHandler(handler)
+sqlalchemy_logger.addHandler(CONSOLE_HANDLER)
 sqlalchemy_logger.addHandler(QUEUE_HANDLER)
 logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
@@ -92,17 +107,34 @@ logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.orm').setLevel(logging.ERROR)
 
 
+class ContextFilter(logging.Filter):
+
+    traceId = 'unknown'
+
+    def filter(self, record):
+        if flask.has_app_context():
+            trace_id = getattr(flask.g, 'trace_id', None)
+            if not trace_id:
+                trace_id = (
+                    f'{threading.current_thread().ident}'
+                    f'{datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")}'
+                )
+                flask.g.trace_id = trace_id
+            record.traceId = trace_id
+        else:
+            record.traceId = "unknown"
+
+        return True
+
+
+CONTEXT_FILTER = ContextFilter()
+
+
 def get_logger(name, level=LEVEL) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.propagate = False
     logger.setLevel(level)
+    logger.addFilter(CONTEXT_FILTER)
     logger.addHandler(CONSOLE_HANDLER)
     logger.addHandler(QUEUE_HANDLER)
     return logger
-
-
-class WerkzeugLogFilter(logging.Filter):
-
-    def filter(self, record):
-        print(record.__dict__)
-        return True
