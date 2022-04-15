@@ -7,6 +7,8 @@ from typing import List
 
 from flask_sqlalchemy import Pagination
 
+from app.database import setter
+from app.database import where_by
 from app.usercenter.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -47,4 +49,7 @@ def select_all(**kwargs) -> List[TUser]:
 
 
 def logout(user_no):
-    TUser.filter_by(USER_NO=user_no).update({TUser.LOGGED_IN: False})
+    TUser.updates_by(
+        setter(LOGGED_IN=False),
+        where_by(USER_NO=user_no)
+    )

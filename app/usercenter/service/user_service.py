@@ -370,7 +370,7 @@ def remove_user(req):
     workspace.delete()
 
     # 删除空间成员
-    TWorkspaceUser.filter(TWorkspaceUser.USER_NO == req.userNo).update({TWorkspaceUser.DELETED: 1})
+    TWorkspaceUser.deletes(TWorkspaceUser.USER_NO == req.userNo)
 
     # 删除用户
     user.delete()

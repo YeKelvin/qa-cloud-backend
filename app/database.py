@@ -20,11 +20,24 @@ log = get_logger(__name__)
 MODEL = Type[db.Model]
 
 
+class setter(dict):
+    ...
+
+
+class where(list):
+    ...
+
+
+class where_by(dict):
+    ...
+
+
 class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
 
     @classmethod
     def insert(cls: MODEL, **kwargs):
+        # record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
 
@@ -45,19 +58,33 @@ class CRUDMixin:
         return cls.query.session.query(func.avg(field)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
-    def deletes(cls: MODEL, *args):
+    def updates(cls: MODEL, setter: dict, args: list, record=True):
+        cls.filter(*args).update({getattr(cls, attr): value for attr, value in setter.items()})
+        db.session.flush()
+
+    @classmethod
+    def updates_by(cls: MODEL, setter: dict, kwargs: dict, record=True):
+        cls.filter_by(**kwargs).update({getattr(cls, attr): value for attr, value in setter.items()})
+        db.session.flush()
+
+    @classmethod
+    def deletes(cls: MODEL, *args, record=True):
         cls.filter(*args).update({cls.DELETED: cls.ID})
+        db.session.flush()
 
     @classmethod
     def deletes_by(cls: MODEL, **kwargs):
+        # record = kwargs.pop('record', True)
         cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
+        db.session.flush()
 
     def update(self, **kwargs):
+        # record = kwargs.pop('record', True)
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         self.submit()
 
-    def delete(self):
+    def delete(self, record=True):
         """软删除"""
         return self.update(DELETED=getattr(self, 'ID'))
 

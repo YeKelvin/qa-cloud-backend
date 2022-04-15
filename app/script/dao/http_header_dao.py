@@ -25,7 +25,7 @@ def select_all_by_template(template_no) -> List[THttpHeader]:
 
 
 def delete_in_no(*args):
-    THttpHeader.filter(THttpHeader.HEADER_NO.in_(*args)).update({THttpHeader.DELETED: 1})
+    THttpHeader.deletes(THttpHeader.HEADER_NO.in_(*args))
 
 
 def delete_all_by_template(template_no):
