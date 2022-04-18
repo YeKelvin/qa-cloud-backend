@@ -117,7 +117,7 @@ def create_database_engine(req):
 @http_service
 def modify_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.datasetNo)
+    engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
 
     # 更新数据库引擎信息
