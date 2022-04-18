@@ -581,10 +581,19 @@ def is_specified_group(element, specified_no, self_only):
 
 
 def is_blank_python(element, properties):
-    if element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value and not properties.get('PythonAssertion__script', '').strip():
+    if (
+            element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value
+            and not properties.get('PythonPreProcessor__script', '').strip()
+    ):
         return True
-    if element.ELEMENT_CLASS == ElementClass.PYTHON_POST_PROCESSOR.value and not properties.get('PythonPreProcessor__script', '').strip():
+    if (
+            element.ELEMENT_CLASS == ElementClass.PYTHON_POST_PROCESSOR.value
+            and not properties.get('PythonPostProcessor__script', '').strip()
+    ):
         return True
-    if element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value and not properties.get('PythonPostProcessor__script', '').strip():
+    if (
+            element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value
+            and not properties.get('PythonAssertion__script', '').strip()
+    ):
         return True
     return False
