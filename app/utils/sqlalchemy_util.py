@@ -31,3 +31,28 @@ class QueryCondition(list):
         """完全匹配"""
         if value:
             self.append(column == value)
+
+    def notequal(self, column, value):
+        """完全匹配"""
+        if value:
+            self.append(column != value)
+
+    def lt(self, column, value):
+        """小于(less than)"""
+        if value:
+            self.append(column < value)
+
+    def le(self, column, value):
+        """小于等于(less than or equal to)"""
+        if value:
+            self.append(column <= value)
+
+    def gt(self, column, value):
+        """大于(greater than)"""
+        if value:
+            self.append(column > value)
+
+    def ge(self, column, value):
+        """大于等于(greater than or equal to)"""
+        if value:
+            self.append(column >= value)

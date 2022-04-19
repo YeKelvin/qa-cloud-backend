@@ -15,20 +15,20 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-@blueprint.get('/action/log/list')
+@blueprint.get('/operation/log/list')
 @require_login
 @require_permission
-def query_action_log_list():
+def query_operation_log_list():
     """分页查询操作日志列表
     """
     req = JsonParser(
-        Argument('actionDesc'),
-        Argument('actionMethod'),
-        Argument('actionEndpoint'),
+        Argument('operationName'),
+        Argument('operationMethod'),
+        Argument('operationEndpoint'),
         Argument('createdBy'),
         Argument('startTime'),
         Argument('endTime'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
-    return service.query_action_log_list(req)
+    return service.query_operation_log_list(req)

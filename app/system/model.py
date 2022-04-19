@@ -13,16 +13,6 @@ from app.utils.log_util import get_logger
 log = get_logger(__name__)
 
 
-class TActionLog(DBModel, BaseColumn):
-    """系统操作日志表"""
-    __tablename__ = 'ACTION_LOG'
-    ACTION_DESC = db.Column(db.String(256), comment='操作描述')
-    ACTION_METHOD = db.Column(db.String(32), comment='操作方法')
-    ACTION_ENDPOINT = db.Column(db.String(256), comment='操作路由')
-    OLD_VALUE = db.Column(db.String(512), comment='旧值')
-    NEW_VALUE = db.Column(db.String(512), comment='新值')
-
-
 class TSystemOperationLog(DBModel, BaseColumn):
     """操作日志表"""
     __tablename__ = 'SYSTEM_OPERATION_LOG'

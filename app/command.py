@@ -11,7 +11,6 @@ from app.extension import db  # noqa
 from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
-from app.system.model import TActionLog  # noqa
 from app.usercenter.model import TPermission  # noqa
 from app.usercenter.model import TRole  # noqa
 from app.usercenter.model import TRolePermission  # noqa
@@ -138,7 +137,7 @@ def init_permission():
 
     # system模块路由
     # log
-    _create_permission(name='分页查询操作日志列表', method='GET', endpoint='/system/action/log/list')
+    _create_permission(name='分页查询操作日志列表', method='GET', endpoint='/system/operation/log/list')
 
     # public模块路由
     # workspace

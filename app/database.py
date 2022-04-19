@@ -61,12 +61,19 @@ class CRUDMixin:
 
     @classmethod
     def updates(cls: MODEL, setter: dict, args: list, record=True):
+        """e.g.: Table.updates(setter(), where())"""
         cls.filter(*args).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
 
     @classmethod
     def updates_by(cls: MODEL, setter: dict, kwargs: dict, record=True):
+        """e.g.: Table.updates(setter(), where_by())"""
         cls.filter_by(**kwargs).update({getattr(cls, attr): value for attr, value in setter.items()})
+        # entities = cls.filter_by(**kwargs).all()
+        # for attr, value in setter.items():
+        #   for entity in entities:
+        #     setattr(self, attr, value)
+        #     __record_update__(getattr(cls, '__tablename__'), getattr(entity, attr), value)
         db.session.flush()
 
     @classmethod
@@ -78,6 +85,10 @@ class CRUDMixin:
     def deletes_by(cls: MODEL, **kwargs):
         # record = kwargs.pop('record', True)
         cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
+        # entities = cls.filter_by(**kwargs).all()
+        # for entity in entities:
+        #     entity.DELETED = entity.ID
+        #     __record_delete__(entity)
         db.session.flush()
 
     def update(self: MODEL, **kwargs):
