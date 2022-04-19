@@ -112,7 +112,11 @@ def remote_addr():
 @http_service
 @transactional
 def logout():
-    UserDao.logout(globals.get_userno())
+    # 查询用户
+    user = UserDao.select_by_userno(globals.get_userno())
+    check_exists(user, '用户不存在')
+    # 登出
+    user.update(LOGGED_IN=False)
 
 
 @http_service

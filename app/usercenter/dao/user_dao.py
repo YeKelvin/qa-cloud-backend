@@ -46,10 +46,3 @@ def select_all(**kwargs) -> List[TUser]:
         conds.like(TUser.STATE, kwargs.pop('state', None))
 
     return TUser.filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
-
-
-def logout(user_no):
-    TUser.updates_by(
-        setter(LOGGED_IN=False),
-        where_by(USER_NO=user_no)
-    )
