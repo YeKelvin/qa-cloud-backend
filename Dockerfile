@@ -1,7 +1,7 @@
 FROM public.ecr.aws/docker/library/python:3.8-slim-buster
 RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list \
     && apt-get update \
-    && apt-get install --no-install-recommends -y build-essential gcc git libpq-dev libssl-dev \
+    && apt-get install --no-install-recommends -y build-essential gcc git libpq-dev libssl-dev unixodbc-dev \
     && apt-get clean \
     && rm -rf /tmp/* \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" >/etc/timezone
