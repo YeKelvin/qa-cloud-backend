@@ -69,13 +69,16 @@ def set_user():
 
 
 def add_operation_log():
-    if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-        oplog = TSystemOperationLog()
-        oplog.LOG_NO = g.trace_id,
-        oplog.OPERATION_METHOD = request.method,
-        oplog.OPERATION_ENDPOINT = request.path
-        db.session.add(oplog)
-        db.session.flush()
+    # 过滤无需记录的操作
+    if request.method not in ['POST', 'PUT', 'PATCH', 'DELETE'] or '/execute' in request.path:
+        return
+    # 记录操作日志
+    oplog = TSystemOperationLog()
+    oplog.LOG_NO = g.trace_id,
+    oplog.OPERATION_METHOD = request.method,
+    oplog.OPERATION_ENDPOINT = request.path
+    db.session.add(oplog)
+    db.session.flush()
 
 
 def cross_domain_access(response):
