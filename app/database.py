@@ -6,6 +6,7 @@
 import decimal
 from typing import Type
 
+from flask import g
 from sqlalchemy import func
 
 from app.common.globals import get_userno
@@ -20,15 +21,15 @@ log = get_logger(__name__)
 MODEL = Type[db.Model]
 
 
-class setter(dict):
+class setter(dict):  # noqa
     ...
 
 
-class where(list):
+class where(list):  # noqa
     ...
 
 
-class where_by(dict):
+class where_by(dict):  # noqa
     ...
 
 
@@ -40,6 +41,7 @@ class CRUDMixin:
         # record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
+        # record and __record_insert__(entity)
 
     @classmethod
     def filter(cls: MODEL, *args):
@@ -78,15 +80,17 @@ class CRUDMixin:
         cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
         db.session.flush()
 
-    def update(self, **kwargs):
+    def update(self: MODEL, **kwargs):
         # record = kwargs.pop('record', True)
         for attr, value in kwargs.items():
             setattr(self, attr, value)
+            # record and __record_update__(getattr(self, '__tablename__'), getattr(self, attr), value)
         self.submit()
 
-    def delete(self, record=True):
+    def delete(self: MODEL, record=True):
         """软删除"""
-        return self.update(DELETED=getattr(self, 'ID'))
+        self.update(DELETED=getattr(self, 'ID'))
+        # record and __record_delete__(self)
 
     def submit(self):
         """写入数据库但不提交"""
@@ -116,3 +120,46 @@ class BaseColumn:
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(db.String(64), default=get_userno, onupdate=get_userno, comment='更新人')
     UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
+
+
+class TSystemOperationLogContent(DBModel, BaseColumn):
+    """操作日志内容表"""
+    __tablename__ = 'SYSTEM_OPERATION_LOG_CONTENT'
+    LOG_NO = db.Column(db.String(32), index=True, nullable=False, comment='日志编号')
+    OPERATION_TYPE = db.Column(db.String(32), nullable=False, comment='操作类型(INSERT:新增, UPDATE:修改, DELETE:删除)')
+    TABLE_NAME = db.Column(db.String(128), comment='列名')
+    ROW_ID = db.Column(db.Integer, comment='新增行或删除行的ID')
+    COLUMN_NAME = db.Column(db.String(128), comment='列名')
+    OLD_VALUE = db.Column(db.Text, comment='旧值')
+    NEW_VALUE = db.Column(db.Text, comment='新值')
+
+
+def __record_insert__(entity):
+    content = TSystemOperationLogContent()
+    content.LOG_NO = g.trace_id,
+    content.OPERATION_TYPE = 'INSERT',
+    content.TABLE_NAME = entity.__tablename__,
+    content.ROW_ID = entity.ID
+    db.session.add(content)
+    db.session.flush()
+
+
+def __record_update__(tablename, old, new):
+    content = TSystemOperationLogContent()
+    content.LOG_NO = g.trace_id,
+    content.OPERATION_TYPE = 'UPDATE',
+    content.TABLE_NAME = tablename,
+    content.OLD_VALUE = old
+    content.NEW_VALUE = new
+    db.session.add(content)
+    db.session.flush()
+
+
+def __record_delete__(entity):
+    content = TSystemOperationLogContent()
+    content.LOG_NO = g.trace_id,
+    content.OPERATION_TYPE = 'DELETE',
+    content.TABLE_NAME = entity.__tablename__,
+    content.ROW_ID = entity.ID
+    db.session.add(content)
+    db.session.flush()

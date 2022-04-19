@@ -106,6 +106,7 @@ def register_hooks(app: Flask):
 
     app.before_request(hook.set_trace_id)
     app.before_request(hook.set_user)
+    app.before_request(hook.add_operation_log)
 
     if FLASK_ENV == 'development':
         app.after_request(hook.cross_domain_access)
@@ -127,6 +128,7 @@ def register_commands(app: Flask):
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
     app.cli.add_command(command.dropdb)
+    app.cli.add_command(command.create_single_table)
 
 
 def get_db_url() -> str:

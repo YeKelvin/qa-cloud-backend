@@ -291,3 +291,16 @@ def _create_role(name, code, rank, desc=''):
 
 def _create_permission(name, method, endpoint):
     TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint)
+
+
+@click.command('create-table')
+@with_appcontext
+def create_single_table():
+    from sqlalchemy import create_engine
+    import app
+
+    engine = create_engine(app.get_db_url())
+    # TableModel.__table__.create(engine, checkfirst=True)
+    # ...
+
+    click.echo('新增成功')

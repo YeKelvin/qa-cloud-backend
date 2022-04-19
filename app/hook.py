@@ -14,6 +14,7 @@ from flask import request
 
 from app.common import globals
 from app.common.response import http_response
+from app.system.model import TSystemOperationLog
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
 
@@ -64,6 +65,15 @@ def set_user():
             log.info('无效的token')
         except Exception:
             log.error(traceback.format_exc())
+
+
+def add_operation_log():
+    if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        TSystemOperationLog.insert(
+            LOG_NO=g.trace_id,
+            OPERATION_METHOD=request.method,
+            OPERATION_ENDPOINT=request.path
+        )
 
 
 def cross_domain_access(response):
