@@ -12,6 +12,4 @@ def select_all_by_userno(user_no) -> List[TUserLoginLog]:
 
 
 def delete_all_by_userno(user_no):
-    entities = TUserLoginLog.filter_by(USER_NO=user_no).all()
-    for entity in entities:
-        entity.delete()
+    TUserLoginLog.deletes_by(USER_NO=user_no)

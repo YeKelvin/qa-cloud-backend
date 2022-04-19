@@ -25,9 +25,7 @@ def select_all_by_roleno(role_no) -> List[TUserRole]:
 
 
 def delete_all_by_userno(user_no):
-    entities = TUserRole.filter_by(USER_NO=user_no).all()
-    for entity in entities:
-        entity.delete()
+    TUserRole.deletes_by(USER_NO=user_no)
 
 
 def delete_all_by_user_and_notin_role(user_no, *role_number_list) -> None:

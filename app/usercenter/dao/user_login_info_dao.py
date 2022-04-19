@@ -20,6 +20,4 @@ def select_all_by_userno(user_no) -> List[TUserLoginInfo]:
 
 
 def delete_all_by_userno(user_no):
-    entities = TUserLoginInfo.filter_by(USER_NO=user_no).all()
-    for entity in entities:
-        entity.delete()
+    TUserLoginInfo.deletes_by(USER_NO=user_no)

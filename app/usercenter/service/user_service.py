@@ -355,7 +355,7 @@ def remove_user(req):
     UserRoleDao.delete_all_by_userno(req.userNo)
 
     # 删除用户密码
-    UserPasswordDao.delete_all_by_user_no(req.userNo)
+    UserPasswordDao.delete_all_by_userno(req.userNo)
 
     # 删除用户密码秘钥
     login_info_list = UserLoginInfoDao.select_all_by_userno(req.userNo)

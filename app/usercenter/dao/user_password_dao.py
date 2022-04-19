@@ -15,7 +15,6 @@ def select_all_by_userno(user_no) -> List[TUserPassword]:
     return TUserPassword.filter_by(USER_NO=user_no).all()
 
 
-def delete_all_by_user_no(user_no):
-    entities = TUserPassword.filter_by(USER_NO=user_no).all()
-    for entity in entities:
-        entity.delete()
+def delete_all_by_userno(user_no):
+    TUserPassword.deletes_by(USER_NO=user_no)
+
