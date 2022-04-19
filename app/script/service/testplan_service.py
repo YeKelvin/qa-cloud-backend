@@ -187,6 +187,7 @@ def modify_testplan(req):
 
 
 @http_service
+@transactional
 def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
@@ -201,6 +202,7 @@ def modify_testplan_state(req):
 
 
 @http_service
+@transactional
 def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)

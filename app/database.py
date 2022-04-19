@@ -38,10 +38,10 @@ class CRUDMixin:
 
     @classmethod
     def insert(cls: MODEL, **kwargs):
-        # record = kwargs.pop('record', True)
+        record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
-        # record and __record_insert__(entity)
+        record and __record_insert__(entity)
 
     @classmethod
     def filter(cls: MODEL, *args):

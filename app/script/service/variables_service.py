@@ -67,6 +67,7 @@ def query_variable_dataset_all(req):
 
 
 @http_service
+@transactional
 def create_variable_dataset(req):
     # 查询变量集信息
     varset = VariableDatasetDao.select_first(
@@ -95,6 +96,7 @@ def create_variable_dataset(req):
 
 
 @http_service
+@transactional
 def modify_variable_dataset(req):
     # 查询变量集信息
     varset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -108,6 +110,7 @@ def modify_variable_dataset(req):
 
 
 @http_service
+@transactional
 def remove_variable_dataset(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -120,6 +123,7 @@ def remove_variable_dataset(req):
 
 
 @http_service
+@transactional
 def create_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_dataset_and_name(req.datasetNo, req.varName)
@@ -145,6 +149,7 @@ def create_variable(req):
 
 
 @http_service
+@transactional
 def modify_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -160,6 +165,7 @@ def modify_variable(req):
 
 
 @http_service
+@transactional
 def remove_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -170,6 +176,7 @@ def remove_variable(req):
 
 
 @http_service
+@transactional
 def enable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -182,6 +189,7 @@ def enable_variable(req):
 
 
 @http_service
+@transactional
 def disable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -194,6 +202,7 @@ def disable_variable(req):
 
 
 @http_service
+@transactional
 def update_current_value(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -312,6 +321,7 @@ def modify_variables(req):
 
 
 @http_service
+@transactional
 def remove_variables(req):
     # 批量删除变量
     VariableDao.delete_in_no(req.list)
@@ -386,6 +396,7 @@ def copy_variable_dataset_to_workspace(req):
 
 
 @http_service
+@transactional
 def move_variable_dataset_to_workspace(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)

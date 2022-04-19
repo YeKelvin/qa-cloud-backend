@@ -4,6 +4,7 @@
 # @Time    : 2021-08-17 11:01:35
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_not_exists
 from app.common.validator import check_exists
@@ -49,6 +50,7 @@ def query_tag_all():
 
 
 @http_service
+@transactional
 def create_tag(req):
     tag = TagDao.select_by_name(req.tagName)
     check_not_exists(tag, '标签已存在')
@@ -61,6 +63,7 @@ def create_tag(req):
 
 
 @http_service
+@transactional
 def modify_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
     check_exists(tag, '标签不存在')
@@ -72,6 +75,7 @@ def modify_tag(req):
 
 
 @http_service
+@transactional
 def remove_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
     check_exists(tag, '标签不存在')

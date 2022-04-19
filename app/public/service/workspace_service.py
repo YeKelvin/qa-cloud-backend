@@ -107,6 +107,7 @@ def create_workspace(req):
 
 
 @http_service
+@transactional
 def modify_workspace(req):
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')
@@ -119,6 +120,7 @@ def modify_workspace(req):
 
 
 @http_service
+@transactional
 def remove_workspace(req):
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')

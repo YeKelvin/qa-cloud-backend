@@ -4,6 +4,7 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_not_exists
 from app.common.validator import check_exists
@@ -62,6 +63,7 @@ def query_permission_all():
 
 
 @http_service
+@transactional
 def create_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_endpoint_and_method(req.endpoint, req.method)
@@ -78,6 +80,7 @@ def create_permission(req):
 
 
 @http_service
+@transactional
 def modify_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
@@ -94,6 +97,7 @@ def modify_permission(req):
 
 
 @http_service
+@transactional
 def modify_permission_state(req):
     # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)
@@ -104,6 +108,7 @@ def modify_permission_state(req):
 
 
 @http_service
+@transactional
 def remove_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_permissionno(req.permissionNo)

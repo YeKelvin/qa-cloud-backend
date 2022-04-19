@@ -110,6 +110,7 @@ def remote_addr():
 
 
 @http_service
+@transactional
 def logout():
     UserDao.logout(globals.get_userno())
 
@@ -165,6 +166,7 @@ def register(req):
 
 
 @http_service
+@transactional
 def reset_login_password(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)
@@ -332,6 +334,7 @@ def get_private_workspace_by_user(user_no):
 
 
 @http_service
+@transactional
 def modify_user_state(req):
     # 查询用户
     user = UserDao.select_by_userno(req.userNo)

@@ -61,6 +61,7 @@ def query_http_header_template_all(req):
 
 
 @http_service
+@transactional
 def create_http_header_template(req):
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
@@ -79,6 +80,7 @@ def create_http_header_template(req):
 
 
 @http_service
+@transactional
 def modify_http_header_template(req):
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
@@ -92,6 +94,7 @@ def modify_http_header_template(req):
 
 
 @http_service
+@transactional
 def remove_http_header_template(req):
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
@@ -104,6 +107,7 @@ def remove_http_header_template(req):
 
 
 @http_service
+@transactional
 def create_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_template_and_name(req.templateNo, req.headerName)
@@ -128,6 +132,7 @@ def create_http_header(req):
 
 
 @http_service
+@transactional
 def modify_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -142,6 +147,7 @@ def modify_http_header(req):
 
 
 @http_service
+@transactional
 def remove_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -152,6 +158,7 @@ def remove_http_header(req):
 
 
 @http_service
+@transactional
 def enable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -164,6 +171,7 @@ def enable_http_header(req):
 
 
 @http_service
+@transactional
 def disable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -176,6 +184,7 @@ def disable_http_header(req):
 
 
 @http_service
+@transactional
 def query_http_headers_by_template(req):
     headers = HttpHeaderDao.select_all_by_template(req.templateNo)
 
@@ -276,6 +285,7 @@ def modify_http_headers(req):
 
 
 @http_service
+@transactional
 def remove_http_headers(req):
     # 批量删除请求头
     HttpHeaderDao.delete_in_no(req.list)
@@ -344,6 +354,7 @@ def copy_http_header_template_to_workspace(req):
 
 
 @http_service
+@transactional
 def move_http_header_template_to_workspace(req):
     # 查询请求头模板
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)

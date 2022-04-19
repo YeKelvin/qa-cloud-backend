@@ -623,6 +623,7 @@ def run_testplan_and_save_report_on_error(
 
 
 @http_service
+@transactional
 def interrupt_testplan_execution(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)

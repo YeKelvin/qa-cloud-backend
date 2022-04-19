@@ -415,6 +415,7 @@ def delete_element_property(element_no):
 
 
 @http_service
+@transactional
 def enable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -425,6 +426,7 @@ def enable_element(req):
 
 
 @http_service
+@transactional
 def disable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -746,6 +748,7 @@ def query_element_http_header_template_refs(req):
 
 
 @http_service
+@transactional
 def create_element_http_header_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -762,6 +765,7 @@ def create_element_http_header_template_refs(req):
 
 
 @http_service
+@transactional
 def modify_element_http_header_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -922,6 +926,7 @@ def copy_collection_to_workspace(req):
 
 
 @http_service
+@transactional
 def move_collection_to_workspace(req):
     # 查询集合
     collection = TestElementDao.select_by_no(req.elementNo)

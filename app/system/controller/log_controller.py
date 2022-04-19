@@ -19,13 +19,12 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_operation_log_list():
-    """分页查询操作日志列表
-    """
+    """分页查询操作日志列表"""
     req = JsonParser(
-        Argument('operationName'),
         Argument('operationMethod'),
         Argument('operationEndpoint'),
-        Argument('createdBy'),
+        Argument('operationName'),
+        Argument('operationBy'),
         Argument('startTime'),
         Argument('endTime'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),

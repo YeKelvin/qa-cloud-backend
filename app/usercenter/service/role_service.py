@@ -4,6 +4,7 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_not_exists
@@ -87,6 +88,7 @@ def query_role_info(req):
 
 
 @http_service
+@transactional
 def create_role(req):
     # 唯一性校验
     if RoleDao.select_by_name(req.roleName):
@@ -107,6 +109,7 @@ def create_role(req):
 
 
 @http_service
+@transactional
 def modify_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
@@ -128,6 +131,7 @@ def modify_role(req):
 
 
 @http_service
+@transactional
 def modify_role_state(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
@@ -138,6 +142,7 @@ def modify_role_state(req):
 
 
 @http_service
+@transactional
 def remove_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)

@@ -4,6 +4,7 @@
 # @Time    : 2022-04-04 16:22:20
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_not_exists
 from app.common.validator import check_exists
@@ -84,6 +85,7 @@ def query_database_engine_info(req):
 
 
 @http_service
+@transactional
 def create_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_first(
@@ -115,6 +117,7 @@ def create_database_engine(req):
 
 
 @http_service
+@transactional
 def modify_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -137,6 +140,7 @@ def modify_database_engine(req):
 
 
 @http_service
+@transactional
 def remove_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -147,6 +151,7 @@ def remove_database_engine(req):
 
 
 @http_service
+@transactional
 def duplicate_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -174,6 +179,7 @@ def duplicate_database_engine(req):
 
 
 @http_service
+@transactional
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -201,6 +207,7 @@ def copy_database_engine_to_workspace(req):
 
 
 @http_service
+@transactional
 def move_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
