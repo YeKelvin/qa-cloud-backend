@@ -19,7 +19,7 @@ log = get_logger(__name__)
 def query_operation_log_list(req):
     # 查询条件
     conds = QueryCondition(TSystemOperationLog, TPermission, TUser)
-    conds.like(TUser.USER_NAME, req.createdBy)
+    conds.like(TUser.USER_NAME, req.operationBy)
     conds.like(TPermission.PERMISSION_NAME, req.operationName)
     conds.like(TSystemOperationLog.OPERATION_METHOD, req.operationMethod)
     conds.like(TSystemOperationLog.OPERATION_ENDPOINT, req.operationEndpoint)
