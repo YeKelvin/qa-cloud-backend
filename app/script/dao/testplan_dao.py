@@ -15,5 +15,6 @@ def select_by_no(plan_no) -> TTestplan:
 def update_running_state_by_no(plan_no, val):
     TTestplan.updates_by(
         setter(RUNNING_STATE=val),
-        where_by(PLAN_NO=plan_no)
+        where_by(PLAN_NO=plan_no),
+        record=False
     )

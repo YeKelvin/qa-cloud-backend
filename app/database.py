@@ -60,7 +60,7 @@ class CRUDMixin:
         return cls.query.session.query(func.avg(field)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
-    def updates(cls: MODEL, setter: dict, args: list, record=True):
+    def updates(cls: MODEL, setter: dict, cons: list, record=True):
         """
         e.g.:
 
@@ -69,11 +69,16 @@ class CRUDMixin:
 
         Table.updates(setter(), where())
         """
-        cls.filter(*args).update({getattr(cls, attr): value for attr, value in setter.items()})
+        if record:
+            entities = cls.filter(*cons).all()
+            for entity in entities:
+                entity.update(**setter)
+        else:
+            cls.filter(*cons).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
 
     @classmethod
-    def updates_by(cls: MODEL, setter: dict, kwargs: dict, record=True):
+    def updates_by(cls: MODEL, setter: dict, cons: dict, record=True):
         """
         e.g.:
 
@@ -82,10 +87,12 @@ class CRUDMixin:
 
         Table.updates(setter(), where_by())
         """
-        cls.filter_by(**kwargs).update({getattr(cls, attr): value for attr, value in setter.items()})
-        # entities = cls.filter_by(**kwargs).all()
-        #   for entity in entities:
-        #     entity.update(**kwargs)
+        if record:
+            entities = cls.filter_by(**cons).all()
+            for entity in entities:
+                entity.update(**setter)
+        else:
+            cls.filter_by(**cons).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
 
     @classmethod
@@ -110,9 +117,9 @@ class CRUDMixin:
         db.session.flush()
 
     def update(self: MODEL, **kwargs):
-        # record = kwargs.pop('record', True)
+        record = kwargs.pop('record', True)
         for attr, value in kwargs.items():
-            # record and record_update(self.__tablename__, attr, getattr(self, attr), value)
+            record and record_update(self, attr, value)
             setattr(self, attr, value)
         self.submit()
 
@@ -175,16 +182,18 @@ def record_insert(entity):
     db.session.flush()
 
 
-def record_update(tablename, columnname, old, new):
+def record_update(entity, columnname, new):
     """记录更新数据的旧值和新值"""
     if columnname in ['ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME']:
         return
-    if old == new:
+    old = getattr(entity, columnname, None)
+    if old is None or old == new:
         return
     content = TSystemOperationLogContent()
     content.LOG_NO = g.trace_id,
     content.OPERATION_TYPE = 'UPDATE',
-    content.TABLE_NAME = tablename,
+    content.TABLE_NAME = entity.__tablename__,
+    content.ROW_ID = entity.ID
     content.COLUMN_NAME = columnname,
     content.OLD_VALUE = old
     content.NEW_VALUE = new

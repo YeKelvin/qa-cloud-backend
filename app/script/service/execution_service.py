@@ -290,7 +290,8 @@ def execute_testplan(req):
             environment = dataset.DATASET_NAME
         TTestplanExecutionDataset.insert(
             EXECUTION_NO=execution_no,
-            DATASET_NO=dataset_no
+            DATASET_NO=dataset_no,
+            record=False
         )
     # 创建执行记录
     TTestplanExecution.insert(
@@ -298,7 +299,8 @@ def execute_testplan(req):
         EXECUTION_NO=execution_no,
         RUNNING_STATE=RunningState.WAITING.value,
         ENVIRONMENT=environment,
-        TEST_PHASE=testplan.TEST_PHASE
+        TEST_PHASE=testplan.TEST_PHASE,
+        record=False
     )
     # 创建计划执行设置
     TTestplanExecutionSettings.insert(
@@ -309,7 +311,8 @@ def execute_testplan(req):
         SAVE=settings.SAVE,
         SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
         STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
-        USE_CURRENT_VALUE=req.useCurrentValue
+        USE_CURRENT_VALUE=req.useCurrentValue,
+        record=False
     )
     # 创建计划执行项目明细
     for item in items:
@@ -317,7 +320,8 @@ def execute_testplan(req):
             EXECUTION_NO=execution_no,
             COLLECTION_NO=item.COLLECTION_NO,
             SORT_NO=item.SORT_NO,
-            RUNNING_STATE=RunningState.WAITING.value
+            RUNNING_STATE=RunningState.WAITING.value,
+            record=False
         )
     # 新增测试报告
     report_no = None
@@ -328,7 +332,8 @@ def execute_testplan(req):
             PLAN_NO=testplan.PLAN_NO,
             EXECUTION_NO=execution_no,
             REPORT_NO=report_no,
-            REPORT_NAME=testplan.PLAN_NAME
+            REPORT_NAME=testplan.PLAN_NAME,
+            record=False
         )
 
     # 异步函数
@@ -390,7 +395,10 @@ def run_testplan(
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(execution_no)
     # 更新运行状态
-    execution.update(RUNNING_STATE=RunningState.RUNNING.value if save else RunningState.ITERATING.value)
+    execution.update(
+        RUNNING_STATE=RunningState.RUNNING.value if save else RunningState.ITERATING.value,
+        record=False
+    )
     db.session.commit()  # 这里要实时更新
 
     if save:
@@ -432,14 +440,18 @@ def run_testplan(
         TestReportDao.select_by_no(report_no).update(
             START_TIME=timestamp_to_utc8_datetime(start_time),
             END_TIME=timestamp_to_utc8_datetime(end_time),
-            ELAPSED_TIME=elapsed_time
+            ELAPSED_TIME=elapsed_time,
+            record=False
         )
 
     # 重新查询执行记录
     execution = TestplanExecutionDao.select_by_no(execution_no)
     # 更新运行状态，仅运行中和迭代中才更新为已完成
     if execution.RUNNING_STATE in (RunningState.RUNNING.value, RunningState.ITERATING.value):
-        execution.update(RUNNING_STATE=RunningState.COMPLETED.value)
+        execution.update(
+            RUNNING_STATE=RunningState.COMPLETED.value,
+            record=False
+        )
         db.session.commit()  # 这里要实时更新
     log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
 
@@ -486,7 +498,10 @@ def run_testplan_by_loop(
             log.info(f'执行编号:[ {execution_no} ] 开始第[ {i+1} ]次迭代')
             # 记录迭代次数
             execution = TestplanExecutionDao.select_by_no(execution_no)
-            execution.update(ITERATION_COUNT=execution.ITERATION_COUNT + 1)
+            execution.update(
+                ITERATION_COUNT=execution.ITERATION_COUNT + 1,
+                record=False
+            )
             db.session.commit()  # 这里要实时更新
             # 延迟迭代
             if delay and i > 0:
@@ -518,7 +533,10 @@ def run_testplan_by_loop(
                                     execution_no,
                                     collection_no
                                 )
-                                item.update(ERROR_COUNT=item.ERROR_COUNT + 1)
+                                item.update(
+                                    ERROR_COUNT=item.ERROR_COUNT + 1,
+                                    record=False
+                                )
                             except Exception:
                                 log.error(
                                     f'执行编号:[ {execution_no} ] '
@@ -560,7 +578,10 @@ def run_testplan_and_save_report(
             # 查询计划项目
             item = TestPlanExecutionItemsDao.select_by_execution_and_collection(execution_no, collection_no)
             # 更新项目运行状态
-            item.update(RUNNING_STATE=RunningState.RUNNING.value)
+            item.update(
+                RUNNING_STATE=RunningState.RUNNING.value,
+                record=False
+            )
             db.session.commit()  # 这里要实时更新
             # 加载脚本
             collection = element_loader.loads_tree(collection_no, no_debuger=True)
@@ -590,7 +611,10 @@ def run_testplan_and_save_report(
                                 execution_no,
                                 collection_no
                             )
-                            item.update(RUNNING_STATE=RunningState.ERROR.value)
+                            item.update(
+                                RUNNING_STATE=RunningState.ERROR.value,
+                                record=False
+                            )
                         except Exception:
                             log.error(
                                 f'执行编号:[ {execution_no} ] '
@@ -600,7 +624,10 @@ def run_testplan_and_save_report(
             task = executor.submit(start, app)  # 异步执行脚本
             task.result()  # 阻塞等待脚本执行完成
             # 更新项目运行状态
-            item.update(RUNNING_STATE=RunningState.COMPLETED.value)
+            item.update(
+                RUNNING_STATE=RunningState.COMPLETED.value,
+                record=False
+            )
             db.session.commit()  # 这里要实时更新
             log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
     except TestplanInterruptError:
