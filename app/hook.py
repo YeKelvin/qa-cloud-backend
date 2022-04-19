@@ -14,6 +14,7 @@ from flask import request
 
 from app.common import globals
 from app.common.response import http_response
+from app.extension import db
 from app.system.model import TSystemOperationLog
 from app.utils.auth import JWTAuth
 from app.utils.log_util import get_logger
@@ -69,11 +70,12 @@ def set_user():
 
 def add_operation_log():
     if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-        TSystemOperationLog.insert(
-            LOG_NO=g.trace_id,
-            OPERATION_METHOD=request.method,
-            OPERATION_ENDPOINT=request.path
-        )
+        oplog = TSystemOperationLog()
+        oplog.LOG_NO = g.trace_id,
+        oplog.OPERATION_METHOD = request.method,
+        oplog.OPERATION_ENDPOINT = request.path
+        db.session.add(oplog)
+        db.session.flush()
 
 
 def cross_domain_access(response):

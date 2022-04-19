@@ -41,7 +41,7 @@ class CRUDMixin:
         record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
-        record and __record_insert__(entity)
+        record and record_insert(entity)
 
     @classmethod
     def filter(cls: MODEL, *args):
@@ -61,47 +61,66 @@ class CRUDMixin:
 
     @classmethod
     def updates(cls: MODEL, setter: dict, args: list, record=True):
-        """e.g.: Table.updates(setter(), where())"""
+        """
+        e.g.:
+
+        from app.database import setter
+        from app.database import where
+
+        Table.updates(setter(), where())
+        """
         cls.filter(*args).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
 
     @classmethod
     def updates_by(cls: MODEL, setter: dict, kwargs: dict, record=True):
-        """e.g.: Table.updates(setter(), where_by())"""
+        """
+        e.g.:
+
+        from app.database import setter
+        from app.database import where_by
+
+        Table.updates(setter(), where_by())
+        """
         cls.filter_by(**kwargs).update({getattr(cls, attr): value for attr, value in setter.items()})
         # entities = cls.filter_by(**kwargs).all()
-        # for attr, value in setter.items():
         #   for entity in entities:
-        #     setattr(self, attr, value)
-        #     __record_update__(getattr(cls, '__tablename__'), getattr(entity, attr), value)
+        #     entity.update(**kwargs)
         db.session.flush()
 
     @classmethod
     def deletes(cls: MODEL, *args, record=True):
-        cls.filter(*args).update({cls.DELETED: cls.ID})
+        if record:
+            entities = cls.filter(*args).all()
+            for entity in entities:
+                entity.delete()
+        else:
+            cls.filter(*args).update({cls.DELETED: cls.ID})
         db.session.flush()
 
     @classmethod
     def deletes_by(cls: MODEL, **kwargs):
-        # record = kwargs.pop('record', True)
-        cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
-        # entities = cls.filter_by(**kwargs).all()
-        # for entity in entities:
-        #     entity.DELETED = entity.ID
-        #     __record_delete__(entity)
+        record = kwargs.pop('record', True)
+        if record:
+            entities = cls.filter_by(**kwargs).all()
+            for entity in entities:
+                entity.delete()
+        else:
+            cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
         db.session.flush()
 
     def update(self: MODEL, **kwargs):
         # record = kwargs.pop('record', True)
         for attr, value in kwargs.items():
+            # record and record_update(self.__tablename__, attr, getattr(self, attr), value)
             setattr(self, attr, value)
-            # record and __record_update__(getattr(self, '__tablename__'), getattr(self, attr), value)
         self.submit()
 
     def delete(self: MODEL, record=True):
         """软删除"""
-        self.update(DELETED=getattr(self, 'ID'))
-        # record and __record_delete__(self)
+        setattr(self, 'DELETED', self.ID)
+        record and record_delete(self)
+        self.submit()
 
     def submit(self):
         """写入数据库但不提交"""
@@ -145,7 +164,8 @@ class TSystemOperationLogContent(DBModel, BaseColumn):
     NEW_VALUE = db.Column(db.Text, comment='新值')
 
 
-def __record_insert__(entity):
+def record_insert(entity):
+    """记录新增的行ID"""
     content = TSystemOperationLogContent()
     content.LOG_NO = g.trace_id,
     content.OPERATION_TYPE = 'INSERT',
@@ -155,18 +175,25 @@ def __record_insert__(entity):
     db.session.flush()
 
 
-def __record_update__(tablename, old, new):
+def record_update(tablename, columnname, old, new):
+    """记录更新数据的旧值和新值"""
+    if columnname in ['ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME']:
+        return
+    if old == new:
+        return
     content = TSystemOperationLogContent()
     content.LOG_NO = g.trace_id,
     content.OPERATION_TYPE = 'UPDATE',
     content.TABLE_NAME = tablename,
+    content.COLUMN_NAME = columnname,
     content.OLD_VALUE = old
     content.NEW_VALUE = new
     db.session.add(content)
     db.session.flush()
 
 
-def __record_delete__(entity):
+def record_delete(entity):
+    """记录删除的行ID"""
     content = TSystemOperationLogContent()
     content.LOG_NO = g.trace_id,
     content.OPERATION_TYPE = 'DELETE',
