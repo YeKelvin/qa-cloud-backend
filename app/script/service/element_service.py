@@ -789,7 +789,7 @@ def modify_element_http_header_template_refs(req):
             )
 
     # 删除不在请求中的模板
-    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_not_in_template(req.elementNo, req.templateNumberList)
+    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_notin_template(req.elementNo, req.templateNumberList)
 
 
 @http_service

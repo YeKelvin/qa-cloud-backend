@@ -8,6 +8,7 @@ from flask.cli import with_appcontext
 
 from app.common.id_generator import new_id
 from app.extension import db  # noqa
+from app.database import TSystemOperationLogContent  # noqa
 from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
@@ -143,12 +144,20 @@ def init_permission():
     # workspace
     _create_permission(name='分页查询工作空间列表', method='GET', endpoint='/public/workspace/list')
     _create_permission(name='查询所有工作空间', method='GET', endpoint='/public/workspace/all')
+    _create_permission(name='查询工作空间信息', method='GET', endpoint='/public/workspace/info')
     _create_permission(name='新增工作空间', method='POST', endpoint='/public/workspace')
     _create_permission(name='修改工作空间', method='PUT', endpoint='/public/workspace')
     _create_permission(name='删除工作空间', method='DELETE', endpoint='/public/workspace')
     _create_permission(name='分页查询空间成员列表', method='GET', endpoint='/public/workspace/user/list')
     _create_permission(name='查询所有空间成员', method='GET', endpoint='/public/workspace/user/all')
     _create_permission(name='修改空间成员', method='PUT', endpoint='/public/workspace/user')
+    _create_permission(name='分页查询空间限制', method='GET', endpoint='/public/workspace/restriction/list')
+    _create_permission(name='查询所有空间限制', method='GET', endpoint='/public/workspace/restriction/all')
+    _create_permission(name='新增空间限制', method='POST', endpoint='/public/workspace/restriction')
+    _create_permission(name='修改空间限制', method='PUT', endpoint='/public/workspace/restriction')
+    _create_permission(name='删除空间限制', method='DELETE', endpoint='/public/workspace/restriction')
+    _create_permission(name='启用空间限制', method='PATCH', endpoint='/public/workspace/restriction/enable')
+    _create_permission(name='禁用空间限制', method='PATCH', endpoint='/public/workspace/restriction/disable')
 
     # tag
     _create_permission(name='分页查询标签列表', method='GET', endpoint='/public/tag/list')
@@ -293,13 +302,32 @@ def _create_permission(name, method, endpoint):
 
 
 @click.command('create-table')
+@click.option('-n', '--name', help='表名')
 @with_appcontext
-def create_single_table():
+def create_single_table(name):
     from sqlalchemy import create_engine
-    import app
+    from app import get_db_url
+    from app.script import model as script_model
+    from app.system import model as system_model
+    from app.public import model as public_model
+    from app.usercenter import model as usercenter_model
 
-    engine = create_engine(app.get_db_url())
-    # TableModel.__table__.create(engine, checkfirst=True)
-    # ...
+    engine = create_engine(get_db_url())
 
-    click.echo('新增成功')
+    if hasattr(script_model, name):
+        table = getattr(script_model, name)
+    elif hasattr(system_model, name):
+        table = getattr(system_model, name)
+    elif hasattr(public_model, name):
+        table = getattr(public_model, name)
+    elif hasattr(usercenter_model, name):
+        table = getattr(usercenter_model, name)
+    else:
+        table = None
+
+    if table:
+        table.__table__.create(engine, checkfirst=True)
+        click.echo('新增表格成功')
+    else:
+        click.echo('表格名称不存在')
+        return

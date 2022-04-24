@@ -3,6 +3,8 @@
 # @File    : workspace_user_dao.py
 # @Time    : 2021/6/5 23:27
 # @Author  : Kelvin.Ye
+from typing import List
+
 from flask_sqlalchemy import Pagination
 
 from app.public.model import TWorkspaceUser
@@ -12,14 +14,23 @@ def select_by_workspace_and_user(workspace_no, user_no) -> TWorkspaceUser:
     return TWorkspaceUser.filter_by(WORKSPACE_NO=workspace_no, USER_NO=user_no).first()
 
 
+def select_all_by_user(user_no) -> List[TWorkspaceUser]:
+    return TWorkspaceUser.filter_by(USER_NO=user_no).all()
+
+
 def select_list_by_workspace(**kwargs) -> Pagination:
     return TWorkspaceUser.filter_by(
-        WORKSPACE_NO=kwargs.pop('workspaceNo')).order_by(
-            TWorkspaceUser.CREATED_TIME.desc()).paginate(kwargs.pop('page'), kwargs.pop('pageSize'))
+        WORKSPACE_NO=kwargs.pop('workspaceNo')
+    ).order_by(
+        TWorkspaceUser.CREATED_TIME.desc()
+    ).paginate(
+        kwargs.pop('page'),
+        kwargs.pop('pageSize')
+    )
 
 
-def delete_all_by_workspace_and_notin_user(workspace_no, *user_no) -> None:
-    TWorkspaceUser.filter(
+def delete_all_by_workspace_and_notin_user(workspace_no, *args) -> None:
+    TWorkspaceUser.deletes(
         TWorkspaceUser.WORKSPACE_NO == workspace_no,
-        TWorkspaceUser.USER_NO.notin_(*user_no)
-    ).update({TWorkspaceUser.DELETED: 1})
+        TWorkspaceUser.USER_NO.notin_(*args)
+    )

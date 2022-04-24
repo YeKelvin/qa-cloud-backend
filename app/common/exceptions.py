@@ -9,14 +9,14 @@ from enum import Enum, unique
 class ServiceError(Exception):
     """业务异常类"""
 
-    def __init__(self, msg=None, code=None, error: 'ErrorCode' = None):
+    def __init__(self, msg: str = None, code: str = None, error: 'ErrorCode' = None):
         super().__init__(self)
         if error is None:
             self.message = msg
             self.code = code
         else:
-            self.message = error.value
-            self.code = code.name
+            self.message = error.value  # type: str
+            self.code = error.name  # type: str
 
 
 class ParseError(Exception):

@@ -86,6 +86,19 @@ def query_workspace_all(req):
 
 
 @http_service
+def query_workspace_info(req):
+    # 查询工作空间
+    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    check_exists(workspace, '工作空间不存在')
+    return {
+        'workspaceNo': workspace.WORKSPACE_NO,
+        'workspaceName': workspace.WORKSPACE_NAME,
+        'workspaceScope': workspace.WORKSPACE_SCOPE,
+        'workspaceDesc': workspace.WORKSPACE_DESC
+    }
+
+
+@http_service
 @transactional
 def create_workspace(req):
     workspace = WorkspaceDao.select_by_name(req.workspaceName)

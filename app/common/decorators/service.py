@@ -47,10 +47,10 @@ def http_service(func):
                 result = func(*args, **kwargs)
                 res = ResponseDTO(result)
                 # 输出service执行结果
-                log.info(
-                    f'method:[ {request.method} ] path:[ {request.path} ] '
-                    f'service:[ {func.__name__} ] result:[ {result} ]'
-                )
+                # log.info(
+                #     f'method:[ {request.method} ] path:[ {request.path} ] '
+                #     f'service:[ {func.__name__} ] result:[ {result} ]'
+                # )
         except ServiceError as err:
             # 捕获service层的业务异常
             res = ResponseDTO(errorMsg=err.message, errorCode=err.code)

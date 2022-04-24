@@ -42,6 +42,17 @@ def query_workspace_all():
     return service.query_workspace_all(req)
 
 
+@blueprint.get('/workspace/info')
+@require_login
+@require_permission
+def query_workspace_info():
+    """查询工作空间信息"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='工作空间编号不能为空')
+    ).parse()
+    return service.query_workspace_info(req)
+
+
 @blueprint.post('/workspace')
 @require_login
 @require_permission
