@@ -36,7 +36,7 @@ log = get_logger(__name__)
 @with_appcontext
 def initdb():
     """创建表"""
-    db.create_all()  # TODO: Person.__table__.create(engine, checkfirst=True)
+    db.create_all()
     click.echo('创建所有数据库表成功')
 
 
@@ -135,6 +135,14 @@ def init_permission():
     _create_permission(name='批量新增角色权限', method='POST', endpoint='/usercenter/role/permissions')
     _create_permission(name='删除角色权限', method='DELETE', endpoint='/usercenter/role/permission')
     _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/usercenter/role/permissions')
+
+    _create_permission(name='分页查询分组列表', method='GET', endpoint='/usercenter/group/list')
+    _create_permission(name='查询所有分组', method='GET', endpoint='/usercenter/group/all')
+    _create_permission(name='查询分组信息', method='GET', endpoint='/usercenter/group/info')
+    _create_permission(name='新增分组', method='POST', endpoint='/usercenter/group')
+    _create_permission(name='更新分组信息', method='PUT', endpoint='/usercenter/group')
+    _create_permission(name='更新分组状态', method='PATCH', endpoint='/usercenter/group/state')
+    _create_permission(name='删除分组', method='DELETE', endpoint='/usercenter/group')
 
     # system模块路由
     # log

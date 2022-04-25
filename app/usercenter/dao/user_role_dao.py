@@ -24,7 +24,7 @@ def select_all_by_roleno(role_no) -> List[TUserRole]:
     return TUserRole.filter_by(ROLE_NO=role_no).all()
 
 
-def delete_all_by_userno(user_no):
+def delete_all_by_user(user_no):
     TUserRole.deletes_by(USER_NO=user_no)
 
 

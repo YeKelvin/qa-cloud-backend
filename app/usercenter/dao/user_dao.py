@@ -11,7 +11,7 @@ from app.usercenter.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_userno(user_no) -> TUser:
+def select_by_no(user_no) -> TUser:
     return TUser.filter_by(USER_NO=user_no).first()
 
 

@@ -8,6 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.usercenter.controller import blueprint
+from app.usercenter.enum import PermissionState
 from app.usercenter.service import permission_service as service
 from app.utils.log_util import get_logger
 
@@ -77,7 +78,7 @@ def modify_permission_state():
     """更新权限状态"""
     req = JsonParser(
         Argument('permissionNo', required=True, nullable=False, help='权限编号不能为空'),
-        Argument('state', required=True, nullable=False, help='权限状态不能为空')
+        Argument('state', required=True, nullable=False, enum=PermissionState, help='权限状态不能为空')
     ).parse()
     return service.modify_permission_state(req)
 

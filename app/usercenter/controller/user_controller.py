@@ -8,6 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.usercenter.controller import blueprint
+from app.usercenter.enum import UserState
 from app.usercenter.service import user_service as service
 from app.utils.log_util import get_logger
 
@@ -43,7 +44,8 @@ def register():
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
         Argument('email'),
-        Argument('roleNumberList', type=list)
+        Argument('roleNumberedList', type=list),
+        Argument('groupNumberedList', type=list)
     ).parse()
     return service.register(req)
 
@@ -102,7 +104,8 @@ def modify_user():
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('mobileNo'),
         Argument('email'),
-        Argument('roleNumberList', type=list)
+        Argument('roleNumberedList', type=list),
+        Argument('groupNumberedList', type=list)
     ).parse()
     return service.modify_user(req)
 
@@ -114,7 +117,7 @@ def modify_user_state():
     """更新用户状态"""
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
-        Argument('state', required=True, nullable=False, help='用户状态不能为空')
+        Argument('state', required=True, nullable=False, enum=UserState, help='用户状态不能为空')
     ).parse()
     return service.modify_user_state(req)
 

@@ -116,9 +116,9 @@ def modify_role(req):
     check_exists(role, '角色不存在')
 
     # 唯一性校验
-    if RoleDao.select_by_name(req.roleName):
+    if role.ROLE_NAME != req.roleName and RoleDao.select_by_name(req.roleName):
         raise ServiceError('角色名称已存在')
-    if RoleDao.select_by_code(req.roleCode):
+    if role.ROLE_CODE != req.roleCode and RoleDao.select_by_code(req.roleCode):
         raise ServiceError('角色代码已存在')
 
     # 更新角色信息

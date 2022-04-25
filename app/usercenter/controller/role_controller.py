@@ -8,6 +8,7 @@ from app.common.decorators.require import require_permission
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.usercenter.controller import blueprint
+from app.usercenter.enum import RoleState
 from app.usercenter.service import role_service as service
 from app.utils.log_util import get_logger
 
@@ -88,7 +89,7 @@ def modify_role_state():
     """更新角色状态"""
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
-        Argument('state', required=True, nullable=False, help='角色状态不能为空')
+        Argument('state', required=True, nullable=False, enum=RoleState, help='角色状态不能为空')
     ).parse()
     return service.modify_role_state(req)
 

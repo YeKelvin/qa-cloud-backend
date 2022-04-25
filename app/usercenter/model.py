@@ -48,7 +48,7 @@ class TPermission(DBModel, BaseColumn):
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
     METHOD = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
-    ENDPOINT = db.Column(db.String(256), nullable=False, comment='路由路径')  # TODO: 128 to 256
+    ENDPOINT = db.Column(db.String(256), nullable=False, comment='路由路径')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
     UniqueConstraint('METHOD', 'ENDPOINT', 'DELETED', name='unique_method_endpoint')
 
@@ -108,20 +108,22 @@ class TUserPasswordKey(DBModel, BaseColumn):
     PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
 
 
-# class TGroup(DBModel, BaseColumn):
-#     __tablename__ = 'GROUP'
-#     GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
-#     GROUP_NAME = db.Column(db.String(128), nullable=False, comment='分组名称')
-#     GROUP_DESC = db.Column(db.String(128), nullable=False, comment='分组描述')
-#
-#
-# class TGroupRole(DBModel, BaseColumn):
-#     __tablename__ = 'GROUP_ROLE'
-#     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
-#     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-#
-#
-# class TUserGroup(DBModel, BaseColumn):
-#     __tablename__ = 'USER_GROUP'
-#     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-#     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+class TGroup(DBModel, BaseColumn):
+    __tablename__ = 'GROUP'
+    GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
+    GROUP_NAME = db.Column(db.String(128), nullable=False, comment='分组名称')
+    GROUP_DESC = db.Column(db.String(128), nullable=False, comment='分组描述')
+    STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
+    UniqueConstraint('GROUP_NAME', 'DELETED', name='unique_groupname')
+
+
+class TGroupRole(DBModel, BaseColumn):
+    __tablename__ = 'GROUP_ROLE'
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
+
+
+class TGroupUser(DBModel, BaseColumn):
+    __tablename__ = 'USER_GROUP'
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')

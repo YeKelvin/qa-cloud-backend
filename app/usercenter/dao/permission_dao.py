@@ -11,8 +11,12 @@ from app.usercenter.model import TPermission
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_permissionno(permission_no) -> TPermission:
+def select_by_no(permission_no) -> TPermission:
     return TPermission.filter_by(PERMISSION_NO=permission_no).first()
+
+
+def select_by_name(permission_name) -> TPermission:
+    return TPermission.filter_by(PERMISSION_NAME=permission_name).first()
 
 
 def select_by_endpoint_and_method(endpoint, method) -> TPermission:

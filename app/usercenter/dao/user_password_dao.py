@@ -7,14 +7,13 @@ from typing import List
 from app.usercenter.model import TUserPassword
 
 
-def select_loginpwd_by_userno(user_no) -> TUserPassword:
+def select_loginpwd_by_user(user_no) -> TUserPassword:
     return TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
 
 
-def select_all_by_userno(user_no) -> List[TUserPassword]:
+def select_all_by_user(user_no) -> List[TUserPassword]:
     return TUserPassword.filter_by(USER_NO=user_no).all()
 
 
-def delete_all_by_userno(user_no):
+def delete_all_by_user(user_no):
     TUserPassword.deletes_by(USER_NO=user_no)
-

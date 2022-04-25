@@ -31,7 +31,9 @@ logging.setLogRecordFactory(app_record_factory)
 
 
 # 日志格式
-LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d][traceId:%(traceId)s] %(message)s'
+LOG_FORMAT = (
+    '[%(asctime)s][%(levelname)s][%(threadName)s][%(name)s.%(funcName)s %(lineno)d][traceId:%(traceId)s] %(message)s'
+)
 FORMATTER = logging.Formatter(LOG_FORMAT)
 # 日志级别
 LEVEL = CONFIG.LOG_LEVEL

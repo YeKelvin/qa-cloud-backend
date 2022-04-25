@@ -7,6 +7,7 @@ from enum import Enum
 
 
 class UserState(Enum):
+
     # 启用
     ENABLE = 'ENABLE'
 
@@ -15,6 +16,7 @@ class UserState(Enum):
 
 
 class RoleState(Enum):
+
     # 启用
     ENABLE = 'ENABLE'
 
@@ -23,6 +25,16 @@ class RoleState(Enum):
 
 
 class PermissionState(Enum):
+
+    # 启用
+    ENABLE = 'ENABLE'
+
+    # 禁用
+    DISABLE = 'DISABLE'
+
+
+class GroupState(Enum):
+
     # 启用
     ENABLE = 'ENABLE'
 

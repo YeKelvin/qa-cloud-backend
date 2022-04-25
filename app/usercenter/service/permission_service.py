@@ -5,9 +5,10 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
+from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_not_exists
 from app.common.validator import check_exists
+from app.common.validator import check_not_exists
 from app.usercenter.dao import permission_dao as PermissionDao
 from app.usercenter.enum import PermissionState
 from app.usercenter.model import TPermission
@@ -83,8 +84,12 @@ def create_permission(req):
 @transactional
 def modify_permission(req):
     # 查询权限
-    permission = PermissionDao.select_by_permissionno(req.permissionNo)
+    permission = PermissionDao.select_by_no(req.permissionNo)
     check_exists(permission, '权限不存在')
+
+    # 唯一性校验
+    if permission.PERMISSION_NAME != req.permissionName and PermissionDao.select_by_name(req.permissionName):
+        raise ServiceError('分组名称已存在')
 
     # 更新权限信息
     permission.update(
@@ -100,7 +105,7 @@ def modify_permission(req):
 @transactional
 def modify_permission_state(req):
     # 查询权限
-    permission = PermissionDao.select_by_permissionno(req.permissionNo)
+    permission = PermissionDao.select_by_no(req.permissionNo)
     check_exists(permission, '权限不存在')
 
     # 更新权限状态
@@ -111,7 +116,7 @@ def modify_permission_state(req):
 @transactional
 def remove_permission(req):
     # 查询权限
-    permission = PermissionDao.select_by_permissionno(req.permissionNo)
+    permission = PermissionDao.select_by_no(req.permissionNo)
     check_exists(permission, '权限不存在')
 
     # 删除权限

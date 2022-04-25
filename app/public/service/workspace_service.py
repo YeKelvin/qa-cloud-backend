@@ -10,7 +10,10 @@ from app.common.id_generator import new_id
 from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.extension import db
+from app.public.dao import workspace_restriction_dao as WorkspaceRestrictionDao
+from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
 from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
@@ -142,9 +145,25 @@ def remove_workspace(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')
-    # TODO: 受保护空间有成员时不允许删除
-    # TODO: 私人空间不允许删除
-    # TODO: 删除空间限制
+
+    # 私人空间随用户，删除用户时才会删除私人空间
+    if req.workspaceScope == WorkspaceScope.PRIVATE.value:
+        raise ServiceError('私人空间不允许删除')
+    # 受保护空间有成员时不允许删除
+    if (
+            req.workspaceScope == WorkspaceScope.PROTECTED.value
+            and WorkspaceUserDao.count_by_workspace(req.workspaceNo) != 0
+    ):
+        raise ServiceError('存在成员的受保护空间不允许删除')
+
+    # 删除空间限制
+    restrictions = WorkspaceRestrictionDao.select_all_by_workspace(req.workspaceNo)
+    for restriction in restrictions:
+        # 删除豁免成员
+        WorkspaceRestrictedExemptionDao.delete_all_by_restriction(restriction.RESTRICTION_NO)
+        # 删除限制
+        restriction.delete()
+
     # 删除空间
     workspace.delete()
 

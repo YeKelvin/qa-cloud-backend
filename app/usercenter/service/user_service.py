@@ -12,11 +12,13 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
-from app.common.validator import check_not_exists
 from app.common.validator import check_exists
+from app.common.validator import check_not_exists
 from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
+from app.usercenter.dao import group_dao as GroupDao
+from app.usercenter.dao import group_user_dao as GroupUserDao
 from app.usercenter.dao import role_dao as RoleDao
 from app.usercenter.dao import user_dao as UserDao
 from app.usercenter.dao import user_login_info_dao as UserLoginInfoDao
@@ -25,6 +27,7 @@ from app.usercenter.dao import user_password_dao as UserPasswordDao
 from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
 from app.usercenter.enum import UserState
+from app.usercenter.model import TGroupUser
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserLoginInfo
 from app.usercenter.model import TUserLoginLog
@@ -51,7 +54,7 @@ def login(req):
     check_exists(login_info, '账号或密码不正确')
 
     # 查询用户
-    user = UserDao.select_by_userno(login_info.USER_NO)
+    user = UserDao.select_by_no(login_info.USER_NO)
     check_exists(user, '账号或密码不正确')
 
     # 校验用户状态
@@ -59,7 +62,7 @@ def login(req):
         raise ServiceError('用户状态异常')
 
     # 查询用户密码
-    user_password = UserPasswordDao.select_loginpwd_by_userno(user.USER_NO)
+    user_password = UserPasswordDao.select_loginpwd_by_user(user.USER_NO)
     check_exists(user_password, '账号或密码不正确')
 
     # 密码RSA解密
@@ -113,7 +116,7 @@ def remote_addr():
 @transactional
 def logout():
     # 查询用户
-    user = UserDao.select_by_userno(globals.get_userno())
+    user = UserDao.select_by_no(globals.get_userno())
     check_exists(user, '用户不存在')
     # 登出
     user.update(LOGGED_IN=False)
@@ -165,23 +168,29 @@ def register(req):
     TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
     # 绑定用户角色
-    for role_no in req.roleNumberList:
-        TUserRole.insert(USER_NO=user_no, ROLE_NO=role_no)
+    if req.roleNumberedList:
+        for role_no in req.roleNumberedList:
+            TUserRole.insert(USER_NO=user_no, ROLE_NO=role_no)
+
+    # 绑定用户分组
+    if req.groupNumberedList:
+        for group_no in req.groupNumberedList:
+            TGroupUser.insert(USER_NO=user_no, GROUP_NO=group_no)
 
 
 @http_service
 @transactional
 def reset_login_password(req):
     # 查询用户
-    user = UserDao.select_by_userno(req.userNo)
+    user = UserDao.select_by_no(req.userNo)
     check_exists(user, '用户不存在')
 
     # 查询登录信息
-    user_login_info = UserLoginInfoDao.select_by_userno(req.userNo)
+    user_login_info = UserLoginInfoDao.select_by_user(req.userNo)
     check_exists(user_login_info, '用户登录信息不存在')
 
     # 查询用户密码
-    user_password = UserPasswordDao.select_loginpwd_by_userno(req.userNo)
+    user_password = UserPasswordDao.select_loginpwd_by_user(req.userNo)
     check_exists(user_password, '用户登录密码不存在')
 
     # 更新用户密码
@@ -218,8 +227,8 @@ def query_user_list(req):
         if user.LOGIN_NAME == 'admin':
             continue
         # 查询用户绑定的角色列表
-        user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
         roles = []
+        user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
         for user_role in user_role_list:
             # 查询角色
             role = RoleDao.select_by_no(user_role.ROLE_NO)
@@ -228,6 +237,18 @@ def query_user_list(req):
             roles.append({
                 'roleNo': role.ROLE_NO,
                 'roleName': role.ROLE_NAME
+            })
+        # 查询用户分组列表
+        groups = []
+        user_group_list = GroupUserDao.select_all_by_user(user.USER_NO)
+        for user_group in user_group_list:
+            # 查询分组
+            group = GroupDao.select_by_no(user_group.GROUP_NO)
+            if not group:
+                continue
+            groups.append({
+                'groupNo': group.GROUP_NO,
+                'groupName': group.GROUP_NAME
             })
 
         data.append({
@@ -238,7 +259,8 @@ def query_user_list(req):
             'email': user.EMAIL,
             'avatar': user.AVATAR,
             'state': user.STATE,
-            'roles': roles
+            'roles': roles,
+            'groups': groups
         })
     return {'data': data, 'total': pagination.total}
 
@@ -275,11 +297,11 @@ def query_user_info():
     user_no = globals.get_userno()
 
     # 查询用户
-    user = UserDao.select_by_userno(user_no)
+    user = UserDao.select_by_no(user_no)
     # 查询用户绑定的角色列表
     user_role_list = UserRoleDao.select_all_by_userno(user_no)
 
-    roles = []
+    roles = []  # TODO: 需要把分组的角色也加上
     for user_role in user_role_list:
         # 查询角色
         role = RoleDao.select_by_no(user_role.ROLE_NO)
@@ -301,7 +323,7 @@ def query_user_info():
 @transactional
 def modify_user(req):
     # 查询用户
-    user = UserDao.select_by_userno(req.userNo)
+    user = UserDao.select_by_no(req.userNo)
     check_exists(user, '用户不存在')
 
     # 更新用户信息
@@ -316,14 +338,30 @@ def modify_user(req):
     workspace.update(WORKSPACE_NAME=f'{req.userName}的私有空间')
 
     # 绑定用户角色
-    for role_no in req.roleNumberList:
-        # 查询用户角色
-        user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
-        if not user_role:
-            TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
+    if req.roleNumberedList:
+        for role_no in req.roleNumberedList:
+            # 查询用户角色
+            user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
+            if user_role:
+                continue
+            else:
+                TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
 
-    # 解绑非勾选的角色
-    UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberList)
+        # 删除不在请求中的角色
+        UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberedList)
+
+    # 绑定用户分组
+    if req.groupNumberedList:
+        for group_no in req.groupNumberedList:
+            # 查询用户分组
+            group_user = GroupUserDao.select_by_user_and_group(req.userNo, group_no)
+            if group_user:
+                continue
+            else:
+                TGroupUser.insert(USER_NO=req.userNo, GROUP_NO=group_no)
+
+        # 解绑不在请求中的分组
+        GroupUserDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNumberedList)
 
 
 def get_private_workspace_by_user(user_no):
@@ -341,7 +379,7 @@ def get_private_workspace_by_user(user_no):
 @transactional
 def modify_user_state(req):
     # 查询用户
-    user = UserDao.select_by_userno(req.userNo)
+    user = UserDao.select_by_no(req.userNo)
     check_exists(user, '用户不存在')
 
     # 更新用户状态
@@ -352,27 +390,30 @@ def modify_user_state(req):
 @transactional
 def remove_user(req):
     # 查询用户
-    user = UserDao.select_by_userno(req.userNo)
+    user = UserDao.select_by_no(req.userNo)
     check_exists(user, '用户不存在')
 
-    # 解绑用户和角色
-    UserRoleDao.delete_all_by_userno(req.userNo)
+    # 删除用户角色
+    UserRoleDao.delete_all_by_user(req.userNo)
+
+    # 删除用户分组
+    GroupUserDao.delete_all_by_user(req.userNo)
 
     # 删除用户密码
-    UserPasswordDao.delete_all_by_userno(req.userNo)
+    UserPasswordDao.delete_all_by_user(req.userNo)
 
     # 删除用户密码秘钥
-    login_info_list = UserLoginInfoDao.select_all_by_userno(req.userNo)
+    login_info_list = UserLoginInfoDao.select_all_by_user(req.userNo)
     for login_info in login_info_list:
         UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
 
     # 删除用户登录历史记录
-    UserLoginLogDao.delete_all_by_userno(req.userNo)
+    UserLoginLogDao.delete_all_by_user(req.userNo)
 
     # 删除用户登录账号
-    UserLoginInfoDao.delete_all_by_userno(req.userNo)
+    UserLoginInfoDao.delete_all_by_user(req.userNo)
 
-    # 同步删除私人空间
+    # 删除私人空间
     workspace = get_private_workspace_by_user(req.userNo)
     workspace.delete()
 
