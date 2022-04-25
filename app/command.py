@@ -181,7 +181,7 @@ def init_permission():
     _create_permission(name='查询元素信息', method='GET', endpoint='/script/element/info')
     _create_permission(name='查询元素子代', method='GET', endpoint='/script/element/children')
     _create_permission(name='根据元素编号列表查询元素子代', method='GET', endpoint='/script/elements/children')
-    _create_permission(name='新增元素', method='POST', endpoint='/script/element')
+    _create_permission(name='新增集合元素', method='POST', endpoint='/script/collection')
     _create_permission(name='根据父元素编号新增子代元素', method='POST', endpoint='/script/element/children')
     _create_permission(name='修改元素', method='PUT', endpoint='/script/element')
     _create_permission(name='修改多个元素（包含内置元素）', method='PUT', endpoint='/script/elements')

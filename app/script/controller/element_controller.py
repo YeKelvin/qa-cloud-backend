@@ -84,20 +84,20 @@ def query_elements_children():
     return service.query_elements_children(req)
 
 
-@blueprint.post('/element')
+@blueprint.post('/collection')
 @require_login
 @require_permission
-def create_element():
-    """新增元素"""
+def create_collection():
+    """新增集合元素"""
     req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementRemark'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('workspaceNo')
+        Argument('property', required=True, nullable=False, help='元素属性不能为空')
     ).parse()
-    return service.create_element(req)
+    return service.create_collection(req)
 
 
 @blueprint.post('/element/children')

@@ -11,6 +11,7 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_exists
+from app.common.validator import check_workspace_permission
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.model import TWorkspace
@@ -35,8 +36,8 @@ from app.script.enum import is_listener
 from app.script.enum import is_post_processor
 from app.script.enum import is_pre_processor
 from app.script.enum import is_sampler
-from app.script.enum import is_test_collection
 from app.script.enum import is_snippet_collection
+from app.script.enum import is_test_collection
 from app.script.enum import is_timer
 from app.script.model import TElementBuiltinChildren
 from app.script.model import TElementChildren
@@ -51,6 +52,15 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
+
+
+def get_workspace_no(element_no) -> str:
+    """获取元素空间编号"""
+    collection_no = get_root_no(element_no)
+    workspace_collection = WorkspaceCollectionDao.select_by_collection(collection_no)
+    if not workspace_collection:
+        raise ServiceError('查询元素空间失败')
+    return workspace_collection.WORKSPACE_NO
 
 
 @http_service
@@ -229,9 +239,13 @@ def get_root_no(element_no):
 
 @http_service
 @transactional
-def create_element(req):
-    if req.elementType == ElementType.COLLECTION.value and not req.workspaceNo:
-        raise ServiceError('工作空间编号不能为空')
+def create_collection(req):
+    # 校验工作空间
+    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    check_exists(workspace, '工作空间不存在')
+
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
 
     # 创建元素
     element_no = add_element(
@@ -242,13 +256,8 @@ def create_element(req):
         properties=req.property
     )
 
-    # 如果元素类型为 TestCollection 时，需要绑定 WorkspaceNo
-    if req.workspaceNo:
-        # 查询工作空间
-        workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-        check_exists(workspace, '工作空间不存在')
-        # 关联工作空间和测试集合
-        TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
+    # 新增空间元素关联
+    TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
 
     return {'elementNo': element_no}
 
@@ -309,6 +318,9 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
 @http_service
 @transactional
 def modify_element(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(req.element_no))
+    # 更新元素
     update_element(
         element_no=req.elementNo,
         element_name=req.elementName,

@@ -15,6 +15,7 @@ from app.common.exceptions import ServiceError
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceUser
+from app.usercenter.model import TGroupUser
 
 
 def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
@@ -37,6 +38,10 @@ def check_is_in_enum(string: str, enumeration: enum, error_msg: str = 'validatio
 
 def get_user_workspace_numbered_list(user_no) -> list:
     return [entity.WORKSPACE_NO for entity in TWorkspaceUser.filter_by(USER_NO=user_no).all()]
+
+
+def get_user_group_numbered_list(user_no) -> list:
+    return [entity.GROUP_NO for entity in TGroupUser.filter_by(USER_NO=user_no).all()]
 
 
 def match_restriction(restriction: TWorkspaceRestriction):
@@ -66,22 +71,21 @@ def get_workspace_restriction_list(workspace_no) -> List[TWorkspaceRestriction]:
     return [restriction for restriction in restrictions if match_restriction(restriction)]
 
 
-def get_restricted_exemption_numbered_list(restrictions, exemption_type) -> list:
+def get_restricted_exemption_numbered_list(restrictions) -> list:
     exemptions = TWorkspaceRestrictedExemption.filter(
-        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(*[restriction.RESTRICTION_NO for restriction in restrictions]),
-        TWorkspaceRestrictedExemption.EXEMPTION_TYPE == exemption_type
+        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(*[restriction.RESTRICTION_NO for restriction in restrictions])
     ).all()
     return [exemption.EXEMPTION_NO for exemption in exemptions]
 
 
 def check_workspace_permission(source_workspace_no) -> None:
     # 获取用户编号
-    userno = getattr(g, 'user_no', None)
-    if userno is None:
+    user_no = getattr(g, 'user_no', None)
+    if user_no is None:
         raise ServiceError('空间权限不足')
 
     # 判断用户是否是操作空间的成员
-    user_workspace_numbered_list = get_user_workspace_numbered_list(userno)
+    user_workspace_numbered_list = get_user_workspace_numbered_list(user_no)
     if source_workspace_no not in user_workspace_numbered_list:
         raise ServiceError('空间权限不足')
 
@@ -91,8 +95,14 @@ def check_workspace_permission(source_workspace_no) -> None:
         return
 
     # 查询限制项的豁免成员
-    exemption_numbered_list = get_restricted_exemption_numbered_list(restrictions, 'USER')
-    if userno in exemption_numbered_list:
+    exemption_numbered_list = get_restricted_exemption_numbered_list(restrictions)
+    # 校验用户是否为豁免成员
+    if user_no in exemption_numbered_list:
         return
+    # 校验用户分组是否为豁免分组
+    user_group_numbered_list = get_user_group_numbered_list(user_no)
+    for group_no in user_group_numbered_list:
+        if group_no in exemption_numbered_list:
+            return
 
     raise ServiceError('空间权限不足')
