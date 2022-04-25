@@ -21,12 +21,11 @@ def select_first(**kwargs) -> TUser:
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(TUser.USER_NO, kwargs.pop('userNo', None))
-        conds.like(TUser.USER_NAME, kwargs.pop('userName', None))
-        conds.like(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
-        conds.like(TUser.EMAIL, kwargs.pop('email', None))
-        conds.like(TUser.STATE, kwargs.pop('state', None))
+    conds.like(TUser.USER_NO, kwargs.pop('userNo', None))
+    conds.like(TUser.USER_NAME, kwargs.pop('userName', None))
+    conds.like(TUser.MOBILE_NO, kwargs.pop('mobileNo', None))
+    conds.like(TUser.EMAIL, kwargs.pop('email', None))
+    conds.like(TUser.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')

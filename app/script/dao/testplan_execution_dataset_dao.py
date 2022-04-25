@@ -16,8 +16,8 @@ def select_all_by_execution(execution_no) -> List[TTestplanExecutionDataset]:
     return TTestplanExecutionDataset.filter_by(EXECUTION_NO=execution_no).all()
 
 
-def delete_all_by_execution_and_not_in_dataset(execution_no, *args):
-    TTestplanExecutionDataset.filter(
+def delete_all_by_execution_and_not_in_dataset(execution_no, *dataset_numbered_list):
+    TTestplanExecutionDataset.deletes(
         TTestplanExecutionDataset.EXECUTION_NO == execution_no,
-        TTestplanExecutionDataset.DATASET_NO.notin_(*args)
-    ).update({TTestplanExecutionDataset.DELETED: 1})
+        TTestplanExecutionDataset.DATASET_NO.notin_(*dataset_numbered_list)
+    )

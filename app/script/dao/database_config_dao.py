@@ -25,12 +25,11 @@ def select_first(**kwargs) -> TDatabaseConfig:
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(TDatabaseConfig.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(TDatabaseConfig.CONFIG_NO, kwargs.pop('configNo', None))
-        conds.like(TDatabaseConfig.CONFIG_NAME, kwargs.pop('configName', None))
-        conds.like(TDatabaseConfig.CONFIG_DESC, kwargs.pop('configDesc', None))
-        conds.like(TDatabaseConfig.DATABASE_TYPE, kwargs.pop('databaseType', None))
+    conds.like(TDatabaseConfig.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+    conds.like(TDatabaseConfig.CONFIG_NO, kwargs.pop('configNo', None))
+    conds.like(TDatabaseConfig.CONFIG_NAME, kwargs.pop('configName', None))
+    conds.like(TDatabaseConfig.CONFIG_DESC, kwargs.pop('configDesc', None))
+    conds.like(TDatabaseConfig.DATABASE_TYPE, kwargs.pop('databaseType', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')

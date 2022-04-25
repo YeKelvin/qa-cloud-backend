@@ -16,8 +16,8 @@ def select_all_by_sampler(sampler_no) -> List[THttpHeaderTemplateRef]:
     return THttpHeaderTemplateRef.filter_by(SAMPLER_NO=sampler_no).all()
 
 
-def delete_all_by_sampler_and_notin_template(sampler_no, *args):
-    THttpHeaderTemplateRef.filter(
+def delete_all_by_sampler_and_notin_template(sampler_no, *template_numbered_list):
+    THttpHeaderTemplateRef.deletes(
         THttpHeaderTemplateRef.SAMPLER_NO == sampler_no,
-        THttpHeaderTemplateRef.TEMPLATE_NO.notin_(*args)
-    ).update({THttpHeaderTemplateRef.DELETED: 1})
+        THttpHeaderTemplateRef.TEMPLATE_NO.notin_(*template_numbered_list)
+    )

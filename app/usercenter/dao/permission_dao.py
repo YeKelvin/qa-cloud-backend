@@ -21,13 +21,12 @@ def select_by_endpoint_and_method(endpoint, method) -> TPermission:
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
-        conds.like(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
-        conds.like(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
-        conds.like(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
-        conds.like(TPermission.METHOD, kwargs.pop('method', None))
-        conds.like(TPermission.STATE, kwargs.pop('state', None))
+    conds.like(TPermission.PERMISSION_NO, kwargs.pop('permissionNo', None))
+    conds.like(TPermission.PERMISSION_NAME, kwargs.pop('permissionName', None))
+    conds.like(TPermission.PERMISSION_DESC, kwargs.pop('permissionDesc', None))
+    conds.like(TPermission.ENDPOINT, kwargs.pop('endpoint', None))
+    conds.like(TPermission.METHOD, kwargs.pop('method', None))
+    conds.like(TPermission.STATE, kwargs.pop('state', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')

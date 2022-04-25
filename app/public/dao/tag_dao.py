@@ -21,10 +21,9 @@ def select_by_name(tag_name) -> TTag:
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(TTag.TAG_NO, kwargs.pop('tagNo', None))
-        conds.like(TTag.TAG_NAME, kwargs.pop('tagName', None))
-        conds.like(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
+    conds.like(TTag.TAG_NO, kwargs.pop('tagNo', None))
+    conds.like(TTag.TAG_NAME, kwargs.pop('tagName', None))
+    conds.like(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')

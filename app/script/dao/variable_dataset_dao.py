@@ -21,12 +21,11 @@ def select_first(**kwargs) -> TVariableDataset:
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
-        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
-        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
-        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
+    conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+    conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
+    conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
+    conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
+    conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')

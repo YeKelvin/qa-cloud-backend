@@ -101,9 +101,11 @@ def query_workspace_info(req):
 @http_service
 @transactional
 def create_workspace(req):
+    # 名称唯一性校验
     workspace = WorkspaceDao.select_by_name(req.workspaceName)
     check_not_exists(workspace, '工作空间已存在')
 
+    # 新增空间
     workspace_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=workspace_no,
@@ -112,6 +114,7 @@ def create_workspace(req):
         WORKSPACE_DESC=req.workspaceDesc
     )
 
+    # 管理员自动加入受保护的空间
     if req.workspaceScope == WorkspaceScope.PROTECTED.value:
         TWorkspaceUser.insert(
             WORKSPACE_NO=workspace_no,
@@ -122,9 +125,10 @@ def create_workspace(req):
 @http_service
 @transactional
 def modify_workspace(req):
+    # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')
-
+    # 更新空间信息
     workspace.update(
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_SCOPE=req.workspaceScope,
@@ -135,9 +139,13 @@ def modify_workspace(req):
 @http_service
 @transactional
 def remove_workspace(req):
+    # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')
-
+    # TODO: 受保护空间有成员时不允许删除
+    # TODO: 私人空间不允许删除
+    # TODO: 删除空间限制
+    # 删除空间
     workspace.delete()
 
 

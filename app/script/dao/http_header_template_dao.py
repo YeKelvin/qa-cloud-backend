@@ -25,11 +25,10 @@ def select_by_workspace_and_name(workspace_no, template_name) -> THttpHeaderTemp
 
 def select_list(**kwargs) -> Pagination:
     conds = QueryCondition()
-    if kwargs:
-        conds.like(THttpHeaderTemplate.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(THttpHeaderTemplate.TEMPLATE_NO, kwargs.pop('templateNo', None))
-        conds.like(THttpHeaderTemplate.TEMPLATE_NAME, kwargs.pop('templateName', None))
-        conds.like(THttpHeaderTemplate.TEMPLATE_DESC, kwargs.pop('templateDesc', None))
+    conds.like(THttpHeaderTemplate.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
+    conds.like(THttpHeaderTemplate.TEMPLATE_NO, kwargs.pop('templateNo', None))
+    conds.like(THttpHeaderTemplate.TEMPLATE_NAME, kwargs.pop('templateName', None))
+    conds.like(THttpHeaderTemplate.TEMPLATE_DESC, kwargs.pop('templateDesc', None))
 
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
