@@ -105,6 +105,7 @@ def init_role():
 def init_permission():
     """初始化权限"""
     # usercenter模块路由
+    # user
     _create_permission(name='用户登录', method='POST', endpoint='/usercenter/user/login')
     _create_permission(name='用户登出', method='POST', endpoint='/usercenter/user/logout')
     _create_permission(name='用户注册', method='POST', endpoint='/usercenter/user/register')
@@ -115,12 +116,14 @@ def init_permission():
     _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user/info')
     _create_permission(name='更新用户状态', method='PATCH', endpoint='/usercenter/user/state')
     _create_permission(name='删除用户', method='DELETE', endpoint='/usercenter/user')
+    # permission
     _create_permission(name='分页查询权限列表', method='GET', endpoint='/usercenter/permission/list')
     _create_permission(name='查询所有权限', method='GET', endpoint='/usercenter/permission/all')
     _create_permission(name='新增权限', method='POST', endpoint='/usercenter/permission')
     _create_permission(name='更新权限信息', method='PUT', endpoint='/usercenter/permission')
     _create_permission(name='更新权限状态', method='PATCH', endpoint='/usercenter/permission/state')
     _create_permission(name='删除权限', method='DELETE', endpoint='/usercenter/permission')
+    # role
     _create_permission(name='分页查询角色列表', method='GET', endpoint='/usercenter/role/list')
     _create_permission(name='查询所有角色', method='GET', endpoint='/usercenter/role/all')
     _create_permission(name='查询角色信息', method='GET', endpoint='/usercenter/role/info')
@@ -135,7 +138,7 @@ def init_permission():
     _create_permission(name='批量新增角色权限', method='POST', endpoint='/usercenter/role/permissions')
     _create_permission(name='删除角色权限', method='DELETE', endpoint='/usercenter/role/permission')
     _create_permission(name='批量删除角色权限', method='DELETE', endpoint='/usercenter/role/permissions')
-
+    # group
     _create_permission(name='分页查询分组列表', method='GET', endpoint='/usercenter/group/list')
     _create_permission(name='查询所有分组', method='GET', endpoint='/usercenter/group/all')
     _create_permission(name='查询分组信息', method='GET', endpoint='/usercenter/group/info')

@@ -5,7 +5,6 @@
 # @Author  : Kelvin.Ye
 import enum
 import re
-from typing import List
 
 from flask import g
 from flask import request
@@ -62,18 +61,18 @@ def match_restriction(restriction: TWorkspaceRestriction):
     return False
 
 
-def get_workspace_restriction_list(workspace_no) -> List[TWorkspaceRestriction]:
+def get_matched_restriction_numbered_list(workspace_no) -> list:
     restrictions = TWorkspaceRestriction.filter_by(
         WORKSPACE_NO=workspace_no,
         MATCH_METHOD=request.method,
         STATE='ENABLE'
     ).all()
-    return [restriction for restriction in restrictions if match_restriction(restriction)]
+    return [restriction.RESTRICTION_NO for restriction in restrictions if match_restriction(restriction)]
 
 
-def get_restricted_exemption_numbered_list(restrictions) -> list:
+def get_restricted_exemption_numbered_list(restriction_numbered_list) -> list:
     exemptions = TWorkspaceRestrictedExemption.filter(
-        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(*[restriction.RESTRICTION_NO for restriction in restrictions])
+        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(restriction_numbered_list)
     ).all()
     return [exemption.EXEMPTION_NO for exemption in exemptions]
 
@@ -90,12 +89,12 @@ def check_workspace_permission(source_workspace_no) -> None:
         raise ServiceError('空间权限不足')
 
     # 根据请求方法和请求路径，查询操作空间的限制项
-    restrictions = get_workspace_restriction_list(source_workspace_no)
-    if not restrictions:
+    restriction_numbered_list = get_matched_restriction_numbered_list(source_workspace_no)
+    if not restriction_numbered_list:
         return
 
     # 查询限制项的豁免成员
-    exemption_numbered_list = get_restricted_exemption_numbered_list(restrictions)
+    exemption_numbered_list = get_restricted_exemption_numbered_list(restriction_numbered_list)
     # 校验用户是否为豁免成员
     if user_no in exemption_numbered_list:
         return

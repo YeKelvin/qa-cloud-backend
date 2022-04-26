@@ -342,9 +342,7 @@ def modify_user(req):
         for role_no in req.roleNumberedList:
             # 查询用户角色
             user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
-            if user_role:
-                continue
-            else:
+            if not user_role:
                 TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
 
         # 删除不在请求中的角色
@@ -355,9 +353,7 @@ def modify_user(req):
         for group_no in req.groupNumberedList:
             # 查询用户分组
             group_user = GroupUserDao.select_by_user_and_group(req.userNo, group_no)
-            if group_user:
-                continue
-            else:
+            if not group_user:
                 TGroupUser.insert(USER_NO=req.userNo, GROUP_NO=group_no)
 
         # 解绑不在请求中的分组

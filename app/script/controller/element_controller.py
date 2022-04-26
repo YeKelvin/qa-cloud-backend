@@ -245,25 +245,25 @@ def query_element_http_header_template_refs():
 @blueprint.post('/element/http/header/template/refs')
 @require_login
 @require_permission
-def create_element_http_header_template_refs():
+def create_element_httpheader_template_refs():
     """新增元素和HTTP请求头模板列表的关联"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.create_element_http_header_template_refs(req)
+    return service.create_element_httpheader_template_refs(req)
 
 
 @blueprint.put('/element/http/header/template/refs')
 @require_login
 @require_permission
-def modify_element_http_header_template_refs():
+def modify_element_httpheader_template_refs():
     """修改元素关联的HTTP请求头模板关联列表"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
-    return service.modify_element_http_header_template_refs(req)
+    return service.modify_element_httpheader_template_refs(req)
 
 
 @blueprint.get('/element/builtins')

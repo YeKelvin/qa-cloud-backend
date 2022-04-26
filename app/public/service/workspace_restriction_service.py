@@ -17,6 +17,7 @@ from app.public.enum import RestrictedExemptionType
 from app.public.enum import RestrictionMatchType
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
+from app.usercenter.model import TGroup
 from app.usercenter.model import TUser
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
@@ -54,6 +55,12 @@ def query_workspace_restriction_list(req):
         conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_TYPE, RestrictedExemptionType.USER.value)
         conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_NO, TUser.USER_NO)
         user_list = db.session.query(TUser.USER_NO, TUser.USER_NAME).filter(*conds).all()
+        # 查询豁免分组
+        conds = QueryCondition(TWorkspaceRestrictedExemption, TGroup)
+        conds.equal(TWorkspaceRestrictedExemption.RESTRICTION_NO, item.RESTRICTION_NO)
+        conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_TYPE, RestrictedExemptionType.GROUP.value)
+        conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_NO, TGroup.GROUP_NO)
+        group_list = db.session.query(TGroup.GROUP_NO, TGroup.GROUP_NAME).filter(*conds).all()
         # 添加限制项
         data.append({
             'restrictionNo': item.RESTRICTION_NO,
@@ -62,7 +69,7 @@ def query_workspace_restriction_list(req):
             'matchContent': item.MATCH_CONTENT,
             'state': item.STATE,
             'exemptionUserList': [{'userNo': user.USER_NO, 'userName': user.USER_NAME} for user in user_list],
-            'exemptionGroupList': []
+            'exemptionGroupList': [{'groupNo': group.GROUP_NO, 'groupName': group.GROUP_NAME} for group in group_list]
         })
 
     return {'data': data, 'total': pagination.total}
@@ -74,21 +81,13 @@ def query_workspace_restriction_all(req):
     restrictions = WorkspaceRestrictionDao.select_all_by_workspace(req.workspaceNo)
     result = []
     for restriction in restrictions:
-        # 查询豁免成员
-        conds = QueryCondition(TWorkspaceRestrictedExemption, TUser)
-        conds.equal(TWorkspaceRestrictedExemption.RESTRICTION_NO, restriction.RESTRICTION_NO)
-        conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_TYPE, RestrictedExemptionType.USER.value)
-        conds.equal(TWorkspaceRestrictedExemption.EXEMPTION_NO, TUser.USER_NO)
-        user_list = db.session.query(TUser.USER_NO, TUser.USER_NAME).filter(*conds).all()
         # 添加限制项
         result.append({
             'restrictionNo': restriction.RESTRICTION_NO,
             'matchMethod': restriction.MATCH_METHOD,
             'matchType': restriction.MATCH_TYPE,
             'matchContent': restriction.MATCH_CONTENT,
-            'state': restriction.STATE,
-            'exemptionUserList': [{'userNo': user.USER_NO, 'userName': user.USER_NAME} for user in user_list],
-            'exemptionGroupList': []
+            'state': restriction.STATE
         })
     return result
 

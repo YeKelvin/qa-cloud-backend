@@ -54,9 +54,18 @@ from app.utils.sqlalchemy_util import QueryCondition
 log = get_logger(__name__)
 
 
-def get_workspace_no(element_no) -> str:
+def get_root_no(element_no):
+    """根据元素编号获取根元素编号（集合编号）"""
+    if link := ElementChildrenDao.select_by_child(element_no):
+        if not link.ROOT_NO:
+            raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
+        return link.ROOT_NO
+    else:
+        return element_no
+
+
+def get_workspace_no(collection_no) -> str:
     """获取元素空间编号"""
-    collection_no = get_root_no(element_no)
     workspace_collection = WorkspaceCollectionDao.select_by_collection(collection_no)
     if not workspace_collection:
         raise ServiceError('查询元素空间失败')
@@ -160,9 +169,7 @@ def query_element_property(element_no):
     properties = {}
     props = ElementPropertyDao.select_all_by_element(element_no)
     for prop in props:
-        if prop.PROPERTY_TYPE == 'DICT':
-            properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
-        elif prop.PROPERTY_TYPE == 'LIST':
+        if prop.PROPERTY_TYPE in ['DICT', 'LIST']:
             properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
         else:
             properties[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
@@ -208,8 +215,7 @@ def get_element_children(parent_no, depth):
     children_links.sort(key=lambda k: k.SORT_NO)
     for link in children_links:
         # 查询子代元素
-        element = TestElementDao.select_by_no(link.CHILD_NO)
-        if element:
+        if element := TestElementDao.select_by_no(link.CHILD_NO):
             # 递归查询子代
             children = depth and get_element_children(link.CHILD_NO, depth) or []
             result.append({
@@ -224,17 +230,6 @@ def get_element_children(parent_no, depth):
             })
 
     return result
-
-
-def get_root_no(element_no):
-    """根据元素编号获取根元素编号（集合编号）"""
-    link = ElementChildrenDao.select_by_child(element_no)
-    if link:
-        if not link.ROOT_NO:
-            raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-        return link.ROOT_NO
-    else:
-        return element_no
 
 
 @http_service
@@ -263,7 +258,6 @@ def create_collection(req):
 
 
 def add_element(element_name, element_remark, element_type, element_class, properties: dict = None):
-    """创建元素并递归创建元素属性和元素子代"""
     # 创建元素
     element_no = new_id()
     TTestElement.insert(
@@ -285,6 +279,9 @@ def add_element(element_name, element_remark, element_type, element_class, prope
 @http_service
 @transactional
 def create_element_children(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(req.rootNo))
+    # 新增元素
     return add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
 
 
@@ -308,8 +305,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
             SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
         )
         # 新建子代内置元素
-        builtin = child.get('builtIn', None)
-        if builtin:
+        if builtin := child.get('builtIn', None):
             add_element_builtins(parent_no=child_no, children=builtin, root_no=root_no)
         result.append(child_no)
     return result
@@ -319,7 +315,7 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
 @transactional
 def modify_element(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(req.element_no))
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
     # 更新元素
     update_element(
         element_no=req.elementNo,
@@ -333,6 +329,8 @@ def modify_element(req):
 @transactional
 def modify_elements(req):
     for item in req.list:
+        # 校验空间权限
+        check_workspace_permission(get_workspace_no(get_root_no(item.elementNo)))
         # 更新元素
         update_element(
             element_no=item.elementNo,
@@ -342,7 +340,8 @@ def modify_elements(req):
         )
         # 更新内置元素
         if item.builtIn:
-            update_element_builtins(item.builtIn)
+            for builtin in item.builtIn:
+                update_element_builtins(builtin)
 
 
 def update_element(element_no, element_name, element_remark, properties: dict = None):
@@ -361,6 +360,9 @@ def update_element(element_no, element_name, element_remark, properties: dict = 
 @http_service
 @transactional
 def remove_element(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    # 删除元素
     return delete_element(req.elementNo)
 
 
@@ -407,8 +409,7 @@ def delete_element_children(parent_no):
 
 def delete_element_child(child_no):
     # 如果子代存在父级关联，则删除关联并重新排序子代元素
-    link = ElementChildrenDao.select_by_child(child_no)
-    if link:
+    if link := ElementChildrenDao.select_by_child(child_no):
         # 重新排序父级子代
         TElementChildren.filter(
             TElementChildren.PARENT_NO == link.PARENT_NO, TElementChildren.SORT_NO > link.SORT_NO
@@ -433,6 +434,9 @@ def enable_element(req):
     element = TestElementDao.select_by_no(req.elementNo)
     check_exists(element, '元素不存在')
 
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+
     # 更新元素状态为启用
     element.update(ENABLED=ElementStatus.ENABLE.value)
 
@@ -443,6 +447,9 @@ def disable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_exists(element, '元素不存在')
+
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
 
     # 更新元素状态为禁用
     element.update(ENABLED=ElementStatus.DISABLE.value)
@@ -498,7 +505,7 @@ def move_element(req):
     source_link = ElementChildrenDao.select_by_child(req.sourceNo)
     check_exists(source_link, 'source元素关联不存在')
 
-    # 校验
+    # 校验元素序号
     if req.targetSortNo < 0:
         raise ServiceError('target元素序号不能小于0')
 
@@ -509,10 +516,11 @@ def move_element(req):
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
+        # 校验空间权限
+        check_workspace_permission(get_workspace_no(get_root_no(req.sourceNo)))
         # 序号相等时直接跳过
         if req.targetSortNo == source_link.SORT_NO:
             return
-
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_sort_no > req.targetSortNo else 'DOWN'
         if move_type == 'UP':
@@ -533,6 +541,8 @@ def move_element(req):
         source_link.update(SORT_NO=req.targetSortNo)
     # source 元素移动至不同的父元素下
     else:
+        # 校验空间权限
+        check_workspace_permission(get_workspace_no(req.targetRootNo))
         # source 元素下方的同级元素序号 - 1（上移元素）
         TElementChildren.filter(
             TElementChildren.PARENT_NO == source_parent_no,
@@ -570,6 +580,9 @@ def duplicate_element(req):
     source = TestElementDao.select_by_no(req.elementNo)
     check_exists(source, '元素不存在')
 
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+
     # 排除不支持复制的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
         raise ServiceError('暂不支持复制 Collection 元素')
@@ -598,6 +611,9 @@ def paste_element(req):
     # 查询 source 元素
     source = TestElementDao.select_by_no(req.sourceNo)
     check_exists(source, 'source元素不存在')
+
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
 
     # 查询 target 元素
     target = TestElementDao.select_by_no(req.targetNo)
@@ -724,7 +740,7 @@ def clone_element(source: TTestElement, rename=False):
     # 克隆元素
     TTestElement.insert(
         ELEMENT_NO=cloned_no,
-        ELEMENT_NAME=source.ELEMENT_NAME + ' copy' if rename else source.ELEMENT_NAME,
+        ELEMENT_NAME=f'{source.ELEMENT_NAME} copy' if rename else source.ELEMENT_NAME,
         ELEMENT_REMARK=source.ELEMENT_REMARK,
         ELEMENT_TYPE=source.ELEMENT_TYPE,
         ELEMENT_CLASS=source.ELEMENT_CLASS
@@ -761,10 +777,13 @@ def query_element_http_header_template_refs(req):
 
 @http_service
 @transactional
-def create_element_http_header_template_refs(req):
+def create_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_exists(element, '元素不存在')
+
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
 
     for template_no in req.templateNumberList:
         # 查询模板
@@ -778,10 +797,13 @@ def create_element_http_header_template_refs(req):
 
 @http_service
 @transactional
-def modify_element_http_header_template_refs(req):
+def modify_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_exists(element, '元素不存在')
+
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
 
     for template_no in req.templateNumberList:
         # 查询模板
@@ -791,9 +813,7 @@ def modify_element_http_header_template_refs(req):
 
         # 查询模板关联
         ref = HttpHeaderTemplateRefDao.select_by_sampler_and_template(req.elementNo, template_no)
-        if ref:
-            continue
-        else:
+        if not ref:
             # 添加模板关联
             THttpHeaderTemplateRef.insert(
                 SAMPLER_NO=req.elementNo,
@@ -815,8 +835,7 @@ def query_element_builtins(req):
 
     for link in builtin_links:
         # 查询内置元素
-        builtin = TestElementDao.select_by_no(link.CHILD_NO)
-        if builtin:
+        if builtin := TestElementDao.select_by_no(link.CHILD_NO):
             result.append({
                 'elementNo': builtin.ELEMENT_NO,
                 'elementName': builtin.ELEMENT_NAME,
@@ -832,6 +851,9 @@ def query_element_builtins(req):
 @http_service
 @transactional
 def create_element_builtins(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(req.rootNo))
+    # 新增内置元素
     return add_element_builtins(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
 
 
@@ -844,9 +866,11 @@ def add_element_builtins(root_no, parent_no, children) -> List:
         builtin_class = child.get('elementClass')
 
         # HTTPSampler 内置元素仅支持 Pre-Processor 和 Assertion
-        if parent.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value:
-            if builtin_type not in [ElementType.PRE_PROCESSOR.value, ElementType.ASSERTION.value]:
-                raise ServiceError('HTTPSampler 内置元素仅支持 Pre-Processor 和 Assertion')
+        if (
+                parent.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
+                and builtin_type not in [ElementType.PRE_PROCESSOR.value, ElementType.ASSERTION.value]
+        ):
+            raise ServiceError('HTTPSampler 内置元素仅支持 Pre-Processor 和 Assertion')
 
         # 创建内置元素
         builtin_no = new_id()
@@ -860,8 +884,7 @@ def add_element_builtins(root_no, parent_no, children) -> List:
         )
 
         # 创建内置元素属性
-        properties = child.get('property', None)
-        if properties:
+        if properties := child.get('property', None):
             add_element_property(builtin_no, properties)
 
         # 创建内置元素关联
@@ -878,24 +901,26 @@ def add_element_builtins(root_no, parent_no, children) -> List:
 @http_service
 @transactional
 def modify_element_builtins(req):
-    update_element_builtins(req.list)
-
-
-def update_element_builtins(children: Iterable[dict]):
-    for child in children:
-        # 内置元素编号
-        builtin_no = child.get('elementNo')
-        # 查询内置元素
-        builtin = TestElementDao.select_by_no(builtin_no)
-        check_exists(builtin, '内置元素不存在')
-
+    for builtin in req.list:
+        # 校验空间权限
+        check_workspace_permission(get_workspace_no(get_root_no(builtin.elementNo)))
         # 更新内置元素
-        builtin.update(ELEMENT_NAME=child.get('elementName'), ELEMENT_REMARK=child.get('elementRemark'))
+        update_element_builtins(builtin)
 
-        # 更新内置元素属性
-        properties = child.get('property', None)
-        if properties:
-            update_element_property(builtin_no, properties)
+
+def update_element_builtins(child):
+    # 内置元素编号
+    builtin_no = child.get('elementNo')
+    # 查询内置元素
+    builtin = TestElementDao.select_by_no(builtin_no)
+    check_exists(builtin, '内置元素不存在')
+
+    # 更新内置元素
+    builtin.update(ELEMENT_NAME=child.get('elementName'), ELEMENT_REMARK=child.get('elementRemark'))
+
+    # 更新内置元素属性
+    if properties := child.get('property', None):
+        update_element_property(builtin_no, properties)
 
 
 def delete_element_builtin(element_no):
@@ -910,8 +935,7 @@ def delete_element_builtin(element_no):
 
 def delete_element_builtins_by_parent(parent_no):
     # 根据父级删除所有内置元素
-    builtin_links = ElementBuiltinChildrenDao.select_all_by_parent(parent_no)
-    if builtin_links:
+    if builtin_links := ElementBuiltinChildrenDao.select_all_by_parent(parent_no):
         for link in builtin_links:
             # 删除内置元素
             delete_element_builtin(link.CHILD_NO)
@@ -922,10 +946,13 @@ def delete_element_builtins_by_parent(parent_no):
 @http_service
 @transactional
 def copy_collection_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+
     # 查询集合
     collection = TestElementDao.select_by_no(req.elementNo)
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅支持移动集合元素')
+        raise ServiceError('仅支持复制集合')
 
     # 查询集合的空间
     workspace_collection = WorkspaceCollectionDao.select_by_collection(req.elementNo)
@@ -940,10 +967,14 @@ def copy_collection_to_workspace(req):
 @http_service
 @transactional
 def move_collection_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))  # 校验原空间权限
+    check_workspace_permission(req.workspaceNo)  # 校验目标空间权限
+
     # 查询集合
     collection = TestElementDao.select_by_no(req.elementNo)
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅运行移动集合元素')
+        raise ServiceError('仅运行移动集合')
 
     # 查询集合的空间
     workspace_collection = WorkspaceCollectionDao.select_by_collection(req.elementNo)
