@@ -70,6 +70,9 @@ def query_variable_dataset_all(req):
 @http_service
 @transactional
 def create_variable_dataset(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+
     # 查询变量集信息
     dataset = VariableDatasetDao.select_first(
         WORKSPACE_NO=req.workspaceNo,
@@ -81,9 +84,6 @@ def create_variable_dataset(req):
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
     if req.datasetType != VariableDatasetType.GLOBAL.value:
         check_exists(req.workspaceNo, '工作空间编号不能为空')
-
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
 
     # 新增变量集
     dataset_no = new_id()
@@ -402,7 +402,7 @@ def duplicate_variable_dataset(req):
     TVariableDataset.insert(
         WORKSPACE_NO=dataset.WORKSPACE_NO,
         DATASET_NO=dataset_no,
-        DATASET_NAME=dataset.DATASET_NAME + ' copy',
+        DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
         WEIGHT=dataset.WEIGHT
@@ -439,7 +439,7 @@ def copy_variable_dataset_to_workspace(req):
     TVariableDataset.insert(
         WORKSPACE_NO=req.workspaceNo,
         DATASET_NO=dataset_no,
-        DATASET_NAME=dataset.DATASET_NAME + ' copy',
+        DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
         WEIGHT=dataset.WEIGHT
@@ -464,10 +464,10 @@ def copy_variable_dataset_to_workspace(req):
 @http_service
 @transactional
 def move_variable_dataset_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
     check_exists(dataset, '变量集不存在')
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
     # 移动变量集
     dataset.update(WORKSPACE_NO=req.workspaceNo)

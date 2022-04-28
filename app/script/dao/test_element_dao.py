@@ -8,7 +8,3 @@ from app.script.model import TTestElement
 
 def select_by_no(element_no) -> TTestElement:
     return TTestElement.filter_by(ELEMENT_NO=element_no).first()
-
-
-def delete_by_no(element_no) -> None:
-    TTestElement.filter_by(ELEMENT_NO=element_no).delete()

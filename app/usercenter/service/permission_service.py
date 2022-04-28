@@ -10,6 +10,7 @@ from app.common.id_generator import new_id
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.usercenter.dao import permission_dao as PermissionDao
+from app.usercenter.dao import role_permission_dao as RolePermissionDao
 from app.usercenter.enum import PermissionState
 from app.usercenter.model import TPermission
 from app.utils.log_util import get_logger
@@ -118,6 +119,9 @@ def remove_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_no(req.permissionNo)
     check_exists(permission, '权限不存在')
+
+    # 删除角色权限
+    RolePermissionDao.delete_all_by_permission(req.permissionNo)
 
     # 删除权限
     permission.delete()

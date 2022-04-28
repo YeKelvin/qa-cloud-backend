@@ -56,12 +56,11 @@ log = get_logger(__name__)
 
 def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
-    if link := ElementChildrenDao.select_by_child(element_no):
-        if not link.ROOT_NO:
-            raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-        return link.ROOT_NO
-    else:
+    if not (link := ElementChildrenDao.select_by_child(element_no)):
         return element_no
+    if not link.ROOT_NO:
+        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
+    return link.ROOT_NO
 
 
 def get_workspace_no(collection_no) -> str:

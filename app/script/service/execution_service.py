@@ -15,6 +15,7 @@ from app.common.exceptions import ServiceError
 from app.common.globals import get_userno
 from app.common.id_generator import new_id
 from app.common.validator import check_exists
+from app.common.validator import check_workspace_permission
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
@@ -27,6 +28,7 @@ from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItem
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
 from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
+from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
 from app.script.enum import ElementType
 from app.script.enum import RunningState
 from app.script.enum import VariableDatasetType
@@ -44,6 +46,23 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 
 
 log = get_logger(__name__)
+
+
+def get_root_no(element_no):
+    """根据元素编号获取根元素编号（集合编号）"""
+    if not (link := ElementChildrenDao.select_by_child(element_no)):
+        return element_no
+    if not link.ROOT_NO:
+        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
+    return link.ROOT_NO
+
+
+def get_workspace_no(collection_no) -> str:
+    """获取元素空间编号"""
+    workspace_collection = WorkspaceCollectionDao.select_by_collection(collection_no)
+    if not workspace_collection:
+        raise ServiceError('查询元素空间失败')
+    return workspace_collection.WORKSPACE_NO
 
 
 def debug_pymeter(script, sid):
@@ -87,6 +106,9 @@ def get_flask_app():
 
 @http_service
 def execute_collection(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.collectionNo)))
+
     # 查询元素
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
@@ -128,6 +150,9 @@ def execute_collection(req):
 
 @http_service
 def execute_group(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.groupNo)))
+
     # 查询元素
     group = TestElementDao.select_by_no(req.groupNo)
     if not group.ENABLED:
@@ -179,6 +204,9 @@ def execute_group(req):
 
 @http_service
 def execute_sampler(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.samplerNo)))
+
     # 查询元素
     sampler = TestElementDao.select_by_no(req.samplerNo)
     if not sampler.ENABLED:
@@ -219,6 +247,9 @@ def execute_sampler(req):
 
 @http_service
 def execute_snippets(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.collectionNo)))
+
     # 查询元素
     collection = TestElementDao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
@@ -258,14 +289,17 @@ def execute_snippets(req):
 @http_service
 @transactional
 def execute_testplan(req):
+    # 查询测试计划
+    testplan = TestPlanDao.select_by_no(req.planNo)
+    check_exists(testplan, '测试计划不存在')
+
+    # 校验空间权限
+    check_workspace_permission(testplan.WORKSPACE_NO)
+
     # 查询是否有正在运行中的执行任务
     running = TestplanExecutionDao.select_running_by_plan(req.planNo)
     if running:
         raise ServiceError('测试计划正在运行中，请执行结束后再开始新的执行')
-
-    # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
@@ -655,6 +689,13 @@ def interrupt_testplan_execution(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
     check_exists(execution, '执行记录不存在')
+
+    # 查询测试计划
+    testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
+    check_exists(testplan, '测试计划不存在')
+
+    # 校验空间权限
+    check_workspace_permission(testplan.WORKSPACE_NO)
 
     # 标记执行中断
     execution.update(

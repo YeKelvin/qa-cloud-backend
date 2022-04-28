@@ -11,4 +11,4 @@ def select_by_loginname(login_name):
 
 
 def delete_by_loginname(login_name):
-    TUserPasswordKey.filter_by(LOGIN_NAME=login_name).delete()
+    TUserPasswordKey.deletes_by(LOGIN_NAME=login_name)

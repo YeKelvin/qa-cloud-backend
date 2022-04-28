@@ -10,8 +10,8 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.validator import check_exists
 from app.extension import db
-from app.usercenter.dao import role_dao as RoleDao  # noqa
-from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
+from app.usercenter.dao import role_dao as RoleDao
+from app.usercenter.dao import role_permission_dao as RolePermissionDao
 from app.usercenter.model import TPermission
 from app.usercenter.model import TRolePermission
 from app.utils.log_util import get_logger

@@ -7,7 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
 from app.common.validator import check_exists
-from app.extension import db
+from app.common.validator import check_workspace_permission
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -47,8 +47,7 @@ def query_testplan_list(req):
     conds.like(TTestplan.TEST_PHASE, req.testPhase)
 
     # 分页查询
-    pagination = db.session.query(
-        TTestplan).filter(*conds).order_by(TTestplan.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    pagination = TTestplan.filter(*conds).order_by(TTestplan.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
     data = []
     for item in pagination.items:
@@ -98,6 +97,9 @@ def query_testplan(req):
 @http_service
 @transactional
 def create_testplan(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
     check_exists(workspace, '工作空间不存在')
@@ -146,6 +148,9 @@ def modify_testplan(req):
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_exists(testplan, '测试计划不存在')
 
+    # 校验空间权限
+    check_workspace_permission(testplan.WORKSPACE_NO)
+
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
     check_exists(settings, '计划设置不存在')
@@ -155,8 +160,7 @@ def modify_testplan(req):
     for collection in req.collectionList:
         collection_number_list.append(collection.elementNo)
         # 查询测试计划关联的集合
-        item = TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo)
-        if item:
+        if item := TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo):
             item.update(SORT_NO=collection.sortNo)
         else:
             TTestplanItems.insert(
@@ -193,6 +197,10 @@ def modify_testplan_state(req):
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_exists(testplan, '测试计划不存在')
 
+    # 校验空间权限
+    check_workspace_permission(testplan.WORKSPACE_NO)
+
+    # 更新计划状态
     if req.state == TestplanState.TESTING.value and not testplan.START_TIME:
         testplan.update(STATE=req.state, START_TIME=datetime_now_by_utc8())
     elif req.state == TestplanState.COMPLETED.value:
@@ -207,6 +215,9 @@ def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
     check_exists(testplan, '测试计划不存在')
+    # 校验空间权限
+    check_workspace_permission(testplan.WORKSPACE_NO)
+    # 更新测试阶段
     testplan.update(TEST_PHASE=req.testPhase)
 
 

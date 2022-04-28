@@ -64,12 +64,12 @@ def query_httpheader_template_all(req):
 @http_service
 @transactional
 def create_httpheader_template(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+
     # 查询模板
     template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
     check_not_exists(template, '模板已存在')
-
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
 
     # 新增模板
     template_no = new_id()
@@ -415,10 +415,10 @@ def copy_httpheader_template_to_workspace(req):
 @http_service
 @transactional
 def move_httpheader_template_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
     # 查询请求头模板
     template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
     check_exists(template, '请求头模板不存在')
-    # 校验空间权限
-    check_workspace_permission(template.WORKSPACE_NO)
     # 移动请求头模板
     template.update(WORKSPACE_NO=req.workspaceNo)

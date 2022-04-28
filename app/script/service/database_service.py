@@ -6,8 +6,9 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.id_generator import new_id
-from app.common.validator import check_not_exists
 from app.common.validator import check_exists
+from app.common.validator import check_not_exists
+from app.common.validator import check_workspace_permission
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
 from app.utils.log_util import get_logger
@@ -87,7 +88,10 @@ def query_database_engine_info(req):
 @http_service
 @transactional
 def create_database_engine(req):
-    # 查询数据库引擎
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+
+    # 唯一性校验
     engine = DatabaseConfigDao.select_first(
         WORKSPACE_NO=req.workspaceNo,
         CONFIG_NAME=req.configName,
@@ -123,6 +127,9 @@ def modify_database_engine(req):
     engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
 
+    # 校验空间权限
+    check_workspace_permission(engine.WORKSPACE_NO)
+
     # 更新数据库引擎信息
     engine.update(
         CONFIG_NAME=req.configName,
@@ -146,6 +153,9 @@ def remove_database_engine(req):
     engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
 
+    # 校验空间权限
+    check_workspace_permission(engine.WORKSPACE_NO)
+
     # 删除数据库引擎
     engine.delete()
 
@@ -157,12 +167,15 @@ def duplicate_database_engine(req):
     engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
 
+    # 校验空间权限
+    check_workspace_permission(engine.WORKSPACE_NO)
+
     # 复制数据库引擎
     config_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=engine.WORKSPACE_NO,
         CONFIG_NO=config_no,
-        CONFIG_NAME=engine.CONFIG_NAME + ' copy',
+        CONFIG_NAME=f'{engine.CONFIG_NAME} copy',
         CONFIG_DESC=engine.CONFIG_DESC,
         VARIABLE_NAME=engine.VARIABLE_NAME,
         DATABASE_TYPE=engine.DATABASE_TYPE,
@@ -185,12 +198,15 @@ def copy_database_engine_to_workspace(req):
     engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
 
+    # 校验空间权限
+    check_workspace_permission(engine.WORKSPACE_NO)
+
     # 复制数据库引擎
     config_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=req.workspaceNo,
         CONFIG_NO=config_no,
-        CONFIG_NAME=engine.CONFIG_NAME + ' copy',
+        CONFIG_NAME=f'{engine.CONFIG_NAME} copy',
         CONFIG_DESC=engine.CONFIG_DESC,
         VARIABLE_NAME=engine.VARIABLE_NAME,
         DATABASE_TYPE=engine.DATABASE_TYPE,
@@ -209,8 +225,10 @@ def copy_database_engine_to_workspace(req):
 @http_service
 @transactional
 def move_database_engine_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
     check_exists(engine, '数据库引擎不存在')
-
+    # 移动数据库引擎
     engine.update(WORKSPACE_NO=req.workspaceNo)
