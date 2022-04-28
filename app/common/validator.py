@@ -14,7 +14,7 @@ from app.common.exceptions import ServiceError
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceUser
-from app.usercenter.model import TGroupUser
+from app.usercenter.model import TUserGroup
 
 
 def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
@@ -40,7 +40,7 @@ def get_user_workspace_numbered_list(user_no) -> list:
 
 
 def get_user_group_numbered_list(user_no) -> list:
-    return [entity.GROUP_NO for entity in TGroupUser.filter_by(USER_NO=user_no).all()]
+    return [entity.GROUP_NO for entity in TUserGroup.filter_by(USER_NO=user_no).all()]
 
 
 def match_restriction(restriction: TWorkspaceRestriction):

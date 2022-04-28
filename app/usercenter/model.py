@@ -123,7 +123,7 @@ class TGroupRole(DBModel, BaseColumn):
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
 
 
-class TGroupUser(DBModel, BaseColumn):
+class TUserGroup(DBModel, BaseColumn):
     __tablename__ = 'USER_GROUP'
-    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')

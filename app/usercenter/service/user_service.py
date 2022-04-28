@@ -18,17 +18,17 @@ from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.usercenter.dao import group_dao as GroupDao
-from app.usercenter.dao import group_user_dao as GroupUserDao
 from app.usercenter.dao import role_dao as RoleDao
 from app.usercenter.dao import user_dao as UserDao
+from app.usercenter.dao import user_group_dao as UserGroupDao
 from app.usercenter.dao import user_login_info_dao as UserLoginInfoDao
 from app.usercenter.dao import user_login_log_dao as UserLoginLogDao
 from app.usercenter.dao import user_password_dao as UserPasswordDao
 from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
 from app.usercenter.enum import UserState
-from app.usercenter.model import TGroupUser
 from app.usercenter.model import TUser
+from app.usercenter.model import TUserGroup
 from app.usercenter.model import TUserLoginInfo
 from app.usercenter.model import TUserLoginLog
 from app.usercenter.model import TUserPassword
@@ -175,7 +175,7 @@ def register(req):
     # 绑定用户分组
     if req.groupNumberedList:
         for group_no in req.groupNumberedList:
-            TGroupUser.insert(USER_NO=user_no, GROUP_NO=group_no)
+            TUserGroup.insert(USER_NO=user_no, GROUP_NO=group_no)
 
 
 @http_service
@@ -240,7 +240,7 @@ def query_user_list(req):
             })
         # 查询用户分组列表
         groups = []
-        user_group_list = GroupUserDao.select_all_by_user(user.USER_NO)
+        user_group_list = UserGroupDao.select_all_by_user(user.USER_NO)
         for user_group in user_group_list:
             # 查询分组
             group = GroupDao.select_by_no(user_group.GROUP_NO)
@@ -352,12 +352,12 @@ def modify_user(req):
     if req.groupNumberedList:
         for group_no in req.groupNumberedList:
             # 查询用户分组
-            group_user = GroupUserDao.select_by_user_and_group(req.userNo, group_no)
+            group_user = UserGroupDao.select_by_user_and_group(req.userNo, group_no)
             if not group_user:
-                TGroupUser.insert(USER_NO=req.userNo, GROUP_NO=group_no)
+                TUserGroup.insert(USER_NO=req.userNo, GROUP_NO=group_no)
 
         # 解绑不在请求中的分组
-        GroupUserDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNumberedList)
+        UserGroupDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNumberedList)
 
 
 def get_private_workspace_by_user(user_no):
@@ -393,7 +393,7 @@ def remove_user(req):
     UserRoleDao.delete_all_by_user(req.userNo)
 
     # 删除用户分组
-    GroupUserDao.delete_all_by_user(req.userNo)
+    UserGroupDao.delete_all_by_user(req.userNo)
 
     # 删除用户密码
     UserPasswordDao.delete_all_by_user(req.userNo)

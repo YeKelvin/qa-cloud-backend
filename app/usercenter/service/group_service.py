@@ -8,10 +8,10 @@ from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.id_generator import new_id
 from app.common.validator import check_exists
-from app.usercenter.dao import group_dao as GroupDao  # noqa
+from app.usercenter.dao import group_dao as GroupDao
+from app.usercenter.dao import group_role_dao as GroupRoleDao
 from app.usercenter.dao import role_dao as RoleDao
-from app.usercenter.dao import group_role_dao as GroupRoleDao  # noqa
-from app.usercenter.dao import group_user_dao as GroupUserDao  # noqa
+from app.usercenter.dao import user_group_dao as UserGroupDao
 from app.usercenter.enum import GroupState
 from app.usercenter.model import TGroup
 from app.usercenter.model import TGroupRole
@@ -159,7 +159,7 @@ def remove_group(req):
     check_exists(group, '分组不存在')
 
     # 删除分组用户
-    GroupUserDao.delete_all_by_group(req.groupNo)
+    UserGroupDao.delete_all_by_group(req.groupNo)
 
     # 删除分组角色
     GroupRoleDao.delete_all_by_group(req.groupNo)
