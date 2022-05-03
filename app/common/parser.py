@@ -72,7 +72,7 @@ class Argument:
             if self.type == int:
                 value = self.type(value)
             elif self.type == bool:
-                assert str(value).lower() in ['true', 'false']
+                assert str(value).lower() in {'true', 'false'}
                 value = str(value).lower() == 'true'
             elif self.type == list:
                 if request.args:  # url传递数组
@@ -84,8 +84,8 @@ class Argument:
                 if not isinstance(value, dict):
                     value = from_json(value)
                 value = transform(value)
-        except (ValueError, AssertionError):
-            raise ParseError(self.help or f'type error: {self.name} type must be {self.type}')
+        except (ValueError, AssertionError) as e:
+            raise ParseError(self.help or f'type error: {self.name} type must be {self.type}') from e
 
         # 请求中存在该参数，但值为null
         if value is None:
@@ -141,17 +141,13 @@ class JsonParser:
     def initialize(self, data) -> None:
         """把HTTP请求参数转换为Json对象"""
         if not data:
-            if request.is_json:
-                self.data = request.json
-            else:
-                self.data = request.values.to_dict()
+            self.data = request.json if request.is_json else request.values.to_dict()
+        elif isinstance(data, str):
+            self.data = from_json(data)
+        elif isinstance(data, dict):
+            self.data = data
         else:
-            if isinstance(data, str):
-                self.data = from_json(data)
-            elif isinstance(data, dict):
-                self.data = data
-            else:
-                raise ParseError('invalid data type for parse')
+            raise ParseError('invalid data type for parse')
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
@@ -178,19 +174,15 @@ class ListParser:
 
     def initialize(self, data) -> None:
         if not data:
-            if request.is_json:
-                self.data = request.json
-            else:
-                self.data = list(request.values.values())
+            self.data = request.json if request.is_json else list(request.values.values())
+        elif isinstance(data, str):
+            self.data = from_json(data)
+        elif isinstance(data, list):
+            self.data = data
+        elif isinstance(data, dict):
+            raise ParseError('data type is a dict, please use JsonParser')
         else:
-            if isinstance(data, str):
-                self.data = from_json(data)
-            elif isinstance(data, list):
-                self.data = data
-            elif isinstance(data, dict):
-                raise ParseError('data type is a dict, please use JsonParser')
-            else:
-                raise ParseError('invalid data type for parse')
+            raise ParseError('invalid data type for parse')
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
