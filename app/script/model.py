@@ -195,8 +195,8 @@ class TTestplanExecution(DBModel, BaseColumn):
     INTERRUPT = db.Column(db.Boolean, nullable=False, default=False, comment='是否中断运行')
     INTERRUPT_BY = db.Column(db.String(64), comment='中断人')
     INTERRUPT_TIME = db.Column(db.DateTime, comment='中断时间')
-    # TODO: START_TIME = db.Column(db.DateTime, comment='开始时间')
-    # TODO: END_TIME = db.Column(db.DateTime, comment='结束时间')
+    START_TIME = db.Column(db.DateTime, comment='开始时间')
+    END_TIME = db.Column(db.DateTime, comment='结束时间')
 
 
 class TTestplanExecutionSettings(DBModel, BaseColumn):
