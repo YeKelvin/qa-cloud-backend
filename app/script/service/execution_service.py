@@ -431,6 +431,7 @@ def run_testplan(
     # 更新运行状态
     execution.update(
         RUNNING_STATE=RunningState.RUNNING.value if save else RunningState.ITERATING.value,
+        START_TIME=timestamp_to_utc8_datetime(start_time),
         record=False
     )
     db.session.commit()  # 这里要实时更新
@@ -465,11 +466,12 @@ def run_testplan(
             delay
         )
 
+    # 记录结束时间
+    end_time = timestamp_now()
+    # 计算耗时
+    elapsed_time = int(end_time * 1000) - int(start_time * 1000)
+
     if report_no:
-        # 记录结束时间
-        end_time = timestamp_now()
-        # 计算耗时
-        elapsed_time = int(end_time * 1000) - int(start_time * 1000)
         # 更新报告的开始时间、结束时间和耗时
         TestReportDao.select_by_no(report_no).update(
             START_TIME=timestamp_to_utc8_datetime(start_time),
@@ -484,6 +486,8 @@ def run_testplan(
     if execution.RUNNING_STATE in (RunningState.RUNNING.value, RunningState.ITERATING.value):
         execution.update(
             RUNNING_STATE=RunningState.COMPLETED.value,
+            END_TIME=timestamp_to_utc8_datetime(end_time),
+            ELAPSED_TIME=elapsed_time,
             record=False
         )
         db.session.commit()  # 这里要实时更新

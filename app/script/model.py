@@ -197,6 +197,7 @@ class TTestplanExecution(DBModel, BaseColumn):
     INTERRUPT_TIME = db.Column(db.DateTime, comment='中断时间')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
+    ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
 
 
 class TTestplanExecutionSettings(DBModel, BaseColumn):
