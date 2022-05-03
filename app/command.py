@@ -14,7 +14,6 @@ from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
 from app.usercenter.model import TPermission  # noqa
 from app.usercenter.model import TRole  # noqa
-from app.usercenter.model import TRolePermission  # noqa
 from app.usercenter.model import TUser  # noqa
 from app.usercenter.model import TUserLoginInfo  # noqa
 from app.usercenter.model import TUserPassword  # noqa
@@ -69,23 +68,25 @@ def initdata():
 def init_user():
     """初始化用户"""
     user_no = new_id()
-    TUser.insert(USER_NO=user_no, USER_NAME='超级管理员')
-    TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
+    TUser.insert(USER_NO=user_no, USER_NAME='超级管理员', record=False)
+    TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT', record=False)
     TUserPassword.insert(
         USER_NO=user_no,
         PASSWORD=encrypt_password('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
         ERROR_TIMES=0,
-        CREATE_TYPE='CUSTOMER'
+        CREATE_TYPE='CUSTOMER',
+        record=False
     )
 
     worksapce_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
         WORKSPACE_NAME='超级管理员的私有空间',
-        WORKSPACE_SCOPE='PRIVATE'
+        WORKSPACE_SCOPE='PRIVATE',
+        record=False
     )
-    TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no, record=False)
 
     click.echo('创建 admin用户成功')
 
@@ -294,22 +295,22 @@ def init_user_role():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
     role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
-    TUserRole.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
+    TUserRole.insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO, record=False)
     click.echo('创建用户角色关联成功')
 
 
 @with_appcontext
 def init_global_variable_dataset():
-    TVariableDataset.insert(DATASET_NO=new_id(), DATASET_NAME='public', DATASET_TYPE='GLOBAL', WEIGHT=1)
+    TVariableDataset.insert(DATASET_NO=new_id(), DATASET_NAME='public', DATASET_TYPE='GLOBAL', WEIGHT=1, record=False)
     click.echo('初始化PyMeter全局变量成功')
 
 
 def _create_role(name, code, rank, desc=''):
-    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_DESC=desc)
+    TRole.insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_DESC=desc, record=False)
 
 
 def _create_permission(name, method, endpoint):
-    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint)
+    TPermission.insert(PERMISSION_NO=new_id(), PERMISSION_NAME=name, METHOD=method, ENDPOINT=endpoint, record=False)
 
 
 @click.command('create-table')
