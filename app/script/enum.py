@@ -48,7 +48,7 @@ class ElementClass(Enum):
     TEST_COLLECTION = 'TestCollection'
 
     # 片段集合
-    SNIPPET_COLLECTION = 'TestSnippets'  # TODO: reanme to SnippetCollection
+    SNIPPET_COLLECTION = 'SnippetCollection'
 
     # 测试组
     TEST_GROUP = 'TestGroup'
