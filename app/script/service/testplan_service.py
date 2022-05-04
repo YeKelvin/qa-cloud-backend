@@ -238,7 +238,8 @@ def query_testplan_execution_all(req):
             'environment': execution.ENVIRONMENT,
             'testPhase': execution.TEST_PHASE,
             'reportNo': report.REPORT_NO if report else None,
-            'createdTime': execution.CREATED_TIME.strftime('%Y-%m-%d %H:%M:%S')
+            'startTime': execution.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if execution.START_TIME else 0,
+            'endTime': execution.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if execution.END_TIME else 0,
         })
     return result
 

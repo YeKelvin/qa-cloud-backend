@@ -26,7 +26,7 @@ flask initdata
 ## 开发环境调试
 
 ```bash
-flask run
+flask run --no-reload
 ```
 
 ## 生产部署
@@ -39,7 +39,6 @@ Nginx, uWSGI, Docker
 docker network create main
 ```
 
-
 ### Docker构建
 
 ```bash
@@ -47,6 +46,7 @@ docker build -t qa-cloud-backend .
 ```
 
 **需要翻墙的话额外添加`build-arg`参数**
+
 ```bash
 --build-arg HTTP_PROXY=http://docker.for.mac.host.internal:1087 --build-arg HTTPS_PROXY=http://docker.for.mac.host.internal:1087
 --build-arg HTTP_PROXY=http://host.docker.internal:10809 --build-arg HTTPS_PROXY=http://host.docker.internal:10809
