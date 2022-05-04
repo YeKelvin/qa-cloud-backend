@@ -454,7 +454,7 @@ def add_database_engine(engine, config_components: dict):
 
 def configure_snippets(snippet_collection, snippet_children, sampler_property):
     # SnippetCollection 属性
-    snippet_parameters = snippet_collection['property'].get('arguments', [])  # TODO: rename to parameters
+    snippet_parameters = snippet_collection['property'].get('parameters', [])
     use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
 
     # SnippetSampler 属性
