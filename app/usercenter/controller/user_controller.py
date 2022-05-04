@@ -94,7 +94,7 @@ def query_user_info():
     return service.query_user_info()
 
 
-@blueprint.put('/user/info')
+@blueprint.put('/user')
 @require_login
 @require_permission
 def modify_user():

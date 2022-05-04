@@ -338,7 +338,7 @@ def modify_user(req):
     workspace.update(WORKSPACE_NAME=f'{req.userName}的私有空间')
 
     # 绑定用户角色
-    if req.roleNumberedList:
+    if req.roleNumberedList is not None:
         for role_no in req.roleNumberedList:
             # 查询用户角色
             user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
@@ -349,7 +349,7 @@ def modify_user(req):
         UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberedList)
 
     # 绑定用户分组
-    if req.groupNumberedList:
+    if req.groupNumberedList is not None:
         for group_no in req.groupNumberedList:
             # 查询用户分组
             group_user = UserGroupDao.select_by_user_and_group(req.userNo, group_no)

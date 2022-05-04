@@ -114,7 +114,7 @@ def init_permission():
     _create_permission(name='查询用户信息', method='GET', endpoint='/usercenter/user/info')
     _create_permission(name='分页查询用户列表', method='GET', endpoint='/usercenter/user/list')
     _create_permission(name='查询所有用户', method='GET', endpoint='/usercenter/user/all')
-    _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user/info')
+    _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user')
     _create_permission(name='更新用户状态', method='PATCH', endpoint='/usercenter/user/state')
     _create_permission(name='删除用户', method='DELETE', endpoint='/usercenter/user')
     # permission
