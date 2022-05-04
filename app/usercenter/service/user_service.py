@@ -27,6 +27,9 @@ from app.usercenter.dao import user_password_dao as UserPasswordDao
 from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
 from app.usercenter.enum import UserState
+from app.usercenter.model import TGroup
+from app.usercenter.model import TGroupRole
+from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup
 from app.usercenter.model import TUserLoginInfo
@@ -292,22 +295,38 @@ def query_user_all():
     return result
 
 
+def get_user_roles(user_no):
+    user_roles = db.session.query(
+        TRole.ROLE_CODE
+    ).filter(
+        TRole.DELETED == 0,
+        TUserRole.DELETED == 0,
+        TUserRole.USER_NO == user_no,
+        TUserRole.ROLE_NO == TRole.ROLE_NO
+    )
+    group_roles = db.session.query(
+        TRole.ROLE_CODE
+    ).filter(
+        TGroup.DELETED == 0,
+        TRole.DELETED == 0,
+        TUserGroup.DELETED == 0,
+        TUserGroup.USER_NO == user_no,
+        TUserGroup.GROUP_NO == TGroup.GROUP_NO,
+        TGroupRole.DELETED == 0,
+        TGroupRole.ROLE_NO == TRole.ROLE_NO,
+        TGroupRole.GROUP_NO == TUserGroup.GROUP_NO
+    )
+    return user_roles.union(group_roles).all()
+
+
 @http_service
 def query_user_info():
+    # 获取用户编号
     user_no = globals.get_userno()
-
     # 查询用户
     user = UserDao.select_by_no(user_no)
-    # 查询用户绑定的角色列表
-    user_role_list = UserRoleDao.select_all_by_userno(user_no)
-
-    roles = []  # TODO: 需要把分组的角色也加上
-    for user_role in user_role_list:
-        # 查询角色
-        role = RoleDao.select_by_no(user_role.ROLE_NO)
-        if not role:
-            continue
-        roles.append(role.ROLE_CODE)
+    # 查询用户角色
+    roles = [role.ROLE_CODE for role in get_user_roles(user_no)]
 
     return {
         'userNo': user_no,
