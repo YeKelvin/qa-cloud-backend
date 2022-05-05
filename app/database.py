@@ -151,7 +151,7 @@ class BaseColumn:
 
     ID = db.Column(db.Integer, primary_key=True)
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
-    DELETED = db.Column(db.Integer, nullable=False, default=0, comment='是否为已删除的数据')
+    DELETED = db.Column(db.Integer, nullable=False, default=0, comment='软删除标识')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), default=get_userno, comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')

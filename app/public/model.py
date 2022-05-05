@@ -17,27 +17,27 @@ log = get_logger(__name__)
 class TWorkspace(DBModel, BaseColumn):
     """工作空间表"""
     __tablename__ = 'WORKSPACE'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='工作空间编号')
-    WORKSPACE_NAME = db.Column(db.String(128), nullable=False, comment='工作空间名称')
-    WORKSPACE_SCOPE = db.Column(db.String(128), nullable=False, comment='工作空间作用域')
-    WORKSPACE_DESC = db.Column(db.String(256), comment='工作空间描述')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='空间编号')
+    WORKSPACE_NAME = db.Column(db.String(128), nullable=False, comment='空间名称')
+    WORKSPACE_SCOPE = db.Column(db.String(128), nullable=False, comment='空间作用域')
+    WORKSPACE_DESC = db.Column(db.String(256), comment='空间描述')
     UniqueConstraint('WORKSPACE_NAME', 'WORKSPACE_SCOPE', 'DELETED', name='unique_name_type_scope')
 
 
 class TWorkspaceUser(DBModel, BaseColumn):
     """工作空间用户关联表"""
     __tablename__ = 'WORKSPACE_USER'
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='工作空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
     USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
     UniqueConstraint('WORKSPACE_NO', 'USER_NO', 'DELETED', name='unique_workspace_user')
 
 
 class TWorkspaceRestriction(DBModel, BaseColumn):
     __tablename__ = 'WORKSPACE_RESTRICTION'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='工作空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     RESTRICTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='限制编号')
     MATCH_METHOD = db.Column(db.String(16), nullable=False, comment='匹配方法(POST, PUT, PATCH, DELETE)')
-    MATCH_TYPE = db.Column(db.String(16), nullable=False, comment='匹配类型(IN, NOTIN, STARTWITH, ENDWITH, PATTERN)')
+    MATCH_TYPE = db.Column(db.String(16), nullable=False, comment='匹配类型(ALL, IN, NOTIN, STARTWITH, ENDWITH, PATTERN)')
     MATCH_CONTENT = db.Column(db.String(128), nullable=False, comment='匹配内容')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='用户状态(ENABLE:启用, DISABLE:禁用)')
 
