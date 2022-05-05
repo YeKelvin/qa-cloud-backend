@@ -33,6 +33,13 @@ def logout():
     return service.logout()
 
 
+@blueprint.get('/user/info')
+@require_login
+def query_user_info():
+    """查询个人用户信息"""
+    return service.query_user_info()
+
+
 @blueprint.post('/user/register')
 @require_login
 @require_permission
@@ -85,13 +92,6 @@ def query_user_list():
 def query_user_all():
     """查询所有用户"""
     return service.query_user_all()
-
-
-@blueprint.get('/user/info')
-@require_login
-def query_user_info():
-    """查询个人用户信息"""
-    return service.query_user_info()
 
 
 @blueprint.put('/user')

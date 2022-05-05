@@ -107,11 +107,8 @@ def init_permission():
     """初始化权限"""
     # usercenter模块路由
     # user
-    _create_permission(name='用户登录', method='POST', endpoint='/usercenter/user/login')
-    _create_permission(name='用户登出', method='POST', endpoint='/usercenter/user/logout')
     _create_permission(name='用户注册', method='POST', endpoint='/usercenter/user/register')
     _create_permission(name='重置密码', method='PATCH', endpoint='/usercenter/user/password/reset')
-    _create_permission(name='查询用户信息', method='GET', endpoint='/usercenter/user/info')
     _create_permission(name='分页查询用户列表', method='GET', endpoint='/usercenter/user/list')
     _create_permission(name='查询所有用户', method='GET', endpoint='/usercenter/user/all')
     _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user')
