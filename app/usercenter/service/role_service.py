@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.common.validator import check_not_exists
 from app.common.validator import check_exists
 from app.usercenter.dao import role_dao as RoleDao  # noqa
@@ -97,8 +97,9 @@ def create_role(req):
         raise ServiceError('角色代码已存在')
 
     # 创建角色
+    role_no = new_id()
     TRole.insert(
-        ROLE_NO=new_id(),
+        ROLE_NO=role_no,
         ROLE_NAME=req.roleName,
         ROLE_CODE=req.roleCode,
         ROLE_RANK=req.roleRank,
@@ -106,6 +107,8 @@ def create_role(req):
         ROLE_TYPE='CUSTOM',
         STATE=RoleState.ENABLE.value
     )
+
+    return {'roleNo': role_no}
 
 
 @http_service

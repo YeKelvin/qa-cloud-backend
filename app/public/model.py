@@ -69,5 +69,5 @@ class TNotificationRobot(DBModel, BaseColumn):
     ROBOT_NAME = db.Column(db.String(128), nullable=False, comment='机器人名称')
     ROBOT_DESC = db.Column(db.String(256), comment='机器人描述')
     ROBOT_TYPE = db.Column(db.String(16), nullable=False, comment='机器人类型(WECHAT, WECOM, DINGTALK)')
-    ROBOT_CONFIG = db.Column(JSONB)
+    ROBOT_CONFIG = db.Column(JSONB, comment='机器人配置')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='机器人状态(ENABLE:启用, DISABLE:禁用)')

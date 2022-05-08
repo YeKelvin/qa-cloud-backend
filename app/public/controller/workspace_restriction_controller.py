@@ -52,7 +52,7 @@ def query_workspace_restriction_all():
 def create_workspace_restriction():
     """新增空间限制"""
     req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='限制编号不能为空'),
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('matchMethod', required=True, nullable=False, enum=RestrictionMatchMethod, help='匹配方法不能为空'),
         Argument('matchType', enum=RestrictionMatchType),
         Argument('matchContent'),

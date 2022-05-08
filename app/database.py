@@ -11,6 +11,7 @@ from sqlalchemy import func
 
 from app.common.globals import get_userno
 from app.extension import db
+from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
 
@@ -107,8 +108,7 @@ class CRUDMixin:
 
     @classmethod
     def deletes_by(cls: MODEL, **kwargs):
-        record = kwargs.pop('record', True)
-        if record:
+        if kwargs.pop('record', True):
             entities = cls.filter_by(**kwargs).all()
             for entity in entities:
                 entity.delete()
@@ -187,8 +187,12 @@ def record_update(entity, columnname, new):
     if columnname in ['ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME']:
         return
     old = getattr(entity, columnname, None)
-    if old is None or old == new:
+    if old is None:
         return
+    if isinstance(old, (dict, list)):
+        old = to_json(old)
+    if isinstance(new, (dict, list)):
+        new = to_json(new)
     content = TSystemOperationLogContent()
     content.LOG_NO = g.trace_id,
     content.OPERATION_TYPE = 'UPDATE',

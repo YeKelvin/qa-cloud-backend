@@ -9,7 +9,7 @@ from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
 from app.utils.log_util import get_logger
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 log = get_logger(__name__)
 
@@ -172,6 +172,7 @@ class TTestplanSettings(DBModel, BaseColumn):
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
     STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
+    NOTIFICATION_ROBOT_LIST = db.Column(JSONB, comment='通知机器人列表')
 
 
 class TTestplanItems(DBModel, BaseColumn):
@@ -210,15 +211,9 @@ class TTestplanExecutionSettings(DBModel, BaseColumn):
     SAVE = db.Column(db.Boolean, nullable=False, default=True, comment='是否保存数据至报告中')
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
     STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
+    VARIABLE_DATASET_LIST = db.Column(JSONB, comment='变量集列表')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-
-
-class TTestplanExecutionDataset(DBModel, BaseColumn):
-    """测试计划执行记录数据集关联表"""
-    __tablename__ = 'TESTPLAN_EXECUTION_DATASET'
-    EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
-    DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
-    UniqueConstraint('EXECUTION_NO', 'DATASET_NO', 'DELETED', name='unique_execution_dataset')
+    NOTIFICATION_ROBOT_LIST = db.Column(JSONB, comment='通知机器人列表')
 
 
 class TTestplanExecutionItems(DBModel, BaseColumn):

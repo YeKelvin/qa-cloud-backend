@@ -9,7 +9,7 @@ from typing import List
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.extension import db
@@ -653,7 +653,7 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Timer
     elif is_timer(source) and (is_test_collection(target)
         or not (  # noqa
-                    is_snippet_collection(target) or is_group(target) or is_sampler(target) or is_controller(target)
+            is_snippet_collection(target) or is_group(target) or is_sampler(target) or is_controller(target)
         )  # noqa
     ):
         raise ServiceError('[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')

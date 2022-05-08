@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : id_generator.py
+# @File    : identity.py
 # @Time    : 2020/3/20 14:03
 # @Author  : Kelvin.Ye
 from app import config as CONFIG

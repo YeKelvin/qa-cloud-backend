@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.common.validator import check_exists
 from app.usercenter.dao import group_dao as GroupDao
 from app.usercenter.dao import group_role_dao as GroupRoleDao

@@ -6,7 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.usercenter.dao import permission_dao as PermissionDao
@@ -71,14 +71,18 @@ def create_permission(req):
     permission = PermissionDao.select_by_endpoint_and_method(req.endpoint, req.method)
     check_not_exists(permission, '权限已存在')
 
+    # 新增权限
+    permission_no = new_id()
     TPermission.insert(
-        PERMISSION_NO=new_id(),
+        PERMISSION_NO=permission_no,
         PERMISSION_NAME=req.permissionName,
         PERMISSION_DESC=req.permissionDesc,
         ENDPOINT=req.endpoint,
         METHOD=req.method,
         STATE=PermissionState.ENABLE.value
     )
+
+    return {'permissionNo': permission_no}
 
 
 @http_service
@@ -94,7 +98,6 @@ def modify_permission(req):
 
     # 更新权限信息
     permission.update(
-        PERMISSION_NO=req.permissionNo,
         PERMISSION_NAME=req.permissionName,
         PERMISSION_DESC=req.permissionDesc,
         ENDPOINT=req.endpoint,

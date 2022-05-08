@@ -100,7 +100,7 @@ def execute_testplan():
     """运行测试计划"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('datasetNumberList', type=list),
+        Argument('datasetNumberedList', type=list),
         Argument('useCurrentValue', default=False)
     ).parse()
     return service.execute_testplan(req)

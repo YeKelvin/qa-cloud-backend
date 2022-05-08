@@ -61,6 +61,7 @@ def create_testplan():
         Argument('save', default=True),
         Argument('saveOnError', default=False),
         Argument('stopTestOnErrorCount', default=3),
+        Argument('notificationRobotNumberedList', type=list),
     ).parse()
     return service.create_testplan(req)
 

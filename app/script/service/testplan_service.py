@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.public.dao import workspace_dao as WorkspaceDao
@@ -14,7 +14,6 @@ from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
-from app.script.dao import testplan_execution_dataset_dao as TestplanExecutionDatasetDao
 from app.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
 from app.script.dao import testplan_execution_settings_dao as TestPlanExecutionSettingsDao
 from app.script.dao import testplan_items_dao as TestPlanItemsDao
@@ -90,6 +89,7 @@ def query_testplan(req):
         'save': settings.SAVE,
         'saveOnError': settings.SAVE_ON_ERROR,
         'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
+        'notificationRobotNumberedList': settings.NOTIFICATION_ROBOT_LIST,
         'collectionNumberList': collection_number_list
     }
 
@@ -115,7 +115,8 @@ def create_testplan(req):
         DELAY=req.delay,
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount
+        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
+        NOTIFICATION_ROBOT_LIST=req.notificationRobotNumberedList
     )
 
     # 新增测试计划项目明细
@@ -287,15 +288,15 @@ def query_testplan_execution_details(req):
         })
 
     # 查询执行记录关联的变量集
-    execution_dataset_list = TestplanExecutionDatasetDao.select_all_by_execution(req.executionNo)
-    dataset_list = []
+    execution_dataset_list = settings.VARIABLE_DATASET_LIST
+    variable_dataset_list = []
     for execution_dataset in execution_dataset_list:
         dataset = VariableDatasetDao.select_by_no(execution_dataset.DATASET_NO)
-        dataset and dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
+        dataset and variable_dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
 
     return {
         'collectionList': collection_list,
-        'datasetList': dataset_list,
+        'datasetList': variable_dataset_list,
         'concurrency': settings.CONCURRENCY,
         'iterations': settings.ITERATIONS,
         'delay': settings.DELAY,

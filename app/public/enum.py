@@ -42,3 +42,19 @@ class RestrictionMatchType(Enum):
 class RestrictedExemptionType(Enum):
     USER = 'USER'
     GROUP = 'GROUP'
+
+
+@unique
+class RobotState(Enum):
+    # 启用
+    ENABLE = 'ENABLE'
+    # 禁用
+    DISABLE = 'DISABLE'
+
+
+@unique
+class RobotType(Enum):
+    # 企业微信
+    WECOM = 'WECOM'
+    # 钉钉
+    DINGTALK = 'DINGTALK'

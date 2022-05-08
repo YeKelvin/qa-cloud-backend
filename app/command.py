@@ -6,7 +6,7 @@
 import click
 from flask.cli import with_appcontext
 
-from app.common.id_generator import new_id
+from app.common.identity import new_id
 from app.extension import db  # noqa
 from app.database import TSystemOperationLogContent  # noqa
 from app.public.model import TWorkspace  # noqa
@@ -111,23 +111,23 @@ def init_permission():
     _create_permission(name='重置密码', method='PATCH', endpoint='/usercenter/user/password/reset')
     _create_permission(name='分页查询用户列表', method='GET', endpoint='/usercenter/user/list')
     _create_permission(name='查询所有用户', method='GET', endpoint='/usercenter/user/all')
-    _create_permission(name='更新用户信息', method='PUT', endpoint='/usercenter/user')
-    _create_permission(name='更新用户状态', method='PATCH', endpoint='/usercenter/user/state')
+    _create_permission(name='修改用户信息', method='PUT', endpoint='/usercenter/user')
+    _create_permission(name='修改用户状态', method='PATCH', endpoint='/usercenter/user/state')
     _create_permission(name='删除用户', method='DELETE', endpoint='/usercenter/user')
     # permission
     _create_permission(name='分页查询权限列表', method='GET', endpoint='/usercenter/permission/list')
     _create_permission(name='查询所有权限', method='GET', endpoint='/usercenter/permission/all')
     _create_permission(name='新增权限', method='POST', endpoint='/usercenter/permission')
-    _create_permission(name='更新权限信息', method='PUT', endpoint='/usercenter/permission')
-    _create_permission(name='更新权限状态', method='PATCH', endpoint='/usercenter/permission/state')
+    _create_permission(name='修改权限信息', method='PUT', endpoint='/usercenter/permission')
+    _create_permission(name='修改权限状态', method='PATCH', endpoint='/usercenter/permission/state')
     _create_permission(name='删除权限', method='DELETE', endpoint='/usercenter/permission')
     # role
     _create_permission(name='分页查询角色列表', method='GET', endpoint='/usercenter/role/list')
     _create_permission(name='查询所有角色', method='GET', endpoint='/usercenter/role/all')
     _create_permission(name='查询角色信息', method='GET', endpoint='/usercenter/role/info')
     _create_permission(name='新增角色', method='POST', endpoint='/usercenter/role')
-    _create_permission(name='更新角色信息', method='PUT', endpoint='/usercenter/role')
-    _create_permission(name='更新角色状态', method='PATCH', endpoint='/usercenter/role/state')
+    _create_permission(name='修改角色信息', method='PUT', endpoint='/usercenter/role')
+    _create_permission(name='修改角色状态', method='PATCH', endpoint='/usercenter/role/state')
     _create_permission(name='删除角色', method='DELETE', endpoint='/usercenter/role')
     _create_permission(name='分页查询用户角色列表', method='GET', endpoint='/usercenter/user/role/list')
     _create_permission(name='查询所有用户角色', method='GET', endpoint='/usercenter/user/role/all')
@@ -141,8 +141,8 @@ def init_permission():
     _create_permission(name='查询所有分组', method='GET', endpoint='/usercenter/group/all')
     _create_permission(name='查询分组信息', method='GET', endpoint='/usercenter/group/info')
     _create_permission(name='新增分组', method='POST', endpoint='/usercenter/group')
-    _create_permission(name='更新分组信息', method='PUT', endpoint='/usercenter/group')
-    _create_permission(name='更新分组状态', method='PATCH', endpoint='/usercenter/group/state')
+    _create_permission(name='修改分组信息', method='PUT', endpoint='/usercenter/group')
+    _create_permission(name='修改分组状态', method='PATCH', endpoint='/usercenter/group/state')
     _create_permission(name='删除分组', method='DELETE', endpoint='/usercenter/group')
 
     # system模块路由
@@ -174,6 +174,15 @@ def init_permission():
     _create_permission(name='新增标签', method='POST', endpoint='/public/tag')
     _create_permission(name='修改标签', method='PUT', endpoint='/public/tag')
     _create_permission(name='删除标签', method='DELETE', endpoint='/public/tag')
+
+    # notification
+    _create_permission(name='分页查询通知机器人列表', method='GET', endpoint='/public/notification/robot/list')
+    _create_permission(name='查询所有通知机器人', method='GET', endpoint='/public/notification/robot/all')
+    _create_permission(name='查询通知机器人', method='GET', endpoint='/public/notification/robot')
+    _create_permission(name='新增通知机器人', method='POST', endpoint='/public/notification/robot')
+    _create_permission(name='修改通知机器人', method='PUT', endpoint='/public/notification/robot')
+    _create_permission(name='修改通知机器人状态', method='PATCH', endpoint='/public/notification/robot/state')
+    _create_permission(name='删除通知机器人', method='DELETE', endpoint='/public/notification/robot')
 
     # script模块路由
     # element
