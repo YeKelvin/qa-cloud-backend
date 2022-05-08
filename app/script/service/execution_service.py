@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 import time
 import traceback
-
+from app import config as CONFIG
 import flask
 from pymeter.runner import Runner
 
@@ -24,6 +24,7 @@ from app.public.enum import RobotState
 from app.public.enum import RobotType
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import test_element_dao as TestElementDao
+from app.script.dao import test_group_result_dao as TestGroupResultDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import testplan_dao as TestPlanDao
 from app.script.dao import testplan_execution_dao as TestplanExecutionDao
@@ -42,7 +43,9 @@ from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
 from app.utils.log_util import get_logger
+from app.utils.notification import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
+from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
@@ -480,14 +483,17 @@ def run_testplan(
     # 计算耗时
     elapsed_time = int(end_time * 1000) - int(start_time * 1000)
 
+    report = None
     if report_no:
         # 更新报告的开始时间、结束时间和耗时
-        TestReportDao.select_by_no(report_no).update(
+        report = TestReportDao.select_by_no(report_no)
+        report.update(
             START_TIME=timestamp_to_utc8_datetime(start_time),
             END_TIME=timestamp_to_utc8_datetime(end_time),
             ELAPSED_TIME=elapsed_time,
             record=False
         )
+        db.session.commit()  # 这里要实时更新
 
     # 重新查询执行记录
     execution = TestplanExecutionDao.select_by_no(execution_no)
@@ -503,15 +509,50 @@ def run_testplan(
 
     # 结果通知
     if notification_robot_numbered_list:
-        # TODO: robot
         for robot_no in notification_robot_numbered_list:
             robot = NotificationRobotDao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
                 continue
             if robot.ROBOT_TYPE == RobotType.WECOM.value:
-                ...
+                WeComTool.markdown_message(
+                    key=robot.ROBOT_CONFIG.get('key'),
+                    content=get_result_message_content(execution, report)
+                )
 
     log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
+
+
+def get_result_message_content(execution, report):
+    testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
+    if report:
+        elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
+        success_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True)
+        failure_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False)
+        report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
+        markdown = (
+            f'### 测试计划：`{testplan.PLAN_NAME}`'
+            f'### 执行环境：`{execution.ENVIRONMENT}`'
+            f'### 计划执行完成，请查收'
+            f'><font color="comment">**耗时**：{elapsed_time}</font>'
+            f'><font color="info">**成功**: {success_count}</font>'
+            f'><font color="warning">**失败**: {failure_count}</font>'
+            f'### 测试报告链接：{report_url}'
+        )
+        return markdown
+    else:
+        elapsed_time = microsecond_to_h_m_s(execution.ELAPSED_TIME)
+        success_count = TestPlanExecutionItemsDao.sum_success_count_by_execution(execution.EXECUTION_NO)
+        failure_count = TestPlanExecutionItemsDao.sum_failure_count_by_execution(execution.EXECUTION_NO)
+        markdown = (
+            f'### 测试计划：`{testplan.PLAN_NAME}`'
+            f'### 执行环境：`{execution.ENVIRONMENT}`'
+            f'### 计划执行完成，请查收'
+            f'><font color="comment">**总耗时**：{elapsed_time}</font>'
+            f'><font color="comment">**共迭代**：{execution.ITERATION_COUNT} 次</font>'
+            f'><font color="info">**成功迭代**: {success_count} 次</font>'
+            f'><font color="warning">**失败迭代**: {failure_count} 次</font>'
+        )
+        return markdown
 
 
 class TestplanInterruptError(Exception):

@@ -57,6 +57,17 @@ class CRUDMixin:
         return cls.query.session.query(func.count(cls.ID)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
+    def sum_by(cls: MODEL, field, cons: dict) -> decimal.Decimal:
+        """
+        e.g.:
+
+        from app.database import where_by
+
+        Table.sum_by(setter(), where_by())
+        """
+        return cls.query.session.query(func.sum(field)).filter_by(DELETED=0, **cons).scalar() or 0
+
+    @classmethod
     def avg_by(cls: MODEL, field, **kwargs) -> decimal.Decimal:
         return cls.query.session.query(func.avg(field)).filter_by(DELETED=0, **kwargs).scalar() or 0
 

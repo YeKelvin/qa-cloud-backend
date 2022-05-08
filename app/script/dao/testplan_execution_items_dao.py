@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : testplan_items_dao.py
+# @File    : testplan_execution_items_dao.py
 # @Time    : 2021-09-09 19:59:21
 # @Author  : Kelvin.Ye
 from typing import List
@@ -16,6 +16,20 @@ def select_by_execution_and_collection(execution_no, collection_no) -> TTestplan
 
 def select_all_by_execution(execution_no) -> List[TTestplanExecutionItems]:
     return TTestplanExecutionItems.filter_by(EXECUTION_NO=execution_no).order_by(TTestplanExecutionItems.SORT_NO).all()
+
+
+def sum_success_count_by_execution(execution_no) -> int:
+    return TTestplanExecutionItems.sum_by(
+        TTestplanExecutionItems.SUCCESS_COUNT,
+        where_by(EXECUTION_NO=execution_no)
+    )
+
+
+def sum_failure_count_by_execution(execution_no) -> int:
+    return TTestplanExecutionItems.sum_by(
+        TTestplanExecutionItems.FAILURE_COUNT,
+        where_by(EXECUTION_NO=execution_no)
+    )
 
 
 def update_running_state_by_execution(execution_no, state) -> None:

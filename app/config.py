@@ -27,6 +27,7 @@ __config__.read(APP_CONFIG_FILE)
 SERVICE_HTTP_PROTOCOL = __config__.get('service', 'http.protocol')
 SERVICE_HTTP_HOST = __config__.get('service', 'http.host')
 SERVICE_HTTP_PORT = __config__.get('service', 'http.port')
+BASE_URL = __config__.get('service', 'baseurl')
 
 # 日志相关配置
 LOG_FILE = __config__.get('log', 'file')
