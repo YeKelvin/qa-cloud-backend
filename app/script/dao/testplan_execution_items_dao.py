@@ -18,14 +18,14 @@ def select_all_by_execution(execution_no) -> List[TTestplanExecutionItems]:
     return TTestplanExecutionItems.filter_by(EXECUTION_NO=execution_no).order_by(TTestplanExecutionItems.SORT_NO).all()
 
 
-def sum_success_count_by_execution(execution_no) -> int:
+def sum_success_count_by_execution(execution_no):
     return TTestplanExecutionItems.sum_by(
         TTestplanExecutionItems.SUCCESS_COUNT,
         where_by(EXECUTION_NO=execution_no)
     )
 
 
-def sum_failure_count_by_execution(execution_no) -> int:
+def sum_failure_count_by_execution(execution_no):
     return TTestplanExecutionItems.sum_by(
         TTestplanExecutionItems.FAILURE_COUNT,
         where_by(EXECUTION_NO=execution_no)

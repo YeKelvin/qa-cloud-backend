@@ -92,7 +92,7 @@ def microsecond_to_h_m_s(microsecond: int) -> str:
     if h == 0 and m == 0 and s == 0:
         return '%dms' % ms
     if h == 0 and m == 0:
-        return '%02ds:%dms' % (s, ms)
+        return '%02ds+%dms' % (s, ms)
     if h == 0:
         return '%02dm:%02ds' % (m, s)
 
@@ -109,6 +109,6 @@ def microsecond_to_m_s(microsecond: int) -> str:
     if m == 0 and s == 0:
         return '%dms' % ms
     if m == 0:
-        return '%02ds:%dms' % (s, ms)
+        return '%02ds+%dms' % (s, ms)
 
     return '%02dm:%02ds' % (m, s)

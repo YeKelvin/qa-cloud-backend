@@ -9,6 +9,10 @@ from app.public.model import TNotificationRobot
 from app.utils.sqlalchemy_util import QueryCondition
 
 
+def select_first(**kwargs) -> TNotificationRobot:
+    return TNotificationRobot.filter_by(**kwargs).first()
+
+
 def select_by_no(robot_no) -> TNotificationRobot:
     return TNotificationRobot.filter_by(ROBOT_NO=robot_no).first()
 

@@ -90,7 +90,11 @@ def create_notification_robot(req):
         raise ServiceError('空间编号不能为空')
 
     # 查询机器人
-    robot = NotificationRobotDao.select_by_name_and_type(req.robotName, req.robotType)
+    robot = NotificationRobotDao.select_first(
+        WORKSPACE_NO=req.workspaceNo,
+        ROBOT_NAME=req.robotName,
+        ROBOT_TYPE=req.robotType
+    )
     check_not_exists(robot, '机器人已存在')
 
     # 新增机器人
@@ -116,7 +120,11 @@ def modify_notification_robot(req):
     check_exists(robot, '机器人不存在')
 
     # 唯一性校验
-    if robot.ROBOT_NAME != req.robotName and NotificationRobotDao.select_by_name_and_type(req.robotName, robot.ROBOT_TYPE):
+    if robot.ROBOT_NAME != req.robotName and NotificationRobotDao.select_first(
+        WORKSPACE_NO=robot.WORKSPACE_NO,
+        ROBOT_NAME=req.robotName,
+        ROBOT_TYPE=robot.ROBOT_TYPE
+    ):
         raise ServiceError('机器人名称已存在')
 
     # 更新机器人信息

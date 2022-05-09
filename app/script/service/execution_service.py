@@ -5,10 +5,11 @@
 # @Author  : Kelvin.Ye
 import time
 import traceback
-from app import config as CONFIG
+
 import flask
 from pymeter.runner import Runner
 
+from app import config as CONFIG
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
@@ -42,6 +43,7 @@ from app.script.model import TTestplanExecutionItems
 from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
+from app.usercenter.dao import user_dao as UserDao
 from app.utils.log_util import get_logger
 from app.utils.notification import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
@@ -402,7 +404,7 @@ def execute_testplan(req):
             log.error(f'执行编号:[ {execution_no} ] 执行异常\n{traceback.format_exc()}')
             with app.app_context():
                 try:
-                    TestPlanDao.update_running_state_by_no(execution_no, RunningState.ERROR.value)
+                    TestplanExecutionDao.update_running_state_by_no(execution_no, RunningState.ERROR.value)
                 except Exception:
                     log.error(f'执行编号:[ {execution_no} ] 执行异常\n{traceback.format_exc()}')
 
@@ -524,19 +526,21 @@ def run_testplan(
 
 def get_result_message_content(execution, report):
     testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
+    user = UserDao.select_by_no(execution.CREATED_BY)
     if report:
         elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
         success_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True)
         failure_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False)
-        report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
+        report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}#target=out'
         markdown = (
-            f'### 测试计划：`{testplan.PLAN_NAME}`'
-            f'### 执行环境：`{execution.ENVIRONMENT}`'
-            f'### 计划执行完成，请查收'
-            f'><font color="comment">**耗时**：{elapsed_time}</font>'
-            f'><font color="info">**成功**: {success_count}</font>'
-            f'><font color="warning">**失败**: {failure_count}</font>'
-            f'### 测试报告链接：{report_url}'
+            f'# 测试计划执行完成\n'
+            f'#### 计划名称：`{testplan.PLAN_NAME}`\n'
+            f'#### 执行环境：`{execution.ENVIRONMENT}`\n'
+            f'#### 执行人：`{user.USER_NAME}`\n'
+            f'><font color="comment">**耗时**：{elapsed_time}</font>\n'
+            f'><font color="info">**成功**：{success_count}</font>\n'
+            f'><font color="warning">**失败**：{failure_count}</font>\n\n'
+            f'# [点击查看测试报告]({report_url})'
         )
         return markdown
     else:
@@ -544,13 +548,14 @@ def get_result_message_content(execution, report):
         success_count = TestPlanExecutionItemsDao.sum_success_count_by_execution(execution.EXECUTION_NO)
         failure_count = TestPlanExecutionItemsDao.sum_failure_count_by_execution(execution.EXECUTION_NO)
         markdown = (
-            f'### 测试计划：`{testplan.PLAN_NAME}`'
-            f'### 执行环境：`{execution.ENVIRONMENT}`'
-            f'### 计划执行完成，请查收'
-            f'><font color="comment">**总耗时**：{elapsed_time}</font>'
-            f'><font color="comment">**共迭代**：{execution.ITERATION_COUNT} 次</font>'
-            f'><font color="info">**成功迭代**: {success_count} 次</font>'
-            f'><font color="warning">**失败迭代**: {failure_count} 次</font>'
+            f'# 测试计划执行完成\n'
+            f'#### 计划计划：`{testplan.PLAN_NAME}`\n'
+            f'#### 执行环境：`{execution.ENVIRONMENT}`\n'
+            f'#### 执行人：`{user.USER_NAME}`\n'
+            f'><font color="comment">**总耗时**：{elapsed_time}</font>\n'
+            f'><font color="comment">**共迭代**：{execution.ITERATION_COUNT} 次</font>\n'
+            f'><font color="info">**成功迭代**：{success_count} 次</font>\n'
+            f'><font color="warning">**失败迭代**：{failure_count} 次</font>'
         )
         return markdown
 

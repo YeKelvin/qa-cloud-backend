@@ -6,10 +6,15 @@
 import requests
 
 from app.utils.json_util import to_json
+from app.utils.log_util import get_logger
+
+
+log = get_logger(__name__)
 
 
 webhookurl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='
 headers = {'content-type': 'application/json'}
+encoding = 'utf-8'
 
 
 def text_message(key, content: str, mentioned_list: list = None, mentioned_mobile_list: list = None):
@@ -28,7 +33,8 @@ def text_message(key, content: str, mentioned_list: list = None, mentioned_mobil
             'mentioned_mobile_list': mentioned_mobile_list or []
         }
     }
-    requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data))
+    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def markdown_message(key, content: str):
@@ -43,7 +49,8 @@ def markdown_message(key, content: str):
             'content': content
         }
     }
-    requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data))
+    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def image_message(key, base64: str, md5: str):
@@ -60,7 +67,8 @@ def image_message(key, base64: str, md5: str):
             'md5': md5
         }
     }
-    requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data))
+    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def news_message(key, articles: list):
@@ -79,7 +87,8 @@ def news_message(key, articles: list):
             'articles': articles
         }
     }
-    requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data))
+    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def file_message(key, media_id: str):
@@ -94,4 +103,5 @@ def file_message(key, media_id: str):
             'media_id': media_id
         }
     }
-    requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data))
+    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
