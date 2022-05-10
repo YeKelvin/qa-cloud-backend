@@ -531,7 +531,7 @@ def get_result_message_content(execution, report):
         elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
         success_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True)
         failure_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False)
-        report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}#target=out'
+        # report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
         markdown = (
             f'# 测试计划执行完成\n'
             f'#### 计划名称：`{testplan.PLAN_NAME}`\n'
@@ -539,8 +539,7 @@ def get_result_message_content(execution, report):
             f'#### 执行人：`{user.USER_NAME}`\n'
             f'><font color="comment">**耗时**：{elapsed_time}</font>\n'
             f'><font color="info">**成功**：{success_count}</font>\n'
-            f'><font color="warning">**失败**：{failure_count}</font>\n\n'
-            f'# [点击查看测试报告]({report_url})'
+            f'><font color="warning">**失败**：{failure_count}</font>'
         )
         return markdown
     else:
