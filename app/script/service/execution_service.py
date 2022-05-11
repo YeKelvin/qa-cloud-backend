@@ -517,42 +517,37 @@ def run_testplan(
                 continue
             # 企业微信通知
             if robot.ROBOT_TYPE == RobotType.WECOM.value:
-                WeComTool.markdown_message(
+                WeComTool.text_message(
                     key=robot.ROBOT_CONFIG.get('key'),
-                    content=get_result_message_markdown(execution, report)
+                    content=get_notification_message(execution, report)
                 )
-                # 目前只有文本消息的链接才能打开系统浏览器，所以再额外发送一条文本消息
-                if report:
-                    WeComTool.text_message(
-                        key=robot.ROBOT_CONFIG.get('key'),
-                        content=f'测试报告：{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
-                    )
 
     log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
 
 
-def get_result_message_markdown(execution, report):
+def get_notification_message(execution, report):
     testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
     user = UserDao.select_by_no(execution.CREATED_BY)
     if report:
         elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
         success_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True)
         failure_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False)
-        markdown = (
-            f'# 测试计划执行完成\n'
-            f'#### 计划名称：`{testplan.PLAN_NAME}`\n'
-            f'#### 执行环境：`{execution.ENVIRONMENT}`\n'
-            f'#### 执行人：`{user.USER_NAME}`\n'
-            f'><font color="comment">**耗时**：{elapsed_time}</font>\n'
-            f'><font color="info">**成功**：{success_count}</font>\n'
-            f'><font color="warning">**失败**：{failure_count}</font>'
+        report_url = f'{CONFIG.BASE_URL}/script/report?reportNo={report.REPORT_NO}'
+        return (
+            f'测试计划执行完成\n'
+            f'计划名称：{testplan.PLAN_NAME}\n'
+            f'执行环境：{execution.ENVIRONMENT}\n'
+            f'执行人：{user.USER_NAME}\n'
+            f'耗时：{elapsed_time}\n'
+            f'成功：{success_count}\n'
+            f'失败：{failure_count}\n'
+            f'测试报告：{report_url}'
         )
-        return markdown
     else:
         elapsed_time = microsecond_to_h_m_s(execution.ELAPSED_TIME)
         success_count = TestPlanExecutionItemsDao.sum_success_count_by_execution(execution.EXECUTION_NO)
         failure_count = TestPlanExecutionItemsDao.sum_failure_count_by_execution(execution.EXECUTION_NO)
-        markdown = (
+        return (
             f'# 测试计划执行完成\n'
             f'#### 计划计划：`{testplan.PLAN_NAME}`\n'
             f'#### 执行环境：`{execution.ENVIRONMENT}`\n'
@@ -562,7 +557,6 @@ def get_result_message_markdown(execution, report):
             f'><font color="info">**成功迭代**：{success_count} 次</font>\n'
             f'><font color="warning">**失败迭代**：{failure_count} 次</font>'
         )
-        return markdown
 
 
 class TestplanInterruptError(Exception):
