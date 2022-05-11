@@ -81,23 +81,23 @@ def check_workspace_permission(source_workspace_no) -> None:
     # 获取用户编号
     user_no = getattr(g, 'user_no', None)
     if user_no is None:
-        raise ServiceError('空间权限不足')
+        raise ServiceError('空间权限不足，获取用户编号失败')
 
     # 判断用户是否是操作空间的成员
     user_workspace_numbered_list = get_user_workspace_numbered_list(user_no)
     if source_workspace_no not in user_workspace_numbered_list:
-        raise ServiceError('空间权限不足')
+        raise ServiceError('空间权限不足，用户非目标空间成员')
 
     # 根据请求方法和请求路径，查询操作空间的限制项
     restriction_numbered_list = get_matched_restriction_numbered_list(source_workspace_no)
     if not restriction_numbered_list:
         return
 
-    # 查询限制项的豁免成员
-    exemption_numbered_list = get_restricted_exemption_numbered_list(restriction_numbered_list)
     # 校验用户是否为豁免成员
+    exemption_numbered_list = get_restricted_exemption_numbered_list(restriction_numbered_list)
     if user_no in exemption_numbered_list:
         return
+
     # 校验用户分组是否为豁免分组
     user_group_numbered_list = get_user_group_numbered_list(user_no)
     for group_no in user_group_numbered_list:
