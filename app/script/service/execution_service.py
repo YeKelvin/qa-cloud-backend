@@ -515,23 +515,29 @@ def run_testplan(
             robot = NotificationRobotDao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
                 continue
+            # 企业微信通知
             if robot.ROBOT_TYPE == RobotType.WECOM.value:
                 WeComTool.markdown_message(
                     key=robot.ROBOT_CONFIG.get('key'),
-                    content=get_result_message_content(execution, report)
+                    content=get_result_message_markdown(execution, report)
                 )
+                # 目前只有文本消息的链接才能打开系统浏览器，所以再额外发送一条文本消息
+                if report:
+                    WeComTool.text_message(
+                        key=robot.ROBOT_CONFIG.get('key'),
+                        content=f'测试报告：{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
+                    )
 
     log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
 
 
-def get_result_message_content(execution, report):
+def get_result_message_markdown(execution, report):
     testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
     user = UserDao.select_by_no(execution.CREATED_BY)
     if report:
         elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
         success_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, True)
         failure_count = TestGroupResultDao.count_by_report_and_success(report.REPORT_NO, False)
-        # report_url = f'{CONFIG.BASE_URL}script/report?reportNo={report.REPORT_NO}'
         markdown = (
             f'# 测试计划执行完成\n'
             f'#### 计划名称：`{testplan.PLAN_NAME}`\n'
