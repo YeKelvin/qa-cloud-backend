@@ -51,31 +51,23 @@ def query_workspace_list(req):
 
 @http_service
 def query_workspace_all(req):
-    # 查询条件
-    conds = QueryCondition(TWorkspace)
-    if req.userNo:
+    if not req.userNo:
+        workspaces = TWorkspace.filter_by().order_by(TWorkspace.CREATED_TIME.desc()).all()
+    else:
+        # 查询条件
+        conds = QueryCondition(TWorkspace, TWorkspaceUser)
         conds.equal(TWorkspaceUser.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conds.equal(TWorkspaceUser.USER_NO, req.userNo)
-
-    workspaces = db.session.query(
-        TWorkspace.WORKSPACE_NO,
-        TWorkspace.WORKSPACE_NAME,
-        TWorkspace.WORKSPACE_SCOPE,
-        TWorkspace.WORKSPACE_DESC,
-        TWorkspace.CREATED_TIME
-    ).filter(*conds)
-
-    if req.userNo:
-        public_workspaces = db.session.query(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TWorkspace.WORKSPACE_DESC,
-            TWorkspace.CREATED_TIME
-        ).filter(
-            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC', TWorkspace.DELETED == 0
+        # 查询受保护和私有空间
+        workspace_filter = TWorkspace.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc())
+        # 查询公共空间
+        public_workspace_filter = TWorkspace.filter(
+            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC',
+            TWorkspace.DELETED == 0
+        ).order_by(
+            TWorkspace.CREATED_TIME.desc()
         )
-        workspaces = workspaces.union(public_workspaces).filter().order_by(TWorkspace.CREATED_TIME.desc()).all()
+        workspaces = workspace_filter.union(public_workspace_filter).all()
 
     result = []
     for workspace in workspaces:
