@@ -11,8 +11,12 @@ from app.script.model import TVariableDataset
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def select_by_no(set_no) -> TVariableDataset:
-    return TVariableDataset.filter_by(DATASET_NO=set_no).first()
+def select_by_no(dataset_no) -> TVariableDataset:
+    return TVariableDataset.filter_by(DATASET_NO=dataset_no).first()
+
+
+def select_by_number_with_deleted(dataset_no) -> TVariableDataset:
+    return TVariableDataset.query.filter_by(DATASET_NO=dataset_no).first()
 
 
 def select_first(**kwargs) -> TVariableDataset:

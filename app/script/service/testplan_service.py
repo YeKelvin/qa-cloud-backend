@@ -291,7 +291,7 @@ def query_testplan_execution_details(req):
     variable_dataset_list = []
     if settings.VARIABLE_DATASET_LIST:
         for dataset_no in settings.VARIABLE_DATASET_LIST:
-            dataset = VariableDatasetDao.select_by_no(dataset_no)
+            dataset = VariableDatasetDao.select_by_number_with_deleted(dataset_no)
             dataset and variable_dataset_list.append({
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME
