@@ -288,11 +288,14 @@ def query_testplan_execution_details(req):
         })
 
     # 查询执行记录关联的变量集
-    execution_dataset_list = settings.VARIABLE_DATASET_LIST
     variable_dataset_list = []
-    for execution_dataset in execution_dataset_list:
-        dataset = VariableDatasetDao.select_by_no(execution_dataset.DATASET_NO)
-        dataset and variable_dataset_list.append({'datasetNo': dataset.DATASET_NO, 'datasetName': dataset.DATASET_NAME})
+    if settings.VARIABLE_DATASET_LIST:
+        for dataset_no in settings.VARIABLE_DATASET_LIST:
+            dataset = VariableDatasetDao.select_by_no(dataset_no)
+            dataset and variable_dataset_list.append({
+                'datasetNo': dataset.DATASET_NO,
+                'datasetName': dataset.DATASET_NAME
+            })
 
     return {
         'collectionList': collection_list,
