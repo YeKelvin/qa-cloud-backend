@@ -7,9 +7,11 @@ import os
 from typing import Optional
 
 import orjson
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from flask import Flask
 
 from app import config as CONFIG
+from app.extension import apscheduler
 from app.extension import db
 from app.extension import migrate
 from app.extension import socketio
@@ -48,7 +50,7 @@ def get_app() -> Optional[Flask]:
 
 def configure_flask(app: Flask):
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI=get_db_url(),
+        SQLALCHEMY_DATABASE_URI=CONFIG.DB_URL,
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
@@ -71,7 +73,11 @@ def configure_flask(app: Flask):
             'json_serializer': orjson_serializer,
             # 自定义反序列化函数
             'json_deserializer': orjson_deserializer
-        }
+        },
+        SCHEDULER_JOBSTORES={'default': SQLAlchemyJobStore(url=CONFIG.DB_URL)},
+        SCHEDULER_EXECUTORS={'default': {'type': 'gevent'}},
+        SCHEDULER_JOB_DEFAULTS={'coalesce': True, 'max_instances': CONFIG.SCHEDULE_JOB_INSTANCES_MAX},
+        SCHEDULER_TIMEZONE='Asia/Shanghai'
     )
 
 
@@ -80,22 +86,29 @@ def register_extensions(app: Flask):
     db.init_app(app)
     migrate.init_app(app, db)
     register_socketio(app)
+    register_apscheduler(app)
 
 
 def register_socketio(app: Flask):
     socketio.init_app(app)
-    # app运行前加载events，否则handle不到
-    from app import socket  # noqa
+    from app import socket  # noqa 服务启动前加载events
+
+
+def register_apscheduler(app: Flask):
+    apscheduler.init_app(app)
+    apscheduler.start()
 
 
 def register_blueprints(app: Flask):
     """Register Flask blueprints"""
     from app.public.controller import blueprint as public_blueprint
+    from app.schedule.controller import blueprint as schedule_blueprint
     from app.script.controller import blueprint as script_blueprint
     from app.system.controller import blueprint as system_blueprint
     from app.usercenter.controller import blueprint as usercenter_blueprint
 
     app.register_blueprint(public_blueprint)
+    app.register_blueprint(schedule_blueprint)
     app.register_blueprint(script_blueprint)
     app.register_blueprint(system_blueprint)
     app.register_blueprint(usercenter_blueprint)
@@ -129,15 +142,6 @@ def register_commands(app: Flask):
     app.cli.add_command(command.initdata)
     app.cli.add_command(command.dropdb)
     app.cli.add_command(command.create_single_table)
-
-
-def get_db_url() -> str:
-    """获取dbUrl"""
-    return get_sqlite_url() if 'sqlite' in CONFIG.DB_TYPE else CONFIG.DB_URL
-
-
-def get_sqlite_url():
-    return f'sqlite:///{os.path.join(CONFIG.PROJECT_PATH, "app")}.db'
 
 
 def orjson_serializer(obj):

@@ -9,10 +9,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
-from app.utils.log_util import get_logger
-
-
-log = get_logger(__name__)
 
 
 class TWorkspace(DBModel, BaseColumn):
@@ -28,8 +24,8 @@ class TWorkspace(DBModel, BaseColumn):
 class TWorkspaceUser(DBModel, BaseColumn):
     """空间用户表"""
     __tablename__ = 'WORKSPACE_USER'
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
-    USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     UniqueConstraint('WORKSPACE_NO', 'USER_NO', 'DELETED', name='unique_workspace_user')
 
 

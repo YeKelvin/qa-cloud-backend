@@ -4,14 +4,11 @@
 # @Time    : 2019/11/14 9:50
 # @Author  : Kelvin.Ye
 from sqlalchemy import UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
-from app.utils.log_util import get_logger
-from sqlalchemy.dialects.postgresql import JSONB
-
-log = get_logger(__name__)
 
 
 class TWorkspaceCollection(DBModel, BaseColumn):
@@ -67,7 +64,7 @@ class TElementBuiltinChildren(DBModel, BaseColumn):
 class TVariableDataset(DBModel, BaseColumn):
     """变量集表"""
     __tablename__ = 'VARIABLE_DATASET'
-    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     DATASET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量集编号')
     DATASET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
     DATASET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
@@ -100,7 +97,7 @@ class THttpHeaderTemplateRef(DBModel, BaseColumn):
 class THttpHeaderTemplate(DBModel, BaseColumn):
     """请求头模板表"""
     __tablename__ = 'HTTP_HEADER_TEMPLATE'
-    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     TEMPLATE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模板编号')
     TEMPLATE_NAME = db.Column(db.String(128), nullable=False, comment='模板名称')
     TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
@@ -122,7 +119,7 @@ class THttpHeader(DBModel, BaseColumn):
 class TDatabaseConfig(DBModel, BaseColumn):
     """SQL配置表"""
     __tablename__ = 'DATABASE_CONFIG'
-    WORKSPACE_NO = db.Column(db.String(32), comment='空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     CONFIG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
     CONFIG_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
     CONFIG_DESC = db.Column(db.String(256), comment='配置描述')
@@ -141,7 +138,7 @@ class TDatabaseConfig(DBModel, BaseColumn):
 class TElementTag(DBModel, BaseColumn):
     """元素标签关联表"""
     __tablename__ = 'ELEMENT_TAG'
-    ELEMENT_NO = db.Column(db.String(32), comment='元素编号')
+    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
     UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DELETED', name='unique_element_tag')
 
@@ -149,7 +146,7 @@ class TElementTag(DBModel, BaseColumn):
 class TTestplan(DBModel, BaseColumn):
     """测试计划表"""
     __tablename__ = 'TESTPLAN'
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
@@ -233,8 +230,8 @@ class TTestplanExecutionItems(DBModel, BaseColumn):
 class TTestReport(DBModel, BaseColumn):
     """测试报告表"""
     __tablename__ = 'TEST_REPORT'
-    WORKSPACE_NO = db.Column(db.String(32), nullable=False, comment='空间编号')
-    PLAN_NO = db.Column(db.String(32), nullable=False, comment='计划编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
+    PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
     REPORT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='报告编号')
     REPORT_NAME = db.Column(db.String(256), nullable=False, comment='报告名称')

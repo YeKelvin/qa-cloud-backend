@@ -8,10 +8,6 @@ from sqlalchemy import UniqueConstraint
 from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
-from app.utils.log_util import get_logger
-
-
-log = get_logger(__name__)
 
 
 class TUser(DBModel, BaseColumn):
@@ -65,7 +61,7 @@ class TRolePermission(DBModel, BaseColumn):
     """角色权限关联表"""
     __tablename__ = 'ROLE_PERMISSION'
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-    PERMISSION_NO = db.Column(db.String(32), nullable=False, comment='权限编号')
+    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
     UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DELETED', name='unique_role_permission')
 
 
@@ -81,7 +77,7 @@ class TUserLoginInfo(DBModel, BaseColumn):
 class TUserLoginLog(DBModel, BaseColumn):
     """用户登陆日志表"""
     __tablename__ = 'USER_LOGIN_LOG'
-    USER_NO = db.Column(db.String(32), nullable=False, comment='用户编号')
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
     IP = db.Column(db.String(256), comment='IP地址')

@@ -51,3 +51,6 @@ SNOWFLAKE_SEQUENCE = __config__.get('snowflake', 'sequence')
 
 # 线程相关配置
 THREAD_EXECUTOR_WORKERS_MAX = int(__config__.get('thread', 'executor.workers.max'))
+
+# 定时任务相关配置
+SCHEDULE_JOB_INSTANCES_MAX = __config__.get('schedule', 'job.instances.max')

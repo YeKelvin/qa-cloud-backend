@@ -7,6 +7,8 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 import sqlalchemy
+from apscheduler.schedulers.gevent import GeventScheduler
+from flask_apscheduler.scheduler import APScheduler
 from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +23,7 @@ FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
 db = SQLAlchemy()  # type: sqlalchemy
 migrate = Migrate()
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
+apscheduler = APScheduler(GeventScheduler())
 
 
 sio_kwargs = {}

@@ -7,10 +7,6 @@ from app.database import BaseColumn
 from app.database import DBModel
 from app.database import TSystemOperationLogContent  # noqa
 from app.database import db
-from app.utils.log_util import get_logger
-
-
-log = get_logger(__name__)
 
 
 class TSystemOperationLog(DBModel, BaseColumn):
