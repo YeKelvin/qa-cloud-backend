@@ -13,6 +13,7 @@ from app import config as CONFIG
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
+from app.common.exceptions import TestplanInterruptError
 from app.common.globals import get_userno
 from app.common.identity import new_id
 from app.common.validator import check_exists
@@ -82,7 +83,7 @@ def debug_pymeter(script, sid):
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
-def debug_pymeter_by_loader(loader, app, element_no, element_name, sid):
+def debug_pymeter_by_loader(loader, app, sid):
     result_id = new_id()
     # noinspection PyBroadException
     try:
@@ -92,7 +93,7 @@ def debug_pymeter_by_loader(loader, app, element_no, element_name, sid):
             namespace='/',
             to=sid
         )
-        script = loader(app, element_no, element_name, sid, result_id)
+        script = loader(app, result_id)
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
@@ -123,17 +124,20 @@ def execute_collection(req):
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅支持运行 Collecion 元素')
 
+    # 临时存储变量
+    collection_name = collection.ELEMENT_NAME
+
     # 定义 loader 函数
-    def script_loader(app, element_no, element_name, sid, result_id):
+    def script_loader(app, result_id):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
-            script = element_loader.loads_tree(element_no)
+            script = element_loader.loads_tree(req.collectionNo)
             # 添加 socket 组件
             element_loader.add_flask_sio_result_collector(
                 script,
-                sid,
+                sid=req.socketId,
                 result_id=result_id,
-                result_name=element_name
+                result_name=collection_name
             )
             # 添加变量组件
             if req.datasetNumberedList:
@@ -149,8 +153,6 @@ def execute_collection(req):
         debug_pymeter_by_loader,
         script_loader,
         get_flask_app(),
-        req.collectionNo,
-        collection.ELEMENT_NAME,
         req.socketId
     )
 
@@ -174,22 +176,23 @@ def execute_group(req):
 
     # 临时存储变量
     collection_no = group_parent_link.PARENT_NO
+    group_name = group.ELEMENT_NAME
 
     # 定义 loader 函数
-    def script_loader(app, element_no, element_name, sid, result_id):
+    def script_loader(app, result_id):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
-                element_no,
+                collection_no,
                 specified_group_no=req.groupNo,
                 specified_selfonly=req.selfonly
             )
             # 添加 socket 组件
             element_loader.add_flask_sio_result_collector(
                 script,
-                sid,
+                sid=req.socketId,
                 result_id=result_id,
-                result_name=element_name
+                result_name=group_name
             )
             # 添加变量组件
             if req.datasetNumberedList:
@@ -205,8 +208,6 @@ def execute_group(req):
         debug_pymeter_by_loader,
         script_loader,
         get_flask_app(),
-        collection_no,
-        group.ELEMENT_NAME,
         req.socketId
     )
 
@@ -382,17 +383,15 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value):
             record=False
         )
 
+    # 临时存储变量
+    iterations = settings.ITERATIONS
+    delay = settings.DELAY
+    save = settings.SAVE
+    save_on_error = settings.SAVE_ON_ERROR
+    notification_robot_numbered_list = settings.NOTIFICATION_ROBOT_LIST
+
     # 异步函数
-    def start(
-            app,
-            dataset_numbered_list,
-            use_current_value,
-            iterations,
-            delay,
-            save,
-            save_on_error,
-            notification_robot_numbered_list
-    ):
+    def start(app):
         try:
             with app.app_context():
                 start_testplan(
@@ -419,15 +418,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value):
     # 先提交事务，防止新线程查询计划时拿不到
     db.session.commit()
     # 异步执行脚本
-    executor.submit(start,
-                    get_flask_app(),
-                    dataset_numbered_list,
-                    use_current_value,
-                    settings.ITERATIONS,
-                    settings.DELAY,
-                    settings.SAVE,
-                    settings.SAVE_ON_ERROR,
-                    settings.NOTIFICATION_ROBOT_LIST)
+    executor.submit(start, get_flask_app())
 
     return {'executionNo': execution_no, 'total': len(items)}
 
@@ -565,10 +556,6 @@ def get_notification_message(execution, report):
             f'><font color="info">**成功迭代**：{success_count} 次</font>\n'
             f'><font color="warning">**失败迭代**：{failure_count} 次</font>'
         )
-
-
-class TestplanInterruptError(Exception):
-    ...
 
 
 def start_testplan_by_loop(

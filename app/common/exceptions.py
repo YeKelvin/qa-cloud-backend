@@ -26,6 +26,10 @@ class ParseError(Exception):
         self.message = msg
 
 
+class TestplanInterruptError(Exception):
+    ...
+
+
 @unique
 class ErrorCode(Enum):
     """
