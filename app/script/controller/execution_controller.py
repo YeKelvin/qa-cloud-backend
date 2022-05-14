@@ -19,22 +19,12 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def execute_collection():
-    """运行测试集合
-
-    example:
-    {
-        "collectionNo": "",
-        "socketId": "",
-        "variableDataSet": {
-            "useCurrentValue": true,
-            "numberList": [ ... ]
-        }
-    }
-    """
+    """运行测试集合"""
     req = JsonParser(
-        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
-        Argument('variableDataSet', type=dict)
+        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_collection(req)
 
@@ -45,10 +35,11 @@ def execute_collection():
 def execute_group():
     """运行测试分组"""
     req = JsonParser(
-        Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('variableDataSet', type=dict),
-        Argument('selfOnly', type=bool, default=False)
+        Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False),
+        Argument('selfonly', type=bool, default=False)
     ).parse()
     return service.execute_group(req)
 
@@ -59,10 +50,11 @@ def execute_group():
 def execute_sampler():
     """运行请求取样器"""
     req = JsonParser(
-        Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('variableDataSet', type=dict),
-        Argument('selfOnly', type=bool, default=False)
+        Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False),
+        Argument('selfonly', type=bool, default=False)
     ).parse()
     return service.execute_sampler(req)
 
@@ -71,24 +63,13 @@ def execute_sampler():
 @require_login
 @require_permission
 def execute_snippets():
-    """运行片段集合
-
-    example:
-    {
-        "collectionNo": "",
-        "socketId": "",
-        "variableDataSet": {
-            "useCurrentValue": true,
-            "numberList": [ ... ]
-        }
-        "variables": { ... }
-    }
-    """
+    """运行片段集合"""
     req = JsonParser(
-        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
-        Argument('variableDataSet', type=dict),
-        Argument('variables', type=dict)
+        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False),
+        Argument('variables', type=dict, default={})
     ).parse()
     return service.execute_snippets(req)
 
@@ -100,8 +81,8 @@ def execute_testplan():
     """运行测试计划"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('datasetNumberedList', type=list),
-        Argument('useCurrentValue', default=False)
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_testplan(req)
 
@@ -124,8 +105,8 @@ def query_collection_json():
     """查询测试集合的脚本（json）"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('dataSetNumberList', type=list),
-        Argument('useCurrentValue', type=bool)
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_collection_json(req)
 
@@ -137,8 +118,8 @@ def query_group_json():
     """查询测试分组的脚本（json）"""
     req = JsonParser(
         Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
-        Argument('dataSetNumberList', type=list),
-        Argument('useCurrentValue', type=bool)
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_group_json(req)
 
@@ -150,8 +131,8 @@ def query_snippets_json():
     """查询片段集合的脚本（json）"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('dataSetNumberList', type=list),
-        Argument('useCurrentValue', type=bool),
+        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('useCurrentValue', type=bool, default=False),
         Argument('variables', type=dict)
     ).parse()
     return service.query_snippets_json(req)

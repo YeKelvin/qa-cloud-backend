@@ -82,7 +82,7 @@ def debug_pymeter(script, sid):
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
-def debug_pymeter_with_loader(loader, app, element_no, element_name, sid):
+def debug_pymeter_by_loader(loader, app, element_no, element_name, sid):
     result_id = new_id()
     # noinspection PyBroadException
     try:
@@ -136,17 +136,17 @@ def execute_collection(req):
                 result_name=element_name
             )
             # 添加变量组件
-            if req.variableDataSet:
-                element_loader.add_variable_data_set(
+            if req.datasetNumberedList:
+                element_loader.add_variable_dataset(
                     script,
-                    req.variableDataSet.numberList,
-                    req.variableDataSet.useCurrentValue
+                    req.datasetNumberedList,
+                    req.useCurrentValue
                 )
             return script
 
     # 新建线程执行脚本
     executor.submit(
-        debug_pymeter_with_loader,
+        debug_pymeter_by_loader,
         script_loader,
         get_flask_app(),
         req.collectionNo,
@@ -171,16 +171,18 @@ def execute_group(req):
     group_parent_link = ElementChildrenDao.select_by_child(req.groupNo)
     if not group_parent_link:
         raise ServiceError('元素父级关联不存在')
+
+    # 临时存储变量
     collection_no = group_parent_link.PARENT_NO
 
     # 定义 loader 函数
-    def script_loads_function(app, element_no, element_name, sid, result_id):
+    def script_loader(app, element_no, element_name, sid, result_id):
         with app.app_context():
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
                 element_no,
                 specified_group_no=req.groupNo,
-                specified_self_only=req.selfOnly
+                specified_selfonly=req.selfonly
             )
             # 添加 socket 组件
             element_loader.add_flask_sio_result_collector(
@@ -190,18 +192,18 @@ def execute_group(req):
                 result_name=element_name
             )
             # 添加变量组件
-            if req.variableDataSet:
-                element_loader.add_variable_data_set(
+            if req.datasetNumberedList:
+                element_loader.add_variable_dataset(
                     script,
-                    req.variableDataSet.numberList,
-                    req.variableDataSet.useCurrentValue
+                    req.datasetNumberedList,
+                    req.useCurrentValue
                 )
             return script
 
     # 新建线程执行脚本
     executor.submit(
-        debug_pymeter_with_loader,
-        script_loads_function,
+        debug_pymeter_by_loader,
+        script_loader,
         get_flask_app(),
         collection_no,
         group.ELEMENT_NAME,
@@ -225,11 +227,13 @@ def execute_sampler(req):
     sampler_parent_link = ElementChildrenDao.select_by_child(req.samplerNo)
     if not sampler_parent_link:
         raise ServiceError('元素父级关联不存在')
+
+    # 临时存储变量
     collection_no = sampler_parent_link.ROOT_NO
     group_no = sampler_parent_link.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfOnly)
+    script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfonly)
 
     # 添加 socket 组件
     result_id = new_id()
@@ -241,11 +245,11 @@ def execute_sampler(req):
     )
 
     # 添加变量组件
-    if req.variableDataSet:
-        element_loader.add_variable_data_set(
+    if req.datasetNumberedList:
+        element_loader.add_variable_dataset(
             script,
-            req.variableDataSet.numberList,
-            req.variableDataSet.useCurrentValue
+            req.datasetNumberedList,
+            req.useCurrentValue
         )
 
     # 新建线程执行脚本
@@ -281,11 +285,11 @@ def execute_snippets(req):
     )
 
     # 添加变量组件
-    if req.variableDataSet:
-        element_loader.add_variable_data_set(
+    if req.datasetNumberedList:
+        element_loader.add_variable_dataset(
             script,
-            req.variableDataSet.numberList,
-            req.variableDataSet.useCurrentValue,
+            req.datasetNumberedList,
+            req.useCurrentValue,
             req.variables
         )
 
@@ -296,24 +300,28 @@ def execute_snippets(req):
 @http_service
 @transactional
 def execute_testplan(req):
+    return run_testplan(req.planNo, req.datasetNumberedList, req.useCurrentValue)
+
+
+def run_testplan(plan_no, dataset_numbered_list, use_current_value):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = TestPlanDao.select_by_no(plan_no)
     check_exists(testplan, '测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
 
     # 查询是否有正在运行中的执行任务
-    running = TestplanExecutionDao.select_running_by_plan(req.planNo)
+    running = TestplanExecutionDao.select_running_by_plan(plan_no)
     if running:
         raise ServiceError('测试计划正在运行中，请执行结束后再开始新的执行')
 
     # 查询测试计划设置项
-    settings = TestPlanSettingsDao.select_by_no(req.planNo)
+    settings = TestPlanSettingsDao.select_by_no(plan_no)
     check_exists(settings, '计划设置不存在')
 
     # 查询测试计划关联的集合
-    items = TestPlanItemsDao.select_all_by_plan(req.planNo)
+    items = TestPlanItemsDao.select_all_by_plan(plan_no)
     if not items:
         raise ServiceError('测试计划中无关联的脚本')
 
@@ -325,13 +333,13 @@ def execute_testplan(req):
     execution_no = new_id()
     # 创建执行记录与数据集关联
     environment = None
-    for dataset_no in req.datasetNumberedList:
+    for dataset_no in dataset_numbered_list:
         dataset = VariableDatasetDao.select_by_no(dataset_no)
         if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
             environment = dataset.DATASET_NAME
     # 创建执行记录
     TTestplanExecution.insert(
-        PLAN_NO=req.planNo,
+        PLAN_NO=plan_no,
         EXECUTION_NO=execution_no,
         RUNNING_STATE=RunningState.WAITING.value,
         ENVIRONMENT=environment,
@@ -347,8 +355,8 @@ def execute_testplan(req):
         SAVE=settings.SAVE,
         SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
         STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
-        VARIABLE_DATASET_LIST=req.datasetNumberedList,
-        USE_CURRENT_VALUE=req.useCurrentValue,
+        VARIABLE_DATASET_LIST=dataset_numbered_list,
+        USE_CURRENT_VALUE=use_current_value,
         NOTIFICATION_ROBOT_LIST=settings.NOTIFICATION_ROBOT_LIST,
         record=False
     )
@@ -387,7 +395,7 @@ def execute_testplan(req):
     ):
         try:
             with app.app_context():
-                run_testplan(
+                start_testplan(
                     app,
                     collection_numbered_list,
                     dataset_numbered_list,
@@ -413,8 +421,8 @@ def execute_testplan(req):
     # 异步执行脚本
     executor.submit(start,
                     get_flask_app(),
-                    req.datasetNumberedList,
-                    req.useCurrentValue,
+                    dataset_numbered_list,
+                    use_current_value,
                     settings.ITERATIONS,
                     settings.DELAY,
                     settings.SAVE,
@@ -424,7 +432,7 @@ def execute_testplan(req):
     return {'executionNo': execution_no, 'total': len(items)}
 
 
-def run_testplan(
+def start_testplan(
         app,
         collection_numbered_list,
         dataset_numbered_list,
@@ -452,7 +460,7 @@ def run_testplan(
 
     if save:
         if save_on_error:
-            run_testplan_and_save_report_on_error(
+            start_testplan_by_error_report(
                 app,
                 collection_numbered_list,
                 dataset_numbered_list,
@@ -461,7 +469,7 @@ def run_testplan(
                 report_no
             )
         else:
-            run_testplan_and_save_report(
+            start_testplan_by_report(
                 app,
                 collection_numbered_list,
                 dataset_numbered_list,
@@ -470,7 +478,7 @@ def run_testplan(
                 report_no
             )
     else:
-        run_testplan_by_loop(
+        start_testplan_by_loop(
             app,
             collection_numbered_list,
             dataset_numbered_list,
@@ -563,7 +571,7 @@ class TestplanInterruptError(Exception):
     ...
 
 
-def run_testplan_by_loop(
+def start_testplan_by_loop(
         app,
         collection_numbered_list,
         dataset_numbered_list,
@@ -583,7 +591,7 @@ def run_testplan_by_loop(
             log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             continue
         # 添加自定义变量组件
-        element_loader.add_variable_data_set(collection, dataset_numbered_list, use_current_value)
+        element_loader.add_variable_dataset(collection, dataset_numbered_list, use_current_value)
         # 添加迭代记录器组件
         element_loader.add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
@@ -658,7 +666,7 @@ def run_testplan_by_loop(
     log.info(f'执行编号:[ {execution_no} ] 计划迭代完成')
 
 
-def run_testplan_and_save_report(
+def start_testplan_by_report(
         app,
         collection_numbered_list,
         dataset_numbered_list,
@@ -687,7 +695,7 @@ def run_testplan_and_save_report(
             if not collection:
                 log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             # 添加自定义变量组件
-            element_loader.add_variable_data_set(collection, dataset_numbered_list, use_current_value)
+            element_loader.add_variable_dataset(collection, dataset_numbered_list, use_current_value)
             # 添加报告存储器组件
             element_loader.add_flask_db_result_storage(collection, report_no, collection_no)
 
@@ -734,7 +742,7 @@ def run_testplan_and_save_report(
         TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ERROR.value)
 
 
-def run_testplan_and_save_report_on_error(
+def start_testplan_by_error_report(
         app,
         collection_numbered_list,
         dataset_numbered_list,
@@ -780,7 +788,7 @@ def query_collection_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
     # 添加变量组件
-    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
+    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue)
     return script
 
 
@@ -800,7 +808,7 @@ def query_group_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
     # 添加变量组件
-    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue)
+    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue)
     return script
 
 
@@ -819,5 +827,5 @@ def query_snippets_json(req):
         collection.ELEMENT_REMARK
     )
     # 添加变量组件
-    element_loader.add_variable_data_set(script, req.dataSetNumberList, req.useCurrentValue, req.variables)
+    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue, req.variables)
     return script

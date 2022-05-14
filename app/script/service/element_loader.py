@@ -40,7 +40,7 @@ def loads_tree(
         element_no,
         specified_group_no=None,
         specified_sampler_no=None,
-        specified_self_only=False,
+        specified_selfonly=False,
         no_sampler=False,
         no_debuger=False,
 ):
@@ -54,7 +54,7 @@ def loads_tree(
         element_no,
         specified_group_no=specified_group_no,
         specified_sampler_no=specified_sampler_no,
-        specified_self_only=specified_self_only,
+        specified_selfonly=specified_selfonly,
         no_sampler=no_sampler,
         no_debuger=no_debuger,
         config_components=config_components,
@@ -75,7 +75,7 @@ def loads_element(
         element_no,
         specified_group_no: str = None,
         specified_sampler_no: str = None,
-        specified_self_only: bool = False,
+        specified_selfonly: bool = False,
         no_sampler: bool = False,
         no_debuger: bool = False,
         config_components: Dict[str, list] = None,
@@ -87,7 +87,7 @@ def loads_element(
     check_exists(element, '元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
-    if is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
+    if is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
         return None
 
     # 元素子代
@@ -122,7 +122,7 @@ def loads_element(
                 element_no,
                 specified_group_no,
                 specified_sampler_no,
-                specified_self_only,
+                specified_selfonly,
                 config_components,
                 cache
             )
@@ -146,14 +146,14 @@ def loads_element(
     }
 
 
-def is_impassable(element, specified_group_no, specified_self_only, no_sampler, no_debuger):
+def is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
         log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return True
 
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_group_no and not is_specified_group(element, specified_group_no, specified_self_only):
+    if specified_group_no and not is_specified_group(element, specified_group_no, specified_selfonly):
         return True
 
     # 不需要 Sampler 时返回 None
@@ -201,7 +201,7 @@ def loads_children(
         element_no,
         specified_group_no,
         specified_sampler_no,
-        specified_self_only,
+        specified_selfonly,
         config_components: Dict[str, list],
         cache: Dict[str, dict]
 ):
@@ -214,7 +214,7 @@ def loads_children(
         # 需要指定 Sampler
         if specified_sampler_no:
             # 独立运行
-            if specified_self_only:
+            if specified_selfonly:
                 if link.CHILD_NO == specified_sampler_no:
                     if child := loads_element(link.CHILD_NO, config_components=config_components, cache=cache):
                         children.append(child)
@@ -224,7 +224,7 @@ def loads_children(
                     link.CHILD_NO,
                     specified_group_no,
                     specified_sampler_no,
-                    specified_self_only,
+                    specified_selfonly,
                     no_sampler=found,
                     config_components=config_components,
                     cache=cache
@@ -238,7 +238,7 @@ def loads_children(
                 link.CHILD_NO,
                 specified_group_no,
                 specified_sampler_no,
-                specified_self_only,
+                specified_selfonly,
                 config_components=config_components,
                 cache=cache
             ):
@@ -288,7 +288,7 @@ def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, resul
     })
 
 
-def add_variable_data_set(script: dict, dataset_number_list: list, use_current_value: bool, additional: dict = None):
+def add_variable_dataset(script: dict, dataset_number_list: list, use_current_value: bool, additional: dict = None):
     # 不存在变量集就忽略了
     if not dataset_number_list:
         return
