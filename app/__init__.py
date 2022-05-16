@@ -7,6 +7,13 @@ import os
 from typing import Optional
 
 import orjson
+from apscheduler.events import EVENT_JOB_ADDED
+from apscheduler.events import EVENT_JOB_ERROR
+from apscheduler.events import EVENT_JOB_EXECUTED
+from apscheduler.events import EVENT_JOB_MAX_INSTANCES
+from apscheduler.events import EVENT_JOB_MODIFIED
+from apscheduler.events import EVENT_JOB_REMOVED
+from apscheduler.events import EVENT_JOB_SUBMITTED
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from flask import Flask
 
@@ -90,12 +97,21 @@ def register_extensions(app: Flask):
 
 
 def register_socketio(app: Flask):
+    # 服务启动前加载 events
+    from app import socket  # noqa
     socketio.init_app(app)
-    from app import socket  # noqa 服务启动前加载events
 
 
 def register_apscheduler(app: Flask):
+    from app.schedule import event
     apscheduler.init_app(app)
+    apscheduler.add_listener(event.handle_job_added, EVENT_JOB_ADDED)
+    apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
+    apscheduler.add_listener(event.handle_job_removed, EVENT_JOB_REMOVED)
+    apscheduler.add_listener(event.handle_job_submitted, EVENT_JOB_SUBMITTED)
+    apscheduler.add_listener(event.handle_job_max_instances, EVENT_JOB_MAX_INSTANCES)
+    apscheduler.add_listener(event.handle_job_executed, EVENT_JOB_EXECUTED)
+    apscheduler.add_listener(event.handle_job_error, EVENT_JOB_ERROR)
     apscheduler.start()
 
 

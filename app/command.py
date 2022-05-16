@@ -184,10 +184,20 @@ def init_permission():
     _create_permission(name='修改通知机器人状态', method='PATCH', endpoint='/public/notification/robot/state')
     _create_permission(name='删除通知机器人', method='DELETE', endpoint='/public/notification/robot')
 
+    # schedule模块路由
+    # job
+    _create_permission(name='分页查询定时任务列表', method='GET', endpoint='/schedule/task/list')
+    _create_permission(name='查询定时任务信息', method='GET', endpoint='/schedule/task/info')
+    _create_permission(name='新增定时任务', method='POST', endpoint='/schedule/task')
+    _create_permission(name='修改定时任务', method='PUT', endpoint='/schedule/task')
+    _create_permission(name='暂停定时任务', method='PATCH', endpoint='/schedule/task/pause')
+    _create_permission(name='恢复定时任务', method='PATCH', endpoint='/schedule/task/resume')
+    _create_permission(name='关闭定时任务', method='PATCH', endpoint='/schedule/task/remove')
+
     # script模块路由
     # element
     _create_permission(name='分页查询元素列表', method='GET', endpoint='/script/element/list')
-    _create_permission(name='查询所有元素', method='GET', endpoint='/script/element/all')
+    _create_permission(name='查询所有集合元素', method='GET', endpoint='/script/collection/all')
     _create_permission(name='查询元素信息', method='GET', endpoint='/script/element/info')
     _create_permission(name='查询元素子代', method='GET', endpoint='/script/element/children')
     _create_permission(name='根据元素编号列表查询元素子代', method='GET', endpoint='/script/elements/children')
@@ -275,6 +285,7 @@ def init_permission():
 
     # testplan
     _create_permission(name='分页查询测试计划列表', method='GET', endpoint='/script/testplan/list')
+    _create_permission(name='查询所有测试计划', method='GET', endpoint='/script/testplan/all')
     _create_permission(name='查询测试计划详情', method='GET', endpoint='/script/testplan')
     _create_permission(name='创建测试计划', method='POST', endpoint='/script/testplan')
     _create_permission(name='修改测试计划', method='PUT', endpoint='/script/testplan')
@@ -324,20 +335,23 @@ def _create_permission(name, method, endpoint):
 @with_appcontext
 def create_single_table(name):
     from sqlalchemy import create_engine
-    from app import get_db_url
+    from app import config as CONFIG
+    from app.public import model as public_model
+    from app.schedule import model as schedule_model
     from app.script import model as script_model
     from app.system import model as system_model
-    from app.public import model as public_model
     from app.usercenter import model as usercenter_model
 
-    engine = create_engine(get_db_url())
+    engine = create_engine(CONFIG.DB_URL)
 
-    if hasattr(script_model, name):
+    if hasattr(public_model, name):
+        table = getattr(public_model, name)
+    elif hasattr(schedule_model, name):
+        table = getattr(schedule_model, name)
+    elif hasattr(script_model, name):
         table = getattr(script_model, name)
     elif hasattr(system_model, name):
         table = getattr(system_model, name)
-    elif hasattr(public_model, name):
-        table = getattr(public_model, name)
     elif hasattr(usercenter_model, name):
         table = getattr(usercenter_model, name)
     else:

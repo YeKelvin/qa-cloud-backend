@@ -65,6 +65,28 @@ def query_testplan_list(req):
 
 
 @http_service
+def query_testplan_all(req):
+    # 查询所有测试计划
+    conds = QueryCondition()
+    conds.equal(TTestplan.WORKSPACE_NO, req.workspaceNo)
+    conds.in_(TTestplan.STATE, req.stateList)
+    testplans = TTestplan.filter(*conds).order_by(TTestplan.CREATED_TIME.desc()).all()
+
+    result = []
+    for testplan in testplans:
+        result.append({
+            'planNo': testplan.PLAN_NO,
+            'planName': testplan.PLAN_NAME,
+            'planDesc': testplan.PLAN_DESC,
+            'productRequirementsVersion': testplan.PRODUCT_REQUIREMENTS_VERSION,
+            'collectionTotal': testplan.COLLECTION_TOTAL,
+            'testPhase': testplan.TEST_PHASE,
+            'state': testplan.STATE
+        })
+    return result
+
+
+@http_service
 def query_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
@@ -135,7 +157,6 @@ def create_testplan(req):
         PLAN_DESC=req.planDesc,
         PRODUCT_REQUIREMENTS_VERSION=req.productRequirementsVersion,
         COLLECTION_TOTAL=len(req.collectionList),
-        TEST_PHASE=TestPhase.INITIAL.value,
         STATE=TestplanState.INITIAL.value
     )
 

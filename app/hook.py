@@ -53,7 +53,6 @@ def set_user():
             log.info('暂不支持的 schema')
             return
 
-        # noinspection PyBroadException
         try:
             # 解析token，获取payload
             payload = JWTAuth.decode_auth_token(auth_token)

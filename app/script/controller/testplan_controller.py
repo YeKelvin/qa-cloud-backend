@@ -35,6 +35,18 @@ def query_testplan_list():
     return service.query_testplan_list(req)
 
 
+@blueprint.get('/testplan/all')
+@require_login
+@require_permission
+def query_testplan_all():
+    """查询所有测试计划"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
+        Argument('stateList', type=list),
+    ).parse()
+    return service.query_testplan_all(req)
+
+
 @blueprint.get('/testplan')
 @require_login
 @require_permission

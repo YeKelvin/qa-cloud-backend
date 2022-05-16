@@ -8,6 +8,16 @@ from enum import unique
 
 
 @unique
+class JobState(Enum):
+    # 正常
+    NORMAL = 'NORMAL'
+    # 已暂停
+    PAUSED = 'PAUSED'
+    # 已关闭
+    CLOSED = 'CLOSED'
+
+
+@unique
 class JobType(Enum):
     # 测试计划
     TESTPLAN = 'TESTPLAN'
@@ -21,7 +31,7 @@ class JobType(Enum):
 class TriggerType(Enum):
     # 固定时间
     DATE = 'DATE'
-    # 固定时间间隔
+    # 固定间隔
     INTERVAL = 'INTERVAL'
     # Cron间隔
     CRON = 'CRON'

@@ -56,3 +56,11 @@ class QueryCondition(list):
         """大于等于(greater than or equal to)"""
         if value:
             self.append(column >= value)
+
+    def in_(self, column, *args):
+        if args:
+            self.append(column.in_(*args))
+
+    def notin_(self, column, *args):
+        if args:
+            self.append(column.notin_(*args))

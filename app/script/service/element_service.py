@@ -80,23 +80,27 @@ def query_element_list(req):
     conds.like(TTestElement.ELEMENT_REMARK, req.elementRemark)
     conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
-    conds.like(TTestElement.ENABLED, req.enabled)
+    conds.equal(TTestElement.ENABLED, req.enabled)
+
+    if req.workspaceNo or req.workspaceName:
+        conds.add_table(TWorkspaceCollection)
 
     if req.workspaceNo:
-        conds.add_table(TWorkspaceCollection)
-        conds.equal(TWorkspaceCollection.DECOLLECTION_NOL_STATE, TTestElement.ELEMENT_NO)
         conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
+        conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
-        conds.equal(TWorkspaceCollection.DELETED, 0)
+        conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
         conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
         conds.equal(TWorkspaceCollection.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
-        conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
 
     # TTestElement，TWorkspace，TWorkspaceCollection连表查询
     pagination = db.session.query(
-        TTestElement.ELEMENT_NO, TTestElement.ELEMENT_NAME, TTestElement.ELEMENT_REMARK, TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_NO,
+        TTestElement.ELEMENT_NAME,
+        TTestElement.ELEMENT_REMARK,
+        TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
 
@@ -112,14 +116,14 @@ def query_element_list(req):
 
 
 @http_service
-def query_element_all(req):
+def query_collection_all(req):
     # 查询条件
     conds = QueryCondition(TTestElement, TWorkspaceCollection)
     conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
     conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
-    conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.like(TTestElement.ELEMENT_TYPE, ElementType.COLLECTION.value)
     conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
-    conds.like(TTestElement.ENABLED, req.enabled)
+    conds.equal(TTestElement.ENABLED, req.enabled)
 
     # TTestElement，TWorkspaceCollection连表查询
     items = db.session.query(

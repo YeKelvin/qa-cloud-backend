@@ -37,7 +37,6 @@ def http_service(func):
             f'header:[ {dict(request.headers)} ] request:[ {req} ]'
         )
         res = None
-        # noinspection PyBroadException
         try:
             # 判断request参数解析是否有异常
             if req.__error__ is not None:

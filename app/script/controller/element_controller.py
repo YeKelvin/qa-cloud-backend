@@ -23,32 +23,31 @@ log = get_logger(__name__)
 def query_element_list():
     """分页查询元素列表"""
     req = JsonParser(
+        Argument('workspaceNo'),
+        Argument('workspaceName'),
         Argument('elementNo'),
         Argument('elementName'),
         Argument('elementRemark'),
         Argument('elementType'),
         Argument('elementClass'),
         Argument('enabled'),
-        Argument('workspaceNo'),
-        Argument('workspaceName'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
     ).parse()
     return service.query_element_list(req)
 
 
-@blueprint.get('/element/all')
+@blueprint.get('/collection/all')
 @require_login
 @require_permission
-def query_element_all():
-    """查询所有元素"""
+def query_collection_all():
+    """查询所有集合元素"""
     req = JsonParser(
-        Argument('elementType'),
-        Argument('elementClass'),
-        Argument('enabled'),
         Argument('workspaceNo'),
+        Argument('elementClass'),
+        Argument('enabled')
     ).parse()
-    return service.query_element_all(req)
+    return service.query_collection_all(req)
 
 
 @blueprint.get('/element/info')

@@ -74,7 +74,6 @@ def get_workspace_no(collection_no) -> str:
 
 
 def debug_pymeter(script, sid):
-    # noinspection PyBroadException
     try:
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
@@ -85,7 +84,6 @@ def debug_pymeter(script, sid):
 
 def debug_pymeter_by_loader(loader, app, sid):
     result_id = new_id()
-    # noinspection PyBroadException
     try:
         socketio.emit(
             'pymeter_start',

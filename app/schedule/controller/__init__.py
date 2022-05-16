@@ -11,4 +11,4 @@ from flask import Blueprint
 # note  : /rest/api 由nginx代理，后端不需要处理
 blueprint = Blueprint('schedule', __name__, url_prefix='/schedule')
 
-from . import job_controller  # noqa
+from . import task_controller  # noqa
