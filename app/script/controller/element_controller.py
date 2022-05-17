@@ -77,7 +77,7 @@ def query_element_children():
 def query_elements_children():
     """根据元素编号列表查询元素子代"""
     req = JsonParser(
-        Argument('elementNumberList', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
+        Argument('elementNumberedList', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
     return service.query_elements_children(req)

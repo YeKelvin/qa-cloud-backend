@@ -187,7 +187,7 @@ def query_element_children(req):
 @http_service
 def query_elements_children(req):
     result = []
-    for element_no in req.elementNumberList:
+    for element_no in req.elementNumberedList:
         element = TestElementDao.select_by_no(element_no)
         if not element:
             log.warning(f'elementNo:[ {element_no} ] 元素不存在')

@@ -20,7 +20,6 @@ from app.script.dao import testplan_items_dao as TestPlanItemsDao
 from app.script.dao import testplan_settings_dao as TestPlanSettingsDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import RunningState
-from app.script.enum import TestPhase
 from app.script.enum import TestplanState
 from app.script.model import TTestplan
 from app.script.model import TTestplanItems
