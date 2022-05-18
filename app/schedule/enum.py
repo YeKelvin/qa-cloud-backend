@@ -33,5 +33,5 @@ class TriggerType(Enum):
     DATE = 'DATE'
     # 固定间隔
     INTERVAL = 'INTERVAL'
-    # Cron间隔
+    # CRON间隔
     CRON = 'CRON'
