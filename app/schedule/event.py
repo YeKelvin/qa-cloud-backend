@@ -8,7 +8,12 @@ from apscheduler.events import JobExecutionEvent
 from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
 
+from app.extension import apscheduler
+from app.extension import db
+from app.schedule.dao import schedule_job_dao as ScheduleJobDao
+from app.schedule.enum import JobState
 from app.utils.log_util import get_logger
+from app.utils.time_util import datetime_now_by_utc8
 
 
 log = get_logger(__name__)
@@ -83,7 +88,9 @@ def handle_all_jobs_removed(event: SchedulerEvent):
     EVENT_ALL_JOBS_REMOVED
     All jobs were removed from either all job stores or one particular job store
     """
-    log.info('event:[ EVENT_ALL_JOBS_REMOVED ] all jobs were removed from either all job stores or one particular job store')
+    log.info(
+        'event:[ EVENT_ALL_JOBS_REMOVED ] all jobs were removed from either all job stores or one particular job store'
+    )
 
 
 def handle_job_added(event: JobEvent):
@@ -100,6 +107,17 @@ def handle_job_removed(event: JobEvent):
     A job was removed from a job store
     """
     log.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 移除作业')
+    # 更新任务状态
+    with apscheduler.app.app_context():
+        task = ScheduleJobDao.select_by_no(event.job_id)
+        if task and task.STATE != JobState.CLOSED.value:
+            log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
+            task.update(
+                STATE=JobState.CLOSED.value,
+                CLOSE_BY='system',
+                CLOSE_TIME=datetime_now_by_utc8()
+            )
+            db.session.commit()
 
 
 def handle_job_modified(event: JobEvent):

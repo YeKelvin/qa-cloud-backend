@@ -109,6 +109,16 @@ logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 logging.getLogger('sqlalchemy.orm').setLevel(logging.ERROR)
 
 
+# apscheduler 日志配置
+apscheduler_logger = logging.getLogger('apscheduler')
+apscheduler_logger.propagate = False
+apscheduler_logger.setLevel(logging.INFO)
+for handler in apscheduler_logger.handlers:
+    apscheduler_logger.removeHandler(handler)
+apscheduler_logger.addHandler(CONSOLE_HANDLER)
+apscheduler_logger.addHandler(QUEUE_HANDLER)
+
+
 class ContextFilter(logging.Filter):
 
     traceId = 'unknown'

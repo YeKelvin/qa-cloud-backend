@@ -117,22 +117,25 @@ def create_task(req):
     if req.triggerType == TriggerType.DATE.value:
         apscheduler.add_job(
             id=job_no,
+            name=req.jobName,
             func=TASK_FUNC.get(req.jobType),
             kwargs=req.jobArgs,
-            trigger=req.triggerType,
+            trigger=req.triggerType.lower(),
             run_date=req.triggerArgs['datetime']
         )
     elif req.triggerType == TriggerType.INTERVAL.value:
         apscheduler.add_job(
             id=job_no,
+            name=req.jobName,
             func=TASK_FUNC.get(req.jobType),
             kwargs=req.jobArgs,
-            trigger=req.triggerType,
+            trigger=req.triggerType.lower(),
             **req.triggerArgs
         )
     else:
         apscheduler.add_job(
             id=job_no,
+            name=req.jobName,
             func=TASK_FUNC.get(req.jobType),
             kwargs=req.jobArgs,
             trigger=CronTrigger.from_crontab(req.triggerArgs['crontab'])
@@ -191,20 +194,23 @@ def modify_task(req):
     if req.triggerType == TriggerType.DATE.value:
         apscheduler.modify_job(
             id=task.JOB_NO,
+            name=req.jobName,
             kwargs=req.jobArgs,
-            trigger=req.triggerType,
+            trigger=req.triggerType.lower(),
             run_date=req.triggerArgs['datetime']
         )
     elif req.triggerType == TriggerType.INTERVAL.value:
         apscheduler.modify_job(
             id=task.JOB_NO,
+            name=req.jobName,
             kwargs=req.jobArgs,
-            trigger=req.triggerType,
+            trigger=req.triggerType.lower(),
             **req.triggerArgs
         )
     else:
         apscheduler.modify_job(
             id=task.JOB_NO,
+            name=req.jobName,
             kwargs=req.jobArgs,
             trigger=CronTrigger.from_crontab(req.triggerArgs['crontab'])
         )

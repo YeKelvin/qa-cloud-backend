@@ -56,6 +56,13 @@ def get_app() -> Optional[Flask]:
 
 
 def configure_flask(app: Flask):
+    scheduler_api_enabled = False
+    if FLASK_ENV == 'development':
+        scheduler_api_enabled = True
+        scheduler_executors = {'default': {'type': 'threadpool', 'max_workers': 10}}
+    else:
+        scheduler_executors = {'default': {'type': 'gevent'}}
+
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=CONFIG.DB_URL,
         SQLALCHEMY_COMMIT_ON_TEARDOWN=True,
@@ -81,8 +88,9 @@ def configure_flask(app: Flask):
             # 自定义反序列化函数
             'json_deserializer': orjson_deserializer
         },
+        SCHEDULER_API_ENABLED=scheduler_api_enabled,
+        SCHEDULER_EXECUTORS=scheduler_executors,
         SCHEDULER_JOBSTORES={'default': SQLAlchemyJobStore(url=CONFIG.DB_URL)},
-        SCHEDULER_EXECUTORS={'default': {'type': 'gevent'}},
         SCHEDULER_JOB_DEFAULTS={'coalesce': True, 'max_instances': CONFIG.SCHEDULE_JOB_INSTANCES_MAX},
         SCHEDULER_TIMEZONE='Asia/Shanghai'
     )
@@ -104,7 +112,6 @@ def register_socketio(app: Flask):
 
 def register_apscheduler(app: Flask):
     from app.schedule import event
-    apscheduler.init_app(app)
     apscheduler.add_listener(event.handle_job_added, EVENT_JOB_ADDED)
     apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
     apscheduler.add_listener(event.handle_job_removed, EVENT_JOB_REMOVED)
@@ -112,6 +119,7 @@ def register_apscheduler(app: Flask):
     apscheduler.add_listener(event.handle_job_max_instances, EVENT_JOB_MAX_INSTANCES)
     apscheduler.add_listener(event.handle_job_executed, EVENT_JOB_EXECUTED)
     apscheduler.add_listener(event.handle_job_error, EVENT_JOB_ERROR)
+    apscheduler.init_app(app)
     apscheduler.start()
 
 

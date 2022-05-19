@@ -302,13 +302,14 @@ def execute_testplan(req):
     return run_testplan(req.planNo, req.datasetNumberedList, req.useCurrentValue)
 
 
-def run_testplan(plan_no, dataset_numbered_list, use_current_value):
+def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_workspace=True):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(plan_no)
     check_exists(testplan, '测试计划不存在')
 
     # 校验空间权限
-    check_workspace_permission(testplan.WORKSPACE_NO)
+    if check_workspace:
+        check_workspace_permission(testplan.WORKSPACE_NO)
 
     # 查询是否有正在运行中的执行任务
     running = TestplanExecutionDao.select_running_by_plan(plan_no)

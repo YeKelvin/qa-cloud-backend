@@ -23,7 +23,11 @@ FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
 db = SQLAlchemy()  # type: sqlalchemy
 migrate = Migrate()
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
-apscheduler = APScheduler(GeventScheduler())
+
+if FLASK_ENV == 'development':
+    apscheduler = APScheduler()
+else:
+    apscheduler = APScheduler(GeventScheduler())
 
 
 sio_kwargs = {}
