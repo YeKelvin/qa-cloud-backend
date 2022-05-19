@@ -28,3 +28,16 @@ class TScheduleJob(DBModel, BaseColumn):
     RESUME_TIME = db.Column(db.DateTime, comment='恢复时间')
     CLOSE_BY = db.Column(db.String(64), comment='关闭人')
     CLOSE_TIME = db.Column(db.DateTime, comment='关闭时间')
+
+
+class TScheduleJobLog(DBModel, BaseColumn):
+    """定时任务日志表"""
+    __tablename__ = 'SCHEDULE_JOB_LOG'
+    JOB_NO = db.Column(db.String(32), index=True, nullable=False, comment='作业编号')
+    JOB_OPERATION = db.Column(db.String(32), comment='作业操作类型(ADD, MODIFY, EXECUTE, PAUSE, RESUME, CLOSE)')
+    JOB_ARGS_FROM = db.Column(JSONB, nullable=False, comment='作业参数的来源数据')
+    JOB_ARGS_TO = db.Column(JSONB, nullable=False, comment='作业参数的修改数据')
+    TRIGGER_ARGS_FROM = db.Column(JSONB, nullable=False, comment='触发器参数的来源数据')
+    TRIGGER_ARGS_TO = db.Column(JSONB, nullable=False, comment='触发器参数的修改数据')
+    EXECUTION_ARGS_SNAPSHOT = db.Column(JSONB, nullable=False, comment='执行参数的快照信息')
+    EXECUTION_TIME = db.Column(db.DateTime, nullable=False, comment='执行时间')

@@ -28,7 +28,7 @@ log = get_logger(__name__)
 
 @http_service
 def query_task_list(req):
-    # 查询机器人列表
+    # 查询定时任务列表
     pagination = ScheduleJobDao.select_list(
         workspaceNo=req.workspaceNo,
         jobNo=req.jobNo,
