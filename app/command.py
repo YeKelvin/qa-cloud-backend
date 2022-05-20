@@ -185,7 +185,7 @@ def init_permission():
     _create_permission(name='删除通知机器人', method='DELETE', endpoint='/public/notification/robot')
 
     # schedule模块路由
-    # job
+    # task
     _create_permission(name='分页查询定时任务列表', method='GET', endpoint='/schedule/task/list')
     _create_permission(name='查询定时任务信息', method='GET', endpoint='/schedule/task/info')
     _create_permission(name='新增定时任务', method='POST', endpoint='/schedule/task')
@@ -193,6 +193,10 @@ def init_permission():
     _create_permission(name='暂停定时任务', method='PATCH', endpoint='/schedule/task/pause')
     _create_permission(name='恢复定时任务', method='PATCH', endpoint='/schedule/task/resume')
     _create_permission(name='关闭定时任务', method='PATCH', endpoint='/schedule/task/remove')
+
+    # job
+    _create_permission(name='查询作业信息', method='GET', endpoint='/schedule/job/info')
+    _create_permission(name='立即运行作业', method='POST', endpoint='/schedule/job/run')
 
     # script模块路由
     # element

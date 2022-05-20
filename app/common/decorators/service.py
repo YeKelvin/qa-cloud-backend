@@ -14,6 +14,7 @@ from app.common.exceptions import ServiceError
 from app.common.request import RequestDTO
 from app.common.response import ResponseDTO
 from app.common.response import http_response
+from app.extension import apscheduler
 from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_as_ms
 
@@ -72,5 +73,26 @@ def http_service(func):
                 f'elapsed:[ {elapsed_time}ms ]'
             )
             return http_res
+
+    return wrapper
+
+
+def task_service(func):
+    """service层装饰器，主要用于记录日志和捕获异常"""
+    log = getattr(inspect.getmodule(func), 'log', glog)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 记录开始时间
+        starttime = timestamp_as_ms()
+        try:
+            # 调用 service
+            with apscheduler.app.app_context():
+                return func(*args, **kwargs)
+        except Exception:
+            ...
+        finally:
+            # 记录接口耗时（毫秒）
+            elapsed_time = timestamp_as_ms() - starttime
 
     return wrapper

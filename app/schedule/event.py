@@ -98,7 +98,7 @@ def handle_job_added(event: JobEvent):
     EVENT_JOB_ADDED
     A job was added to a job store
     """
-    log.info(f'event:[ EVENT_JOB_ADDED ] jobId:[ {event.job_id} ] 添加作业')
+    log.info(f'event:[ EVENT_JOB_ADDED ] jobId:[ {event.job_id} ] 已添加作业')
 
 
 def handle_job_removed(event: JobEvent):
@@ -106,7 +106,7 @@ def handle_job_removed(event: JobEvent):
     EVENT_JOB_REMOVED
     A job was removed from a job store
     """
-    log.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 移除作业')
+    log.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 已移除作业')
     # 更新任务状态
     with apscheduler.app.app_context():
         task = ScheduleJobDao.select_by_no(event.job_id)
@@ -125,7 +125,7 @@ def handle_job_modified(event: JobEvent):
     EVENT_JOB_MODIFIED
     A job was modified from outside the scheduler
     """
-    log.info(f'event:[ EVENT_JOB_MODIFIED ] jobId:[ {event.job_id} ] 修改作业')
+    log.info(f'event:[ EVENT_JOB_MODIFIED ] jobId:[ {event.job_id} ] 已修改作业')
 
 
 def handle_job_submitted(event: JobSubmissionEvent):
@@ -133,7 +133,7 @@ def handle_job_submitted(event: JobSubmissionEvent):
     EVENT_JOB_SUBMITTED
     A job was submitted to its executor to be run
     """
-    log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 提交作业')
+    log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 已提交作业')
 
 
 def handle_job_max_instances(event: JobSubmissionEvent):
@@ -149,7 +149,7 @@ def handle_job_executed(event: JobExecutionEvent):
     EVENT_JOB_EXECUTED
     A job was executed successfully
     """
-    log.info(f'event:[ EVENT_JOB_EXECUTED ] jobId:[ {event.job_id} ] 执行作业')
+    log.info(f'event:[ EVENT_JOB_EXECUTED ] jobId:[ {event.job_id} ] 已执行作业')
 
 
 def handle_job_error(event: JobExecutionEvent):
@@ -157,7 +157,7 @@ def handle_job_error(event: JobExecutionEvent):
     EVENT_JOB_ERROR
     A job raised an exception during execution
     """
-    log.error(f'event:[ EVENT_JOB_ERROR ] jobId:[ {event.job_id} ] 作业异常:\n{event.traceback.format_exc()}')
+    log.error(f'event:[ EVENT_JOB_ERROR ] jobId:[ {event.job_id} ] 作业执行异常:\n{event.traceback.format_exc()}')
 
 
 def handle_job_missed(event: JobExecutionEvent):

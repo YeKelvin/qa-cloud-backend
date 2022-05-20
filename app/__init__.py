@@ -56,6 +56,7 @@ def get_app() -> Optional[Flask]:
 
 
 def configure_flask(app: Flask):
+    # https://viniciuschiele.github.io/flask-apscheduler/rst/api.html
     scheduler_api_enabled = False
     if FLASK_ENV == 'development':
         scheduler_api_enabled = True

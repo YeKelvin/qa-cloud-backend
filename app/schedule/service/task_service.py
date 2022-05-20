@@ -3,6 +3,7 @@
 # @File    : task_service.py
 # @Time    : 2022/5/13 14:50
 # @Author  : Kelvin.Ye
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
 
 from app.common.decorators.service import http_service
@@ -63,9 +64,9 @@ def query_task_list(req):
 
 @http_service
 def query_task_info(req):
-    # 查询作业
+    # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '作业不存在')
+    check_exists(task, '任务不存在')
 
     return {
         'jobNo': task.JOB_NO,
@@ -95,22 +96,22 @@ def create_task(req):
     if req.jobType == JobType.TESTPLAN.value:
         task = TScheduleJob.filter(
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['planNo'] == req.jobArgs['planNo'],
+            TScheduleJob.JOB_ARGS['planNo'].as_string() == req.jobArgs['planNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     elif req.jobType == JobType.COLLECTION.value:
         task = TScheduleJob.filter(
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['collectionNo'] == req.jobArgs['collectionNo'],
+            TScheduleJob.JOB_ARGS['collectionNo'].as_string() == req.jobArgs['collectionNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     else:
         task = TScheduleJob.filter(
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['groupNo'] == req.jobArgs['groupNo'],
+            TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(task, '相同内容的作业已存在')
+    check_not_exists(task, '相同内容的任务已存在')
 
     # 添加作业
     job_no = new_id()
@@ -159,9 +160,9 @@ def create_task(req):
 @http_service
 @transactional
 def modify_task(req):
-    # 查询作业
+    # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '作业不存在')
+    check_exists(task, '任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -171,24 +172,24 @@ def modify_task(req):
         existed_task = TScheduleJob.filter(
             TScheduleJob.ID != task.ID,
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['planNo'] == req.jobArgs['planNo'],
+            TScheduleJob.JOB_ARGS['planNo'].as_string() == req.jobArgs['planNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     elif req.jobType == JobType.COLLECTION.value:
         existed_task = TScheduleJob.filter(
             TScheduleJob.ID != task.ID,
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['collectionNo'] == req.jobArgs['collectionNo'],
+            TScheduleJob.JOB_ARGS['collectionNo'].as_string() == req.jobArgs['collectionNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     else:
         existed_task = TScheduleJob.filter(
             TScheduleJob.ID != task.ID,
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['groupNo'] == req.jobArgs['groupNo'],
+            TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(existed_task, '相同内容的作业已存在')
+    check_not_exists(existed_task, '相同内容的任务已存在')
 
     # 更新作业
     if req.triggerType == TriggerType.DATE.value:
@@ -228,18 +229,18 @@ def modify_task(req):
 @http_service
 @transactional
 def pause_task(req):
-    # 查询作业
+    # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '作业不存在')
+    check_exists(task, '任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
 
-    # 恢复作业
+    # 暂停作业
     apscheduler.get_job(task.JOB_NO).pause()
 
     # 更新作业状态
-    task.insert(
+    task.update(
         STATE=JobState.PAUSED.value,
         PAUSE_BY=get_userno(),
         PAUSE_TIME=datetime_now_by_utc8()
@@ -249,9 +250,9 @@ def pause_task(req):
 @http_service
 @transactional
 def resume_task(req):
-    # 查询作业
+    # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '作业不存在')
+    check_exists(task, '任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -260,7 +261,7 @@ def resume_task(req):
     apscheduler.get_job(task.JOB_NO).resume()
 
     # 更新作业状态
-    task.insert(
+    task.update(
         STATE=JobState.NORMAL.value,
         RESUME_BY=get_userno(),
         RESUME_TIME=datetime_now_by_utc8()
@@ -270,19 +271,24 @@ def resume_task(req):
 @http_service
 @transactional
 def remove_task(req):
-    # 查询作业
+    # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '作业不存在')
+    check_exists(task, '任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
 
     # 移除作业
-    apscheduler.remove_job(task.JOB_NO)
+    try:
+        apscheduler.remove_job(task.JOB_NO)
+    except JobLookupError:
+        log.info('查找作业失败，作业不存在或已失效')
 
     # 更新作业状态
-    task.insert(
-        STATE=JobState.CLOSED.value,
-        CLOSE_BY=get_userno(),
-        CLOSE_TIME=datetime_now_by_utc8()
-    )
+    task = ScheduleJobDao.select_by_no(req.jobNo)
+    if task and task.STATE != JobState.CLOSED.value:
+        task.update(
+            STATE=JobState.CLOSED.value,
+            CLOSE_BY=get_userno(),
+            CLOSE_TIME=datetime_now_by_utc8()
+        )
