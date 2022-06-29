@@ -37,17 +37,34 @@ def query_element_list():
     return service.query_element_list(req)
 
 
-@blueprint.get('/collection/all')
+@blueprint.get('/element/all')
 @require_login
 @require_permission
-def query_collection_all():
-    """查询所有集合元素"""
+def query_element_all():
+    """查询所有元素"""
     req = JsonParser(
         Argument('workspaceNo'),
+        Argument('elementType'),
         Argument('elementClass'),
         Argument('enabled')
     ).parse()
-    return service.query_collection_all(req)
+    return service.query_element_all(req)
+
+
+@blueprint.get('/element/all/with/children')
+@require_login
+@require_permission
+def query_element_all_with_children():
+    """查询所有元素及其子代"""
+    req = JsonParser(
+        Argument('workspaceNo'),
+        Argument('elementType'),
+        Argument('elementClass'),
+        Argument('childType'),
+        Argument('childClass'),
+        Argument('enabled')
+    ).parse()
+    return service.query_element_all_with_children(req)
 
 
 @blueprint.get('/element/info')

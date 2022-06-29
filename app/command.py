@@ -201,7 +201,8 @@ def init_permission():
     # script模块路由
     # element
     _create_permission(name='分页查询元素列表', method='GET', endpoint='/script/element/list')
-    _create_permission(name='查询所有集合元素', method='GET', endpoint='/script/collection/all')
+    _create_permission(name='查询所有元素元素', method='GET', endpoint='/script/element/all')
+    _create_permission(name='查询所有元素及其子代', method='GET', endpoint='/script/element/all/with/children')
     _create_permission(name='查询元素信息', method='GET', endpoint='/script/element/info')
     _create_permission(name='查询元素子代', method='GET', endpoint='/script/element/children')
     _create_permission(name='根据元素编号列表查询元素子代', method='GET', endpoint='/script/elements/children')

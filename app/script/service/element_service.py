@@ -116,14 +116,14 @@ def query_element_list(req):
 
 
 @http_service
-def query_collection_all(req):
+def query_element_all(req):
     # 查询条件
     conds = QueryCondition(TTestElement, TWorkspaceCollection)
     conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
-    conds.like(TTestElement.ELEMENT_TYPE, ElementType.COLLECTION.value)
-    conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
+    conds.equal(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ENABLED, req.enabled)
+    conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
     items = db.session.query(
@@ -143,6 +143,66 @@ def query_collection_all(req):
             'elementType': item.ELEMENT_TYPE,
             'elementClass': item.ELEMENT_CLASS,
             'enabled': item.ENABLED
+        })
+    return result
+
+
+@http_service
+def query_element_all_with_children(req):
+    # 查询条件
+    conds = QueryCondition(TTestElement, TWorkspaceCollection)
+    conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    conds.equal(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
+    conds.equal(TTestElement.ENABLED, req.enabled)
+    conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
+
+    # TTestElement，TWorkspaceCollection连表查询
+    items = db.session.query(
+        TTestElement.ELEMENT_NO,
+        TTestElement.ELEMENT_NAME,
+        TTestElement.ELEMENT_REMARK,
+        TTestElement.ELEMENT_TYPE,
+        TTestElement.ELEMENT_CLASS,
+        TTestElement.ENABLED
+    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
+
+    result = []
+    for item in items:
+        # 查询子代
+        childconds = QueryCondition(TElementChildren, TTestElement)
+        childconds.equal(TElementChildren.PARENT_NO, item.ELEMENT_NO)
+        childconds.equal(TTestElement.ELEMENT_NO, TElementChildren.CHILD_NO)
+        childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
+        childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
+        childconds.equal(TTestElement.ENABLED, req.enabled)
+        children = db.session.query(
+            TElementChildren.SORT_NO,
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_TYPE,
+            TTestElement.ELEMENT_CLASS,
+            TTestElement.ENABLED
+        ).filter(*childconds).order_by(TElementChildren.SORT_NO).all()
+        # 添加元素信息
+        result.append({
+            'elementNo': item.ELEMENT_NO,
+            'elementName': item.ELEMENT_NAME,
+            'elementType': item.ELEMENT_TYPE,
+            'elementClass': item.ELEMENT_CLASS,
+            'enabled': item.ENABLED,
+            'children': [
+                {
+                    'elementNo': child.ELEMENT_NO,
+                    'elementName': child.ELEMENT_NAME,
+                    'elementType': child.ELEMENT_TYPE,
+                    'elementClass': child.ELEMENT_CLASS,
+                    'enabled': child.ENABLED,
+                    'children': []
+                }
+                for child in children
+            ]
         })
     return result
 
