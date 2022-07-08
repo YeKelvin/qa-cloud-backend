@@ -8,10 +8,14 @@ from apscheduler.events import JobExecutionEvent
 from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
 
+from app.common.globals import get_userno
+from app.common.identity import new_id
 from app.extension import apscheduler
 from app.extension import db
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
 from app.schedule.enum import JobState
+from app.schedule.enum import OperationType
+from app.schedule.model import TScheduleJobLog
 from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
 
@@ -109,15 +113,22 @@ def handle_job_removed(event: JobEvent):
     log.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 已移除作业')
     # 更新任务状态
     with apscheduler.app.app_context():
+        # 查询任务
         task = ScheduleJobDao.select_by_no(event.job_id)
+        # 如果任务状态仍未关闭，则更新状态为已关闭
         if task and task.STATE != JobState.CLOSED.value:
             log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
-            task.update(
-                STATE=JobState.CLOSED.value,
-                CLOSE_BY='system',
-                CLOSE_TIME=datetime_now_by_utc8()
-            )
-            db.session.commit()
+            task.update(STATE=JobState.CLOSED.value)
+        # 新增历史记录
+        TScheduleJobLog.insert(
+            JOB_NO=task.JOB_NO,
+            LOG_NO=new_id(),
+            OPERATION_TYPE=OperationType.CLOSE.value,
+            OPERATION_BY=get_userno(),
+            OPERATION_TIME=datetime_now_by_utc8()
+        )
+        # 需要手动提交
+        db.session.commit()
 
 
 def handle_job_modified(event: JobEvent):
@@ -133,7 +144,21 @@ def handle_job_submitted(event: JobSubmissionEvent):
     EVENT_JOB_SUBMITTED
     A job was submitted to its executor to be run
     """
-    log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 已提交作业')
+    log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 开始执行作业')
+    with apscheduler.app.app_context():
+        # 查询任务
+        task = ScheduleJobDao.select_by_no(event.job_id)
+        # 新增历史记录
+        TScheduleJobLog.insert(
+            JOB_NO=task.JOB_NO,
+            LOG_NO=new_id(),
+            OPERATION_TYPE=OperationType.EXECUTE.value,
+            OPERATION_BY=get_userno(),
+            OPERATION_TIME=datetime_now_by_utc8(),
+            OPERATION_ARGS=task.JOB_ARGS
+        )
+        # 需要手动提交
+        db.session.commit()
 
 
 def handle_job_max_instances(event: JobSubmissionEvent):
@@ -149,7 +174,7 @@ def handle_job_executed(event: JobExecutionEvent):
     EVENT_JOB_EXECUTED
     A job was executed successfully
     """
-    log.info(f'event:[ EVENT_JOB_EXECUTED ] jobId:[ {event.job_id} ] 已执行作业')
+    log.info(f'event:[ EVENT_JOB_EXECUTED ] jobId:[ {event.job_id} ] 作业执行完成')
 
 
 def handle_job_error(event: JobExecutionEvent):

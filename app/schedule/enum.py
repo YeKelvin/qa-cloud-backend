@@ -35,3 +35,27 @@ class TriggerType(Enum):
     INTERVAL = 'INTERVAL'
     # CRON间隔
     CRON = 'CRON'
+
+
+@unique
+class OperationType(Enum):
+    # 添加作业
+    ADD = 'ADD'
+    # 修改作业
+    MODIFY = 'MODIFY'
+    # 执行作业
+    EXECUTE = 'EXECUTE'
+    # 暂停作业
+    PAUSE = 'PAUSE'
+    # 恢复作业
+    RESUME = 'RESUME'
+    # 关闭作业
+    CLOSE = 'CLOSE'
+
+
+@unique
+class ChangeType(Enum):
+    JOB_TYPE = 'JOB_TYPE'
+    JOB_ARGS = 'JOB_ARGS'
+    TRIGGER_TYPE = 'TRIGGER_TYPE'
+    TRIGGER_ARGS = 'TRIGGER_ARGS'

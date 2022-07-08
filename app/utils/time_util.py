@@ -89,11 +89,9 @@ def microsecond_to_h_m_s(microsecond: int) -> str:
     s, ms = divmod(microsecond, 1000)
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
-    if h == 0 and m == 0 and s == 0:
-        return '%dms' % ms
-    if h == 0 and m == 0:
-        return '%02ds+%dms' % (s, ms)
     if h == 0:
+        if m == 0:
+            return '%dms' % ms if s == 0 else '%02ds+%dms' % (s, ms)
         return '%02dm:%02ds' % (m, s)
 
     return '%02dh:%02dm:%02ds' % (h, m, s)
@@ -106,9 +104,6 @@ def microsecond_to_m_s(microsecond: int) -> str:
 
     s, ms = divmod(microsecond, 1000)
     m, s = divmod(s, 60)
-    if m == 0 and s == 0:
-        return '%dms' % ms
     if m == 0:
-        return '%02ds+%dms' % (s, ms)
-
+        return '%dms' % ms if s == 0 else '%02ds+%dms' % (s, ms)
     return '%02dm:%02ds' % (m, s)

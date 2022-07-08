@@ -13,14 +13,21 @@ from app.common.identity import new_id
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
+from app.database import dbquery
 from app.extension import apscheduler
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
+# from app.schedule.enum import ChangeType
 from app.schedule.enum import JobState
 from app.schedule.enum import JobType
+from app.schedule.enum import OperationType
 from app.schedule.enum import TriggerType
 from app.schedule.model import TScheduleJob
+# from app.schedule.model import TScheduleJobChangeDetails
+from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
+from app.usercenter.model import TUser
 from app.utils.log_util import get_logger
+from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
 
 
@@ -42,22 +49,18 @@ def query_task_list(req):
         pageSize=req.pageSize
     )
 
-    data = []
-    for task in pagination.items:
-        data.append({
+    data = [
+        {
             'jobNo': task.JOB_NO,
             'jobName': task.JOB_NAME,
             'jobDesc': task.JOB_DESC,
             'jobType': task.JOB_TYPE,
             'triggerType': task.TRIGGER_TYPE,
             'state': task.STATE,
-            'pauseBy': task.PAUSE_BY,
-            'pauseTime': task.PAUSE_TIME,
-            'resumeBy': task.RESUME_BY,
-            'resumeTime': task.RESUME_TIME,
-            'closeBy': task.CLOSE_BY,
-            'closeTime': task.CLOSE_TIME
-        })
+            'createdTime': task.CREATED_TIME
+        }
+        for task in pagination.items
+    ]
 
     return {'data': data, 'total': pagination.total}
 
@@ -76,13 +79,7 @@ def query_task_info(req):
         'jobArgs': task.JOB_ARGS,
         'triggerType': task.TRIGGER_TYPE,
         'triggerArgs': task.TRIGGER_ARGS,
-        'state': task.STATE,
-        'pauseBy': task.PAUSE_BY,
-        'pauseTime': task.PAUSE_TIME,
-        'resumeBy': task.RESUME_BY,
-        'resumeTime': task.RESUME_TIME,
-        'closeBy': task.CLOSE_BY,
-        'closeTime': task.CLOSE_TIME
+        'state': task.STATE
     }
 
 
@@ -159,6 +156,15 @@ def create_task(req):
         TRIGGER_ARGS=req.triggerArgs
     )
 
+    # 新增历史记录
+    TScheduleJobLog.insert(
+        JOB_NO=job_no,
+        LOG_NO=new_id(),
+        OPERATION_TYPE=OperationType.ADD.value,
+        OPERATION_BY=get_userno(),
+        OPERATION_TIME=datetime_now_by_utc8()
+    )
+
     return {'jobNo': job_no}
 
 
@@ -195,6 +201,17 @@ def modify_task(req):
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     check_not_exists(existed_task, '相同内容的任务已存在')
+
+    # 新增历史记录
+    log_no = new_id()
+    TScheduleJobLog.insert(
+        JOB_NO=task.JOB_NO,
+        LOG_NO=log_no,
+        OPERATION_TYPE=OperationType.MODIFY.value,
+        OPERATION_BY=get_userno(),
+        OPERATION_TIME=datetime_now_by_utc8()
+    )
+    # TODO: 记录任务修改详情
 
     # 更新作业
     if req.triggerType == TriggerType.DATE.value:
@@ -250,10 +267,15 @@ def pause_task(req):
     apscheduler.get_job(task.JOB_NO).pause()
 
     # 更新作业状态
-    task.update(
-        STATE=JobState.PAUSED.value,
-        PAUSE_BY=get_userno(),
-        PAUSE_TIME=datetime_now_by_utc8()
+    task.update(STATE=JobState.PAUSED.value)
+
+    # 新增历史记录
+    TScheduleJobLog.insert(
+        JOB_NO=task.JOB_NO,
+        LOG_NO=new_id(),
+        OPERATION_TYPE=OperationType.PAUSE.value,
+        OPERATION_BY=get_userno(),
+        OPERATION_TIME=datetime_now_by_utc8()
     )
 
 
@@ -271,10 +293,15 @@ def resume_task(req):
     apscheduler.get_job(task.JOB_NO).resume()
 
     # 更新作业状态
-    task.update(
-        STATE=JobState.NORMAL.value,
-        RESUME_BY=get_userno(),
-        RESUME_TIME=datetime_now_by_utc8()
+    task.update(STATE=JobState.NORMAL.value)
+
+    # 新增历史记录
+    TScheduleJobLog.insert(
+        JOB_NO=task.JOB_NO,
+        LOG_NO=new_id(),
+        OPERATION_TYPE=OperationType.RESUME.value,
+        OPERATION_BY=get_userno(),
+        OPERATION_TIME=datetime_now_by_utc8()
     )
 
 
@@ -297,8 +324,50 @@ def remove_task(req):
     # 更新作业状态
     task = ScheduleJobDao.select_by_no(req.jobNo)
     if task and task.STATE != JobState.CLOSED.value:
-        task.update(
-            STATE=JobState.CLOSED.value,
-            CLOSE_BY=get_userno(),
-            CLOSE_TIME=datetime_now_by_utc8()
+        task.update(STATE=JobState.CLOSED.value)
+
+
+@http_service
+def query_task_history_list(req):
+    # 查询条件
+    conds = QueryCondition(TScheduleJobLog)
+    conds.equal(TScheduleJobLog.JOB_NO, req.jobNo)
+    conds.ge(TScheduleJobLog.CREATED_TIME, req.startTime)
+    conds.le(TScheduleJobLog.CREATED_TIME, req.endTime)
+
+    # 查询日志列表
+    pagination = (
+        dbquery(
+            TScheduleJobLog.JOB_NO,
+            TScheduleJobLog.OPERATION_TYPE,
+            TScheduleJobLog.OPERATION_TIME,
+            TScheduleJobLog.OPERATION_ARGS,
+            TUser.USER_NAME
         )
+        .outerjoin(TUser, TScheduleJobLog.OPERATION_BY == TUser.USER_NO)
+        .filter(*conds)
+        .order_by(TScheduleJobLog.CREATED_TIME.desc())
+        .paginate(req.page, req.pageSize)
+    )
+
+    data = [
+        {
+            'jobNo': item.JOB_NO,
+            'operationType': item.OPERATION_TYPE,
+            'operationBy': item.USER_NAME,
+            'operationTime': item.OPERATION_TIME,
+            'operationContent': get_task_operation_content(item)
+        }
+        for item in pagination.items
+    ]
+
+    return {'data': data, 'total': pagination.total}
+
+
+def get_task_operation_content(logrow):
+    if logrow.OPERATION_TYPE == OperationType.EXECUTE.value:
+        return logrow.OPERATION_ARGS
+    elif logrow.OPERATION_TYPE == OperationType.MODIFY.value:
+        ...
+    else:
+        return

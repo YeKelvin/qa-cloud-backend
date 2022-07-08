@@ -22,6 +22,10 @@ log = get_logger(__name__)
 MODEL = Type[db.Model]
 
 
+def dbquery(*args, **kwargs):
+    return db.session.query(*args, **kwargs)
+
+
 class setter(dict):  # noqa
     ...
 

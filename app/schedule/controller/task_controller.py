@@ -31,7 +31,7 @@ def query_task_list():
         Argument('triggerType'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
     return service.query_task_list(req)
 
@@ -111,3 +111,18 @@ def remove_task():
         Argument('jobNo', required=True, nullable=False, help='作业编号不能为空')
     ).parse()
     return service.remove_task(req)
+
+
+@blueprint.get('/task/history/list')
+@require_login
+@require_permission
+def query_task_history_list():
+    """分业查询任务历史列表"""
+    req = JsonParser(
+        Argument('jobNo', required=True, nullable=False, help='作业编号不能为空'),
+        Argument('startTime'),
+        Argument('endTime'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
+    ).parse()
+    return service.query_task_history_list(req)
