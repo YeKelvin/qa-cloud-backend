@@ -88,7 +88,7 @@ dictConfig({
 # werkzeug 日志配置
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.propagate = False
-werkzeug_logger.setLevel(logging.INFO)
+werkzeug_logger.setLevel(logging.WARNING)
 for handler in werkzeug_logger.handlers:
     werkzeug_logger.removeHandler(handler)
 werkzeug_logger.addHandler(CONSOLE_HANDLER)
@@ -98,7 +98,7 @@ werkzeug_logger.addHandler(QUEUE_HANDLER)
 # sqlalchemy 日志配置
 sqlalchemy_logger = logging.getLogger('sqlalchemy')
 sqlalchemy_logger.propagate = False
-sqlalchemy_logger.setLevel(logging.INFO)
+sqlalchemy_logger.setLevel(logging.WARNING)
 for handler in sqlalchemy_logger.handlers:
     sqlalchemy_logger.removeHandler(handler)
 sqlalchemy_logger.addHandler(CONSOLE_HANDLER)

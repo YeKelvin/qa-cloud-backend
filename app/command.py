@@ -67,6 +67,9 @@ def initdata():
 @with_appcontext
 def init_user():
     """初始化用户"""
+    # 创建系统用户
+    TUser.insert(USER_NO='9999', USER_NAME='系统', record=False)
+    # 创建管理员用户
     user_no = new_id()
     TUser.insert(USER_NO=user_no, USER_NAME='超级管理员', record=False)
     TUserLoginInfo.insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT', record=False)
@@ -78,7 +81,7 @@ def init_user():
         CREATE_TYPE='CUSTOMER',
         record=False
     )
-
+    # 创建管理员空间
     worksapce_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
@@ -87,8 +90,7 @@ def init_user():
         record=False
     )
     TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no, record=False)
-
-    click.echo('创建 admin用户成功')
+    click.echo('创建初始用户成功')
 
 
 @with_appcontext

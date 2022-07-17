@@ -21,11 +21,12 @@ from app.schedule.enum import JobState
 from app.schedule.enum import JobType
 from app.schedule.enum import OperationType
 from app.schedule.enum import TriggerType
-from app.schedule.model import TScheduleJob
 # from app.schedule.model import TScheduleJobChangeDetails
+from app.schedule.model import TScheduleJob
 from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
 from app.usercenter.model import TUser
+from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
@@ -366,7 +367,7 @@ def query_task_history_list(req):
 
 def get_task_operation_content(logrow):
     if logrow.OPERATION_TYPE == OperationType.EXECUTE.value:
-        return logrow.OPERATION_ARGS
+        return to_json(logrow.OPERATION_ARGS)
     elif logrow.OPERATION_TYPE == OperationType.MODIFY.value:
         ...
     else:

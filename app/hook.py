@@ -3,10 +3,8 @@
 # @File    : hook.py
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
-import threading
 import traceback
-from datetime import datetime
-from datetime import timezone
+import uuid
 
 import jwt
 from flask import g
@@ -27,10 +25,7 @@ def set_trace_id():
     """设置当前请求的全局 TraceID"""
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
-        g.trace_id = (
-            f'{threading.current_thread().ident}'
-            f'{datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")}'
-        )
+        g.trace_id = uuid.uuid4()
 
 
 def set_user():

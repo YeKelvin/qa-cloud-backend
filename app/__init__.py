@@ -51,7 +51,7 @@ def get_app() -> Optional[Flask]:
     global __app__
 
     if __app__ is None:
-        raise RuntimeError('please call create_app() first')
+        raise RuntimeError('Please call create_app() first!!!')
     return __app__
 
 

@@ -3,12 +3,13 @@
 # @File    : event.py
 # @Time    : 2022-05-15 23:34:10
 # @Author  : Kelvin.Ye
+import traceback
+
 from apscheduler.events import JobEvent
 from apscheduler.events import JobExecutionEvent
 from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
 
-from app.common.globals import get_userno
 from app.common.identity import new_id
 from app.extension import apscheduler
 from app.extension import db
@@ -113,22 +114,26 @@ def handle_job_removed(event: JobEvent):
     log.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 已移除作业')
     # 更新任务状态
     with apscheduler.app.app_context():
-        # 查询任务
-        task = ScheduleJobDao.select_by_no(event.job_id)
-        # 如果任务状态仍未关闭，则更新状态为已关闭
-        if task and task.STATE != JobState.CLOSED.value:
-            log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
-            task.update(STATE=JobState.CLOSED.value)
-        # 新增历史记录
-        TScheduleJobLog.insert(
-            JOB_NO=task.JOB_NO,
-            LOG_NO=new_id(),
-            OPERATION_TYPE=OperationType.CLOSE.value,
-            OPERATION_BY=get_userno(),
-            OPERATION_TIME=datetime_now_by_utc8()
-        )
-        # 需要手动提交
-        db.session.commit()
+        try:
+            # TODO: SYSTEM_OPERATION_LOG
+            # 查询任务
+            task = ScheduleJobDao.select_by_no(event.job_id)
+            # 如果任务状态仍未关闭，则更新状态为已关闭
+            if task and task.STATE != JobState.CLOSED.value:
+                log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
+                task.update(STATE=JobState.CLOSED.value)
+            # 新增历史记录
+            TScheduleJobLog.insert(
+                JOB_NO=task.JOB_NO,
+                LOG_NO=new_id(),
+                OPERATION_TYPE=OperationType.CLOSE.value,
+                OPERATION_BY='9999',
+                OPERATION_TIME=datetime_now_by_utc8()
+            )
+            # 需要手动提交
+            db.session.commit()
+        except Exception:
+            log.error(traceback.format_exc())
 
 
 def handle_job_modified(event: JobEvent):
@@ -146,25 +151,30 @@ def handle_job_submitted(event: JobSubmissionEvent):
     """
     log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 开始执行作业')
     with apscheduler.app.app_context():
-        # 查询任务
-        task = ScheduleJobDao.select_by_no(event.job_id)
-        # 新增历史记录
-        TScheduleJobLog.insert(
-            JOB_NO=task.JOB_NO,
-            LOG_NO=new_id(),
-            OPERATION_TYPE=OperationType.EXECUTE.value,
-            OPERATION_BY=get_userno(),
-            OPERATION_TIME=datetime_now_by_utc8(),
-            OPERATION_ARGS=task.JOB_ARGS
-        )
-        # 需要手动提交
-        db.session.commit()
+        try:
+            # TODO: SYSTEM_OPERATION_LOG
+            # 查询任务
+            task = ScheduleJobDao.select_by_no(event.job_id)
+            # 新增历史记录
+            TScheduleJobLog.insert(
+                JOB_NO=task.JOB_NO,
+                LOG_NO=new_id(),
+                OPERATION_TYPE=OperationType.EXECUTE.value,
+                OPERATION_BY='9999',
+                OPERATION_TIME=datetime_now_by_utc8(),
+                OPERATION_ARGS=task.JOB_ARGS
+            )
+            # 需要手动提交
+            db.session.commit()
+        except Exception:
+            log.error(traceback.format_exc())
 
 
 def handle_job_max_instances(event: JobSubmissionEvent):
     """
     EVENT_JOB_MAX_INSTANCES
-    A job being submitted to its executor was not accepted by the executor because the job has already reached its maximum concurrently executing instances
+    A job being submitted to its executor was not accepted by the executor
+    because the job has already reached its maximum concurrently executing instances
     """
     log.warning(f'event:[ EVENT_JOB_MAX_INSTANCES ] jobId:[ {event.job_id} ] 已达到最大并发执行实例数，作业提交失败')
 
