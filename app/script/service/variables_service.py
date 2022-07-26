@@ -34,14 +34,16 @@ def query_variables_dataset_list(req):
         pageSize=req.pageSize
     )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'datasetNo': item.DATASET_NO,
             'datasetName': item.DATASET_NAME,
             'datasetType': item.DATASET_TYPE,
             'datasetDesc': item.DATASET_DESC
-        })
+        }
+        for item in pagination.items
+    ]
+
     return {'data': data, 'total': pagination.total}
 
 
@@ -56,15 +58,15 @@ def query_variable_dataset_all(req):
         datasetDesc=req.datasetDesc
     )
 
-    result = []
-    for item in items:
-        result.append({
+    return [
+        {
             'datasetNo': item.DATASET_NO,
             'datasetName': item.DATASET_NAME,
             'datasetType': item.DATASET_TYPE,
             'datasetDesc': item.DATASET_DESC
-        })
-    return result
+        }
+        for item in items
+    ]
 
 
 @http_service
@@ -264,17 +266,17 @@ def update_current_value(req):
 def query_variable_by_dataset(req):
     variables = VariableDao.select_all_by_dataset(req.datasetNo)
 
-    result = []
-    for variable in variables:
-        result.append({
+    return [
+        {
             'varNo': variable.VAR_NO,
             'varName': variable.VAR_NAME,
             'varDesc': variable.VAR_DESC,
             'initialValue': variable.INITIAL_VALUE,
             'currentValue': variable.CURRENT_VALUE,
             'enabled': variable.ENABLED
-        })
-    return result
+        }
+        for variable in variables
+    ]
 
 
 @http_service
@@ -289,8 +291,8 @@ def query_variables(req):
         # 查询变量列表
         variables = VariableDao.select_all_by_dataset(dataset_no)
 
-        for variable in variables:
-            result.append({
+        result.extend(
+            {
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME,
                 'varNo': variable.VAR_NO,
@@ -299,7 +301,10 @@ def query_variables(req):
                 'initialValue': variable.INITIAL_VALUE,
                 'currentValue': variable.CURRENT_VALUE,
                 'enabled': variable.ENABLED
-            })
+            }
+            for variable in variables
+        )
+
     return result
 
 

@@ -31,13 +31,15 @@ def query_httpheader_template_list(req):
         pageSize=req.pageSize
     )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'templateNo': item.TEMPLATE_NO,
             'templateName': item.TEMPLATE_NAME,
             'templateDesc': item.TEMPLATE_DESC
-        })
+        }
+        for item in pagination.items
+    ]
+
     return {'data': data, 'total': pagination.total}
 
 
@@ -51,14 +53,14 @@ def query_httpheader_template_all(req):
         templateDesc=req.templateDesc
     )
 
-    result = []
-    for item in items:
-        result.append({
+    return [
+        {
             'templateNo': item.TEMPLATE_NO,
             'templateName': item.TEMPLATE_NAME,
             'templateDesc': item.TEMPLATE_DESC
-        })
-    return result
+        }
+        for item in items
+    ]
 
 
 @http_service
@@ -150,7 +152,7 @@ def modify_http_header(req):
     check_exists(header, '请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, '模板不存在')
 
     # 校验空间权限
@@ -172,7 +174,7 @@ def remove_http_header(req):
     check_exists(header, '请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, '模板不存在')
 
     # 校验空间权限
@@ -190,7 +192,7 @@ def enable_http_header(req):
     check_exists(header, '请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, '模板不存在')
 
     # 校验空间权限
@@ -210,7 +212,7 @@ def disable_http_header(req):
     check_exists(header, '请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
+    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, '模板不存在')
 
     # 校验空间权限
@@ -227,16 +229,16 @@ def disable_http_header(req):
 def query_http_headers_by_template(req):
     headers = HttpHeaderDao.select_all_by_template(req.templateNo)
 
-    result = []
-    for header in headers:
-        result.append({
+    return [
+        {
             'headerNo': header.HEADER_NO,
             'headerName': header.HEADER_NAME,
             'headerValue': header.HEADER_VALUE,
             'headerDesc': header.HEADER_DESC,
             'enabled': header.ENABLED
-        })
-    return result
+        }
+        for header in headers
+    ]
 
 
 @http_service
@@ -251,14 +253,16 @@ def query_http_headers(req):
         # 查询请求头列表
         headers = HttpHeaderDao.select_all_by_template(template_no)
 
-        for header in headers:
-            result.append({
+        result.extend(
+            {
                 'headerNo': header.HEADER_NO,
                 'headerName': header.HEADER_NAME,
                 'headerValue': header.HEADER_VALUE,
                 'headerDesc': header.HEADER_DESC,
                 'enabled': header.ENABLED
-            })
+            }
+            for header in headers
+        )
 
     return result
 
