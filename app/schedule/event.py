@@ -4,6 +4,7 @@
 # @Time    : 2022-05-15 23:34:10
 # @Author  : Kelvin.Ye
 import traceback
+import uuid
 
 from apscheduler.events import JobEvent
 from apscheduler.events import JobExecutionEvent
@@ -11,12 +12,14 @@ from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
 
 from app.common.identity import new_id
+from app.common.locals import local
 from app.extension import apscheduler
 from app.extension import db
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
 from app.schedule.enum import JobState
 from app.schedule.enum import OperationType
 from app.schedule.model import TScheduleJobLog
+from app.system.model import TSystemOperationLog
 from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
 
@@ -115,13 +118,18 @@ def handle_job_removed(event: JobEvent):
     # 更新任务状态
     with apscheduler.app.app_context():
         try:
-            # TODO: SYSTEM_OPERATION_LOG
             # 查询任务
             task = ScheduleJobDao.select_by_no(event.job_id)
             # 如果任务状态仍未关闭，则更新状态为已关闭
             if task and task.STATE != JobState.CLOSED.value:
                 log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
                 task.update(STATE=JobState.CLOSED.value)
+            # 记录操作日志
+            TSystemOperationLog.insert(
+                LOG_NO=local.trace_id,
+                OPERATION_SOURCE='APSCHEDULER',
+                OPERATION_EVENT='EVENT_JOB_REMOVED'
+            )
             # 新增历史记录
             TScheduleJobLog.insert(
                 JOB_NO=task.JOB_NO,
@@ -152,9 +160,14 @@ def handle_job_submitted(event: JobSubmissionEvent):
     log.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 开始执行作业')
     with apscheduler.app.app_context():
         try:
-            # TODO: SYSTEM_OPERATION_LOG
             # 查询任务
             task = ScheduleJobDao.select_by_no(event.job_id)
+            # 记录操作日志
+            TSystemOperationLog.insert(
+                LOG_NO=local.trace_id,
+                OPERATION_SOURCE='APSCHEDULER',
+                OPERATION_EVENT='EVENT_JOB_SUBMITTED'
+            )
             # 新增历史记录
             TScheduleJobLog.insert(
                 JOB_NO=task.JOB_NO,
@@ -203,9 +216,10 @@ def handle_job_missed(event: JobExecutionEvent):
     ...
 
 
-def handle_event_all():
+def handle_event_all(event):
     """
     EVENT_ALL
     A catch-all mask that includes every event type
     """
-    ...
+    # 重置[ 线程/协程 ]的日志号
+    setattr(local, 'trace_id', uuid.uuid4())

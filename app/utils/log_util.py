@@ -5,9 +5,7 @@
 # @Author  : Kelvin.Ye
 import logging
 import multiprocessing
-import threading
-from datetime import datetime
-from datetime import timezone
+import uuid
 from logging.config import dictConfig
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
@@ -16,6 +14,7 @@ from logging.handlers import TimedRotatingFileHandler
 import flask
 
 from app import config as CONFIG
+from app.common.locals import local
 
 
 logging_record_factory = logging.getLogRecordFactory()
@@ -125,13 +124,10 @@ class ContextFilter(logging.Filter):
 
     def filter(self, record):
         if flask.has_app_context():
-            trace_id = getattr(flask.g, 'trace_id', None)
-            if not trace_id:
-                trace_id = (
-                    f'{threading.current_thread().ident}'
-                    f'{datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")}'
-                )
-                flask.g.trace_id = trace_id
+            trace_id = getattr(flask.g, 'trace_id', None) or uuid.uuid4()
+            flask.g.trace_id = trace_id
+            record.traceId = trace_id
+        elif trace_id := getattr(local, 'trace_id', None):
             record.traceId = trace_id
         else:
             record.traceId = "unknown"

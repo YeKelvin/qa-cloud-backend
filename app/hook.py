@@ -69,6 +69,7 @@ def add_operation_log():
     # 记录操作日志
     oplog = TSystemOperationLog()
     oplog.LOG_NO = g.trace_id,
+    oplog.OPERATION_SOURCE = 'HTTP'
     oplog.OPERATION_METHOD = request.method,
     oplog.OPERATION_ENDPOINT = request.path
     db.session.add(oplog)

@@ -4,16 +4,14 @@
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
 import decimal
-import os
 import uuid
-from threading import local as ThreadLocal
 from typing import Type
 
 from flask import g
-from gevent.local import local as CoroutineLocal
 from sqlalchemy import func
 
 from app.common.globals import get_userno
+from app.common.locals import local
 from app.extension import db
 from app.utils.json_util import to_json
 from app.utils.log_util import get_logger
@@ -190,17 +188,14 @@ class TSystemOperationLogContent(DBModel, BaseColumn):
     NEW_VALUE = db.Column(db.Text, comment='新值')
 
 
-__local__ = ThreadLocal() if os.environ.get('FLASK_ENV') == 'development' else CoroutineLocal()
-
-
 def get_trace_id():
     if hasattr(g, 'trace_id'):
         return g.trace_id
 
-    trace_id = getattr(__local__, 'trace_id', None)
+    trace_id = getattr(local, 'trace_id', None)
     if not trace_id:
         trace_id = uuid.uuid4()
-        setattr(__local__, 'trace_id', trace_id)
+        setattr(local, 'trace_id', trace_id)
     return trace_id
 
 

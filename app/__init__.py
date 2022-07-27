@@ -7,6 +7,7 @@ import os
 from typing import Optional
 
 import orjson
+from apscheduler.events import EVENT_ALL
 from apscheduler.events import EVENT_JOB_ADDED
 from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.events import EVENT_JOB_EXECUTED
@@ -113,6 +114,7 @@ def register_socketio(app: Flask):
 
 def register_apscheduler(app: Flask):
     from app.schedule import event
+    apscheduler.add_listener(event.handle_event_all, EVENT_ALL)
     apscheduler.add_listener(event.handle_job_added, EVENT_JOB_ADDED)
     apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
     apscheduler.add_listener(event.handle_job_removed, EVENT_JOB_REMOVED)
