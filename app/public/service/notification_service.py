@@ -7,12 +7,12 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.public.dao import notification_robot_dao as NotificationRobotDao
 from app.public.enum import RobotState
 from app.public.model import TNotificationRobot
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
 

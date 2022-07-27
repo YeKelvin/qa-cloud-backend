@@ -16,6 +16,7 @@ from app.common.exceptions import ServiceError
 from app.common.exceptions import TestplanInterruptError
 from app.common.globals import get_userno
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.extension import db
@@ -45,7 +46,6 @@ from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
 from app.usercenter.dao import user_dao as UserDao
-from app.utils.log_util import get_logger
 from app.utils.notification import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_h_m_s

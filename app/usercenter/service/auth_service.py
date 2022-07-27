@@ -5,9 +5,9 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
+from app.common.logger import get_logger
 from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
 from app.usercenter.model import TUserPasswordKey
-from app.utils.log_util import get_logger
 from app.utils.rsa_util import generate_rsa_key
 
 

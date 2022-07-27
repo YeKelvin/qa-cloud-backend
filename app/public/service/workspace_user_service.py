@@ -6,6 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
@@ -15,7 +16,6 @@ from app.public.model import TWorkspaceUser
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
 

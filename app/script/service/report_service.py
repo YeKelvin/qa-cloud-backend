@@ -4,12 +4,12 @@
 # @Time    : 2021/9/22 14:21
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_group_result_dao as TestGroupResultDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import test_sampler_result_dao as TestSamplerResultDao
-from app.utils.log_util import get_logger
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import microsecond_to_m_s
 

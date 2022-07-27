@@ -6,6 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.public.dao import workspace_dao as WorkspaceDao
@@ -24,7 +25,6 @@ from app.script.enum import TestplanState
 from app.script.model import TTestplan
 from app.script.model import TTestplanItems
 from app.script.model import TTestplanSettings
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_m_s

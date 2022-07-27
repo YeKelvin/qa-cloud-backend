@@ -6,12 +6,12 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

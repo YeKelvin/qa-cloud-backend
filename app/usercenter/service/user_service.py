@@ -12,6 +12,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.extension import db
@@ -37,7 +38,6 @@ from app.usercenter.model import TUserLoginLog
 from app.usercenter.model import TUserPassword
 from app.usercenter.model import TUserRole
 from app.utils.auth import JWTAuth
-from app.utils.log_util import get_logger
 from app.utils.rsa_util import decrypt_by_rsa_private_key
 from app.utils.security import check_password
 from app.utils.security import encrypt_password

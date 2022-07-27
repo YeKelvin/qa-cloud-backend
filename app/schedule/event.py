@@ -13,6 +13,7 @@ from apscheduler.events import SchedulerEvent
 
 from app.common.identity import new_id
 from app.common.locals import local
+from app.common.logger import get_logger
 from app.extension import apscheduler
 from app.extension import db
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
@@ -20,7 +21,6 @@ from app.schedule.enum import JobState
 from app.schedule.enum import OperationType
 from app.schedule.model import TScheduleJobLog
 from app.system.model import TSystemOperationLog
-from app.utils.log_util import get_logger
 from app.utils.time_util import datetime_now_by_utc8
 
 

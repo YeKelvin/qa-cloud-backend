@@ -37,7 +37,7 @@ import datetime
 import jwt
 
 from app import config as CONFIG
-from app.utils.log_util import get_logger
+from app.common.logger import get_logger
 from app.utils.time_util import timestamp_to_utc8_datetime
 
 

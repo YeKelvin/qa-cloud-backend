@@ -4,11 +4,11 @@
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye
 from app.common.decorators.service import http_service
+from app.common.logger import get_logger
 from app.extension import db
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
 

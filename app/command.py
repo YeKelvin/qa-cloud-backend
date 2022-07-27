@@ -7,6 +7,7 @@ import click
 from flask.cli import with_appcontext
 
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.extension import db  # noqa
 from app.database import TSystemOperationLogContent  # noqa
 from app.public.model import TWorkspace  # noqa
@@ -18,7 +19,6 @@ from app.usercenter.model import TUser  # noqa
 from app.usercenter.model import TUserLoginInfo  # noqa
 from app.usercenter.model import TUserPassword  # noqa
 from app.usercenter.model import TUserRole  # noqa
-from app.utils.log_util import get_logger  # noqa
 from app.utils.security import encrypt_password
 
 

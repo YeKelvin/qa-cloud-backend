@@ -6,11 +6,11 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
-from app.common.validator import check_not_exists
+from app.common.logger import get_logger
 from app.common.validator import check_exists
+from app.common.validator import check_not_exists
 from app.public.dao import tag_dao as TagDao
 from app.public.model import TTag
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

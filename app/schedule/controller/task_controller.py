@@ -5,13 +5,13 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
+from app.common.logger import get_logger
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.schedule.controller import blueprint
 from app.schedule.enum import JobType
 from app.schedule.enum import TriggerType
 from app.schedule.service import task_service as service
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

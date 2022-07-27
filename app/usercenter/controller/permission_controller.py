@@ -5,12 +5,12 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
+from app.common.logger import get_logger
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.usercenter.controller import blueprint
 from app.usercenter.enum import PermissionState
 from app.usercenter.service import permission_service as service
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

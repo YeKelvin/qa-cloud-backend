@@ -10,6 +10,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.globals import get_userno
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
@@ -27,7 +28,6 @@ from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
 from app.usercenter.model import TUser
 from app.utils.json_util import to_json
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
 

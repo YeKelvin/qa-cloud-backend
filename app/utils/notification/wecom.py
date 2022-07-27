@@ -5,8 +5,8 @@
 # @Author  : Kelvin.Ye
 import requests
 
+from app.common.logger import get_logger
 from app.utils.json_util import to_json
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

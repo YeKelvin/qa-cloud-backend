@@ -12,10 +12,10 @@ from typing import Type
 from flask import request
 
 from app.common.exceptions import ParseError
+from app.common.logger import get_logger
 from app.common.request import RequestDTO
 from app.common.request import transform
 from app.utils.json_util import from_json
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

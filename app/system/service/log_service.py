@@ -3,14 +3,15 @@
 # @File    : log_service.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from app.extension import db
 from app.common.decorators.service import http_service
+from app.common.logger import get_logger
+from app.extension import db
 from app.system.model import TSystemOperationLog
 from app.usercenter.model import TPermission
 from app.usercenter.model import TUser
-from app.utils.log_util import get_logger
-from app.utils.time_util import STRFTIME_FORMAT
 from app.utils.sqlalchemy_util import QueryCondition
+from app.utils.time_util import STRFTIME_FORMAT
+
 
 log = get_logger(__name__)
 

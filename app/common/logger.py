@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : log_util.py
+# @File    : logger.py
 # @Time    : 2019/11/7 10:12
 # @Author  : Kelvin.Ye
 import logging

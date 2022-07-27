@@ -7,6 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.extension import db
@@ -19,7 +20,6 @@ from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
 from app.usercenter.model import TGroup
 from app.usercenter.model import TUser
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
 

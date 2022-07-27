@@ -6,6 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
@@ -15,7 +16,6 @@ from app.script.enum import VariableDatasetType
 from app.script.enum import VariableDatasetWeight
 from app.script.model import TVariable
 from app.script.model import TVariableDataset
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

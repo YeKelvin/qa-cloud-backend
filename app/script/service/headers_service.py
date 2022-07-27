@@ -6,6 +6,7 @@
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
@@ -13,7 +14,6 @@ from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.model import THttpHeader
 from app.script.model import THttpHeaderTemplate
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

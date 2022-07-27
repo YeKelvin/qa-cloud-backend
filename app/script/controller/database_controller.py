@@ -5,12 +5,12 @@
 # @Author  : Kelvin.Ye
 from app.common.decorators.require import require_login
 from app.common.decorators.require import require_permission
+from app.common.logger import get_logger
 from app.common.parser import Argument
 from app.common.parser import JsonParser
 from app.script.controller import blueprint
 from app.script.enum import DatabaseType
 from app.script.service import database_service as service
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

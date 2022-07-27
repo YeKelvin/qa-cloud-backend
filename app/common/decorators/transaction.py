@@ -9,8 +9,8 @@ from functools import wraps
 from flask import request
 
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.extension import db
-from app.utils.log_util import get_logger
 
 
 glog = get_logger(__name__)

@@ -8,6 +8,7 @@ import traceback
 from pymeter.runner import Runner
 
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.extension import apscheduler
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -15,7 +16,6 @@ from app.script.enum import ElementType
 from app.script.service.element_loader import add_variable_dataset
 from app.script.service.element_loader import loads_tree
 from app.script.service.execution_service import run_testplan
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

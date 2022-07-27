@@ -7,13 +7,13 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.usercenter.dao import permission_dao as PermissionDao
 from app.usercenter.dao import role_permission_dao as RolePermissionDao
 from app.usercenter.enum import PermissionState
 from app.usercenter.model import TPermission
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

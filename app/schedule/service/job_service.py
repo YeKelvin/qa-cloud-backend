@@ -8,11 +8,11 @@ from apscheduler.jobstores.base import JobLookupError
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.extension import apscheduler
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

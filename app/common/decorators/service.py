@@ -11,11 +11,11 @@ from flask import request
 
 from app.common.exceptions import ErrorCode
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.common.request import RequestDTO
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.extension import apscheduler
-from app.utils.log_util import get_logger
 from app.utils.time_util import timestamp_as_ms
 
 

@@ -7,12 +7,13 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
-from app.common.validator import check_not_exists
+from app.common.logger import get_logger
 from app.common.validator import check_exists
+from app.common.validator import check_not_exists
 from app.extension import db
-from app.public.dao import workspace_restriction_dao as WorkspaceRestrictionDao
-from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
 from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
+from app.public.dao import workspace_restriction_dao as WorkspaceRestrictionDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
@@ -20,7 +21,6 @@ from app.public.model import TWorkspaceUser
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
-from app.utils.log_util import get_logger
 from app.utils.sqlalchemy_util import QueryCondition
 
 

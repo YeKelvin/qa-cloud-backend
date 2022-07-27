@@ -11,11 +11,11 @@ from flask import g
 from flask import request
 
 from app.common import globals
+from app.common.logger import get_logger
 from app.common.response import http_response
 from app.extension import db
 from app.system.model import TSystemOperationLog
 from app.utils.auth import JWTAuth
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

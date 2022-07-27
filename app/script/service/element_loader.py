@@ -6,6 +6,7 @@
 from typing import Dict
 
 from app.common.exceptions import ServiceError
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
@@ -30,7 +31,6 @@ from app.script.enum import is_sql_sampler
 from app.script.enum import is_teardown_group_debuger
 from app.script.model import TTestElement
 from app.utils.json_util import from_json
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

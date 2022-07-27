@@ -10,6 +10,7 @@ from flask import request
 
 from app.common import globals
 from app.common.exceptions import ErrorCode
+from app.common.logger import get_logger
 from app.common.response import ResponseDTO
 from app.common.response import http_response
 from app.extension import db
@@ -22,7 +23,6 @@ from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup
 from app.usercenter.model import TUserPassword
 from app.usercenter.model import TUserRole
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)

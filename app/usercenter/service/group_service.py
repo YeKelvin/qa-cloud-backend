@@ -7,6 +7,7 @@ from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
 from app.common.identity import new_id
+from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.usercenter.dao import group_dao as GroupDao
 from app.usercenter.dao import group_role_dao as GroupRoleDao
@@ -15,7 +16,6 @@ from app.usercenter.dao import user_group_dao as UserGroupDao
 from app.usercenter.enum import GroupState
 from app.usercenter.model import TGroup
 from app.usercenter.model import TGroupRole
-from app.utils.log_util import get_logger
 
 
 log = get_logger(__name__)
