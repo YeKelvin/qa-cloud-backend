@@ -120,8 +120,10 @@ def handle_job_removed(event: JobEvent):
         try:
             # 查询任务
             task = ScheduleJobDao.select_by_no(event.job_id)
+            if not task:
+                return
             # 如果任务状态仍未关闭，则更新状态为已关闭
-            if task and task.STATE != JobState.CLOSED.value:
+            if task.STATE != JobState.CLOSED.value:
                 log.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
                 task.update(STATE=JobState.CLOSED.value)
             # 记录操作日志
@@ -162,6 +164,8 @@ def handle_job_submitted(event: JobSubmissionEvent):
         try:
             # 查询任务
             task = ScheduleJobDao.select_by_no(event.job_id)
+            if not task:
+                return
             # 记录操作日志
             TSystemOperationLog.insert(
                 LOG_NO=local.trace_id,
