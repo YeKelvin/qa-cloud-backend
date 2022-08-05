@@ -249,16 +249,16 @@ def paste_element():
     return service.paste_element(req)
 
 
-@blueprint.get('/element/http/header/template/refs')
+@blueprint.get('/element/httpheader/template/refs')
 @require_login
 @require_permission
-def query_element_http_header_template_refs():
+def query_element_httpheader_template_refs():
     """查询元素关联的HTTP请求头模板列表"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
-    return service.query_element_http_header_template_refs(req)
+    return service.query_element_httpheader_template_refs(req)
 
 
-@blueprint.post('/element/http/header/template/refs')
+@blueprint.post('/element/httpheader/template/refs')
 @require_login
 @require_permission
 def create_element_httpheader_template_refs():
@@ -270,7 +270,7 @@ def create_element_httpheader_template_refs():
     return service.create_element_httpheader_template_refs(req)
 
 
-@blueprint.put('/element/http/header/template/refs')
+@blueprint.put('/element/httpheader/template/refs')
 @require_login
 @require_permission
 def modify_element_httpheader_template_refs():

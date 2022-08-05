@@ -16,7 +16,7 @@ from app.script.service import headers_service as service
 log = get_logger(__name__)
 
 
-@blueprint.get('/http/header/template/list')
+@blueprint.get('/httpheader/template/list')
 @require_login
 @require_permission
 def query_httpheader_template_list():
@@ -32,7 +32,7 @@ def query_httpheader_template_list():
     return service.query_httpheader_template_list(req)
 
 
-@blueprint.get('/http/header/template/all')
+@blueprint.get('/httpheader/template/all')
 @require_login
 @require_permission
 def query_httpheader_template_all():
@@ -46,7 +46,15 @@ def query_httpheader_template_all():
     return service.query_httpheader_template_all(req)
 
 
-@blueprint.post('/http/header/template')
+@blueprint.get('/httpheader/template/all/by/user')
+@require_login
+@require_permission
+def query_httpheader_template_all_by_user():
+    """查询用户所能访问空间下的所有请求头模板"""
+    return service.query_httpheader_template_all_by_user()
+
+
+@blueprint.post('/httpheader/template')
 @require_login
 @require_permission
 def create_httpheader_template():
@@ -59,7 +67,7 @@ def create_httpheader_template():
     return service.create_httpheader_template(req)
 
 
-@blueprint.put('/http/header/template')
+@blueprint.put('/httpheader/template')
 @require_login
 @require_permission
 def modify_httpheader_template():
@@ -72,7 +80,7 @@ def modify_httpheader_template():
     return service.modify_httpheader_template(req)
 
 
-@blueprint.delete('/http/header/template')
+@blueprint.delete('/httpheader/template')
 @require_login
 @require_permission
 def remove_httpheader_template():
@@ -230,7 +238,7 @@ def remove_http_headers():
     return service.remove_http_headers(req)
 
 
-@blueprint.post('/http/header/template/duplicate')
+@blueprint.post('/httpheader/template/duplicate')
 @require_login
 @require_permission
 def duplicate_httpheader_template():
@@ -241,7 +249,7 @@ def duplicate_httpheader_template():
     return service.duplicate_httpheader_template(req)
 
 
-@blueprint.post('/http/header/template/copy/to/workspace')
+@blueprint.post('/httpheader/template/copy/to/workspace')
 @require_login
 @require_permission
 def copy_httpheader_template_to_workspace():
@@ -253,7 +261,7 @@ def copy_httpheader_template_to_workspace():
     return service.copy_httpheader_template_to_workspace(req)
 
 
-@blueprint.post('/http/header/template/move/to/workspace')
+@blueprint.post('/httpheader/template/move/to/workspace')
 @require_login
 @require_permission
 def move_httpheader_template_to_workspace():

@@ -827,7 +827,7 @@ def clone_element(source: TTestElement, rename=False):
 
 
 @http_service
-def query_element_http_header_template_refs(req):
+def query_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
     check_exists(element, '元素不存在')

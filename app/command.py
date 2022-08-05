@@ -195,6 +195,7 @@ def init_permission():
     _create_permission(name='暂停定时任务', method='PATCH', endpoint='/schedule/task/pause')
     _create_permission(name='恢复定时任务', method='PATCH', endpoint='/schedule/task/resume')
     _create_permission(name='关闭定时任务', method='PATCH', endpoint='/schedule/task/remove')
+    _create_permission(name='分业查询任务历史列表', method='GET', endpoint='/schedule/task/history/list')
 
     # job
     _create_permission(name='查询作业信息', method='GET', endpoint='/schedule/job/info')
@@ -217,9 +218,9 @@ def init_permission():
     _create_permission(name='禁用元素', method='PATCH', endpoint='/script/element/disable')
     _create_permission(name='移动元素', method='POST', endpoint='/script/element/move')
     _create_permission(name='复制元素及其子代', method='POST', endpoint='/script/element/duplicate')
-    _create_permission(name='查询HTTP请求头模板列表', method='GET', endpoint='/script/element/http/header/template/refs')
-    _create_permission(name='新增HTTP请求头模板列表', method='POST', endpoint='/script/element/http/header/template/refs')
-    _create_permission(name='修改HTTP请求头模板列表', method='PUT', endpoint='/script/element/http/header/template/refs')
+    _create_permission(name='查询HTTP请求头模板列表', method='GET', endpoint='/script/element/httpheader/template/refs')
+    _create_permission(name='新增HTTP请求头模板列表', method='POST', endpoint='/script/element/httpheader/template/refs')
+    _create_permission(name='修改HTTP请求头模板列表', method='PUT', endpoint='/script/element/httpheader/template/refs')
     _create_permission(name='查询内置元素', method='GET', endpoint='/script/element/builtins')
     _create_permission(name='新增内置元素', method='POST', endpoint='/script/element/builtins')
     _create_permission(name='修改内置元素', method='PUT', endpoint='/script/element/builtins')
@@ -260,11 +261,15 @@ def init_permission():
     _create_permission(name='移动变量集至指定工作空间', method='POST', endpoint='/script/variable/dataset/move/to/workspace')
 
     # headers
-    _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/http/header/template/list')
-    _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/http/header/template/all')
-    _create_permission(name='新增请求头模板', method='POST', endpoint='/script/http/header/template')
-    _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/http/header/template')
-    _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/http/header/template')
+    _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/httpheader/template/list')
+    _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/httpheader/template/all')
+    _create_permission(name='查询用户所能访问空间下的所有请求头模板', method='GET', endpoint='/script/httpheader/template/all/by/user')
+    _create_permission(name='新增请求头模板', method='POST', endpoint='/script/httpheader/template')
+    _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/httpheader/template')
+    _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/httpheader/template')
+    _create_permission(name='复制请求头模板', method='POST', endpoint='/script/httpheader/template/duplicate')
+    _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/httpheader/template/copy/to/workspace')
+    _create_permission(name='移动请求头模板至指定工作空间', method='POST', endpoint='/script/httpheader/template/move/to/workspace')
     _create_permission(name='新增请求头', method='POST', endpoint='/script/http/header')
     _create_permission(name='修改请求头', method='PUT', endpoint='/script/http/header')
     _create_permission(name='删除请求头', method='DELETE', endpoint='/script/http/header')
@@ -275,9 +280,6 @@ def init_permission():
     _create_permission(name='根据列表批量新增请求头', method='POST', endpoint='/script/http/headers')
     _create_permission(name='根据列表批量修改请求头', method='PUT', endpoint='/script/http/headers')
     _create_permission(name='根据列表批量删除请求头', method='DELETE', endpoint='/script/http/headers')
-    _create_permission(name='复制请求头模板', method='POST', endpoint='/script/http/header/template/duplicate')
-    _create_permission(name='复制请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/copy/to/workspace')
-    _create_permission(name='移动请求头模板至指定工作空间', method='POST', endpoint='/script/http/header/template/move/to/workspace')
 
     # database
     _create_permission(name='分页查询数据库引擎列表', method='GET', endpoint='/script/database/engine/list')

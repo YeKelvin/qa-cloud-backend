@@ -3,6 +3,7 @@
 # @File    : headers_service.py
 # @Time    : 2020/3/13 16:57
 # @Author  : Kelvin.Ye
+from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
@@ -10,10 +11,15 @@ from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
+from app.database import dbquery
+from app.public.enum import WorkspaceScope
+from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUser
 from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.model import THttpHeader
 from app.script.model import THttpHeaderTemplate
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -55,6 +61,74 @@ def query_httpheader_template_all(req):
 
     return [
         {
+            'workspaceName': '',
+            'templateNo': item.TEMPLATE_NO,
+            'templateName': item.TEMPLATE_NAME,
+            'templateDesc': item.TEMPLATE_DESC
+        }
+        for item in items
+    ]
+
+
+@http_service
+def query_httpheader_template_all_by_user():
+    # 公共空间条件查询
+    public_conds = QueryCondition(TWorkspace, THttpHeaderTemplate)
+    public_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
+    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC)
+    public_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            THttpHeaderTemplate.TEMPLATE_NO,
+            THttpHeaderTemplate.TEMPLATE_NAME,
+            THttpHeaderTemplate.TEMPLATE_DESC
+        )
+        .filter(*public_conds)
+        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
+    )
+
+    # 保护空间条件查询
+    protected_conds = QueryCondition(TWorkspace, TWorkspaceUser, THttpHeaderTemplate)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED)
+    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            THttpHeaderTemplate.TEMPLATE_NO,
+            THttpHeaderTemplate.TEMPLATE_NAME,
+            THttpHeaderTemplate.TEMPLATE_DESC
+        )
+        .filter(*protected_conds)
+        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
+    )
+
+    # 私人空间条件查询
+    private_conds = QueryCondition(TWorkspace, TWorkspaceUser, THttpHeaderTemplate)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE)
+    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            THttpHeaderTemplate.TEMPLATE_NO,
+            THttpHeaderTemplate.TEMPLATE_NAME,
+            THttpHeaderTemplate.TEMPLATE_DESC
+        )
+        .filter(*private_conds)
+        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
+    )
+
+    items = public_filter.union(protected_filter).union(private_filter).all()
+
+    return [
+        {
+            'workspaceName': item.WORKSPACE_NO,
             'templateNo': item.TEMPLATE_NO,
             'templateName': item.TEMPLATE_NAME,
             'templateDesc': item.TEMPLATE_DESC
