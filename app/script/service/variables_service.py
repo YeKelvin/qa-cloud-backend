@@ -3,6 +3,8 @@
 # @File    : variables_service.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
+from sqlalchemy import and_
+
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
@@ -63,7 +65,12 @@ def query_variable_dataset_all(req):
     conds.like(TVariableDataset.DATASET_TYPE, req.datasetType)
     conds.like(TVariableDataset.DATASET_DESC, req.datasetDesc)
 
-    results = TVariableDataset.filter(*conds).order_by(TVariableDataset.CREATED_TIME.desc()).all()
+    results = (
+        TVariableDataset
+        .filter(and_(*conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
+        .order_by(TVariableDataset.CREATED_TIME.desc())
+        .all()
+    )
 
     return [
         {
