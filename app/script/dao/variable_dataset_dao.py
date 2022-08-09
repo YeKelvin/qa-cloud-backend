@@ -5,10 +5,7 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
-from flask_sqlalchemy import Pagination
-
 from app.script.model import TVariableDataset
-from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(dataset_no) -> TVariableDataset:
@@ -23,31 +20,5 @@ def select_first(**kwargs) -> TVariableDataset:
     return TVariableDataset.filter_by(**kwargs).first()
 
 
-def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition()
-    conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-    conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
-    conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
-    conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
-    conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
-
-    page = kwargs.pop('page')
-    page_size = kwargs.pop('pageSize')
-
-    return TVariableDataset.filter(*conds).order_by(TVariableDataset.CREATED_TIME.desc()).paginate(page, page_size)
-
-
 def select_list_in_set_orderby_weight(*set_no) -> List[TVariableDataset]:
     return TVariableDataset.filter(TVariableDataset.DATASET_NO.in_(set_no)).order_by(TVariableDataset.WEIGHT.asc()).all()
-
-
-def select_all(**kwargs) -> List[TVariableDataset]:
-    conds = QueryCondition()
-    if kwargs:
-        conds.like(TVariableDataset.WORKSPACE_NO, kwargs.pop('workspaceNo', None))
-        conds.like(TVariableDataset.DATASET_NO, kwargs.pop('datasetNo', None))
-        conds.like(TVariableDataset.DATASET_NAME, kwargs.pop('datasetName', None))
-        conds.like(TVariableDataset.DATASET_TYPE, kwargs.pop('datasetType', None))
-        conds.like(TVariableDataset.DATASET_DESC, kwargs.pop('datasetDesc', None))
-
-    return TVariableDataset.filter(*conds).order_by(TVariableDataset.CREATED_TIME.desc()).all()

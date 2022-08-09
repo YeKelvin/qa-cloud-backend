@@ -16,6 +16,7 @@ from app.script.enum import VariableDatasetType
 from app.script.enum import VariableDatasetWeight
 from app.script.model import TVariable
 from app.script.model import TVariableDataset
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -23,15 +24,20 @@ log = get_logger(__name__)
 
 @http_service
 def query_variables_dataset_list(req):
+    # 条件查询
+    conds = QueryCondition()
+    conds.like(TVariableDataset.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TVariableDataset.DATASET_NO, req.datasetNo)
+    conds.like(TVariableDataset.DATASET_NAME, req.datasetName)
+    conds.like(TVariableDataset.DATASET_TYPE, req.datasetType)
+    conds.like(TVariableDataset.DATASET_DESC, req.datasetDesc)
+
     # 条件分页查询
-    pagination = VariableDatasetDao.select_list(
-        workspaceNo=req.workspaceNo,
-        datasetNo=req.datasetNo,
-        datasetName=req.datasetName,
-        datasetType=req.datasetType,
-        datasetDesc=req.datasetDesc,
-        page=req.page,
-        pageSize=req.pageSize
+    pagination = (
+        TVariableDataset
+        .filter(*conds)
+        .order_by(TVariableDataset.CREATED_TIME.desc())
+        .paginate(req.page, req.pageSize)
     )
 
     data = [
@@ -50,13 +56,14 @@ def query_variables_dataset_list(req):
 @http_service
 def query_variable_dataset_all(req):
     # 条件查询
-    items = VariableDatasetDao.select_all(
-        workspaceNo=req.workspaceNo,
-        datasetNo=req.datasetNo,
-        datasetName=req.datasetName,
-        datasetType=req.datasetType,
-        datasetDesc=req.datasetDesc
-    )
+    conds = QueryCondition()
+    conds.equal(TVariableDataset.WORKSPACE_NO, req.workspaceNo)
+    conds.equal(TVariableDataset.DATASET_NO, req.datasetNo)
+    conds.like(TVariableDataset.DATASET_NAME, req.datasetName)
+    conds.like(TVariableDataset.DATASET_TYPE, req.datasetType)
+    conds.like(TVariableDataset.DATASET_DESC, req.datasetDesc)
+
+    results = TVariableDataset.filter(*conds).order_by(TVariableDataset.CREATED_TIME.desc()).all()
 
     return [
         {
@@ -65,7 +72,7 @@ def query_variable_dataset_all(req):
             'datasetType': item.DATASET_TYPE,
             'datasetDesc': item.DATASET_DESC
         }
-        for item in items
+        for item in results
     ]
 
 
