@@ -14,7 +14,11 @@ from app.common.exceptions import ServiceError
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceUser
+from app.usercenter.model import TRole
+from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup
+from app.usercenter.model import TUserRole
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
@@ -41,6 +45,14 @@ def get_user_workspace_numbered_list(user_no) -> list:
 
 def get_user_group_numbered_list(user_no) -> list:
     return [entity.GROUP_NO for entity in TUserGroup.filter_by(USER_NO=user_no).all()]
+
+
+def is_super_admin(user_no):
+    conds = QueryCondition(TUser, TRole, TUserRole)
+    conds.equal(TUser.USER_NO, TUserRole.USER_NO)
+    conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
+    conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
+    return bool(TUser.filter(*conds).first())
 
 
 def match_restriction(restriction: TWorkspaceRestriction):
@@ -86,6 +98,8 @@ def check_workspace_permission(source_workspace_no) -> None:
     # 判断用户是否是操作空间的成员
     user_workspace_numbered_list = get_user_workspace_numbered_list(user_no)
     if source_workspace_no not in user_workspace_numbered_list:
+        if is_super_admin(user_no):
+            return
         raise ServiceError('空间权限不足，用户非目标空间成员')
 
     # 根据请求方法和请求路径，查询操作空间的限制项
@@ -104,4 +118,6 @@ def check_workspace_permission(source_workspace_no) -> None:
         if group_no in exemption_numbered_list:
             return
 
+    if is_super_admin(user_no):
+        return
     raise ServiceError('空间权限不足')
