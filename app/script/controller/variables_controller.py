@@ -41,12 +41,20 @@ def query_variable_dataset_all():
     """查询所有变量集"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('datasetNo'),
-        Argument('datasetName'),
-        Argument('datasetType'),
-        Argument('datasetDesc')
+        Argument('datasetType')
     ).parse()
     return service.query_variable_dataset_all(req)
+
+
+@blueprint.get('/variable/dataset/all/in/private')
+@require_login
+@require_permission
+def query_variable_dataset_all_in_private():
+    """查询用户所有空间下的所有变量集（用于私人空间）"""
+    req = JsonParser(
+        Argument('datasetType')
+    ).parse()
+    return service.query_variable_dataset_all_in_private(req)
 
 
 @blueprint.post('/variable/dataset')

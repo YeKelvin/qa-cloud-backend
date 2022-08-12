@@ -51,6 +51,19 @@ def query_element_all():
     return service.query_element_all(req)
 
 
+@blueprint.get('/element/all/in/private')
+@require_login
+@require_permission
+def query_element_all_in_private():
+    """查询用户所有空间下的所有元素（用于私人空间）"""
+    req = JsonParser(
+        Argument('elementType'),
+        Argument('elementClass'),
+        Argument('enabled')
+    ).parse()
+    return service.query_element_all_in_private(req)
+
+
 @blueprint.get('/element/all/with/children')
 @require_login
 @require_permission

@@ -27,14 +27,19 @@ log = get_logger(__name__)
 
 @http_service
 def query_httpheader_template_list(req):
-    # 条件分页查询
-    pagination = HttpHeaderTemplateDao.select_list(
-        workspaceNo=req.workspaceNo,
-        templateNo=req.templateNo,
-        templateName=req.templateName,
-        templateDesc=req.templateDesc,
-        page=req.page,
-        pageSize=req.pageSize
+    # 查询条件
+    conds = QueryCondition()
+    conds.like(THttpHeaderTemplate.WORKSPACE_NO, req.workspaceNo)
+    conds.like(THttpHeaderTemplate.TEMPLATE_NO, req.templateNo)
+    conds.like(THttpHeaderTemplate.TEMPLATE_NAME, req.templateName)
+    conds.like(THttpHeaderTemplate.TEMPLATE_DESC, req.templateDesc)
+
+    # 分页查询
+    pagination = (
+        THttpHeaderTemplate
+        .filter(*conds)
+        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
+        .paginate(req.page, req.pageSize)
     )
 
     data = [
@@ -51,17 +56,13 @@ def query_httpheader_template_list(req):
 
 @http_service
 def query_httpheader_template_all(req):
-    # 条件查询
-    items = HttpHeaderTemplateDao.select_all(
-        workspaceNo=req.workspaceNo,
-        templateNo=req.templateNo,
-        templateName=req.templateName,
-        templateDesc=req.templateDesc
-    )
+    conds = QueryCondition()
+    conds.like(THttpHeaderTemplate.WORKSPACE_NO, req.workspaceNo)
+
+    items = THttpHeaderTemplate.filter(*conds).order_by(THttpHeaderTemplate.CREATED_TIME.desc()).all()
 
     return [
         {
-            'workspaceName': '',
             'templateNo': item.TEMPLATE_NO,
             'templateName': item.TEMPLATE_NAME,
             'templateDesc': item.TEMPLATE_DESC
@@ -71,64 +72,71 @@ def query_httpheader_template_all(req):
 
 
 @http_service
-def query_httpheader_template_all_by_user():
+def query_httpheader_template_all_in_private():
     # 公共空间条件查询
     public_conds = QueryCondition(TWorkspace, THttpHeaderTemplate)
     public_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
-    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC)
+    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
     public_filter = (
         dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
             THttpHeaderTemplate.TEMPLATE_NO,
             THttpHeaderTemplate.TEMPLATE_NAME,
             THttpHeaderTemplate.TEMPLATE_DESC
         )
         .filter(*public_conds)
-        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
     )
 
     # 保护空间条件查询
     protected_conds = QueryCondition(TWorkspace, TWorkspaceUser, THttpHeaderTemplate)
     protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
-    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED)
+    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
     protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
     protected_filter = (
         dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
             THttpHeaderTemplate.TEMPLATE_NO,
             THttpHeaderTemplate.TEMPLATE_NAME,
             THttpHeaderTemplate.TEMPLATE_DESC
         )
         .filter(*protected_conds)
-        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
     )
 
     # 私人空间条件查询
     private_conds = QueryCondition(TWorkspace, TWorkspaceUser, THttpHeaderTemplate)
     private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
-    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE)
+    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
     private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
     private_filter = (
         dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
             THttpHeaderTemplate.TEMPLATE_NO,
             THttpHeaderTemplate.TEMPLATE_NAME,
             THttpHeaderTemplate.TEMPLATE_DESC
         )
         .filter(*private_conds)
-        .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
     )
 
-    items = public_filter.union(protected_filter).union(private_filter).all()
+    items = (
+        public_filter
+        .union(protected_filter)
+        .union(private_filter)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
+        .all()
+    )
 
     return [
         {
-            'workspaceName': item.WORKSPACE_NO,
+            'workspaceNo': item.WORKSPACE_NO,
+            'workspaceName': item.WORKSPACE_NAME,
             'templateNo': item.TEMPLATE_NO,
             'templateName': item.TEMPLATE_NAME,
             'templateDesc': item.TEMPLATE_DESC

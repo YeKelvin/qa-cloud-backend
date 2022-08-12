@@ -20,7 +20,7 @@ log = get_logger(__name__)
 @require_login
 @require_permission
 def query_database_engine_list():
-    """分页查询数据库引擎列表"""
+    """分页查询数据库配置列表"""
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('configNo'),
@@ -37,22 +37,27 @@ def query_database_engine_list():
 @require_login
 @require_permission
 def query_database_engine_all():
-    """查询所有数据库引擎"""
+    """查询所有数据库配置"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('configNo'),
-        Argument('configName'),
-        Argument('configDesc'),
         Argument('databaseType')
     ).parse()
     return service.query_database_engine_all(req)
+
+
+@blueprint.get('/database/engine/all/in/private')
+@require_login
+@require_permission
+def query_database_engine_all_in_private():
+    """查询用户所有空间下的所有数据库配置（用于私人空间）"""
+    return service.query_database_engine_all_in_private()
 
 
 @blueprint.get('/database/engine')
 @require_login
 @require_permission
 def query_database_engine_info():
-    """查询数据库引擎"""
+    """查询数据库配置"""
     req = JsonParser(
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
@@ -63,7 +68,7 @@ def query_database_engine_info():
 @require_login
 @require_permission
 def create_database_engine():
-    """新增数据库引擎"""
+    """新增数据库配置"""
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('configName', required=True, nullable=False, help='数据库名称不能为空'),
@@ -85,7 +90,7 @@ def create_database_engine():
 @require_login
 @require_permission
 def modify_database_engine():
-    """修改数据库引擎"""
+    """修改数据库配置"""
     req = JsonParser(
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空'),
         Argument('configName', required=True, nullable=False, help='数据库名称不能为空'),
@@ -107,7 +112,7 @@ def modify_database_engine():
 @require_login
 @require_permission
 def remove_database_engine():
-    """删除数据库引擎"""
+    """删除数据库配置"""
     req = JsonParser(
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
@@ -118,7 +123,7 @@ def remove_database_engine():
 @require_login
 @require_permission
 def duplicate_database_engine():
-    """复制数据库引擎"""
+    """复制数据库配置"""
     req = JsonParser(
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
     ).parse()
@@ -129,7 +134,7 @@ def duplicate_database_engine():
 @require_login
 @require_permission
 def copy_database_engine_to_workspace():
-    """复制数据库引擎至指定工作空间"""
+    """复制数据库配置至指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
@@ -141,7 +146,7 @@ def copy_database_engine_to_workspace():
 @require_login
 @require_permission
 def move_database_engine_to_workspace():
-    """移动数据库引擎至指定工作空间"""
+    """移动数据库配置至指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')

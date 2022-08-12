@@ -28,6 +28,7 @@ from app.extension import socketio
 __app__ = None
 
 FLASK_ENV = os.environ.get('FLASK_ENV')
+FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
 
 
 def create_app() -> Flask:

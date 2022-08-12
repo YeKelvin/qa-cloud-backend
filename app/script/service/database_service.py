@@ -3,6 +3,7 @@
 # @File    : database_service.py
 # @Time    : 2022-04-04 16:22:20
 # @Author  : Kelvin.Ye
+from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
@@ -10,8 +11,13 @@ from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
+from app.database import dbquery
+from app.public.enum import WorkspaceScope
+from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUser
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -19,48 +25,130 @@ log = get_logger(__name__)
 
 @http_service
 def query_database_engine_list(req):
-    # 条件分页查询
-    pagination = DatabaseConfigDao.select_list(
-        workspaceNo=req.workspaceNo,
-        configNo=req.configNo,
-        configName=req.configName,
-        configDesc=req.configDesc,
-        databaseType=req.databaseType,
-        page=req.page,
-        pageSize=req.pageSize
+    # 查询条件
+    conds = QueryCondition()
+    conds.like(TDatabaseConfig.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TDatabaseConfig.CONFIG_NO, req.configNo)
+    conds.like(TDatabaseConfig.CONFIG_NAME, req.configName)
+    conds.like(TDatabaseConfig.CONFIG_DESC, req.configDesc)
+    conds.like(TDatabaseConfig.DATABASE_TYPE, req.databaseType)
+
+    # 分页查询
+    pagination = (
+        TDatabaseConfig
+        .filter(*conds)
+        .order_by(TDatabaseConfig.CREATED_TIME.desc())
+        .paginate(req.page, req.pageSize)
     )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'configNo': item.CONFIG_NO,
             'configName': item.CONFIG_NAME,
             'configDesc': item.CONFIG_DESC,
             'databaseType': item.DATABASE_TYPE
-        })
+        }
+        for item in pagination.items
+    ]
+
     return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_database_engine_all(req):
-    # 条件查询
-    items = DatabaseConfigDao.select_all(
-        workspaceNo=req.workspaceNo,
-        configNo=req.configNo,
-        configName=req.configName,
-        configDesc=req.configDesc,
-        databaseType=req.databaseType
-    )
+    conds = QueryCondition()
+    conds.like(TDatabaseConfig.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TDatabaseConfig.CONFIG_NO, req.databaseType)
 
-    result = []
-    for item in items:
-        result.append({
+    items = TDatabaseConfig.filter(*conds).order_by(TDatabaseConfig.CREATED_TIME.desc()).all()
+
+    return [
+        {
             'configNo': item.CONFIG_NO,
             'configName': item.CONFIG_NAME,
             'configDesc': item.CONFIG_DESC,
             'databaseType': item.DATABASE_TYPE
-        })
-    return result
+        }
+        for item in items
+    ]
+
+
+@http_service
+def query_database_engine_all_in_private():
+    # 公共空间条件查询
+    public_conds = QueryCondition(TWorkspace, TDatabaseConfig)
+    public_conds.equal(TWorkspace.WORKSPACE_NO, TDatabaseConfig.WORKSPACE_NO)
+    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
+    public_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TDatabaseConfig.CONFIG_NO,
+            TDatabaseConfig.CONFIG_NAME,
+            TDatabaseConfig.CONFIG_DESC,
+            TDatabaseConfig.DATABASE_TYPE
+        )
+        .filter(*public_conds)
+    )
+
+    # 保护空间条件查询
+    protected_conds = QueryCondition(TWorkspace, TWorkspaceUser, TDatabaseConfig)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TDatabaseConfig.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
+    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TDatabaseConfig.CONFIG_NO,
+            TDatabaseConfig.CONFIG_NAME,
+            TDatabaseConfig.CONFIG_DESC,
+            TDatabaseConfig.DATABASE_TYPE
+        )
+        .filter(*protected_conds)
+    )
+
+    # 私人空间条件查询
+    private_conds = QueryCondition(TWorkspace, TWorkspaceUser, TDatabaseConfig)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TDatabaseConfig.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
+    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TDatabaseConfig.CONFIG_NO,
+            TDatabaseConfig.CONFIG_NAME,
+            TDatabaseConfig.CONFIG_DESC,
+            TDatabaseConfig.DATABASE_TYPE
+        )
+        .filter(*private_conds)
+    )
+
+    items = (
+        public_filter
+        .union(protected_filter)
+        .union(private_filter)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
+        .all()
+    )
+
+    return [
+        {
+            'workspaceNo': item.WORKSPACE_NO,
+            'workspaceName': item.WORKSPACE_NAME,
+            'configNo': item.CONFIG_NO,
+            'configName': item.CONFIG_NAME,
+            'configDesc': item.CONFIG_DESC,
+            'databaseType': item.DATABASE_TYPE
+        }
+        for item in items
+    ]
 
 
 @http_service

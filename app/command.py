@@ -205,6 +205,7 @@ def init_permission():
     # element
     _create_permission(name='分页查询元素列表', method='GET', endpoint='/script/element/list')
     _create_permission(name='查询所有元素元素', method='GET', endpoint='/script/element/all')
+    _create_permission(name='查询用户所有空间下的所有元素（用于私人空间）', method='GET', endpoint='/script/element/all/in/private')
     _create_permission(name='查询所有元素及其子代', method='GET', endpoint='/script/element/all/with/children')
     _create_permission(name='查询元素信息', method='GET', endpoint='/script/element/info')
     _create_permission(name='查询元素子代', method='GET', endpoint='/script/element/children')
@@ -263,7 +264,7 @@ def init_permission():
     # headers
     _create_permission(name='分页查询请求头模板列表', method='GET', endpoint='/script/httpheader/template/list')
     _create_permission(name='查询所有请求头模板', method='GET', endpoint='/script/httpheader/template/all')
-    _create_permission(name='查询用户所能访问空间下的所有请求头模板', method='GET', endpoint='/script/httpheader/template/all/by/user')
+    _create_permission(name='查询用户所有空间下的所有请求头模板（用于私人空间）', method='GET', endpoint='/script/httpheader/template/all/in/private')
     _create_permission(name='新增请求头模板', method='POST', endpoint='/script/httpheader/template')
     _create_permission(name='修改请求头模板', method='PUT', endpoint='/script/httpheader/template')
     _create_permission(name='删除请求头模板', method='DELETE', endpoint='/script/httpheader/template')
@@ -284,6 +285,7 @@ def init_permission():
     # database
     _create_permission(name='分页查询数据库引擎列表', method='GET', endpoint='/script/database/engine/list')
     _create_permission(name='查询所有数据库引擎', method='GET', endpoint='/script/database/engine/all')
+    _create_permission(name='查询用户所有空间下的所有数据库配置（用于私人空间）', method='GET', endpoint='/script/database/engine/all/in/private')
     _create_permission(name='查询数据库引擎', method='GET', endpoint='/script/database/engine')
     _create_permission(name='新增数据库引擎', method='POST', endpoint='/script/database/engine')
     _create_permission(name='修改数据库引擎', method='PUT', endpoint='/script/database/engine')

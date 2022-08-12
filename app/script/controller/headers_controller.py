@@ -38,20 +38,17 @@ def query_httpheader_template_list():
 def query_httpheader_template_all():
     """查询所有请求头模板"""
     req = JsonParser(
-        Argument('workspaceNo'),
-        Argument('templateNo'),
-        Argument('templateName'),
-        Argument('templateDesc')
+        Argument('workspaceNo')
     ).parse()
     return service.query_httpheader_template_all(req)
 
 
-@blueprint.get('/httpheader/template/all/by/user')
+@blueprint.get('/httpheader/template/all/in/private')
 @require_login
 @require_permission
-def query_httpheader_template_all_by_user():
-    """查询用户所能访问空间下的所有请求头模板"""
-    return service.query_httpheader_template_all_by_user()
+def query_httpheader_template_all_in_private():
+    """查询用户所有空间下的所有请求头模板（用于私人空间）"""
+    return service.query_httpheader_template_all_in_private()
 
 
 @blueprint.post('/httpheader/template')

@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from sqlalchemy import and_
 
+from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.identity import new_id
@@ -12,6 +13,10 @@ from app.common.logger import get_logger
 from app.common.validator import check_exists
 from app.common.validator import check_not_exists
 from app.common.validator import check_workspace_permission
+from app.database import dbquery
+from app.public.enum import WorkspaceScope
+from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUser
 from app.script.dao import variable_dao as VariableDao
 from app.script.dao import variable_dataset_dao as VariableDatasetDao
 from app.script.enum import VariableDatasetType
@@ -60,10 +65,7 @@ def query_variable_dataset_all(req):
     # 条件查询
     conds = QueryCondition()
     conds.equal(TVariableDataset.WORKSPACE_NO, req.workspaceNo)
-    conds.equal(TVariableDataset.DATASET_NO, req.datasetNo)
-    conds.like(TVariableDataset.DATASET_NAME, req.datasetName)
-    conds.like(TVariableDataset.DATASET_TYPE, req.datasetType)
-    conds.like(TVariableDataset.DATASET_DESC, req.datasetDesc)
+    conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
 
     results = (
         TVariableDataset
@@ -80,6 +82,86 @@ def query_variable_dataset_all(req):
             'datasetDesc': item.DATASET_DESC
         }
         for item in results
+    ]
+
+
+@http_service
+def query_variable_dataset_all_in_private(req):
+    # 公共空间条件查询
+    public_conds = QueryCondition(TWorkspace, TVariableDataset)
+    public_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
+    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
+    public_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
+    public_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TVariableDataset.DATASET_NO,
+            TVariableDataset.DATASET_NAME,
+            TVariableDataset.DATASET_TYPE,
+            TVariableDataset.DATASET_DESC
+        )
+        .filter(and_(*public_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
+    )
+
+    # 保护空间条件查询
+    protected_conds = QueryCondition(TWorkspace, TWorkspaceUser, TVariableDataset)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
+    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
+    protected_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TVariableDataset.DATASET_NO,
+            TVariableDataset.DATASET_NAME,
+            TVariableDataset.DATASET_TYPE,
+            TVariableDataset.DATASET_DESC
+        )
+        .filter(and_(*protected_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
+    )
+
+    # 私人空间条件查询
+    private_conds = QueryCondition(TWorkspace, TWorkspaceUser, TVariableDataset)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
+    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
+    private_filter = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TVariableDataset.DATASET_NO,
+            TVariableDataset.DATASET_NAME,
+            TVariableDataset.DATASET_TYPE,
+            TVariableDataset.DATASET_DESC
+        )
+        .filter(and_(*private_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
+    )
+
+    items = (
+        public_filter
+        .union(protected_filter)
+        .union(private_filter)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
+        .all()
+    )
+
+    return [
+        {
+            'workspaceNo': item.WORKSPACE_NO,
+            'workspaceName': item.WORKSPACE_NAME,
+            'templateNo': item.TEMPLATE_NO,
+            'templateName': item.TEMPLATE_NAME,
+            'templateDesc': item.TEMPLATE_DESC
+        }
+        for item in items
     ]
 
 

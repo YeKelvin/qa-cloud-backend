@@ -6,6 +6,7 @@
 from typing import Iterable
 from typing import List
 
+from app.common import globals
 from app.common.decorators.service import http_service
 from app.common.decorators.transaction import transactional
 from app.common.exceptions import ServiceError
@@ -15,7 +16,9 @@ from app.common.validator import check_exists
 from app.common.validator import check_workspace_permission
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
+from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
+from app.public.model import TWorkspaceUser
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import element_property_dao as ElementPropertyDao
@@ -122,8 +125,8 @@ def query_element_all(req):
     conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
     conds.equal(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ENABLED, req.enabled)
-    conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
-    conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
+    conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
+    conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
     items = db.session.query(
@@ -145,6 +148,101 @@ def query_element_all(req):
             'enabled': item.ENABLED
         })
     return result
+
+
+@http_service
+def query_element_all_in_private(req):
+    # 公共空间条件查询
+    public_conds = QueryCondition(TWorkspaceCollection, TWorkspace, TTestElement)
+    public_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    public_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
+    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
+    public_conds.equal(TTestElement.ENABLED, req.enabled)
+    public_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
+    public_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
+    public_filter = (
+        db.session.query(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_TYPE,
+            TTestElement.ELEMENT_CLASS,
+            TTestElement.ENABLED
+        )
+        .filter(*public_conds)
+    )
+
+    # 保护空间条件查询
+    protected_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
+    protected_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
+    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
+    protected_conds.equal(TTestElement.ENABLED, req.enabled)
+    protected_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
+    protected_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
+    protected_filter = (
+        db.session.query(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_TYPE,
+            TTestElement.ELEMENT_CLASS,
+            TTestElement.ENABLED
+        )
+        .filter(*protected_conds)
+    )
+
+    # 私人空间条件查询
+    private_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
+    private_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
+    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
+    private_conds.equal(TTestElement.ENABLED, req.enabled)
+    private_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
+    private_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
+    private_filter = (
+        db.session.query(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TWorkspace.WORKSPACE_SCOPE,
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_TYPE,
+            TTestElement.ELEMENT_CLASS,
+            TTestElement.ENABLED
+        )
+        .filter(*private_conds)
+    )
+
+    items = (
+        public_filter
+        .union(protected_filter)
+        .union(private_filter)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
+        .all()
+    )
+
+    return [
+        {
+            'workspaceNo': item.WORKSPACE_NO,
+            'workspaceName': item.WORKSPACE_NAME,
+            'elementNo': item.ELEMENT_NO,
+            'elementName': item.ELEMENT_NAME,
+            'elementType': item.ELEMENT_TYPE,
+            'elementClass': item.ELEMENT_CLASS,
+            'enabled': item.ENABLED
+        }
+        for item in items
+    ]
 
 
 @http_service
