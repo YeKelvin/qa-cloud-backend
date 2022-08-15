@@ -217,8 +217,8 @@ def create_http_header(req):
     THttpHeader.insert(
         TEMPLATE_NO=req.templateNo,
         HEADER_NO=header_no,
-        HEADER_NAME=req.headerName,
-        HEADER_VALUE=req.headerValue,
+        HEADER_NAME=req.headerName.strip() if req.headerName else req.headerName,
+        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue,
         HEADER_DESC=req.headerDesc,
         ENABLED=True
     )
@@ -242,8 +242,8 @@ def modify_http_header(req):
 
     # 更新请求头
     header.update(
-        HEADER_NAME=req.headerName,
-        HEADER_VALUE=req.headerValue,
+        HEADER_NAME=req.headerName.strip() if req.headerName else req.headerName,
+        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue,
         HEADER_DESC=req.headerDesc
     )
 
@@ -372,8 +372,8 @@ def create_http_headers(req):
         THttpHeader.insert(
             TEMPLATE_NO=req.templateNo,
             HEADER_NO=new_id(),
-            HEADER_NAME=header.headerName,
-            HEADER_VALUE=header.headerValue,
+            HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
+            HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
             HEADER_DESC=header.headerDesc,
             ENABLED=True
         )
@@ -399,8 +399,8 @@ def modify_http_headers(req):
             check_exists(entity, '请求头不存在')
             # 更新请求头
             entity.update(
-                HEADER_NAME=header.headerName,
-                HEADER_VALUE=header.headerValue,
+                HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
+                HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
                 HEADER_DESC=header.headerDesc
             )
         else:
@@ -411,8 +411,8 @@ def modify_http_headers(req):
             THttpHeader.insert(
                 TEMPLATE_NO=req.templateNo,
                 HEADER_NO=new_id(),
-                HEADER_NAME=header.headerName,
-                HEADER_VALUE=header.headerValue,
+                HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
+                HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
                 HEADER_DESC=header.headerDesc,
                 ENABLED=True
             )

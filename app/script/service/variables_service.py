@@ -247,10 +247,10 @@ def create_variable(req):
     TVariable.insert(
         DATASET_NO=req.datasetNo,
         VAR_NO=var_no,
-        VAR_NAME=req.varName,
-        VAR_DESC=req.varDesc,
-        INITIAL_VALUE=req.initialValue,
-        CURRENT_VALUE=req.currentValue,
+        VAR_NAME=req.varName.strip() if req.varName else req.varName,
+        VAR_DESC=req.varDesc.strip() if req.varDesc else req.varDesc,
+        INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
+        CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue,
         ENABLED=True
     )
 
@@ -273,10 +273,10 @@ def modify_variable(req):
 
     # 更新变量信息
     variable.update(
-        VAR_NAME=req.varName,
-        VAR_DESC=req.varDesc,
-        INITIAL_VALUE=req.initialValue,
-        CURRENT_VALUE=req.currentValue
+        VAR_NAME=req.varName.strip() if req.varName else req.varName,
+        VAR_DESC=req.varDesc.strip() if req.varDesc else req.varDesc,
+        INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
+        CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue
     )
 
 
@@ -354,7 +354,7 @@ def update_current_value(req):
 
     # 更新当前值
     variable.update(
-        CURRENT_VALUE=req.value
+        CURRENT_VALUE=req.value.strip() if req.value else req.value
     )
 
 
@@ -427,10 +427,10 @@ def create_variables(req):
         TVariable.insert(
             DATASET_NO=req.datasetNo,
             VAR_NO=new_id(),
-            VAR_NAME=vari.varName,
-            VAR_DESC=vari.varDesc,
-            INITIAL_VALUE=vari.initialValue,
-            CURRENT_VALUE=vari.currentValue,
+            VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
+            VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+            INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
+            CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
             ENABLED=True
         )
 
@@ -455,10 +455,10 @@ def modify_variables(req):
             check_exists(variable, '变量不存在')
             # 更新变量信息
             variable.update(
-                VAR_NAME=vari.varName,
-                VAR_DESC=vari.varDesc,
-                INITIAL_VALUE=vari.initialValue,
-                CURRENT_VALUE=vari.currentValue
+                VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
+                VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+                INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
+                CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
             )
         else:
             # 查询变量信息
@@ -468,10 +468,10 @@ def modify_variables(req):
             TVariable.insert(
                 DATASET_NO=req.datasetNo,
                 VAR_NO=new_id(),
-                VAR_NAME=vari.varName,
-                VAR_DESC=vari.varDesc,
-                INITIAL_VALUE=vari.initialValue,
-                CURRENT_VALUE=vari.currentValue,
+                VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
+                VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+                INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
+                CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
                 ENABLED=True
             )
 

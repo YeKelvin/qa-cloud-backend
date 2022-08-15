@@ -29,13 +29,13 @@ flask-migrate = "3.1.0"
 flask-apscheduler = "1.12.4"
 apscheduler = "3.9.1"
 # Json
-orjson = "3.7.11"
+orjson = "3.7.12"
 jsonpath = "0.82"
 # Encryption
 pyjwt = { version = "2.4.0", extras = ["crypto"] }
 pycryptodome = "3.15.0"
 # Data Validation
-pydantic = "1.9.1"
+pydantic = "1.9.2"
 # Environment
 python-dotenv = "0.20.0"
 environs = "9.5.0"
