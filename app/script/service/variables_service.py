@@ -499,10 +499,10 @@ def duplicate_variable_dataset(req):
     check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 复制变量集
-    dataset_no = new_id()
+    new_dataset_no = new_id()
     TVariableDataset.insert(
         WORKSPACE_NO=dataset.WORKSPACE_NO,
-        DATASET_NO=dataset_no,
+        DATASET_NO=new_dataset_no,
         DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
@@ -513,7 +513,7 @@ def duplicate_variable_dataset(req):
     variables = VariableDao.select_all_by_dataset(req.datasetNo)
     for variable in variables:
         TVariable.insert(
-            DATASET_NO=dataset_no,
+            DATASET_NO=new_dataset_no,
             VAR_NO=new_id(),
             VAR_NAME=variable.VAR_NAME,
             VAR_DESC=variable.VAR_DESC,
@@ -522,7 +522,7 @@ def duplicate_variable_dataset(req):
             ENABLED=True
         )
 
-    return {'datasetNo': dataset_no}
+    return {'datasetNo': new_dataset_no}
 
 
 @http_service
@@ -536,10 +536,10 @@ def copy_variable_dataset_to_workspace(req):
     check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 复制变量集
-    dataset_no = new_id()
+    new_dataset_no = new_id()
     TVariableDataset.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DATASET_NO=dataset_no,
+        DATASET_NO=new_dataset_no,
         DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
@@ -550,7 +550,7 @@ def copy_variable_dataset_to_workspace(req):
     variables = VariableDao.select_all_by_dataset(req.datasetNo)
     for variable in variables:
         TVariable.insert(
-            DATASET_NO=dataset_no,
+            DATASET_NO=new_dataset_no,
             VAR_NO=new_id(),
             VAR_NAME=variable.VAR_NAME,
             VAR_DESC=variable.VAR_DESC,
@@ -559,7 +559,7 @@ def copy_variable_dataset_to_workspace(req):
             ENABLED=True
         )
 
-    return {'datasetNo': dataset_no}
+    return {'datasetNo': new_dataset_no}
 
 
 @http_service

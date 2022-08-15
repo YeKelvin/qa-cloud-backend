@@ -441,10 +441,10 @@ def duplicate_httpheader_template(req):
     check_workspace_permission(template.WORKSPACE_NO)
 
     # 复制请求头模板
-    template_no = new_id()
+    new_template_no = new_id()
     THttpHeaderTemplate.insert(
         WORKSPACE_NO=template.WORKSPACE_NO,
-        TEMPLATE_NO=template_no,
+        TEMPLATE_NO=new_template_no,
         TEMPLATE_NAME=f'{template.TEMPLATE_NAME} copy',
         TEMPLATE_DESC=template.TEMPLATE_DESC
     )
@@ -453,7 +453,7 @@ def duplicate_httpheader_template(req):
     headers = HttpHeaderDao.select_all_by_template(req.templateNo)
     for header in headers:
         THttpHeader.insert(
-            TEMPLATE_NO=req.templateNo,
+            TEMPLATE_NO=new_template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.HEADER_NAME,
             HEADER_VALUE=header.HEADER_VALUE,
@@ -461,7 +461,7 @@ def duplicate_httpheader_template(req):
             ENABLED=True
         )
 
-    return {'templateNo': template_no}
+    return {'templateNo': new_template_no}
 
 
 @http_service
@@ -475,10 +475,10 @@ def copy_httpheader_template_to_workspace(req):
     check_workspace_permission(template.WORKSPACE_NO)
 
     # 复制请求头模板
-    template_no = new_id()
+    new_template_no = new_id()
     THttpHeaderTemplate.insert(
         WORKSPACE_NO=req.workspaceNo,
-        TEMPLATE_NO=template_no,
+        TEMPLATE_NO=new_template_no,
         TEMPLATE_NAME=f'{template.TEMPLATE_NAME} copy',
         TEMPLATE_DESC=template.TEMPLATE_DESC
     )
@@ -487,7 +487,7 @@ def copy_httpheader_template_to_workspace(req):
     headers = HttpHeaderDao.select_all_by_template(req.templateNo)
     for header in headers:
         THttpHeader.insert(
-            TEMPLATE_NO=template_no,
+            TEMPLATE_NO=new_template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.HEADER_NAME,
             HEADER_VALUE=header.HEADER_VALUE,
@@ -495,7 +495,7 @@ def copy_httpheader_template_to_workspace(req):
             ENABLED=True
         )
 
-    return {'templateNo': template_no}
+    return {'templateNo': new_template_no}
 
 
 @http_service
