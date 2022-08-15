@@ -3,15 +3,15 @@
 # @File    : element_controller.py
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login
-from app.common.decorators.require import require_permission
-from app.common.logger import get_logger
-from app.common.parser import Argument
-from app.common.parser import JsonParser
-from app.common.parser import ListParser
 from app.script.controller import blueprint
 from app.script.enum import PasteType
 from app.script.service import element_service as service
+from app.tools.decorators.require import require_login
+from app.tools.decorators.require import require_permission
+from app.tools.logger import get_logger
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
+from app.tools.parser import ListParser
 
 
 log = get_logger(__name__)

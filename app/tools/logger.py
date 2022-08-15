@@ -14,7 +14,7 @@ from logging.handlers import TimedRotatingFileHandler
 import flask
 
 from app import config as CONFIG
-from app.common.locals import local
+from app.tools.locals import local
 
 
 logging_record_factory = logging.getLogRecordFactory()

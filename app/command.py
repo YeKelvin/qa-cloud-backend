@@ -6,13 +6,13 @@
 import click
 from flask.cli import with_appcontext
 
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.extension import db  # noqa
 from app.database import TSystemOperationLogContent  # noqa
+from app.extension import db  # noqa
 from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
 from app.usercenter.model import TPermission  # noqa
 from app.usercenter.model import TRole  # noqa
 from app.usercenter.model import TUser  # noqa
@@ -243,6 +243,7 @@ def init_permission():
     # variables
     _create_permission(name='分页查询变量集列表', method='GET', endpoint='/script/variable/dataset/list')
     _create_permission(name='查询所有变量集', method='GET', endpoint='/script/variable/dataset/all')
+    _create_permission(name='查询用户所有空间下的所有变量集（用于私人空间）', method='GET', endpoint='/script/variable/dataset/all/in/private')
     _create_permission(name='新增变量集', method='POST', endpoint='/script/variable/dataset')
     _create_permission(name='修改变量集', method='PUT', endpoint='/script/variable/dataset')
     _create_permission(name='删除变量集', method='DELETE', endpoint='/script/variable/dataset')
@@ -307,11 +308,7 @@ def init_permission():
 
     # report
     _create_permission(name='查询测试报告', method='GET', endpoint='/script/report')
-    _create_permission(
-        name='根据 collectionId 查询 Collection 结果和 Group 结果列表',
-        method='GET',
-        endpoint='/script/report/collection/result'
-    )
+    _create_permission(name='根据 collectionId 查询 Collection 结果和 Group 结果列表', method='GET', endpoint='/script/report/collection/result')
     _create_permission(name='根据 groupId 查询 GroupGroup 结果', method='GET', endpoint='/script/report/group/result')
     _create_permission(name='根据 samplerId 查询 Sampler 结果', method='GET', endpoint='/script/report/sampler/result')
 
@@ -346,6 +343,7 @@ def _create_permission(name, method, endpoint):
 @with_appcontext
 def create_single_table(name):
     from sqlalchemy import create_engine
+
     from app import config as CONFIG
     from app.public import model as public_model
     from app.schedule import model as schedule_model

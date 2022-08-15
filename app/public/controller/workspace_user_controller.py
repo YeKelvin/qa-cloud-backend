@@ -3,13 +3,13 @@
 # @File    : workspace_user_controller.py
 # @Time    : 2021-09-24 22:47:22
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login
-from app.common.decorators.require import require_permission
-from app.common.logger import get_logger
-from app.common.parser import Argument
-from app.common.parser import JsonParser
 from app.public.controller import blueprint
 from app.public.service import workspace_user_service as service
+from app.tools.decorators.require import require_login
+from app.tools.decorators.require import require_permission
+from app.tools.logger import get_logger
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
 
 
 log = get_logger(__name__)

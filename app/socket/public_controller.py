@@ -7,8 +7,8 @@ import traceback
 
 from flask import request
 
-from app.common.logger import get_logger
 from app.extension import socketio
+from app.tools.logger import get_logger
 
 
 log = get_logger(__name__)

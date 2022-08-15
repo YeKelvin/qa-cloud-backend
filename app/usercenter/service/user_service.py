@@ -7,17 +7,17 @@ from datetime import datetime
 
 from flask import request
 
-from app.common import globals
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
 from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
+from app.tools import globals
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 from app.usercenter.dao import group_dao as GroupDao
 from app.usercenter.dao import role_dao as RoleDao
 from app.usercenter.dao import user_dao as UserDao
@@ -54,11 +54,11 @@ log = get_logger(__name__)
 def login(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    check_exists(login_info, '账号或密码不正确')
+    check_exists(login_info, error_msg='账号或密码不正确')
 
     # 查询用户
     user = UserDao.select_by_no(login_info.USER_NO)
-    check_exists(user, '账号或密码不正确')
+    check_exists(user, error_msg='账号或密码不正确')
 
     # 校验用户状态
     if user.STATE != UserState.ENABLE.value:
@@ -66,7 +66,7 @@ def login(req):
 
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_user(user.USER_NO)
-    check_exists(user_password, '账号或密码不正确')
+    check_exists(user_password, error_msg='账号或密码不正确')
 
     # 密码RSA解密
     user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
@@ -120,7 +120,7 @@ def remote_addr():
 def logout():
     # 查询用户
     user = UserDao.select_by_no(globals.get_userno())
-    check_exists(user, '用户不存在')
+    check_exists(user, error_msg='用户不存在')
     # 登出
     user.update(LOGGED_IN=False)
 
@@ -130,11 +130,11 @@ def logout():
 def register(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    check_not_exists(login_info, '登录账号已存在')
+    check_not_exists(login_info, error_msg='登录账号已存在')
 
     # 查询用户
     user = UserDao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
-    check_not_exists(user, '用户已存在')
+    check_not_exists(user, error_msg='用户已存在')
 
     # 创建用户
     user_no = new_id()
@@ -186,15 +186,15 @@ def register(req):
 def reset_login_password(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
-    check_exists(user, '用户不存在')
+    check_exists(user, error_msg='用户不存在')
 
     # 查询登录信息
     user_login_info = UserLoginInfoDao.select_by_user(req.userNo)
-    check_exists(user_login_info, '用户登录信息不存在')
+    check_exists(user_login_info, error_msg='用户登录信息不存在')
 
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_user(req.userNo)
-    check_exists(user_password, '用户登录密码不存在')
+    check_exists(user_password, error_msg='用户登录密码不存在')
 
     # 更新用户密码
     user_password.update(PASSWORD=encrypt_password(user_login_info.LOGIN_NAME, '123456'))
@@ -343,7 +343,7 @@ def query_user_info():
 def modify_user(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
-    check_exists(user, '用户不存在')
+    check_exists(user, error_msg='用户不存在')
 
     # 更新用户信息
     user.update(
@@ -395,7 +395,7 @@ def get_private_workspace_by_user(user_no):
 def modify_user_state(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
-    check_exists(user, '用户不存在')
+    check_exists(user, error_msg='用户不存在')
 
     # 更新用户状态
     user.update(STATE=req.state)
@@ -406,7 +406,7 @@ def modify_user_state(req):
 def remove_user(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
-    check_exists(user, '用户不存在')
+    check_exists(user, error_msg='用户不存在')
 
     # 删除用户角色
     UserRoleDao.delete_all_by_user(req.userNo)

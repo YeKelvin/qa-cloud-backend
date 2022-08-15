@@ -5,14 +5,14 @@
 # @Author  : Kelvin.Ye
 from apscheduler.jobstores.base import JobLookupError
 
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_workspace_permission
 from app.extension import apscheduler
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_workspace_permission
 
 
 log = get_logger(__name__)
@@ -22,7 +22,7 @@ log = get_logger(__name__)
 def query_job_info(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 查询作业信息
     try:
@@ -53,7 +53,7 @@ def query_job_info(req):
 def run_job(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)

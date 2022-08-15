@@ -3,11 +3,11 @@
 # @File    : user_role_controller.py
 # @Time    : 2020/7/3 15:13
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login
-from app.common.decorators.require import require_permission
-from app.common.logger import get_logger
-from app.common.parser import Argument
-from app.common.parser import JsonParser
+from app.tools.decorators.require import require_login
+from app.tools.decorators.require import require_permission
+from app.tools.logger import get_logger
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
 from app.usercenter.controller import blueprint
 from app.usercenter.service import user_role_service as service
 

@@ -3,13 +3,13 @@
 # @File    : permission_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 from app.usercenter.dao import permission_dao as PermissionDao
 from app.usercenter.dao import role_permission_dao as RolePermissionDao
 from app.usercenter.enum import PermissionState
@@ -69,7 +69,7 @@ def query_permission_all():
 def create_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_endpoint_and_method(req.endpoint, req.method)
-    check_not_exists(permission, '权限已存在')
+    check_not_exists(permission, error_msg='权限已存在')
 
     # 新增权限
     permission_no = new_id()
@@ -90,7 +90,7 @@ def create_permission(req):
 def modify_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_no(req.permissionNo)
-    check_exists(permission, '权限不存在')
+    check_exists(permission, error_msg='权限不存在')
 
     # 唯一性校验
     if permission.PERMISSION_NAME != req.permissionName and PermissionDao.select_by_name(req.permissionName):
@@ -110,7 +110,7 @@ def modify_permission(req):
 def modify_permission_state(req):
     # 查询权限
     permission = PermissionDao.select_by_no(req.permissionNo)
-    check_exists(permission, '权限不存在')
+    check_exists(permission, error_msg='权限不存在')
 
     # 更新权限状态
     permission.update(STATE=req.state)
@@ -121,7 +121,7 @@ def modify_permission_state(req):
 def remove_permission(req):
     # 查询权限
     permission = PermissionDao.select_by_no(req.permissionNo)
-    check_exists(permission, '权限不存在')
+    check_exists(permission, error_msg='权限不存在')
 
     # 删除角色权限
     RolePermissionDao.delete_all_by_permission(req.permissionNo)

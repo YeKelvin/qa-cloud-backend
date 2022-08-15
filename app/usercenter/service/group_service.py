@@ -3,12 +3,12 @@
 # @File    : group_service.py
 # @Time    : 2022/4/25 9:37
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
 from app.usercenter.dao import group_dao as GroupDao
 from app.usercenter.dao import group_role_dao as GroupRoleDao
 from app.usercenter.dao import role_dao as RoleDao
@@ -77,7 +77,7 @@ def query_group_all():
 def query_group_info(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
-    check_exists(group, '分组不存在')
+    check_exists(group, error_msg='分组不存在')
 
     return {
         'groupNo': group.GROUP_NO,
@@ -114,7 +114,7 @@ def create_group(req):
 def modify_group(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
-    check_exists(group, '分组不存在')
+    check_exists(group, error_msg='分组不存在')
 
     # 唯一性校验
     if group.GROUP_NAME != req.groupName and GroupDao.select_by_name(req.groupName):
@@ -145,7 +145,7 @@ def modify_group(req):
 def modify_group_state(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
-    check_exists(group, '分组不存在')
+    check_exists(group, error_msg='分组不存在')
 
     # 更新分组状态
     group.update(STATE=req.state)
@@ -156,7 +156,7 @@ def modify_group_state(req):
 def remove_group(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
-    check_exists(group, '分组不存在')
+    check_exists(group, error_msg='分组不存在')
 
     # 删除分组用户
     UserGroupDao.delete_all_by_group(req.groupNo)

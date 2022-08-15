@@ -3,16 +3,16 @@
 # @File    : notification_service.py
 # @Time    : 2022-05-07 22:32:17
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
 from app.public.dao import notification_robot_dao as NotificationRobotDao
 from app.public.enum import RobotState
 from app.public.model import TNotificationRobot
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 from app.utils.sqlalchemy_util import QueryCondition
 
 
@@ -69,7 +69,7 @@ def query_notification_robot_all(req):
 def query_notification_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
-    check_exists(robot, '机器人不存在')
+    check_exists(robot, error_msg='机器人不存在')
 
     return {
         'workspaceNo': robot.WORKSPACE_NO,
@@ -95,7 +95,7 @@ def create_notification_robot(req):
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=req.robotType
     )
-    check_not_exists(robot, '机器人已存在')
+    check_not_exists(robot, error_msg='机器人已存在')
 
     # 新增机器人
     robot_no = new_id()
@@ -117,7 +117,7 @@ def create_notification_robot(req):
 def modify_notification_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
-    check_exists(robot, '机器人不存在')
+    check_exists(robot, error_msg='机器人不存在')
 
     # 唯一性校验
     if robot.ROBOT_NAME != req.robotName and NotificationRobotDao.select_first(
@@ -140,7 +140,7 @@ def modify_notification_robot(req):
 def modify_notification_robot_state(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
-    check_exists(robot, '机器人不存在')
+    check_exists(robot, error_msg='机器人不存在')
 
     # 更新机器人状态
     robot.update(STATE=req.state)
@@ -151,7 +151,7 @@ def modify_notification_robot_state(req):
 def remove_notification_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
-    check_exists(robot, '机器人不存在')
+    check_exists(robot, error_msg='机器人不存在')
 
     # 删除机器人
     robot.delete()

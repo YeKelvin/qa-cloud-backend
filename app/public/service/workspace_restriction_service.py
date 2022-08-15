@@ -3,13 +3,6 @@
 # @File    : workspace_restriction_service.py
 # @Time    : 2022/4/22 16:11
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
@@ -18,6 +11,13 @@ from app.public.enum import RestrictedExemptionType
 from app.public.enum import RestrictionMatchType
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 from app.usercenter.model import TGroup
 from app.usercenter.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition
@@ -100,7 +100,7 @@ def create_workspace_restriction(req):
 
     # 查询空间，判断空间是否有效
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
 
     # 查询空间限制
     restriction = WorkspaceRestrictionDao.select_first(
@@ -109,7 +109,7 @@ def create_workspace_restriction(req):
         MATCH_TYPE=req.matchType,
         MATCH_CONTENT=req.matchContent
     )
-    check_not_exists(restriction, '同规则的空间限制已存在')
+    check_not_exists(restriction, error_msg='同规则的空间限制已存在')
 
     # 新增空间限制
     restriction_no = new_id()
@@ -150,7 +150,7 @@ def modify_workspace_restriction(req):
 
     # 查询空间限制
     restriction = WorkspaceRestrictionDao.select_by_restriction(req.restrictionNo)
-    check_exists(restriction, '空间限制不存在')
+    check_exists(restriction, error_msg='空间限制不存在')
 
     # 更新限制信息
     restriction.update(
@@ -211,7 +211,7 @@ def modify_workspace_restriction(req):
 def remove_workspace_restriction(req):
     # 查询空间限制
     restriction = WorkspaceRestrictionDao.select_by_restriction(req.restrictionNo)
-    check_exists(restriction, '空间限制不存在')
+    check_exists(restriction, error_msg='空间限制不存在')
 
     # 删除豁免成员
     WorkspaceRestrictedExemptionDao.delete_all_by_restriction(req.restrictionNo)
@@ -225,7 +225,7 @@ def remove_workspace_restriction(req):
 def enable_workspace_restriction(req):
     # 查询空间限制
     restriction = WorkspaceRestrictionDao.select_by_restriction(req.restrictionNo)
-    check_exists(restriction, '空间限制不存在')
+    check_exists(restriction, error_msg='空间限制不存在')
     # 启用空间限制
     restriction.update(STATE='ENABLE')
 
@@ -235,6 +235,6 @@ def enable_workspace_restriction(req):
 def disable_workspace_restriction(req):
     # 查询空间限制
     restriction = WorkspaceRestrictionDao.select_by_restriction(req.restrictionNo)
-    check_exists(restriction, '空间限制不存在')
+    check_exists(restriction, error_msg='空间限制不存在')
     # 禁用空间限制
     restriction.update(STATE='DISABLE')

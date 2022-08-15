@@ -5,9 +5,6 @@
 # @Author  : Kelvin.Ye
 from typing import Dict
 
-from app.common.exceptions import ServiceError
-from app.common.logger import get_logger
-from app.common.validator import check_exists
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
 from app.script.dao import element_children_dao as ElementChildrenDao
@@ -30,6 +27,9 @@ from app.script.enum import is_snippet_sampler
 from app.script.enum import is_sql_sampler
 from app.script.enum import is_teardown_group_debuger
 from app.script.model import TTestElement
+from app.tools.exceptions import ServiceError
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
 from app.utils.json_util import from_json
 
 
@@ -84,7 +84,7 @@ def loads_element(
     """根据元素编号加载元素数据"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
     if is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
@@ -107,7 +107,7 @@ def loads_element(
     if is_sql_sampler(element):
         # 查询数据库引擎
         engine = DatabaseConfigDao.select_by_no(properties.get('engineNo'))
-        check_exists(engine, '数据库引擎不存在')
+        check_exists(engine, error_msg='数据库引擎不存在')
         # 删除引擎编号，PyMeter中不需要
         properties.pop('engineNo')
         # 实时将引擎变量名称写入元素属性中

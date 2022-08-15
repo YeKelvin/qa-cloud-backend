@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 import requests
 
-from app.common.logger import get_logger
+from app.tools.logger import get_logger
 from app.utils.json_util import to_json
 
 

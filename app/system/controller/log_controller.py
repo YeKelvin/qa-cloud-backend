@@ -3,13 +3,13 @@
 # @File    : log_controller.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login
-from app.common.decorators.require import require_permission
-from app.common.logger import get_logger
-from app.common.parser import Argument
-from app.common.parser import JsonParser
 from app.system.controller import blueprint
 from app.system.service import log_service as service
+from app.tools.decorators.require import require_login
+from app.tools.decorators.require import require_permission
+from app.tools.logger import get_logger
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
 
 
 log = get_logger(__name__)

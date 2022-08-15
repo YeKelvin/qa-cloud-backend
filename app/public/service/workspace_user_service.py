@@ -3,16 +3,16 @@
 # @File    : workspace_user_service.py
 # @Time    : 2021/6/5 23:39
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.logger import get_logger
-from app.common.validator import check_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
@@ -77,7 +77,7 @@ def query_workspace_user_all(req):
 def modify_workspace_user(req):
     # 查询元素
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
 
     # 成员列表添加超级管理用户编号
     user_numbered_list = req.userNumberList
@@ -105,8 +105,7 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
 
     # 查询超级管理员的用户编号
-    result = db.session.query(TUser.USER_NO).filter(*conds).first()
-    if not result:
+    if result := db.session.query(TUser.USER_NO).filter(*conds).first():
+        return result[0]
+    else:
         raise ServiceError('查询超级管理员用户失败')
-
-    return result[0]

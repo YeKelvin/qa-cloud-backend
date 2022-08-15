@@ -3,20 +3,20 @@
 # @File    : database_service.py
 # @Time    : 2022-04-04 16:22:20
 # @Author  : Kelvin.Ye
-from app.common import globals
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
-from app.common.validator import check_workspace_permission
 from app.database import dbquery
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.model import TDatabaseConfig
+from app.tools import globals
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
+from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
 
 
@@ -155,7 +155,7 @@ def query_database_engine_all_in_private():
 def query_database_engine_info(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
 
     return {
         'configNo': engine.CONFIG_NO,
@@ -185,7 +185,7 @@ def create_database_engine(req):
         CONFIG_NAME=req.configName,
         DATABASE_TYPE=req.databaseType
     )
-    check_not_exists(engine, '数据库引擎已存在')
+    check_not_exists(engine, error_msg='数据库引擎已存在')
 
     # 新增数据库引擎
     config_no = new_id()
@@ -213,7 +213,7 @@ def create_database_engine(req):
 def modify_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
     check_workspace_permission(engine.WORKSPACE_NO)
@@ -239,7 +239,7 @@ def modify_database_engine(req):
 def remove_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
     check_workspace_permission(engine.WORKSPACE_NO)
@@ -253,7 +253,7 @@ def remove_database_engine(req):
 def duplicate_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
     check_workspace_permission(engine.WORKSPACE_NO)
@@ -284,7 +284,7 @@ def duplicate_database_engine(req):
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
     check_workspace_permission(engine.WORKSPACE_NO)
@@ -317,6 +317,6 @@ def move_database_engine_to_workspace(req):
     check_workspace_permission(req.workspaceNo)
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
-    check_exists(engine, '数据库引擎不存在')
+    check_exists(engine, error_msg='数据库引擎不存在')
     # 移动数据库引擎
     engine.update(WORKSPACE_NO=req.workspaceNo)

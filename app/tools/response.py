@@ -8,9 +8,9 @@ from enum import Enum
 
 from flask import make_response
 
-from app.common import globals
-from app.common.enums import HttpStatus
-from app.common.exceptions import ErrorCode
+from app.tools import globals
+from app.tools.enums import HttpStatus
+from app.tools.exceptions import ErrorCode
 from app.utils.json_util import to_json
 
 

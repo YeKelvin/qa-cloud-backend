@@ -7,7 +7,7 @@ import orjson
 from jsonpath import jsonpath
 from orjson import JSONDecodeError
 
-from app.common.logger import get_logger
+from app.tools.logger import get_logger
 
 
 log = get_logger(__name__)

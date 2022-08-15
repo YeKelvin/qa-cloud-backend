@@ -8,12 +8,12 @@ from functools import wraps
 
 from flask import request
 
-from app.common import globals
-from app.common.exceptions import ErrorCode
-from app.common.logger import get_logger
-from app.common.response import ResponseDTO
-from app.common.response import http_response
 from app.extension import db
+from app.tools import globals
+from app.tools.exceptions import ErrorCode
+from app.tools.logger import get_logger
+from app.tools.response import ResponseDTO
+from app.tools.response import http_response
 from app.usercenter.model import TGroup
 from app.usercenter.model import TGroupRole
 from app.usercenter.model import TPermission

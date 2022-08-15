@@ -3,14 +3,14 @@
 # @File    : tag_service.py
 # @Time    : 2021-08-17 11:01:35
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
 from app.public.dao import tag_dao as TagDao
 from app.public.model import TTag
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 
 
 log = get_logger(__name__)
@@ -53,7 +53,7 @@ def query_tag_all():
 @transactional
 def create_tag(req):
     tag = TagDao.select_by_name(req.tagName)
-    check_not_exists(tag, '标签已存在')
+    check_not_exists(tag, error_msg='标签已存在')
 
     TTag.insert(
         WORKSPACE_NO=new_id(),
@@ -66,7 +66,7 @@ def create_tag(req):
 @transactional
 def modify_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
-    check_exists(tag, '标签不存在')
+    check_exists(tag, error_msg='标签不存在')
 
     tag.update(
         WORKSPACE_NAME=req.tagName,
@@ -78,6 +78,6 @@ def modify_tag(req):
 @transactional
 def remove_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
-    check_exists(tag, '标签不存在')
+    check_exists(tag, error_msg='标签不存在')
 
     tag.delete()

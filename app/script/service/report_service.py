@@ -3,13 +3,13 @@
 # @File    : report_service.py
 # @Time    : 2021/9/22 14:21
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.logger import get_logger
-from app.common.validator import check_exists
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_group_result_dao as TestGroupResultDao
 from app.script.dao import test_report_dao as TestReportDao
 from app.script.dao import test_sampler_result_dao as TestSamplerResultDao
+from app.tools.decorators.service import http_service
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import microsecond_to_m_s
 
@@ -21,7 +21,7 @@ log = get_logger(__name__)
 def query_report(req):
     # 查询测试报告
     report = TestReportDao.select_by_no(req.reportNo)
-    check_exists(report, '测试报告不存在')
+    check_exists(report, error_msg='测试报告不存在')
 
     # 递归查询脚本结果
     collections = []
@@ -67,7 +67,7 @@ def query_report(req):
 @http_service
 def query_collection_result(req):
     result = TestCollectionResultDao.select_first_by_collectionid(req.collectionId)
-    check_exists(result, 'CollectionResult不存在')
+    check_exists(result, error_msg='CollectionResult不存在')
     return {
         'details': {
             'reportNo': result.REPORT_NO,
@@ -95,7 +95,7 @@ def query_collection_result(req):
 @http_service
 def query_group_result(req):
     result = TestGroupResultDao.select_first_by_group(req.groupId)
-    check_exists(result, 'GroupResult不存在')
+    check_exists(result, error_msg='GroupResult不存在')
     return {
         'groupId': result.GROUP_ID,
         'groupName': result.GROUP_NAME,
@@ -113,7 +113,7 @@ def query_group_result(req):
 @http_service
 def query_sampler_result(req):
     result = TestSamplerResultDao.select_first_by_sampler(req.samplerId)
-    check_exists(result, 'SamplerResult不存在')
+    check_exists(result, error_msg='SamplerResult不存在')
     return {
         'samplerId': result.SAMPLER_ID,
         'samplerName': result.SAMPLER_NAME,

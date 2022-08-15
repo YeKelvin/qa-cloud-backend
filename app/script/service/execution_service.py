@@ -10,15 +10,6 @@ import flask
 from pymeter.runner import Runner
 
 from app import config as CONFIG
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.exceptions import TestplanInterruptError
-from app.common.globals import get_userno
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_workspace_permission
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
@@ -45,6 +36,15 @@ from app.script.model import TTestplanExecutionItems
 from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.exceptions import TestplanInterruptError
+from app.tools.globals import get_userno
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_workspace_permission
 from app.usercenter.dao import user_dao as UserDao
 from app.utils.notification import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
@@ -305,7 +305,7 @@ def execute_testplan(req):
 def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_workspace=True):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(plan_no)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
     if check_workspace:
@@ -318,7 +318,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(plan_no)
-    check_exists(settings, '计划设置不存在')
+    check_exists(settings, error_msg='计划设置不存在')
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(plan_no)
@@ -745,11 +745,11 @@ def start_testplan_by_error_report(
 def interrupt_testplan_execution(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
-    check_exists(execution, '执行记录不存在')
+    check_exists(execution, error_msg='执行记录不存在')
 
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(execution.PLAN_NO)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)

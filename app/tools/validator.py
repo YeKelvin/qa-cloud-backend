@@ -9,11 +9,11 @@ import re
 from flask import g
 from flask import request
 
-from app.common.exceptions import ErrorCode
-from app.common.exceptions import ServiceError
 from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceUser
+from app.tools.exceptions import ErrorCode
+from app.tools.exceptions import ServiceError
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup

@@ -3,13 +3,13 @@
 # @File    : job_controller.py
 # @Time    : 2022/5/20 11:15
 # @Author  : Kelvin.Ye
-from app.common.decorators.require import require_login
-from app.common.decorators.require import require_permission
-from app.common.logger import get_logger
-from app.common.parser import Argument
-from app.common.parser import JsonParser
 from app.schedule.controller import blueprint
 from app.schedule.service import job_service as service
+from app.tools.decorators.require import require_login
+from app.tools.decorators.require import require_permission
+from app.tools.logger import get_logger
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
 
 
 log = get_logger(__name__)

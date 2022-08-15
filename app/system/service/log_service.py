@@ -3,10 +3,10 @@
 # @File    : log_service.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.logger import get_logger
 from app.extension import db
 from app.system.model import TSystemOperationLog
+from app.tools.decorators.service import http_service
+from app.tools.logger import get_logger
 from app.usercenter.model import TPermission
 from app.usercenter.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition

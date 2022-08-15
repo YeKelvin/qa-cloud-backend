@@ -6,14 +6,6 @@
 from typing import Iterable
 from typing import List
 
-from app.common import globals
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_workspace_permission
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.enum import WorkspaceScope
@@ -49,6 +41,14 @@ from app.script.model import TElementProperty
 from app.script.model import THttpHeaderTemplateRef
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollection
+from app.tools import globals
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_workspace_permission
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
@@ -309,7 +309,7 @@ def query_element_all_with_children(req):
 def query_element_info(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 查询元素属性
     properties = query_element_property(req.elementNo)
@@ -398,7 +398,7 @@ def get_element_children(parent_no, depth):
 def create_collection(req):
     # 校验工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
 
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -508,7 +508,7 @@ def modify_elements(req):
 def update_element(element_no, element_name, element_remark, properties: dict = None):
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 更新元素
     element.update(ELEMENT_NAME=element_name, ELEMENT_REMARK=element_remark)
@@ -531,7 +531,7 @@ def delete_element(element_no):
     """递归删除元素"""
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 递归删除元素子代和子代关联
     delete_element_children(element_no)
@@ -593,7 +593,7 @@ def delete_element_property(element_no):
 def enable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -607,7 +607,7 @@ def enable_element(req):
 def disable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -664,7 +664,7 @@ def update_element_property(element_no, properties: dict):
 def move_element(req):
     # 查询 source 元素子代关联
     source_link = ElementChildrenDao.select_by_child(req.sourceNo)
-    check_exists(source_link, 'source元素关联不存在')
+    check_exists(source_link, error_msg='source元素关联不存在')
 
     # 校验元素序号
     if req.targetSortNo < 0:
@@ -739,7 +739,7 @@ def move_element(req):
 def duplicate_element(req):
     # 查询元素
     source = TestElementDao.select_by_no(req.elementNo)
-    check_exists(source, '元素不存在')
+    check_exists(source, error_msg='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -771,14 +771,14 @@ def duplicate_element(req):
 def paste_element(req):
     # 查询 source 元素
     source = TestElementDao.select_by_no(req.sourceNo)
-    check_exists(source, 'source元素不存在')
+    check_exists(source, error_msg='source元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
 
     # 查询 target 元素
     target = TestElementDao.select_by_no(req.targetNo)
-    check_exists(target, 'target元素不存在')
+    check_exists(target, error_msg='target元素不存在')
 
     # 排除不支持剪贴的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
@@ -928,7 +928,7 @@ def clone_element(source: TTestElement, rename=False):
 def query_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 查询所有关联的模板
     refs = HttpHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
@@ -941,7 +941,7 @@ def query_element_httpheader_template_refs(req):
 def create_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -961,7 +961,7 @@ def create_element_httpheader_template_refs(req):
 def modify_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
-    check_exists(element, '元素不存在')
+    check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -1074,7 +1074,7 @@ def update_element_builtins(child):
     builtin_no = child.get('elementNo')
     # 查询内置元素
     builtin = TestElementDao.select_by_no(builtin_no)
-    check_exists(builtin, '内置元素不存在')
+    check_exists(builtin, error_msg='内置元素不存在')
 
     # 更新内置元素
     builtin.update(ELEMENT_NAME=child.get('elementName'), ELEMENT_REMARK=child.get('elementRemark'))
@@ -1087,7 +1087,7 @@ def update_element_builtins(child):
 def delete_element_builtin(element_no):
     # 查询内置元素
     element = TestElementDao.select_by_no(element_no)
-    check_exists(element, '内置元素不存在')
+    check_exists(element, error_msg='内置元素不存在')
     # 删除内置元素属性
     delete_element_property(element_no)
     # 删除内置元素

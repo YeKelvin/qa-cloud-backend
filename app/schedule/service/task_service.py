@@ -6,14 +6,6 @@
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
 
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.globals import get_userno
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
-from app.common.validator import check_workspace_permission
 from app.database import dbquery
 from app.extension import apscheduler
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
@@ -26,6 +18,14 @@ from app.schedule.enum import TriggerType
 from app.schedule.model import TScheduleJob
 from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.globals import get_userno
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
+from app.tools.validator import check_workspace_permission
 from app.usercenter.model import TUser
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
@@ -70,7 +70,7 @@ def query_task_list(req):
 def query_task_info(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     return {
         'jobNo': task.JOB_NO,
@@ -109,7 +109,7 @@ def create_task(req):
             TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(task, '相同内容的任务已存在')
+    check_not_exists(task, error_msg='相同内容的任务已存在')
 
     # 添加作业
     job_no = new_id()
@@ -174,7 +174,7 @@ def create_task(req):
 def modify_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -201,7 +201,7 @@ def modify_task(req):
             TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(existed_task, '相同内容的任务已存在')
+    check_not_exists(existed_task, error_msg='相同内容的任务已存在')
 
     # 新增历史记录
     log_no = new_id()
@@ -259,7 +259,7 @@ def modify_task(req):
 def pause_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -285,7 +285,7 @@ def pause_task(req):
 def resume_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -311,7 +311,7 @@ def resume_task(req):
 def remove_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
-    check_exists(task, '任务不存在')
+    check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)

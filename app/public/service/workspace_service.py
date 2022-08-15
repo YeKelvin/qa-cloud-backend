@@ -3,13 +3,6 @@
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.exceptions import ServiceError
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
@@ -18,6 +11,13 @@ from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.exceptions import ServiceError
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
@@ -84,7 +84,7 @@ def query_workspace_all(req):
 def query_workspace_info(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
     return {
         'workspaceNo': workspace.WORKSPACE_NO,
         'workspaceName': workspace.WORKSPACE_NAME,
@@ -98,7 +98,7 @@ def query_workspace_info(req):
 def create_workspace(req):
     # 名称唯一性校验
     workspace = WorkspaceDao.select_by_name(req.workspaceName)
-    check_not_exists(workspace, '工作空间已存在')
+    check_not_exists(workspace, error_msg='工作空间已存在')
 
     # 新增空间
     workspace_no = new_id()
@@ -122,7 +122,7 @@ def create_workspace(req):
 def modify_workspace(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
     # 更新空间信息
     workspace.update(
         WORKSPACE_NAME=req.workspaceName,
@@ -136,7 +136,7 @@ def modify_workspace(req):
 def remove_workspace(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
 
     # 私人空间随用户，删除用户时才会删除私人空间
     if req.workspaceScope == WorkspaceScope.PRIVATE.value:
@@ -168,8 +168,7 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
 
     # 查询超级管理员的用户编号
-    result = db.session.query(TUser.USER_NO).filter(*conds).first()
-    if not result:
+    if result := db.session.query(TUser.USER_NO).filter(*conds).first():
+        return result[0]
+    else:
         raise ServiceError('查询超级管理员用户失败')
-
-    return result[0]

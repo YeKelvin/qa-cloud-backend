@@ -3,22 +3,22 @@
 # @File    : headers_service.py
 # @Time    : 2020/3/13 16:57
 # @Author  : Kelvin.Ye
-from app.common import globals
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_not_exists
-from app.common.validator import check_workspace_permission
 from app.database import dbquery
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.script.dao import http_header_dao as HttpHeaderDao
-from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
+from app.script.dao import http_header_template_dao as HttpheaderTemplateDao
 from app.script.model import THttpHeader
 from app.script.model import THttpHeaderTemplate
+from app.tools import globals
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_not_exists
+from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
 
 
@@ -152,8 +152,8 @@ def create_httpheader_template(req):
     check_workspace_permission(req.workspaceNo)
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
-    check_not_exists(template, '模板已存在')
+    template = HttpheaderTemplateDao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
+    check_not_exists(template, error_msg='模板已存在')
 
     # 新增模板
     template_no = new_id()
@@ -171,8 +171,8 @@ def create_httpheader_template(req):
 @transactional
 def modify_httpheader_template(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -188,8 +188,8 @@ def modify_httpheader_template(req):
 @transactional
 def remove_httpheader_template(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
     # 删除模板下的所有请求头
@@ -203,11 +203,11 @@ def remove_httpheader_template(req):
 def create_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_template_and_name(req.templateNo, req.headerName)
-    check_not_exists(header, '请求头已存在')
+    check_not_exists(header, error_msg='请求头已存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -231,11 +231,11 @@ def create_http_header(req):
 def modify_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
-    check_exists(header, '请求头不存在')
+    check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(header.TEMPLATE_NO)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -253,11 +253,11 @@ def modify_http_header(req):
 def remove_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
-    check_exists(header, '请求头不存在')
+    check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(header.TEMPLATE_NO)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -271,11 +271,11 @@ def remove_http_header(req):
 def enable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
-    check_exists(header, '请求头不存在')
+    check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(header.TEMPLATE_NO)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -291,11 +291,11 @@ def enable_http_header(req):
 def disable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
-    check_exists(header, '请求头不存在')
+    check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(header.TEMPLATE_NO)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(header.TEMPLATE_NO)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -328,7 +328,7 @@ def query_http_headers(req):
     result = []
     for template_no in req.list:
         # 查询模板
-        template = HttpHeaderTemplateDao.select_by_no(template_no)
+        template = HttpheaderTemplateDao.select_by_no(template_no)
         if not template:
             continue
 
@@ -353,8 +353,8 @@ def query_http_headers(req):
 @transactional
 def create_http_headers(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -366,7 +366,7 @@ def create_http_headers(req):
 
         # 查询请求头
         entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
-        check_not_exists(entity, '请求头已存在')
+        check_not_exists(entity, error_msg='请求头已存在')
 
         # 新增请求头
         THttpHeader.insert(
@@ -383,8 +383,8 @@ def create_http_headers(req):
 @transactional
 def modify_http_headers(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
     #  遍历更新请求头
@@ -396,7 +396,7 @@ def modify_http_headers(req):
         if 'headerNo' in header:
             # 查询请求头
             entity = HttpHeaderDao.select_by_no(header.headerNo)
-            check_exists(entity, '请求头不存在')
+            check_exists(entity, error_msg='请求头不存在')
             # 更新请求头
             entity.update(
                 HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
@@ -406,7 +406,7 @@ def modify_http_headers(req):
         else:
             # 查询请求头
             entity = HttpHeaderDao.select_by_template_and_name(req.templateNo, header.headerName)
-            check_not_exists(entity, '请求头已存在')
+            check_not_exists(entity, error_msg='请求头已存在')
             # 新增请求头
             THttpHeader.insert(
                 TEMPLATE_NO=req.templateNo,
@@ -422,8 +422,8 @@ def modify_http_headers(req):
 @transactional
 def remove_http_headers(req):
     # 查询模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
     # 批量删除请求头
@@ -434,8 +434,8 @@ def remove_http_headers(req):
 @transactional
 def duplicate_httpheader_template(req):
     # 查询请求头模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '请求头模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='请求头模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -468,8 +468,8 @@ def duplicate_httpheader_template(req):
 @transactional
 def copy_httpheader_template_to_workspace(req):
     # 查询请求头模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '请求头模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='请求头模板不存在')
 
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -504,7 +504,7 @@ def move_httpheader_template_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
     # 查询请求头模板
-    template = HttpHeaderTemplateDao.select_by_no(req.templateNo)
-    check_exists(template, '请求头模板不存在')
+    template = HttpheaderTemplateDao.select_by_no(req.templateNo)
+    check_exists(template, error_msg='请求头模板不存在')
     # 移动请求头模板
     template.update(WORKSPACE_NO=req.workspaceNo)

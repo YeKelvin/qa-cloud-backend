@@ -3,12 +3,6 @@
 # @File    : testplan_service.py
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
-from app.common.decorators.service import http_service
-from app.common.decorators.transaction import transactional
-from app.common.identity import new_id
-from app.common.logger import get_logger
-from app.common.validator import check_exists
-from app.common.validator import check_workspace_permission
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.script.dao import test_collection_result_dao as TestCollectionResultDao
 from app.script.dao import test_element_dao as TestElementDao
@@ -25,6 +19,12 @@ from app.script.enum import TestplanState
 from app.script.model import TTestplan
 from app.script.model import TTestplanItems
 from app.script.model import TTestplanSettings
+from app.tools.decorators.service import http_service
+from app.tools.decorators.transaction import transactional
+from app.tools.identity import new_id
+from app.tools.logger import get_logger
+from app.tools.validator import check_exists
+from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_m_s
@@ -89,11 +89,11 @@ def query_testplan_all(req):
 def query_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
-    check_exists(settings, '计划设置不存在')
+    check_exists(settings, error_msg='计划设置不存在')
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
@@ -123,7 +123,7 @@ def create_testplan(req):
 
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
-    check_exists(workspace, '工作空间不存在')
+    check_exists(workspace, error_msg='工作空间不存在')
 
     # 创建计划编号
     plan_no = new_id()
@@ -167,14 +167,14 @@ def create_testplan(req):
 def modify_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
 
     # 查询测试计划设置项
     settings = TestPlanSettingsDao.select_by_no(req.planNo)
-    check_exists(settings, '计划设置不存在')
+    check_exists(settings, error_msg='计划设置不存在')
 
     # 修改测试计划项目明细
     collection_number_list = []
@@ -216,7 +216,7 @@ def modify_testplan(req):
 def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
@@ -235,7 +235,7 @@ def modify_testplan_state(req):
 def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
     # 更新测试阶段
@@ -246,7 +246,7 @@ def modify_testplan_testphase(req):
 def query_testplan_execution_all(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
-    check_exists(testplan, '测试计划不存在')
+    check_exists(testplan, error_msg='测试计划不存在')
 
     # 查询所有执行记录
     executions = TestplanExecutionDao.select_all_by_plan(req.planNo)
@@ -269,11 +269,11 @@ def query_testplan_execution_all(req):
 def query_testplan_execution_details(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
-    check_exists(execution, '执行记录不存在')
+    check_exists(execution, error_msg='执行记录不存在')
 
     # 查询执行记录设置项
     settings = TestPlanExecutionSettingsDao.select_by_no(req.executionNo)
-    check_exists(settings, '计划设置不存在')
+    check_exists(settings, error_msg='计划设置不存在')
 
     # 查询测试报告，如果没有勾选保存结果就没有测试报告
     report = TestReportDao.select_by_execution(execution.EXECUTION_NO)
