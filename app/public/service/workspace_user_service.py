@@ -80,11 +80,11 @@ def modify_workspace_user(req):
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 成员列表添加超级管理用户编号
-    user_numbered_list = req.userNumberList
-    user_numbered_list.append(get_super_admin_userno())
+    user_nos = req.userNos
+    user_nos.append(get_super_admin_userno())
 
     # 更新空间成员
-    for user_no in user_numbered_list:
+    for user_no in user_nos:
         # 查询空间成员
         workspace_user = WorkspaceUserDao.select_by_workspace_and_user(req.workspaceNo, user_no)
         if workspace_user:
@@ -94,7 +94,7 @@ def modify_workspace_user(req):
             TWorkspaceUser.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
 
     # 删除不在请求中的空间成员
-    WorkspaceUserDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, user_numbered_list)
+    WorkspaceUserDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, user_nos)
 
 
 def get_super_admin_userno():

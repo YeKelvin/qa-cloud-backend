@@ -257,7 +257,7 @@ def remove_variables():
     """批量删除变量"""
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
-        Argument('variableNumberedList', type=list, required=True, nullable=False, help='变量列表不能为空')
+        Argument('variableNos', type=list, required=True, nullable=False, help='变量列表不能为空')
     ).parse()
     return service.remove_variables(req)
 

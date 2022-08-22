@@ -124,8 +124,8 @@ def create_task(req):
         )
     elif req.triggerType == TriggerType.INTERVAL.value:
         kwargs = {
-            'start_date': req.triggerArgs.get('start_date', None),
-            'end_date': req.triggerArgs.get('end_date', None),
+            'start_date': req.triggerArgs.get('startDate', None) or None,
+            'end_date': req.triggerArgs.get('endDate', None) or None,
             req.triggerArgs.type: int(req.triggerArgs.value)
         }
         apscheduler.add_job(
@@ -225,8 +225,8 @@ def modify_task(req):
         )
     elif req.triggerType == TriggerType.INTERVAL.value:
         kwargs = {
-            'start_date': req.triggerArgs.get('start_date', None),
-            'end_date': req.triggerArgs.get('end_date', None),
+            'start_date': req.triggerArgs.get('startDate', None) or None,
+            'end_date': req.triggerArgs.get('endDate', None) or None,
             req.triggerArgs.type: req.triggerArgs.value
         }
         apscheduler.modify_job(

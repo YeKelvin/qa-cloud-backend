@@ -28,8 +28,8 @@ def delete_all_by_user(user_no):
     TUserRole.deletes_by(USER_NO=user_no)
 
 
-def delete_all_by_user_and_notin_role(user_no, *role_numbered_list) -> None:
+def delete_all_by_user_and_notin_role(user_no, *role_nos) -> None:
     TUserRole.deletes(
         TUserRole.USER_NO == user_no,
-        TUserRole.ROLE_NO.notin_(*role_numbered_list)
+        TUserRole.ROLE_NO.notin_(*role_nos)
     )

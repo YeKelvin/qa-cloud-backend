@@ -36,15 +36,15 @@ def delete_all_by_group(group_no):
     TUserGroup.deletes_by(GROUP_NO=group_no)
 
 
-def delete_all_by_user_and_notin_group(user_no, *group_numbered_list) -> None:
+def delete_all_by_user_and_notin_group(user_no, *group_nos) -> None:
     TUserGroup.deletes(
         TUserGroup.USER_NO == user_no,
-        TUserGroup.GROUP_NO.notin_(*group_numbered_list)
+        TUserGroup.GROUP_NO.notin_(*group_nos)
     )
 
 
-def delete_all_by_group_and_notin_user(group_no, *user_numbered_list) -> None:
+def delete_all_by_group_and_notin_user(group_no, *user_nos) -> None:
     TUserGroup.deletes(
         TUserGroup.GROUP_NO == group_no,
-        TUserGroup.USER_NO.notin_(*user_numbered_list)
+        TUserGroup.USER_NO.notin_(*user_nos)
     )

@@ -21,12 +21,12 @@ from app.tools.logger import get_logger
 log = get_logger(__name__)
 
 
-def execute_testplan(planNo, datasetNumberedList, useCurrentValue):  # noqa
+def execute_testplan(planNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
-        run_testplan(planNo, datasetNumberedList, useCurrentValue, check_workspace=False)
+        run_testplan(planNo, datasetNos, useCurrentValue, check_workspace=False)
 
 
-def execute_collection(collectionNo, datasetNumberedList, useCurrentValue):  # noqa
+def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
         collection = TestElementDao.select_by_no(collectionNo)
@@ -37,8 +37,8 @@ def execute_collection(collectionNo, datasetNumberedList, useCurrentValue):  # n
         # 根据 collectionNo 递归加载脚本
         script = loads_tree(collectionNo)
         # 添加变量组件
-        if datasetNumberedList:
-            add_variable_dataset(script, datasetNumberedList, useCurrentValue)
+        if datasetNos:
+            add_variable_dataset(script, datasetNos, useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)
@@ -46,7 +46,7 @@ def execute_collection(collectionNo, datasetNumberedList, useCurrentValue):  # n
             log.error(traceback.format_exc())
 
 
-def execute_group(groupNo, datasetNumberedList, useCurrentValue):  # noqa
+def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
         group = TestElementDao.select_by_no(groupNo)
@@ -62,8 +62,8 @@ def execute_group(groupNo, datasetNumberedList, useCurrentValue):  # noqa
         collection_no = group_parent_link.PARENT_NO
         script = loads_tree(collection_no, specified_group_no=groupNo)
         # 添加变量组件
-        if datasetNumberedList:
-            add_variable_dataset(script, datasetNumberedList, useCurrentValue)
+        if datasetNos:
+            add_variable_dataset(script, datasetNos, useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)

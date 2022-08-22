@@ -23,7 +23,7 @@ def execute_collection():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_collection(req)
@@ -37,7 +37,7 @@ def execute_group():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False),
         Argument('selfonly', type=bool, default=False)
     ).parse()
@@ -52,7 +52,7 @@ def execute_sampler():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False),
         Argument('selfonly', type=bool, default=False)
     ).parse()
@@ -67,7 +67,7 @@ def execute_snippets():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False),
         Argument('variables', type=dict, default={})
     ).parse()
@@ -81,7 +81,7 @@ def execute_testplan():
     """运行测试计划"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_testplan(req)
@@ -105,7 +105,7 @@ def query_collection_json():
     """查询测试集合的脚本（json）"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_collection_json(req)
@@ -118,7 +118,7 @@ def query_group_json():
     """查询测试分组的脚本（json）"""
     req = JsonParser(
         Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_group_json(req)
@@ -131,7 +131,7 @@ def query_snippets_json():
     """查询片段集合的脚本（json）"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('datasetNumberedList', type=list, default=[]),
+        Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False),
         Argument('variables', type=dict)
     ).parse()

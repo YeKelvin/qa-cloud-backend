@@ -46,6 +46,6 @@ def modify_workspace_user():
     """修改空间用户"""
     req = JsonParser(
         Argument('workspaceNo'),
-        Argument('userNumberList')
+        Argument('userNos')
     ).parse()
     return service.modify_workspace_user(req)

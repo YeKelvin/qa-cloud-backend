@@ -97,7 +97,7 @@ def query_testplan(req):
 
     # 查询测试计划关联的集合
     items = TestPlanItemsDao.select_all_by_plan(req.planNo)
-    collection_number_list = [item.COLLECTION_NO for item in items]
+    collection_nos = [item.COLLECTION_NO for item in items]
 
     return {
         'planNo': testplan.PLAN_NO,
@@ -110,8 +110,8 @@ def query_testplan(req):
         'save': settings.SAVE,
         'saveOnError': settings.SAVE_ON_ERROR,
         'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
-        'notificationRobotNumberedList': settings.NOTIFICATION_ROBOT_LIST,
-        'collectionNumberList': collection_number_list
+        'notificationRobotNos': settings.NOTIFICATION_ROBOT_LIST,
+        'collectionNos': collection_nos
     }
 
 
@@ -137,7 +137,7 @@ def create_testplan(req):
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
         STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        NOTIFICATION_ROBOT_LIST=req.notificationRobotNumberedList
+        NOTIFICATION_ROBOT_LIST=req.notificationRobotNos
     )
 
     # 新增测试计划项目明细
@@ -177,9 +177,9 @@ def modify_testplan(req):
     check_exists(settings, error_msg='计划设置不存在')
 
     # 修改测试计划项目明细
-    collection_number_list = []
+    collection_nos = []
     for collection in req.collectionList:
-        collection_number_list.append(collection.elementNo)
+        collection_nos.append(collection.elementNo)
         # 查询测试计划关联的集合
         if item := TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo):
             item.update(SORT_NO=collection.sortNo)
@@ -190,7 +190,7 @@ def modify_testplan(req):
                 SORT_NO=collection.sortNo
             )
     # 删除不在请求中的集合
-    TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_number_list)
+    TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_nos)
 
     # 修改测试计划
     testplan.update(

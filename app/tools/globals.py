@@ -14,6 +14,10 @@ def get_userno():
     return getattr(g, 'user_no', None)
 
 
+def get_userno_or_default():
+    return getattr(g, 'user_no', '9999')
+
+
 def get_issued_at():
     return getattr(g, 'issued_at', None)
 

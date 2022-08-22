@@ -96,7 +96,7 @@ def create_role_permissions(req):
     role = RoleDao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
-    for permission_no in req.permissionNumberList:
+    for permission_no in req.permissionNos:
         # 查询角色权限
         role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, permission_no)
         # 绑定角色权限
@@ -110,8 +110,7 @@ def remove_role_permission(req):
     # 查询角色权限
     role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, req.permissionNo)
     # 解绑角色权限
-    if role_permission:
-        role_permission.delete()
+    role_permission and role_permission.delete()
 
 
 @http_service
@@ -121,9 +120,8 @@ def remove_role_permissions(req):
     role = RoleDao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
-    for permission_no in req.permissionNumberList:
+    for permission_no in req.permissionNos:
         # 查询角色权限
         role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, permission_no)
         # 解绑角色权限
-        if role_permission:
-            role_permission.delete()
+        role_permission and role_permission.delete()

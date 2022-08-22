@@ -171,13 +171,13 @@ def register(req):
     TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
 
     # 绑定用户角色
-    if req.roleNumberedList:
-        for role_no in req.roleNumberedList:
+    if req.roleNos:
+        for role_no in req.roleNos:
             TUserRole.insert(USER_NO=user_no, ROLE_NO=role_no)
 
     # 绑定用户分组
-    if req.groupNumberedList:
-        for group_no in req.groupNumberedList:
+    if req.groupNos:
+        for group_no in req.groupNos:
             TUserGroup.insert(USER_NO=user_no, GROUP_NO=group_no)
 
 
@@ -357,26 +357,26 @@ def modify_user(req):
     workspace.update(WORKSPACE_NAME=f'{req.userName}的私有空间')
 
     # 绑定用户角色
-    if req.roleNumberedList is not None:
-        for role_no in req.roleNumberedList:
+    if req.roleNos is not None:
+        for role_no in req.roleNos:
             # 查询用户角色
             user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
             if not user_role:
                 TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
 
         # 删除不在请求中的角色
-        UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNumberedList)
+        UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNos)
 
     # 绑定用户分组
-    if req.groupNumberedList is not None:
-        for group_no in req.groupNumberedList:
+    if req.groupNos is not None:
+        for group_no in req.groupNos:
             # 查询用户分组
             group_user = UserGroupDao.select_by_user_and_group(req.userNo, group_no)
             if not group_user:
                 TUserGroup.insert(USER_NO=req.userNo, GROUP_NO=group_no)
 
         # 解绑不在请求中的分组
-        UserGroupDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNumberedList)
+        UserGroupDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNos)
 
 
 def get_private_workspace_by_user(user_no):

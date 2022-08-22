@@ -486,7 +486,7 @@ def remove_variables(req):
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
     # 批量删除变量
-    VariableDao.delete_in_no(req.variableNumberedList)
+    VariableDao.delete_in_no(req.variableNos)
 
 
 @http_service

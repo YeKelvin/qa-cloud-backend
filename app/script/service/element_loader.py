@@ -288,13 +288,13 @@ def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, resul
     })
 
 
-def add_variable_dataset(script: dict, dataset_number_list: list, use_current_value: bool, additional: dict = None):
+def add_variable_dataset(script: dict, dataset_nos: list, use_current_value: bool, additional: dict = None):
     # 不存在变量集就忽略了
-    if not dataset_number_list:
+    if not dataset_nos:
         return
 
     # 获取变量集
-    variables = get_variables_by_datasets(dataset_number_list, use_current_value)
+    variables = get_variables_by_datasets(dataset_nos, use_current_value)
 
     # 添加额外的变量
     if additional:
@@ -328,10 +328,10 @@ def add_variable_dataset(script: dict, dataset_number_list: list, use_current_va
     })
 
 
-def get_variables_by_datasets(dataset_number_list: list, use_current_value: bool) -> Dict:
+def get_variables_by_datasets(dataset_nos: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_number_list)
+    dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_nos)
     if not dataset_list:
         return result
 

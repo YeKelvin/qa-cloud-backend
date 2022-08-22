@@ -57,7 +57,7 @@ def create_role_permissions():
     """批量新增角色权限"""
     req = JsonParser(
         Argument('roleNo'),
-        Argument('permissionNumberList')
+        Argument('permissionNos')
     ).parse()
     return service.create_role_permissions(req)
 
@@ -81,6 +81,6 @@ def remove_role_permissions():
     """批量删除角色权限"""
     req = JsonParser(
         Argument('roleNo'),
-        Argument('permissionNumberList')
+        Argument('permissionNos')
     ).parse()
     return service.remove_role_permissions(req)

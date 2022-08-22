@@ -17,10 +17,11 @@ headers = {'content-type': 'application/json'}
 encoding = 'utf-8'
 
 
-def text_message(key, content: str, mentioned_list: list = None, mentioned_mobile_list: list = None):
+def send_text_message(robotkey: str, content: str, mentioned_list: list = None, mentioned_mobile_list: list = None):
     """发送文本消息
 
     Args:
+        robotkey (str): 机器人唯一标识
         content (str): 文本内容，最长不超过2048个字节，必须是utf8编码
         mentioned_list (list): userid的列表，提醒群中的指定成员(@某个成员)，@all表示提醒所有人，如果开发者获取不到userid，可以使用mentioned_mobile_list
         mentioned_mobile_list (list): 手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人
@@ -33,14 +34,15 @@ def text_message(key, content: str, mentioned_list: list = None, mentioned_mobil
             'mentioned_mobile_list': mentioned_mobile_list or []
         }
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
-def markdown_message(key, content: str):
+def send_markdown_message(robotkey: str, content: str):
     """发送markdown消息
 
     Args:
+        robotkey (str): 机器人唯一标识
         content (str): markdown内容，最长不超过4096个字节，必须是utf8编码
     """
     data = {
@@ -49,14 +51,15 @@ def markdown_message(key, content: str):
             'content': content
         }
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
-def image_message(key, base64: str, md5: str):
+def send_image_message(robotkey: str, base64: str, md5: str):
     """发送图片消息
 
     Args:
+        robotkey (str): 机器人唯一标识
         base64 (str): 图片内容的base64编码，图片（base64编码前）最大不能超过2M，支持JPG,PNG格式
         md5 (str): 图片内容（base64编码前）的md5值
     """
@@ -67,14 +70,15 @@ def image_message(key, base64: str, md5: str):
             'md5': md5
         }
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
-def news_message(key, articles: list):
+def send_news_message(robotkey: str, articles: list):
     """发送图文消息
 
     Args:
+        robotkey (str): 机器人唯一标识
         articles (list): 图文消息，一个图文消息支持1到8条图文
             - title (str): 标题，不超过128个字节，超过会自动截断
             - description (str): 描述，不超过512个字节，超过会自动截断
@@ -87,14 +91,15 @@ def news_message(key, articles: list):
             'articles': articles
         }
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
-def file_message(key, media_id: str):
+def send_file_message(robotkey: str, media_id: str):
     """发送文件消息
 
     Args:
+        robotkey (str): 机器人唯一标识
         media_id (str): 文件id，通过文件上传接口获取
     """
     data = {
@@ -103,11 +108,11 @@ def file_message(key, media_id: str):
             'media_id': media_id
         }
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
-def text_card_message(key: str, card: dict):
+def send_textcard_message(robotkey: str, card: dict):
     """
     {
         'template_card': {
@@ -160,5 +165,5 @@ def text_card_message(key: str, card: dict):
         'msgtype': 'template_card',
         'template_card': card
     }
-    res = requests.post(url=f'{webhookurl}{key}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')

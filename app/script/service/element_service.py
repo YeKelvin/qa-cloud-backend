@@ -345,7 +345,7 @@ def query_element_children(req):
 @http_service
 def query_elements_children(req):
     result = []
-    for element_no in req.elementNumberedList:
+    for element_no in req.elementNos:
         element = TestElementDao.select_by_no(element_no)
         if not element:
             log.warning(f'elementNo:[ {element_no} ] 元素不存在')
@@ -946,7 +946,7 @@ def create_element_httpheader_template_refs(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
 
-    for template_no in req.templateNumberList:
+    for template_no in req.templateNos:
         # 查询模板
         template = HttpHeaderTemplateDao.select_by_no(template_no)
         if not template:
@@ -966,7 +966,7 @@ def modify_element_httpheader_template_refs(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
 
-    for template_no in req.templateNumberList:
+    for template_no in req.templateNos:
         # 查询模板
         template = HttpHeaderTemplateDao.select_by_no(template_no)
         if not template:
@@ -982,7 +982,7 @@ def modify_element_httpheader_template_refs(req):
             )
 
     # 删除不在请求中的模板
-    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_notin_template(req.elementNo, req.templateNumberList)
+    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_notin_template(req.elementNo, req.templateNos)
 
 
 @http_service

@@ -39,11 +39,11 @@ def check_is_in_enum(string: str, enumeration: enum, error_msg: str = 'validatio
         raise ServiceError(error_msg, error)
 
 
-def get_user_workspace_numbered_list(user_no) -> list:
+def get_user_workspace_numbers(user_no) -> list:
     return [entity.WORKSPACE_NO for entity in TWorkspaceUser.filter_by(USER_NO=user_no).all()]
 
 
-def get_user_group_numbered_list(user_no) -> list:
+def get_user_group_numbers(user_no) -> list:
     return [entity.GROUP_NO for entity in TUserGroup.filter_by(USER_NO=user_no).all()]
 
 
@@ -73,7 +73,7 @@ def match_restriction(restriction: TWorkspaceRestriction):
     return False
 
 
-def get_matched_restriction_numbered_list(workspace_no) -> list:
+def get_matched_restriction_numbers(workspace_no) -> list:
     restrictions = TWorkspaceRestriction.filter_by(
         WORKSPACE_NO=workspace_no,
         MATCH_METHOD=request.method,
@@ -82,9 +82,9 @@ def get_matched_restriction_numbered_list(workspace_no) -> list:
     return [restriction.RESTRICTION_NO for restriction in restrictions if match_restriction(restriction)]
 
 
-def get_restricted_exemption_numbered_list(restriction_numbered_list) -> list:
+def get_restricted_exemption_numbers(restriction_nos) -> list:
     exemptions = TWorkspaceRestrictedExemption.filter(
-        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(restriction_numbered_list)
+        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(restriction_nos)
     ).all()
     return [exemption.EXEMPTION_NO for exemption in exemptions]
 
@@ -96,26 +96,26 @@ def check_workspace_permission(source_workspace_no) -> None:
         raise ServiceError('空间权限不足，获取用户编号失败')
 
     # 判断用户是否是操作空间的成员
-    user_workspace_numbered_list = get_user_workspace_numbered_list(user_no)
-    if source_workspace_no not in user_workspace_numbered_list:
+    user_workspace_nos = get_user_workspace_numbers(user_no)
+    if source_workspace_no not in user_workspace_nos:
         if is_super_admin(user_no):
             return
         raise ServiceError('空间权限不足，用户非目标空间成员')
 
     # 根据请求方法和请求路径，查询操作空间的限制项
-    restriction_numbered_list = get_matched_restriction_numbered_list(source_workspace_no)
-    if not restriction_numbered_list:
+    restriction_nos = get_matched_restriction_numbers(source_workspace_no)
+    if not restriction_nos:
         return
 
     # 校验用户是否为豁免成员
-    exemption_numbered_list = get_restricted_exemption_numbered_list(restriction_numbered_list)
-    if user_no in exemption_numbered_list:
+    exemption_nos = get_restricted_exemption_numbers(restriction_nos)
+    if user_no in exemption_nos:
         return
 
     # 校验用户分组是否为豁免分组
-    user_group_numbered_list = get_user_group_numbered_list(user_no)
-    for group_no in user_group_numbered_list:
-        if group_no in exemption_numbered_list:
+    user_group_nos = get_user_group_numbers(user_no)
+    for group_no in user_group_nos:
+        if group_no in exemption_nos:
             return
 
     if is_super_admin(user_no):

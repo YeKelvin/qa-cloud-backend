@@ -51,8 +51,8 @@ def register():
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
         Argument('mobileNo'),
         Argument('email'),
-        Argument('roleNumberedList', type=list),
-        Argument('groupNumberedList', type=list)
+        Argument('roleNos', type=list),
+        Argument('groupNos', type=list)
     ).parse()
     return service.register(req)
 
@@ -104,8 +104,8 @@ def modify_user():
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('mobileNo'),
         Argument('email'),
-        Argument('roleNumberedList', type=list),
-        Argument('groupNumberedList', type=list)
+        Argument('roleNos', type=list),
+        Argument('groupNos', type=list)
     ).parse()
     return service.modify_user(req)
 

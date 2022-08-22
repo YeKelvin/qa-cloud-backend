@@ -107,7 +107,7 @@ def query_element_children():
 def query_elements_children():
     """根据元素编号列表查询元素子代"""
     req = JsonParser(
-        Argument('elementNumberedList', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
+        Argument('elementNos', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
     return service.query_elements_children(req)
@@ -278,7 +278,7 @@ def create_element_httpheader_template_refs():
     """新增元素和HTTP请求头模板列表的关联"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
     return service.create_element_httpheader_template_refs(req)
 
@@ -290,7 +290,7 @@ def modify_element_httpheader_template_refs():
     """修改元素关联的HTTP请求头模板关联列表"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNumberList', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
     return service.modify_element_httpheader_template_refs(req)
 

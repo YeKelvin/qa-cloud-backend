@@ -104,9 +104,9 @@ def create_group(req):
     )
 
     # 绑定分组角色
-    if req.roleNumberedList:
-        for role_no in req.roleNumberedList:
-            TGroupRole.insert(GROUP_NO=role_no, ROLE_NO=role_no)
+    if req.roleNos:
+        for role_no in req.roleNos:
+            TGroupRole.insert(GROUP_NO=group_no, ROLE_NO=role_no)
 
 
 @http_service
@@ -127,8 +127,8 @@ def modify_group(req):
     )
 
     # 绑定分组角色
-    if req.roleNumberedList:
-        for role_no in req.roleNumberedList:
+    if req.roleNos:
+        for role_no in req.roleNos:
             # 查询分组角色
             group_role = GroupRoleDao.select_by_group_and_role(req.groupNo, role_no)
             if group_role:
@@ -137,7 +137,7 @@ def modify_group(req):
                 TGroupRole.insert(GROUP_NO=req.groupNo, ROLE_NO=role_no)
 
         # 解绑不在请求中的角色
-        GroupRoleDao.delete_all_by_group_and_notin_role(req.groupNo, req.roleNumberedList)
+        GroupRoleDao.delete_all_by_group_and_notin_role(req.groupNo, req.roleNos)
 
 
 @http_service

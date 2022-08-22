@@ -56,8 +56,8 @@ def create_workspace_restriction():
         Argument('matchMethod', required=True, nullable=False, enum=RestrictionMatchMethod, help='匹配方法不能为空'),
         Argument('matchType', enum=RestrictionMatchType),
         Argument('matchContent'),
-        Argument('exemptionUserNumberedList', type=list),
-        Argument('exemptionGroupNumberedList', type=list)
+        Argument('exemptionUserNos', type=list),
+        Argument('exemptionGroupNos', type=list)
     ).parse()
     return service.create_workspace_restriction(req)
 
@@ -72,8 +72,8 @@ def modify_workspace_restriction():
         Argument('matchMethod', required=True, nullable=False, enum=RestrictionMatchMethod, help='匹配方法不能为空'),
         Argument('matchType', enum=RestrictionMatchType),
         Argument('matchContent'),
-        Argument('exemptionUserNumberedList', type=list, default=[]),
-        Argument('exemptionGroupNumberedList', type=list, default=[])
+        Argument('exemptionUserNos', type=list, default=[]),
+        Argument('exemptionGroupNos', type=list, default=[])
     ).parse()
     return service.modify_workspace_restriction(req)
 

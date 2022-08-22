@@ -31,9 +31,9 @@ def delete_all_by_restriction(restriction_no):
     TWorkspaceRestrictedExemption.deletes_by(RESTRICTION_NO=restriction_no)
 
 
-def delete_all_by_restriction_and_notin_exemption(restriction_no, exemption_type, *exemption_numbered_list):
+def delete_all_by_restriction_and_notin_exemption(restriction_no, exemption_type, *exemption_nos):
     TWorkspaceRestrictedExemption.deletes(
         TWorkspaceRestrictedExemption.RESTRICTION_NO == restriction_no,
         TWorkspaceRestrictedExemption.EXEMPTION_TYPE == exemption_type,
-        TWorkspaceRestrictedExemption.EXEMPTION_NO.notin_(*exemption_numbered_list)
+        TWorkspaceRestrictedExemption.EXEMPTION_NO.notin_(*exemption_nos)
     )

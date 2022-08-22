@@ -122,8 +122,8 @@ def create_workspace_restriction(req):
     )
 
     # 新增豁免成员
-    if req.exemptionUserNumberedList:
-        for userno in req.exemptionUserNumberedList:
+    if req.exemptionUserNos:
+        for userno in req.exemptionUserNos:
             TWorkspaceRestrictedExemption.insert(
                 RESTRICTION_NO=restriction_no,
                 EXEMPTION_TYPE=RestrictedExemptionType.USER.value,
@@ -131,8 +131,8 @@ def create_workspace_restriction(req):
             )
 
     # 新增豁免分组
-    if req.exemptionGroupNumberedList:
-        for groupno in req.exemptionGroupNumberedList:
+    if req.exemptionGroupNos:
+        for groupno in req.exemptionGroupNos:
             TWorkspaceRestrictedExemption.insert(
                 RESTRICTION_NO=restriction_no,
                 EXEMPTION_TYPE=RestrictedExemptionType.GROUP.value,
@@ -160,8 +160,8 @@ def modify_workspace_restriction(req):
     )
 
     # 更新豁免成员列表
-    if req.exemptionUserNumberedList:
-        for userno in req.exemptionUserNumberedList:
+    if req.exemptionUserNos:
+        for userno in req.exemptionUserNos:
             exemption = WorkspaceRestrictedExemptionDao.select_first(
                 RESTRICTION_NO=req.restrictionNo,
                 EXEMPTION_TYPE=RestrictedExemptionType.USER.value,
@@ -179,12 +179,12 @@ def modify_workspace_restriction(req):
         WorkspaceRestrictedExemptionDao.delete_all_by_restriction_and_notin_exemption(
             req.restrictionNo,
             RestrictedExemptionType.USER.value,
-            req.exemptionUserNumberedList
+            req.exemptionUserNos
         )
 
     # 更新豁免分组列表
-    if req.exemptionGroupNumberedList:
-        for groupno in req.exemptionGroupNumberedList:
+    if req.exemptionGroupNos:
+        for groupno in req.exemptionGroupNos:
             exemption = WorkspaceRestrictedExemptionDao.select_first(
                 RESTRICTION_NO=req.restrictionNo,
                 EXEMPTION_TYPE=RestrictedExemptionType.GROUP.value,
@@ -202,7 +202,7 @@ def modify_workspace_restriction(req):
         WorkspaceRestrictedExemptionDao.delete_all_by_restriction_and_notin_exemption(
             req.restrictionNo,
             RestrictedExemptionType.GROUP.value,
-            req.exemptionGroupNumberedList
+            req.exemptionGroupNos
         )
 
 

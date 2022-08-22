@@ -230,7 +230,7 @@ def remove_http_headers():
     """批量删除请求头"""
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空'),
-        Argument('headerNumberedList', type=list, required=True, nullable=False, help='请求头列表不能为空')
+        Argument('headerNos', type=list, required=True, nullable=False, help='请求头列表不能为空')
     ).parse()
     return service.remove_http_headers(req)
 

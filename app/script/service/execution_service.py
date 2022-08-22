@@ -67,10 +67,10 @@ def get_root_no(element_no):
 
 def get_workspace_no(collection_no) -> str:
     """获取元素空间编号"""
-    workspace_collection = WorkspaceCollectionDao.select_by_collection(collection_no)
-    if not workspace_collection:
+    if workspace_collection := WorkspaceCollectionDao.select_by_collection(collection_no):
+        return workspace_collection.WORKSPACE_NO
+    else:
         raise ServiceError('查询元素空间失败')
-    return workspace_collection.WORKSPACE_NO
 
 
 def debug_pymeter(script, sid):
@@ -138,10 +138,10 @@ def execute_collection(req):
                 result_name=collection_name
             )
             # 添加变量组件
-            if req.datasetNumberedList:
+            if req.datasetNos:
                 element_loader.add_variable_dataset(
                     script,
-                    req.datasetNumberedList,
+                    req.datasetNos,
                     req.useCurrentValue
                 )
             return script
@@ -193,10 +193,10 @@ def execute_group(req):
                 result_name=group_name
             )
             # 添加变量组件
-            if req.datasetNumberedList:
+            if req.datasetNos:
                 element_loader.add_variable_dataset(
                     script,
-                    req.datasetNumberedList,
+                    req.datasetNos,
                     req.useCurrentValue
                 )
             return script
@@ -244,10 +244,10 @@ def execute_sampler(req):
     )
 
     # 添加变量组件
-    if req.datasetNumberedList:
+    if req.datasetNos:
         element_loader.add_variable_dataset(
             script,
-            req.datasetNumberedList,
+            req.datasetNos,
             req.useCurrentValue
         )
 
@@ -284,10 +284,10 @@ def execute_snippets(req):
     )
 
     # 添加变量组件
-    if req.datasetNumberedList:
+    if req.datasetNos:
         element_loader.add_variable_dataset(
             script,
-            req.datasetNumberedList,
+            req.datasetNos,
             req.useCurrentValue,
             req.variables
         )
@@ -299,10 +299,10 @@ def execute_snippets(req):
 @http_service
 @transactional
 def execute_testplan(req):
-    return run_testplan(req.planNo, req.datasetNumberedList, req.useCurrentValue)
+    return run_testplan(req.planNo, req.datasetNos, req.useCurrentValue)
 
 
-def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_workspace=True):
+def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(plan_no)
     check_exists(testplan, error_msg='测试计划不存在')
@@ -327,13 +327,13 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
 
     # 根据序号排序
     items.sort(key=lambda k: k.SORT_NO)
-    collection_numbered_list = [item.COLLECTION_NO for item in items]
+    collection_nos = [item.COLLECTION_NO for item in items]
 
     # 创建执行编号
     execution_no = new_id()
     # 创建执行记录与数据集关联
     environment = None
-    for dataset_no in dataset_numbered_list:
+    for dataset_no in dataset_nos:
         dataset = VariableDatasetDao.select_by_no(dataset_no)
         if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
             environment = dataset.DATASET_NAME
@@ -347,6 +347,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
         record=False
     )
     # 创建计划执行设置
+    # TODO: rename VARIABLE_DATASET_LIST, NOTIFICATION_ROBOT_LIST
     TTestplanExecutionSettings.insert(
         EXECUTION_NO=execution_no,
         CONCURRENCY=settings.CONCURRENCY,
@@ -355,7 +356,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
         SAVE=settings.SAVE,
         SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
         STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
-        VARIABLE_DATASET_LIST=dataset_numbered_list,
+        VARIABLE_DATASET_LIST=dataset_nos,
         USE_CURRENT_VALUE=use_current_value,
         NOTIFICATION_ROBOT_LIST=settings.NOTIFICATION_ROBOT_LIST,
         record=False
@@ -387,7 +388,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
     delay = settings.DELAY
     save = settings.SAVE
     save_on_error = settings.SAVE_ON_ERROR
-    notification_robot_numbered_list = settings.NOTIFICATION_ROBOT_LIST
+    notification_robot_nos = settings.NOTIFICATION_ROBOT_LIST
 
     # 异步函数
     def start(app):
@@ -395,8 +396,8 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
             with app.app_context():
                 start_testplan(
                     app,
-                    collection_numbered_list,
-                    dataset_numbered_list,
+                    collection_nos,
+                    dataset_nos,
                     use_current_value,
                     execution_no,
                     report_no,
@@ -404,7 +405,7 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
                     delay,
                     save,
                     save_on_error,
-                    notification_robot_numbered_list
+                    notification_robot_nos
                 )
         except Exception:
             log.error(f'执行编号:[ {execution_no} ] 执行异常\n{traceback.format_exc()}')
@@ -424,8 +425,8 @@ def run_testplan(plan_no, dataset_numbered_list, use_current_value, check_worksp
 
 def start_testplan(
         app,
-        collection_numbered_list,
-        dataset_numbered_list,
+        collection_nos,
+        dataset_nos,
         use_current_value,
         execution_no,
         report_no,
@@ -433,7 +434,7 @@ def start_testplan(
         delay,
         save,
         save_on_error,
-        notification_robot_numbered_list
+        notification_robot_nos
 ):
     log.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
     # 记录开始时间
@@ -452,8 +453,8 @@ def start_testplan(
         if save_on_error:
             start_testplan_by_error_report(
                 app,
-                collection_numbered_list,
-                dataset_numbered_list,
+                collection_nos,
+                dataset_nos,
                 use_current_value,
                 execution_no,
                 report_no
@@ -461,8 +462,8 @@ def start_testplan(
         else:
             start_testplan_by_report(
                 app,
-                collection_numbered_list,
-                dataset_numbered_list,
+                collection_nos,
+                dataset_nos,
                 use_current_value,
                 execution_no,
                 report_no
@@ -470,8 +471,8 @@ def start_testplan(
     else:
         start_testplan_by_loop(
             app,
-            collection_numbered_list,
-            dataset_numbered_list,
+            collection_nos,
+            dataset_nos,
             use_current_value,
             execution_no,
             iterations,
@@ -508,15 +509,18 @@ def start_testplan(
         db.session.commit()  # 这里要实时更新
 
     # 结果通知
-    if notification_robot_numbered_list:
-        for robot_no in notification_robot_numbered_list:
+    if notification_robot_nos:
+        log.info(f'执行编号:[ {execution_no} ] 发送执行结果消息')
+        for robot_no in notification_robot_nos:
             robot = NotificationRobotDao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
+                log.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 消息机器人状态已禁用')
                 continue
-            # 企业微信通知
+            # 企业微信
             if robot.ROBOT_TYPE == RobotType.WECOM.value:
-                WeComTool.text_message(
-                    key=robot.ROBOT_CONFIG.get('key'),
+                log.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 发送企业微信消息')
+                WeComTool.send_text_message(
+                    robotkey=robot.ROBOT_CONFIG.get('key'),
                     content=get_notification_message(execution, report)
                 )
 
@@ -559,8 +563,8 @@ def get_notification_message(execution, report):
 
 def start_testplan_by_loop(
         app,
-        collection_numbered_list,
-        dataset_numbered_list,
+        collection_nos,
+        dataset_nos,
         use_current_value,
         execution_no,
         iterations,
@@ -570,14 +574,14 @@ def start_testplan_by_loop(
     # 批量解析脚本并临时存储
     log.info(f'执行编号:[ {execution_no} ] 开始批量解析脚本')
     scripts = {}
-    for collection_no in collection_numbered_list:
+    for collection_no in collection_nos:
         # 加载脚本
         collection = element_loader.loads_tree(collection_no, no_debuger=True)
         if not collection:
             log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             continue
         # 添加自定义变量组件
-        element_loader.add_variable_dataset(collection, dataset_numbered_list, use_current_value)
+        element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
         # 添加迭代记录器组件
         element_loader.add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
@@ -654,8 +658,8 @@ def start_testplan_by_loop(
 
 def start_testplan_by_report(
         app,
-        collection_numbered_list,
-        dataset_numbered_list,
+        collection_nos,
+        dataset_nos,
         use_current_value,
         execution_no,
         report_no
@@ -663,7 +667,7 @@ def start_testplan_by_report(
     """运行测试计划并保存测试结果"""
     try:
         # 顺序执行脚本
-        for collection_no in collection_numbered_list:
+        for collection_no in collection_nos:
             # 检查是否需要中断执行
             execution = TestplanExecutionDao.select_by_no(execution_no)
             if execution.INTERRUPT:
@@ -681,7 +685,7 @@ def start_testplan_by_report(
             if not collection:
                 log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             # 添加自定义变量组件
-            element_loader.add_variable_dataset(collection, dataset_numbered_list, use_current_value)
+            element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
             # 添加报告存储器组件
             element_loader.add_flask_db_result_storage(collection, report_no, collection_no)
 
@@ -730,8 +734,8 @@ def start_testplan_by_report(
 
 def start_testplan_by_error_report(
         app,
-        collection_numbered_list,
-        dataset_numbered_list,
+        collection_nos,
+        dataset_nos,
         use_current_value,
         execution_no,
         report_no
@@ -774,7 +778,7 @@ def query_collection_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue)
+    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script
 
 
@@ -794,7 +798,7 @@ def query_group_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue)
+    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script
 
 
@@ -813,5 +817,5 @@ def query_snippets_json(req):
         collection.ELEMENT_REMARK
     )
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNumberedList, req.useCurrentValue, req.variables)
+    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue, req.variables)
     return script
