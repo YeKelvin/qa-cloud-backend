@@ -10,10 +10,10 @@ from enum import unique
 @unique
 class WorkspaceScope(Enum):
 
-    # 私有空间，每个用户注册后都有一个私有空间
+    # 个人空间，每个用户注册后都有个人空间
     PRIVATE = 'PRIVATE'
 
-    # 保护空间，需要添加用户关联，在空间下的用户才能使用空间
+    # 团队空间，需要添加用户关联，在空间下的用户才能使用空间
     PROTECTED = 'PROTECTED'
 
     # 公共空间，不需要添加用户关联，所有用户都可以使用

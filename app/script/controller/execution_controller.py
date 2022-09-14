@@ -102,7 +102,7 @@ def interrupt_testplan_execution():
 @require_login
 @require_permission
 def query_collection_json():
-    """查询测试集合的脚本（json）"""
+    """查询测试集合的JSON脚本"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
@@ -115,7 +115,7 @@ def query_collection_json():
 @require_login
 @require_permission
 def query_group_json():
-    """查询测试分组的脚本（json）"""
+    """查询测试分组的JSON脚本"""
     req = JsonParser(
         Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
@@ -128,7 +128,7 @@ def query_group_json():
 @require_login
 @require_permission
 def query_snippets_json():
-    """查询片段集合的脚本（json）"""
+    """查询片段集合的JSON脚本"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('datasetNos', type=list, default=[]),

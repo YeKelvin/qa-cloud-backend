@@ -11,7 +11,7 @@ from app.extension import apscheduler
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.enum import ElementType
-from app.script.service.element_loader import add_variable_dataset
+from app.script.service.element_component import add_variable_dataset
 from app.script.service.element_loader import loads_tree
 from app.script.service.execution_service import run_testplan
 from app.tools.exceptions import ServiceError
@@ -55,11 +55,11 @@ def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
         if group.ELEMENT_TYPE != ElementType.GROUP.value:
             raise ServiceError('仅支持运行 Group 元素')
         # 获取 collectionNo
-        group_parent_link = ElementChildrenDao.select_by_child(groupNo)
-        if not group_parent_link:
+        group_parent_relation = ElementChildrenDao.select_by_child(groupNo)
+        if not group_parent_relation:
             raise ServiceError('元素父级关联不存在')
         # 根据 collectionNo 递归加载脚本
-        collection_no = group_parent_link.PARENT_NO
+        collection_no = group_parent_relation.PARENT_NO
         script = loads_tree(collection_no, specified_group_no=groupNo)
         # 添加变量组件
         if datasetNos:

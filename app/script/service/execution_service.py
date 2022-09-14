@@ -36,6 +36,10 @@ from app.script.model import TTestplanExecutionItems
 from app.script.model import TTestplanExecutionSettings
 from app.script.model import TTestReport
 from app.script.service import element_loader
+from app.script.service.element_component import add_flask_db_iteration_storage
+from app.script.service.element_component import add_flask_db_result_storage
+from app.script.service.element_component import add_flask_sio_result_collector
+from app.script.service.element_component import add_variable_dataset
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
@@ -58,11 +62,11 @@ log = get_logger(__name__)
 
 def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
-    if not (link := ElementChildrenDao.select_by_child(element_no)):
+    if not (relation := ElementChildrenDao.select_by_child(element_no)):
         return element_no
-    if not link.ROOT_NO:
+    if not relation.ROOT_NO:
         raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-    return link.ROOT_NO
+    return relation.ROOT_NO
 
 
 def get_workspace_no(collection_no) -> str:
@@ -131,19 +135,18 @@ def execute_collection(req):
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(req.collectionNo)
             # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(
+            add_flask_sio_result_collector(
                 script,
                 sid=req.socketId,
                 result_id=result_id,
                 result_name=collection_name
             )
             # 添加变量组件
-            if req.datasetNos:
-                element_loader.add_variable_dataset(
-                    script,
-                    req.datasetNos,
-                    req.useCurrentValue
-                )
+            add_variable_dataset(
+                script,
+                req.datasetNos,
+                req.useCurrentValue
+            )
             return script
 
     # 新建线程执行脚本
@@ -168,12 +171,12 @@ def execute_group(req):
         raise ServiceError('仅支持运行 Group 元素')
 
     # 获取 collectionNo
-    group_parent_link = ElementChildrenDao.select_by_child(req.groupNo)
-    if not group_parent_link:
+    group_parent_relation = ElementChildrenDao.select_by_child(req.groupNo)
+    if not group_parent_relation:
         raise ServiceError('元素父级关联不存在')
 
     # 临时存储变量
-    collection_no = group_parent_link.PARENT_NO
+    collection_no = group_parent_relation.PARENT_NO
     group_name = group.ELEMENT_NAME
 
     # 定义 loader 函数
@@ -186,19 +189,18 @@ def execute_group(req):
                 specified_selfonly=req.selfonly
             )
             # 添加 socket 组件
-            element_loader.add_flask_sio_result_collector(
+            add_flask_sio_result_collector(
                 script,
                 sid=req.socketId,
                 result_id=result_id,
                 result_name=group_name
             )
             # 添加变量组件
-            if req.datasetNos:
-                element_loader.add_variable_dataset(
-                    script,
-                    req.datasetNos,
-                    req.useCurrentValue
-                )
+            add_variable_dataset(
+                script,
+                req.datasetNos,
+                req.useCurrentValue
+            )
             return script
 
     # 新建线程执行脚本
@@ -223,20 +225,20 @@ def execute_sampler(req):
         raise ServiceError('仅支持运行 Sampler 元素')
 
     # 获取 collectionNo 和 groupNo
-    sampler_parent_link = ElementChildrenDao.select_by_child(req.samplerNo)
-    if not sampler_parent_link:
+    sampler_parent_relation = ElementChildrenDao.select_by_child(req.samplerNo)
+    if not sampler_parent_relation:
         raise ServiceError('元素父级关联不存在')
 
     # 临时存储变量
-    collection_no = sampler_parent_link.ROOT_NO
-    group_no = sampler_parent_link.PARENT_NO
+    collection_no = sampler_parent_relation.ROOT_NO
+    group_no = sampler_parent_relation.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfonly)
 
     # 添加 socket 组件
     result_id = new_id()
-    element_loader.add_flask_sio_result_collector(
+    add_flask_sio_result_collector(
         script,
         sid=req.socketId,
         result_id=result_id,
@@ -244,12 +246,11 @@ def execute_sampler(req):
     )
 
     # 添加变量组件
-    if req.datasetNos:
-        element_loader.add_variable_dataset(
-            script,
-            req.datasetNos,
-            req.useCurrentValue
-        )
+    add_variable_dataset(
+        script,
+        req.datasetNos,
+        req.useCurrentValue
+    )
 
     # 新建线程执行脚本
     executor.submit(debug_pymeter, script, req.socketId)
@@ -276,7 +277,7 @@ def execute_snippets(req):
 
     # 添加 socket 组件
     result_id = new_id()
-    element_loader.add_flask_sio_result_collector(
+    add_flask_sio_result_collector(
         script,
         sid=req.socketId,
         result_id=result_id,
@@ -284,13 +285,12 @@ def execute_snippets(req):
     )
 
     # 添加变量组件
-    if req.datasetNos:
-        element_loader.add_variable_dataset(
-            script,
-            req.datasetNos,
-            req.useCurrentValue,
-            req.variables
-        )
+    add_variable_dataset(
+        script,
+        req.datasetNos,
+        req.useCurrentValue,
+        req.variables
+    )
 
     # 新建线程执行脚本
     executor.submit(debug_pymeter, script, req.socketId)
@@ -583,7 +583,7 @@ def start_testplan_by_loop(
         # 添加自定义变量组件
         element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
         # 添加迭代记录器组件
-        element_loader.add_flask_db_iteration_storage(collection, execution_no, collection_no)
+        add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
         scripts[collection_no] = collection
 
@@ -687,7 +687,7 @@ def start_testplan_by_report(
             # 添加自定义变量组件
             element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
             # 添加报告存储器组件
-            element_loader.add_flask_db_result_storage(collection, report_no, collection_no)
+            add_flask_db_result_storage(collection, report_no, collection_no)
 
             # 异步函数
             def start(app):
@@ -791,10 +791,10 @@ def query_group_json(req):
     if group.ELEMENT_TYPE != ElementType.GROUP.value:
         raise ServiceError('仅支持 Group 元素')
     # 获取 collectionNo
-    group_parent_link = ElementChildrenDao.select_by_child(req.groupNo)
-    if not group_parent_link:
+    group_parent_relation = ElementChildrenDao.select_by_child(req.groupNo)
+    if not group_parent_relation:
         raise ServiceError('元素父级关联不存在')
-    collection_no = group_parent_link.PARENT_NO
+    collection_no = group_parent_relation.PARENT_NO
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
     # 添加变量组件

@@ -69,22 +69,24 @@ def query_role_permission_unbound_list(req):
     unbound_conds.like(TPermission.METHOD, req.method)
 
     # TPermission，TRolePermission连表查询
-    pagination = db.session.query(
-        TPermission
-    ).filter(
-        ~exists().where(and_(*bound_conds))
-    ).filter(
-        *unbound_conds
-    ).order_by(TPermission.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    pagination = (
+        db.session
+        .query(TPermission)
+        .filter(~exists().where(and_(*bound_conds)))
+        .filter(*unbound_conds)
+        .order_by(TPermission.CREATED_TIME.desc())
+        .paginate(req.page, req.pageSize)
+    )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'permissionNo': item.PERMISSION_NO,
             'permissionName': item.PERMISSION_NAME,
             'endpoint': item.ENDPOINT,
             'method': item.METHOD
-        })
+        }
+        for item in pagination.items
+    ]
 
     return {'data': data, 'total': pagination.total}
 

@@ -105,7 +105,7 @@ def query_element_children():
 @require_login
 @require_permission
 def query_elements_children():
-    """根据元素编号列表查询元素子代"""
+    """根据元素编号列表查询子代元素"""
     req = JsonParser(
         Argument('elementNos', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
@@ -129,12 +129,40 @@ def create_collection():
     return service.create_collection(req)
 
 
+@blueprint.post('/element/child')
+@require_login
+@require_permission
+def create_element_child():
+    """
+    新增子代元素
+    request:
+    {
+        "rootNo": "",
+        "parentNo": "",
+        "children": {
+            "elementName": "",
+            "elementRemark": "",
+            "elementType": "",
+            "elementClass": "",
+            "property": { ... },
+            "builtins": [ ... ]
+        }
+    }
+    """
+    req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('child', type=dict, required=True, nullable=False, help='子元素不能为空')
+    ).parse()
+    return service.create_element_child(req)
+
+
 @blueprint.post('/element/children')
 @require_login
 @require_permission
 def create_element_children():
     """
-    根据父元素编号新增子代元素（支持内置元素）
+    根据列表新增子代元素
     request:
     {
         "rootNo": "",
@@ -146,7 +174,7 @@ def create_element_children():
                 "elementType": "",
                 "elementClass": "",
                 "property": { ... },
-                "builtIn": [ ... ]
+                "builtins": [ ... ]
             }
             ...
         ]
@@ -170,33 +198,10 @@ def modify_element():
         Argument('elementName'),
         Argument('elementRemark'),
         Argument('enabled'),
-        Argument('property')
+        Argument('property'),
+        Argument('builtins', type=list),
     ).parse()
     return service.modify_element(req)
-
-
-@blueprint.put('/elements')
-@require_login
-@require_permission
-def modify_elements():
-    """
-    修改多个元素（包含内置元素）
-    example:
-    [
-        {
-            "elementNo": "",
-            "elementName": "",
-            "elementRemark": "",
-            "elementType": "",
-            "elementClass": "",
-            "property": { ... },
-            "builtIn": [ ... ]
-        }
-        ...
-    ]
-    """
-    req = ListParser().parse()
-    return service.modify_elements(req)
 
 
 @blueprint.delete('/element')
@@ -350,3 +355,77 @@ def move_collection_to_workspace():
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
     return service.move_collection_to_workspace(req)
+
+
+@blueprint.post('/element/http/sampler')
+@require_login
+@require_permission
+def create_http_sampler():
+    """
+    新增 HTTP Sampler 元素
+    request:
+    {
+        "rootNo": "",
+        "parentNo": "",
+        "child": {
+            "elementName": "",
+            "elementRemark": "",
+            "property": { ... },
+            "builtins": [
+                {
+                    "sortNo": "",
+                    "elementNo": "",
+                    "elementName": "",
+                    "elementType": "",
+                    "elementClass": "",
+                    "property": { ... },
+                }
+                ...
+            ],
+            "headerTemplateNos": [ ... ]
+        }
+    }
+    """
+    req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('child', type=dict, required=True, nullable=False, help='元素信息不能为空')
+    ).parse()
+    return service.create_http_sampler(req)
+
+
+@blueprint.put('/element/http/sampler')
+@require_login
+@require_permission
+def modify_http_sampler():
+    """
+    修改 HTTP Sampler 元素
+    request:
+    {
+        "elementNo": "",
+        "elementName": "",
+        "elementRemark": "",
+        "property": { ... },
+        "builtins": [
+            {
+                "sortNo": "",
+                "elementNo": "",
+                "elementName": "",
+                "elementType": "",
+                "elementClass": "",
+                "property": { ... },
+            }
+            ...
+         ],
+        "headerTemplateNos": [ ... ]
+    }
+    """
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
+        Argument('elementRemark'),
+        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('builtins', type=list),
+        Argument('headerTemplateNos', type=list)
+    ).parse()
+    return service.modify_http_sampler(req)

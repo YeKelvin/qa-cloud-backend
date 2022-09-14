@@ -59,6 +59,7 @@ class TElementBuiltinChildren(DBModel, BaseColumn):
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
+    SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
 
 
 class TVariableDataset(DBModel, BaseColumn):

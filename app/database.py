@@ -166,6 +166,7 @@ class DBModel(CRUDMixin, db.Model):
 
 class BaseColumn:
 
+    # TODO: ID = db.Column(db.Integer, Sequence('ID_SEQ'), primary_key=True)
     ID = db.Column(db.Integer, primary_key=True)
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
     DELETED = db.Column(db.Integer, nullable=False, default=0, comment='软删除标识')
