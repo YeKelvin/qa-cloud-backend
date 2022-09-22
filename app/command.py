@@ -85,7 +85,7 @@ def init_user():
     worksapce_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
-        WORKSPACE_NAME='超级管理员的私有空间',
+        WORKSPACE_NAME='超级管理员的个人空间',
         WORKSPACE_SCOPE='PRIVATE',
         record=False
     )
@@ -230,6 +230,8 @@ def init_permission():
     _create_permission(name='剪贴元素', method='POST', endpoint='/script/element/paste')
     _create_permission(name='复制集合到指定空间', method='POST', endpoint='/script/element/collection/copy/to/workspace')
     _create_permission(name='移动集合到指定空间', method='POST', endpoint='/script/element/collection/move/to/workspace')
+    _create_permission(name='查询空间所有组件', method='GET', endpoint='/script/element/workspace/components')
+    _create_permission(name='设置空间组件', method='POST', endpoint='/script/element/workspace/components')
 
     # execution
     _create_permission(name='运行测试集合', method='POST', endpoint='/script/collection/execute')

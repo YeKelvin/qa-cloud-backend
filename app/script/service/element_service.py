@@ -18,10 +18,11 @@ from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
-from app.script.enum import ElementClass
+from app.script.dao import workspace_component_dao as WorkspaceComponentDao
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
 from app.script.enum import PasteType
+from app.script.enum import ComponentSortWeight
 from app.script.enum import is_assertion
 from app.script.enum import is_collection
 from app.script.enum import is_config
@@ -41,6 +42,7 @@ from app.script.model import TElementProperty
 from app.script.model import THttpHeaderTemplateRef
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollection
+from app.script.model import TWorkspaceComponent
 from app.tools import globals
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
@@ -1013,13 +1015,13 @@ def query_element_builtins(req):
         # 查询内置元素
         if builtin := TestElementDao.select_by_no(relation.CHILD_NO):
             result.append({
-                'sortNo': relation.SORT_NO,
                 'elementNo': builtin.ELEMENT_NO,
                 'elementName': builtin.ELEMENT_NAME,
                 'elementType': builtin.ELEMENT_TYPE,
                 'elementClass': builtin.ELEMENT_CLASS,
                 'enabled': builtin.ENABLED,
-                'property': query_element_property(builtin.ELEMENT_NO)
+                'property': query_element_property(builtin.ELEMENT_NO),
+                'sortNumber': relation.SORT_NUMBER,
             })
 
     return result
@@ -1061,7 +1063,8 @@ def add_element_builtin(root_no, parent_no, builtin):
         PARENT_NO=parent_no,
         CHILD_NO=builtin_no,
         CHILD_TYPE=builtin.get('elementType'),
-        SORT_NO=builtin.get('sortNo', 0)
+        SORT_NUMBER=builtin.get('sortNumber', 0),
+        SORT_WEIGHT=ComponentSortWeight[builtin.get('elementType')].value
     )
     return builtin_no
 
@@ -1103,9 +1106,8 @@ def update_element_builtin(element_no, element_name,  element_remark, element_pr
     update_element_property(element_no, element_property)
 
 
-def update_element_builtins(parent_no, builtins):
-    if not builtins:
-        return
+def update_element_builtins(parent_no: str, builtins: list):
+    # 临时存储内置元素编号，用于删除非请求中的内置元素
     builtin_nos = []
     for builtin in builtins:
         # 内置元素存在则更新
@@ -1121,8 +1123,8 @@ def update_element_builtins(parent_no, builtins):
             # 更新内置元素属性
             update_element_property(builtin.elementNo, builtin.get('property', None))
             # 更新序号
-            relation = ElementBuiltinChildrenDao.select_by_child(builtin.elementNo)
-            relation.update(SORT_NO=builtin.sortNo)
+            element_builtin = ElementBuiltinChildrenDao.select_by_child(builtin.elementNo)
+            element_builtin.update(SORT_NUMBER=builtin.sortNumber)
         # 内置元素不存在则新增
         else:
             # 新增内置元素
@@ -1234,3 +1236,88 @@ def modify_http_sampler(req):
     )
     # 更新请求头模板关联
     update_httpheader_template_refs(req.elementNo, req.headerTemplateNos)
+
+
+@http_service
+def query_workspace_components(req):
+    result = []
+
+    # 查询空间的所有组件
+    workspace_component_list = WorkspaceComponentDao.select_all_by_workspace(req.workspaceNo)
+    if not workspace_component_list:
+        return result
+
+    for workspace_component in workspace_component_list:
+        # 查询元素
+        if element := TestElementDao.select_by_no(workspace_component.COMPONENT_NO):
+            result.append({
+                'elementNo': element.ELEMENT_NO,
+                'elementName': element.ELEMENT_NAME,
+                'elementType': element.ELEMENT_TYPE,
+                'elementClass': element.ELEMENT_CLASS,
+                'enabled': element.ENABLED,
+                'property': query_element_property(element.ELEMENT_NO),
+                'sortNumber': workspace_component.SORT_NUMBER,
+            })
+
+    return result
+
+
+@http_service
+@transactional
+def set_workspace_components(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+    # 遍历处理组件
+    component_nos = []
+    for component in req.components:
+        # 组件元素存在则更新
+        if element := TestElementDao.select_by_no(component.elementNo):
+            # 存储内置元素的编号
+            component_nos.append(component.elementNo)
+            # 更新组件元素
+            element.update(
+                ELEMENT_NAME=component.elementName,
+                ELEMENT_REMARK=component.get('elementRemark', None),
+                ENABLED=component.enabled
+            )
+            # 更新组件元素属性
+            update_element_property(component.elementNo, component.get('property', None))
+            # 更新序号
+            workspace_component = WorkspaceComponentDao.select_by_component(component.elementNo)
+            workspace_component.update(SORT_NUMBER=component.sortNumber)
+        # 组件元素不存在则新增
+        else:
+            component_no = add_workspace_component(req.workspaceNo, component)
+            # 存储内置元素的编号
+            component_nos.append(component_no)
+
+    # 移除非请求中组件元素
+    TWorkspaceComponent.deletes(
+        TWorkspaceComponent.WORKSPACE_NO == req.workspaceNo,
+        TWorkspaceComponent.COMPONENT_NO.notin_(component_nos),
+    )
+
+
+def add_workspace_component(workspace_no: str, component: dict) -> str:
+    # 新增元素
+    component_no = new_id()
+    TTestElement.insert(
+        ELEMENT_NO=component_no,
+        ELEMENT_NAME=component.get('elementName'),
+        ELEMENT_REMARK=component.get('elementRemark', None),
+        ELEMENT_TYPE=component.get('elementType'),
+        ELEMENT_CLASS=component.get('elementClass'),
+        ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
+    )
+    # 创建内置元素属性
+    add_element_property(component_no, component.get('property', None))
+    # 创建内置元素关联
+    TWorkspaceComponent.insert(
+        WORKSPACE_NO=workspace_no,
+        COMPONENT_NO=component_no,
+        COMPONENT_TYPE=component.get('elementType'),
+        SORT_NUMBER=component.get('sortNumber'),
+        SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
+    )
+    return component_no

@@ -23,6 +23,7 @@ class ElementType(Enum):
     CONTROLLER = 'CONTROLLER'
 
     # 配置器
+    # TODO: Configurator
     CONFIG = 'CONFIG'
 
     # 时间控制器
@@ -132,6 +133,21 @@ class PropertyType(Enum):
 
     def __eq__(self, other):
         return self.value == other if isinstance(other, str) else super().__eq__(other)
+
+
+@unique
+class ComponentSortWeight(Enum):
+    # 配置器
+    CONFIG = 99
+
+    # 前置处理器
+    PRE_PROCESSOR = 3
+
+    # 后置处理器
+    POST_PROCESSOR = 2
+
+    # 断言器
+    ASSERTION = 1
 
 
 @unique

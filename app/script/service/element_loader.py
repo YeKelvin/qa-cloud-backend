@@ -4,12 +4,14 @@
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
 from typing import Dict
-from app.database import dbquery
 
+from app.database import dbquery
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_children_dao as ElementChildrenDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import test_element_dao as TestElementDao
+from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
+from app.script.dao import workspace_component_dao as WorkspaceComponentDao
 from app.script.enum import ElementClass
 from app.script.enum import ElementType
 from app.script.enum import is_debuger
@@ -62,11 +64,13 @@ def loads_tree(
     if not script:
         raise ServiceError('脚本异常，请重试')
     # 添加全局配置
+    # TODO: 空间和全局配置的顺序，后续需要调整
     if config_components:
         for configs in config_components.values():
             for config in configs:
                 script['children'].insert(0, config)
-
+    # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
+    add_workspace_components(script, element_no)
     return script
 
 
@@ -215,25 +219,12 @@ def loads_children(
     return children
 
 
-# def add_builtin_children(element_no, children: list):
-#     # 查询内置元素关联
-#     # TODO:
-#     relations = ElementBuiltinChildrenDao.select_all_by_parent(element_no)
-#     for relation in relations:
-#         if relation.CHILD_TYPE == ElementType.ASSERTION.value:
-#             # 内置元素为 Assertion 时，添加至第一位（第一个运行 Assertion）
-#             if builtin := loads_element(relation.CHILD_NO):
-#                 children.insert(0, builtin)
-#         else:
-#             # 其余内置元素添加至最后（最后一个运行）
-#             if builtin := loads_element(relation.CHILD_NO):
-#                 children.append(builtin)
-
-
 def add_builtin_children(element_no, children: list):
+    # TODO: 排序还是有问题
     relations = (
         dbquery(
-            TElementBuiltinChildren.SORT_NO,
+            TElementBuiltinChildren.SORT_NUMBER,
+            TElementBuiltinChildren.SORT_WEIGHT,
             TElementBuiltinChildren.CHILD_TYPE,
             TElementBuiltinChildren.CHILD_NO
         )
@@ -246,7 +237,7 @@ def add_builtin_children(element_no, children: list):
                 ElementType.ASSERTION.value
             ])
         )
-        .order_by(TElementBuiltinChildren.SORT_NO.asc())
+        .order_by(TElementBuiltinChildren.SORT_WEIGHT.desc(), TElementBuiltinChildren.SORT_NUMBER.asc())
         .all()
     )
     for relation in relations:
@@ -381,6 +372,20 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     }
 
 
+def add_workspace_components(script: dict, element_no: str):
+    collection_no = get_root_no(element_no)
+    workspace_no = get_workspace_no(collection_no)
+    workspace_components = WorkspaceComponentDao.select_all_by_workspace(workspace_no)
+    if not workspace_components:
+        return
+    components = []
+    for workspace_component in workspace_components:
+        if element := loads_element(workspace_component.COMPONENT_NO):
+            components.append(element)
+    for component in components[::-1]:
+        script['children'].insert(0, component)
+
+
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
 
 
@@ -450,3 +455,20 @@ def get_real_class(element):
         return ElementClass.TEARDOWN_GROUP_DEBUGER.value
     else:
         return element.ELEMENT_CLASS
+
+
+def get_root_no(element_no):
+    """根据元素编号获取根元素编号（集合编号）"""
+    if not (element_child := ElementChildrenDao.select_by_child(element_no)):
+        return element_no
+    if not element_child.ROOT_NO:
+        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
+    return element_child.ROOT_NO
+
+
+def get_workspace_no(collection_no) -> str:
+    """获取元素空间编号"""
+    if workspace_collection := WorkspaceCollectionDao.select_by_collection(collection_no):
+        return workspace_collection.WORKSPACE_NO
+    else:
+        raise ServiceError('查询元素空间失败')

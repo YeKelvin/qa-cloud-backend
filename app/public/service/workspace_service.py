@@ -58,7 +58,7 @@ def query_workspace_all(req):
         conds = QueryCondition(TWorkspace, TWorkspaceUser)
         conds.equal(TWorkspaceUser.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conds.equal(TWorkspaceUser.USER_NO, req.userNo)
-        # 查询受保护和私有空间
+        # 查询团队和个人空间
         workspace_filter = TWorkspace.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc())
         # 查询公共空间
         public_workspace_filter = TWorkspace.filter(
@@ -109,7 +109,7 @@ def create_workspace(req):
         WORKSPACE_DESC=req.workspaceDesc
     )
 
-    # 管理员自动加入受保护的空间
+    # 管理员自动加入团队空间
     if req.workspaceScope == WorkspaceScope.PROTECTED.value:
         TWorkspaceUser.insert(
             WORKSPACE_NO=workspace_no,
@@ -141,12 +141,12 @@ def remove_workspace(req):
     # 私人空间随用户，删除用户时才会删除私人空间
     if req.workspaceScope == WorkspaceScope.PRIVATE.value:
         raise ServiceError('私人空间不允许删除')
-    # 受保护空间有成员时不允许删除
+    # 团队空间有成员时不允许删除
     if (
             req.workspaceScope == WorkspaceScope.PROTECTED.value
             and WorkspaceUserDao.count_by_workspace(req.workspaceNo) != 0
     ):
-        raise ServiceError('存在成员的受保护空间不允许删除')
+        raise ServiceError('存在成员的团队空间不允许删除')
 
     # 删除空间限制
     restrictions = WorkspaceRestrictionDao.select_all_by_workspace(req.workspaceNo)

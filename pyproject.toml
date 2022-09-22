@@ -32,7 +32,7 @@ apscheduler = "3.9.1"
 orjson = "3.8.0"
 jsonpath = "0.82"
 # Encryption
-pyjwt = { version = "2.4.0", extras = ["crypto"] }
+pyjwt = { version = "2.5.0", extras = ["crypto"] }
 pycryptodome = "3.15.0"
 # Data Validation
 pydantic = "1.10.2"

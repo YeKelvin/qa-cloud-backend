@@ -372,13 +372,12 @@ def create_http_sampler():
             "elementRemark": "",
             "property": { ... },
             "builtins": [
-                {
-                    "sortNo": "",
                     "elementNo": "",
                     "elementName": "",
                     "elementType": "",
                     "elementClass": "",
                     "property": { ... },
+                    "sortNumber": ""
                 }
                 ...
             ],
@@ -408,12 +407,12 @@ def modify_http_sampler():
         "property": { ... },
         "builtins": [
             {
-                "sortNo": "",
                 "elementNo": "",
                 "elementName": "",
                 "elementType": "",
                 "elementClass": "",
                 "property": { ... },
+                "sortNumber": ""
             }
             ...
          ],
@@ -429,3 +428,45 @@ def modify_http_sampler():
         Argument('headerTemplateNos', type=list)
     ).parse()
     return service.modify_http_sampler(req)
+
+
+@blueprint.get('/element/workspace/components')
+@require_login
+@require_permission
+def query_workspace_components():
+    """查询空间所有组件"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
+    ).parse()
+    return service.query_workspace_components(req)
+
+
+@blueprint.post('/element/workspace/components')
+@require_login
+@require_permission
+def set_workspace_components():
+    """
+    设置空间组件
+    request:
+    {
+        "workspaceNo": "",
+        "components": [
+
+            {
+                "elementNo": "",
+                "elementName": "",
+                "elementType": "",
+                "elementClass": "",
+                "property": { ... },
+                "matchRules": [ ... ],
+                "sortNumber": ""
+            }
+            ...
+         ]
+    }
+    """
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('components', type=list)
+    ).parse()
+    return service.set_workspace_components(req)

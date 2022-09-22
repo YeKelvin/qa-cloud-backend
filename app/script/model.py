@@ -12,10 +12,20 @@ from app.database import db
 
 
 class TWorkspaceCollection(DBModel, BaseColumn):
-    """空间集合关联表"""
+    """空间集合表"""
     __tablename__ = 'WORKSPACE_COLLECTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
+
+
+class TWorkspaceComponent(DBModel, BaseColumn):
+    """空间组件表"""
+    __tablename__ = 'WORKSPACE_COMPONENT'
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
+    COMPONENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='组件编号')
+    COMPONENT_TYPE = db.Column(db.String(64), nullable=False, comment='组件类型')
+    SORT_NUMBER = db.Column(db.Integer, nullable=False, comment='排序号')
+    SORT_WEIGHT = db.Column(db.Integer, nullable=False, comment='排序权重')
 
 
 class TTestElement(DBModel, BaseColumn):
@@ -44,7 +54,7 @@ class TElementProperty(DBModel, BaseColumn):
 
 
 class TElementChildren(DBModel, BaseColumn):
-    """元素子代关联表"""
+    """元素子代表"""
     __tablename__ = 'ELEMENT_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
@@ -53,13 +63,14 @@ class TElementChildren(DBModel, BaseColumn):
 
 
 class TElementBuiltinChildren(DBModel, BaseColumn):
-    """内置元素关联表"""
+    """内置元素表"""
     __tablename__ = 'ELEMENT_BUILTIN_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
-    SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
+    SORT_NUMBER = db.Column(db.Integer, nullable=False, comment='排序号')
+    SORT_WEIGHT = db.Column(db.Integer, nullable=False, comment='排序权重')
 
 
 class TVariableDataset(DBModel, BaseColumn):
@@ -88,7 +99,7 @@ class TVariable(DBModel, BaseColumn):
 
 
 class THttpHeaderTemplateRef(DBModel, BaseColumn):
-    """HTTP请求头模板关联表"""
+    """HTTP请求头模板表"""
     __tablename__ = 'HTTP_HEADER_TEMPLATE_REF'
     SAMPLER_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
@@ -137,7 +148,7 @@ class TDatabaseConfig(DBModel, BaseColumn):
 
 
 class TElementTag(DBModel, BaseColumn):
-    """元素标签关联表"""
+    """元素标签表"""
     __tablename__ = 'ELEMENT_TAG'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
