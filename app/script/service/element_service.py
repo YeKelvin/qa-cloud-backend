@@ -983,6 +983,8 @@ def modify_element_httpheader_template_refs(req):
 
 
 def update_httpheader_template_refs(element_no, template_nos):
+    if template_nos is None:
+        return
     for template_no in template_nos:
         # 模板不存在则跳过
         template = HttpHeaderTemplateDao.select_by_no(template_no)
@@ -1108,6 +1110,8 @@ def update_element_builtin(element_no, element_name,  element_remark, element_pr
 
 def update_element_builtins(parent_no: str, builtins: list):
     # 临时存储内置元素编号，用于删除非请求中的内置元素
+    if builtins is None:
+        return
     builtin_nos = []
     for builtin in builtins:
         # 内置元素存在则更新

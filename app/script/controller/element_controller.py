@@ -199,7 +199,7 @@ def modify_element():
         Argument('elementRemark'),
         Argument('enabled'),
         Argument('property'),
-        Argument('builtins', type=list, default=[]),
+        Argument('builtins', type=list),
     ).parse()
     return service.modify_element(req)
 
@@ -424,8 +424,8 @@ def modify_http_sampler():
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementRemark'),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('builtins', type=list, default=[]),
-        Argument('headerTemplateNos', type=list, default=[])
+        Argument('builtins', type=list),
+        Argument('headerTemplateNos', type=list)
     ).parse()
     return service.modify_http_sampler(req)
 
