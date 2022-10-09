@@ -581,7 +581,7 @@ def start_testplan_by_loop(
             log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             continue
         # 添加自定义变量组件
-        element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
+        add_variable_dataset(collection, dataset_nos, use_current_value)
         # 添加迭代记录器组件
         add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
@@ -685,7 +685,7 @@ def start_testplan_by_report(
             if not collection:
                 log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             # 添加自定义变量组件
-            element_loader.add_variable_dataset(collection, dataset_nos, use_current_value)
+            add_variable_dataset(collection, dataset_nos, use_current_value)
             # 添加报告存储器组件
             add_flask_db_result_storage(collection, report_no, collection_no)
 
@@ -778,7 +778,7 @@ def query_collection_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
+    add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script
 
 
@@ -798,7 +798,7 @@ def query_group_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
+    add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script
 
 
@@ -817,5 +817,5 @@ def query_snippets_json(req):
         collection.ELEMENT_REMARK
     )
     # 添加变量组件
-    element_loader.add_variable_dataset(script, req.datasetNos, req.useCurrentValue, req.variables)
+    add_variable_dataset(script, req.datasetNos, req.useCurrentValue, req.variables)
     return script
