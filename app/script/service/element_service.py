@@ -444,7 +444,9 @@ def create_element_child(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
     # 新增元素
-    return add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
+    element_no = add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
+    # 返回元素编号
+    return {'elementNo': element_no}
 
 
 @http_service
@@ -458,7 +460,7 @@ def create_element_children(req):
 
 def add_element_child(root_no, parent_no, child: dict):
     # 新建子代元素
-    child_no = add_element(
+    element_no = add_element(
         element_name=child.get('elementName'),
         element_remark=child.get('elementRemark', None),
         element_type=child.get('elementType'),
@@ -469,14 +471,14 @@ def add_element_child(root_no, parent_no, child: dict):
     TElementChildren.insert(
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
-        CHILD_NO=child_no,
+        CHILD_NO=element_no,
         SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
     )
     # 新建子代内置元素
     if builtin := child.get('builtins', None):
-        add_element_builtins(parent_no=child_no, children=builtin, root_no=root_no)
+        add_element_builtins(parent_no=element_no, children=builtin, root_no=root_no)
 
-    return child_no
+    return element_no
 
 
 def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
@@ -1219,6 +1221,8 @@ def create_http_sampler(req):
     element_no = add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
     # 建立请求头模板关联
     add_httpheader_template_refs(element_no, req.child.headerTemplateNos)
+    # 返回元素编号
+    return {'elementNo': element_no}
 
 
 @http_service
