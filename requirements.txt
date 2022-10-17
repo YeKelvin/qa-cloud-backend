@@ -11,6 +11,5 @@ pycryptodome==3.15.0
 pydantic==1.10.2
 python-dotenv==0.21.0
 environs==9.5.0
-gevent
 uwsgi
 pymeter @ git+https://github.com/YeKelvin/pymeter.git@dev
