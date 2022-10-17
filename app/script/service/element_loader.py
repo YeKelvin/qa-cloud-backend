@@ -229,6 +229,7 @@ def add_builtin_children(element_no, children: list):
             TElementBuiltinChildren.CHILD_NO
         )
         .filter(
+            TElementBuiltinChildren.DELETED == 0,
             TElementBuiltinChildren.PARENT_NO == element_no,
             TElementBuiltinChildren.CHILD_TYPE.in_([
                 ElementType.CONFIG.value,
