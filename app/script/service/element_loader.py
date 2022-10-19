@@ -23,6 +23,7 @@ from app.script.enum import is_setup_group_debuger
 from app.script.enum import is_snippet_sampler
 from app.script.enum import is_sql_sampler
 from app.script.enum import is_teardown_group_debuger
+from app.script.enum import is_test_collection
 from app.script.model import TElementBuiltinChildren
 from app.script.service.element_component import add_database_engine
 from app.script.service.element_component import add_http_header_manager
@@ -123,8 +124,8 @@ def loads_element(
         # 添加数据库引擎配置组件
         add_database_engine(engine, config_components)
 
-    # 元素为 Group 或 HTTPSampler 时，查询内置元素并添加至 children 中
-    if is_group(element) or is_http_sampler(element):
+    # 添加内置元素
+    if is_test_collection(element) or is_group(element) or is_http_sampler(element):
         add_builtin_children(element_no, children)
 
     # 元素为常规 Sampler 时，添加子代
