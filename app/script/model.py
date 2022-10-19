@@ -58,8 +58,7 @@ class TElementOptions(DBModel, BaseColumn):
     __tablename__ = 'ELEMENT_OPTIONS'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     OPTION_NAME = db.Column(db.String(256), nullable=False, comment='选项名称')
-    OPTION_VALUE = db.Column(db.Text, comment='选项值')
-    OPTION_TYPE = db.Column(db.String(32), nullable=False, default='STR', comment='选项类型')
+    OPTION_VALUE = db.Column(JSONB, comment='选项值')
 
 
 class TElementChildren(DBModel, BaseColumn):
@@ -72,7 +71,7 @@ class TElementChildren(DBModel, BaseColumn):
 
 
 class TElementBuiltinChildren(DBModel, BaseColumn):
-    """内置元素表"""
+    """元素内置子代表"""
     __tablename__ = 'ELEMENT_BUILTIN_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')

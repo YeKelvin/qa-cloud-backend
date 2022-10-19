@@ -124,7 +124,9 @@ def create_collection():
         Argument('elementRemark'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空')
+        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('options', type=dict),
+        Argument('builtins', type=list)
     ).parse()
     return service.create_collection(req)
 
@@ -145,6 +147,7 @@ def create_element_child():
             "elementType": "",
             "elementClass": "",
             "property": { ... },
+            "options": { ... },
             "builtins": [ ... ]
         }
     }
@@ -174,6 +177,7 @@ def create_element_children():
                 "elementType": "",
                 "elementClass": "",
                 "property": { ... },
+                "options": { ... },
                 "builtins": [ ... ]
             }
             ...
@@ -199,6 +203,7 @@ def modify_element():
         Argument('elementRemark'),
         Argument('enabled'),
         Argument('property'),
+        Argument('options', type=dict),
         Argument('builtins', type=list),
     ).parse()
     return service.modify_element(req)

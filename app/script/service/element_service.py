@@ -13,16 +13,17 @@ from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
 from app.script.dao import element_children_dao as ElementChildrenDao
+from app.script.dao import element_options_dao as ElementOptionsDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import http_header_template_dao as HttpHeaderTemplateDao
 from app.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
 from app.script.dao import workspace_component_dao as WorkspaceComponentDao
+from app.script.enum import ComponentSortWeight
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
 from app.script.enum import PasteType
-from app.script.enum import ComponentSortWeight
 from app.script.enum import is_assertion
 from app.script.enum import is_collection
 from app.script.enum import is_config
@@ -38,6 +39,7 @@ from app.script.enum import is_test_collection
 from app.script.enum import is_timer
 from app.script.model import TElementBuiltinChildren
 from app.script.model import TElementChildren
+from app.script.model import TElementOptions
 from app.script.model import TElementProperty
 from app.script.model import THttpHeaderTemplateRef
 from app.script.model import TTestElement
@@ -316,7 +318,9 @@ def query_element_info(req):
     check_exists(element, error_msg='元素不存在')
 
     # 查询元素属性
-    properties = query_element_property(req.elementNo)
+    properties = get_element_property(req.elementNo)
+    # 查询元素选项
+    options = get_element_options(req.elementNo)
 
     return {
         'elementNo': element.ELEMENT_NO,
@@ -325,11 +329,12 @@ def query_element_info(req):
         'elementType': element.ELEMENT_TYPE,
         'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
-        'property': properties
+        'property': properties,
+        'options': options
     }
 
 
-def query_element_property(element_no):
+def get_element_property(element_no):
     """查询元素属性"""
     properties = {}
     props = ElementPropertyDao.select_all_by_element(element_no)
@@ -339,6 +344,15 @@ def query_element_property(element_no):
         else:
             properties[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
     return properties
+
+
+def get_element_options(element_no):
+    """查询元素选项"""
+    opts = ElementOptionsDao.select_all_by_element(element_no)
+    return {
+        opt.OPTION_NAME: opt.OPTION_VALUE
+        for opt in opts
+    }
 
 
 @http_service
@@ -413,7 +427,15 @@ def create_collection(req):
         element_remark=req.elementRemark,
         element_type=req.elementType,
         element_class=req.elementClass,
-        properties=req.property
+        element_property=req.property,
+        element_options=req.options
+    )
+
+    # 新建内置元素
+    add_element_builtins(
+        root_no=element_no,
+        parent_no=element_no,
+        builtins=req.builtins
     )
 
     # 新增空间元素关联
@@ -422,7 +444,14 @@ def create_collection(req):
     return {'elementNo': element_no}
 
 
-def add_element(element_name, element_remark, element_type, element_class, properties: dict = None):
+def add_element(
+        element_name,
+        element_remark,
+        element_type,
+        element_class,
+        element_property: dict = None,
+        element_options: dict = None
+):
     # 创建元素
     element_no = new_id()
     TTestElement.insert(
@@ -434,8 +463,41 @@ def add_element(element_name, element_remark, element_type, element_class, prope
         ENABLED=ElementStatus.ENABLE.value
     )
     # 创建元素属性
-    add_element_property(element_no, properties)
+    add_element_property(element_no, element_property)
+    # 创建元素选项
+    add_element_options(element_no, element_options)
     return element_no
+
+
+def add_element_options(element_no, element_options):
+    if element_options is None:
+        return
+    for name, value in element_options.items():
+        TElementOptions.insert(
+            ELEMENT_NO=element_no,
+            OPTION_NAME=name,
+            OPTION_VALUE=value
+        )
+
+
+def update_element_options(element_no, element_options):
+    if element_options is None:
+        return
+    # 遍历更新元素属性
+    for name, value in element_options.items():
+        # 查询元素属性
+        option = ElementOptionsDao.select_by_element_and_name(element_no, name)
+        # 有属性就更新，没有就新增
+        if option:
+            option.update(OPTION_VALUE=value)
+        else:
+            TElementOptions.insert(
+                ELEMENT_NO=element_no,
+                OPTION_NAME=name,
+                OPTION_VALUE=value
+            )
+    # 删除请求中没有的属性
+    ElementOptionsDao.delete_all_by_element_and_notin_name(element_no, list(element_options.keys()))
 
 
 @http_service
@@ -465,7 +527,8 @@ def add_element_child(root_no, parent_no, child: dict):
         element_remark=child.get('elementRemark', None),
         element_type=child.get('elementType'),
         element_class=child.get('elementClass'),
-        properties=child.get('property', None)
+        element_property=child.get('property', None),
+        element_options=child.get('options', None)
     )
     # 建立父子关联
     TElementChildren.insert(
@@ -474,9 +537,8 @@ def add_element_child(root_no, parent_no, child: dict):
         CHILD_NO=element_no,
         SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
     )
-    # 新建子代内置元素
-    if builtin := child.get('builtins', None):
-        add_element_builtins(parent_no=element_no, children=builtin, root_no=root_no)
+    # 新建内置元素
+    add_element_builtins(root_no=root_no, parent_no=element_no, builtins=child.get('builtins', None))
 
     return element_no
 
@@ -501,7 +563,8 @@ def modify_element(req):
         element_no=req.elementNo,
         element_name=req.elementName,
         element_remark=req.elementRemark,
-        element_property=req.property
+        element_property=req.property,
+        element_options=req.options
     )
     # 更新内置元素
     update_element_builtins(
@@ -510,7 +573,13 @@ def modify_element(req):
     )
 
 
-def update_element(element_no, element_name, element_remark, element_property: dict = None):
+def update_element(
+        element_no,
+        element_name,
+        element_remark,
+        element_property: dict = None,
+        element_options: dict = None
+):
     # 查询元素
     element = TestElementDao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
@@ -521,6 +590,8 @@ def update_element(element_no, element_name, element_remark, element_property: d
     )
     # 更新元素属性
     update_element_property(element_no, element_property)
+    # 更新元素选项
+    update_element_options(element_no, element_options)
 
 
 @http_service
@@ -929,6 +1000,14 @@ def clone_element(source: TTestElement, rename=False):
             PROPERTY_VALUE=prop.PROPERTY_VALUE,
             PROPERTY_TYPE=prop.PROPERTY_TYPE
         )
+    # 克隆元素选项
+    opts = ElementOptionsDao.select_all_by_element(source.ELEMENT_NO)
+    for opt in opts:
+        TElementOptions.insert(
+            ELEMENT_NO=cloned_no,
+            OPTION_NAME=opt.OPTION_NAME,
+            OPTION_VALUE=opt.OPTION_VALUE
+        )
     # 如果是 HTTPSampler ，克隆请求头模板
     if is_http_sampler(source):
         refs = HttpHeaderTemplateRefDao.select_all_by_sampler(source.ELEMENT_NO)
@@ -1025,7 +1104,7 @@ def query_element_builtins(req):
                 'elementType': builtin.ELEMENT_TYPE,
                 'elementClass': builtin.ELEMENT_CLASS,
                 'enabled': builtin.ENABLED,
-                'property': query_element_property(builtin.ELEMENT_NO),
+                'property': get_element_property(builtin.ELEMENT_NO),
                 'sortNumber': relation.SORT_NUMBER,
             })
 
@@ -1035,15 +1114,18 @@ def query_element_builtins(req):
 @http_service
 @transactional
 def create_element_builtins(req):
+    # TODO: del
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
     # 新增内置元素
-    return add_element_builtins(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
+    return add_element_builtins(root_no=req.rootNo, parent_no=req.parentNo, builtins=req.children)
 
 
-def add_element_builtins(root_no, parent_no, children) -> List:
+def add_element_builtins(root_no, parent_no, builtins) -> List:
     result = []
-    for builtin in children:
+    if builtins is None:
+        return result
+    for builtin in builtins:
         builtin_no = add_element_builtin(root_no, parent_no, builtin)
         result.append(builtin_no)
     return result
@@ -1115,12 +1197,12 @@ def update_element_builtins(parent_no: str, builtins: list):
     # 临时存储内置元素编号，用于删除非请求中的内置元素
     if builtins is None:
         return
-    builtin_nos = []
+    builtin_numbers = []
     for builtin in builtins:
         # 内置元素存在则更新
         if element := TestElementDao.select_by_no(builtin.elementNo):
             # 存储内置元素的编号
-            builtin_nos.append(builtin.elementNo)
+            builtin_numbers.append(builtin.elementNo)
             # 更新内置元素
             element.update(
                 ELEMENT_NAME=builtin.elementName,
@@ -1137,7 +1219,7 @@ def update_element_builtins(parent_no: str, builtins: list):
             # 新增内置元素
             builtin_no = add_element_builtin(get_root_no(parent_no), parent_no, builtin)
             # 存储内置元素的编号
-            builtin_nos.append(builtin_no)
+            builtin_numbers.append(builtin_no)
 
     # 移除非请求中内置元素
     TElementBuiltinChildren.deletes(
@@ -1148,7 +1230,7 @@ def update_element_builtins(parent_no: str, builtins: list):
             ElementType.POST_PROCESSOR.value,
             ElementType.ASSERTION.value
         ]),
-        TElementBuiltinChildren.CHILD_NO.notin_(builtin_nos),
+        TElementBuiltinChildren.CHILD_NO.notin_(builtin_numbers),
     )
 
 
@@ -1265,7 +1347,7 @@ def query_workspace_components(req):
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
-                'property': query_element_property(element.ELEMENT_NO),
+                'property': get_element_property(element.ELEMENT_NO),
                 'sortNumber': workspace_component.SORT_NUMBER,
             })
 

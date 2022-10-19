@@ -8,6 +8,7 @@ from typing import Dict
 from app.database import dbquery
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_children_dao as ElementChildrenDao
+from app.script.dao import element_options_dao as ElementOptionsDao
 from app.script.dao import element_property_dao as ElementPropertyDao
 from app.script.dao import test_element_dao as TestElementDao
 from app.script.dao import workspace_collection_dao as WorkspaceCollectionDao
@@ -69,8 +70,12 @@ def loads_tree(
         for configs in config_components.values():
             for config in configs:
                 script['children'].insert(0, config)
-    # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
-    add_workspace_components(script, element_no)
+    # 加载元素选项
+    collection_options = loads_options(element_no)
+    exclude_workspaces = collection_options.get('exclude_workspaces', False)
+    if not exclude_workspaces:
+        # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
+        add_workspace_components(script, element_no)
     return script
 
 
@@ -166,6 +171,15 @@ def loads_property(element_no):
             continue
 
     return properties
+
+
+def loads_options(element_no):
+    # 查询元素选项
+    opts = ElementOptionsDao.select_all_by_element(element_no)
+    return {
+        opt.OPTION_NAME: opt.OPTION_VALUE
+        for opt in opts
+    }
 
 
 def loads_children(
