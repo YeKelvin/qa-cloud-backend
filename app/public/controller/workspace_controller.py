@@ -35,7 +35,7 @@ def query_workspace_list():
 @require_login
 @require_permission
 def query_workspace_all():
-    """查询所有工作空间"""
+    """查询全部工作空间"""
     req = JsonParser(
         Argument('userNo')
     ).parse()

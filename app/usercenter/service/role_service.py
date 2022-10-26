@@ -52,7 +52,6 @@ def query_role_list(req):
 
 @http_service
 def query_role_all():
-    # 查询所有角色
     roles = RoleDao.select_all()
     result = []
     for role in roles:

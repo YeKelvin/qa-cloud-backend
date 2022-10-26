@@ -14,9 +14,11 @@ from app.tools.exceptions import ErrorCode
 from app.tools.logger import get_logger
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
+from app.usercenter.model import TApi
 from app.usercenter.model import TGroup
 from app.usercenter.model import TGroupRole
 from app.usercenter.model import TPermission
+from app.usercenter.model import TPermissionApi
 from app.usercenter.model import TRole
 from app.usercenter.model import TRolePermission
 from app.usercenter.model import TUser
@@ -80,7 +82,8 @@ def require_permission(func):
             return failed_response(ErrorCode.E401002)
 
         # 查询用户权限，判断权限是否存在且状态正常
-        if query_user_permission(user_no):
+        # if query_user_permission(user_no):
+        if exists_user_permission(user_no):
             return func(*args, **kwargs)
 
         # 超级管理员无需校验权限
@@ -106,6 +109,50 @@ def failed_response(error: ErrorCode):
         f'header:[ {dict(http_res.headers)}] response:[ {res} ]'
     )
     return http_res
+
+
+def get_user_role_numbers(user_no):
+    user_role_stmt = db.session.query(
+        TRole.ROLE_NO
+    ).filter(
+        TRole.DELETED == 0,
+        TRole.STATE == 'ENABLE',
+        TUserRole.DELETED == 0,
+        TUserRole.USER_NO == user_no,
+        TUserRole.ROLE_NO == TRole.ROLE_NO,
+    )
+    group_role_stmt = db.session.query(
+        TRole.ROLE_NO
+    ).filter(
+        TGroup.DELETED == 0,
+        TGroup.STATE == 'ENABLE',
+        TRole.DELETED == 0,
+        TRole.STATE == 'ENABLE',
+        TUserGroup.DELETED == 0,
+        TUserGroup.USER_NO == user_no,
+        TUserGroup.GROUP_NO == TGroup.GROUP_NO,
+        TGroupRole.DELETED == 0,
+        TGroupRole.ROLE_NO == TRole.ROLE_NO,
+        TGroupRole.GROUP_NO == TUserGroup.GROUP_NO,
+    )
+    return [entity.ROLE_NO for entity in user_role_stmt.union(group_role_stmt).all()]
+
+
+def exists_user_permission(user_no):
+    conds = [
+        TApi.DELETED == 0,
+        TApi.HTTP_METHOD == request.method,
+        TApi.HTTP_PATH == request.path,
+        TPermission.DELETED == 0,
+        TPermission.STATE == 'ENABLE',
+        TPermissionApi.DELETED == 0,
+        TPermissionApi.API_NO == TApi.API_NO,
+        TPermissionApi.PERMISSION_NO == TPermission.PERMISSION_NO,
+        TRolePermission.DELETED == 0,
+        TRolePermission.ROLE_NO.in_(get_user_role_numbers(user_no)),
+        TRolePermission.PERMISSION_NO == TPermission.PERMISSION_NO
+    ]
+    return db.session.query(TPermission.PERMISSION_NO).filter(*conds).first()
 
 
 def user_group_permission_filter(user_no):

@@ -60,7 +60,6 @@ def query_group_list(req):
 
 @http_service
 def query_group_all():
-    # 查询所有分组
     groups = GroupDao.select_all()
     return [
         {

@@ -36,7 +36,7 @@ def query_user_role_list():
 @require_login
 @require_permission
 def query_user_role_all():
-    """查询所有用户角色"""
+    """查询全部用户角色"""
     req = JsonParser(
         Argument('userNo'),
         Argument('roleNo'),

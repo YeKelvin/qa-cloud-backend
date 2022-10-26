@@ -57,7 +57,7 @@ def query_workspace_user_all(req):
     conds.equal(TUser.USER_NO, TWorkspaceUser.USER_NO)
     conds.equal(TWorkspaceUser.WORKSPACE_NO, req.workspaceNo)
 
-    # 查询所有空间成员
+    # 查询全部空间成员
     workspace_user_list = db.session.query(
         TUser.USER_NO,
         TUser.USER_NAME

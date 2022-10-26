@@ -33,7 +33,7 @@ def execute_collection():
 @require_login
 @require_permission
 def execute_group():
-    """运行测试分组"""
+    """运行测试案例"""
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
@@ -48,7 +48,7 @@ def execute_group():
 @require_login
 @require_permission
 def execute_sampler():
-    """运行请求取样器"""
+    """运行取样器"""
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
@@ -115,7 +115,7 @@ def query_collection_json():
 @require_login
 @require_permission
 def query_group_json():
-    """查询测试分组的JSON脚本"""
+    """查询测试案例的JSON脚本"""
     req = JsonParser(
         Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
         Argument('datasetNos', type=list, default=[]),

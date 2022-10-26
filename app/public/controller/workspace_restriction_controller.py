@@ -39,7 +39,7 @@ def query_workspace_restriction_list():
 @require_login
 @require_permission
 def query_workspace_restriction_all():
-    """查询所有空间限制"""
+    """查询全部空间限制"""
     req = JsonParser(
         Argument('workspaceNo')
     ).parse()

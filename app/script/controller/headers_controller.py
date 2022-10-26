@@ -36,7 +36,7 @@ def query_httpheader_template_list():
 @require_login
 @require_permission
 def query_httpheader_template_all():
-    """查询所有请求头模板"""
+    """查询全部请求头模板"""
     req = JsonParser(
         Argument('workspaceNo')
     ).parse()
@@ -47,7 +47,7 @@ def query_httpheader_template_all():
 @require_login
 @require_permission
 def query_httpheader_template_all_in_private():
-    """查询用户所有空间下的所有请求头模板（用于私人空间）"""
+    """根据用户空间查询全部请求头模板"""
     return service.query_httpheader_template_all_in_private()
 
 
@@ -153,7 +153,7 @@ def disable_http_header():
 @require_login
 @require_permission
 def query_http_headers_by_template():
-    """查询模板下的请求头"""
+    """根据模板查询全部请求头"""
     req = JsonParser(
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
     ).parse()
@@ -164,7 +164,7 @@ def query_http_headers_by_template():
 @require_login
 @require_permission
 def query_http_headers():
-    """根据列表查询请求头"""
+    """根据列表批量查询请求头"""
     req = ListParser().parse()
     return service.query_http_headers(req)
 
@@ -250,7 +250,7 @@ def duplicate_httpheader_template():
 @require_login
 @require_permission
 def copy_httpheader_template_to_workspace():
-    """复制请求头模板至指定工作空间"""
+    """复制请求头模板到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')
@@ -262,7 +262,7 @@ def copy_httpheader_template_to_workspace():
 @require_login
 @require_permission
 def move_httpheader_template_to_workspace():
-    """移动请求头模板至指定工作空间"""
+    """移动请求头模板到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('templateNo', required=True, nullable=False, help='模板编号不能为空')

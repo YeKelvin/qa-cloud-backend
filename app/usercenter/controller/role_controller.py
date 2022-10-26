@@ -38,7 +38,7 @@ def query_role_list():
 @require_login
 @require_permission
 def query_role_all():
-    """查询所有角色"""
+    """查询全部角色"""
     return service.query_role_all()
 
 

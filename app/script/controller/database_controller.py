@@ -37,7 +37,7 @@ def query_database_engine_list():
 @require_login
 @require_permission
 def query_database_engine_all():
-    """查询所有数据库配置"""
+    """查询全部数据库配置"""
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('databaseType')
@@ -49,7 +49,7 @@ def query_database_engine_all():
 @require_login
 @require_permission
 def query_database_engine_all_in_private():
-    """查询用户所有空间下的所有数据库配置（用于私人空间）"""
+    """根据用户空间查询全部数据库配置"""
     return service.query_database_engine_all_in_private()
 
 
@@ -134,7 +134,7 @@ def duplicate_database_engine():
 @require_login
 @require_permission
 def copy_database_engine_to_workspace():
-    """复制数据库配置至指定工作空间"""
+    """复制数据库配置到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')
@@ -146,7 +146,7 @@ def copy_database_engine_to_workspace():
 @require_login
 @require_permission
 def move_database_engine_to_workspace():
-    """移动数据库配置至指定工作空间"""
+    """移动数据库配置到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('configNo', required=True, nullable=False, help='数据库编号不能为空')

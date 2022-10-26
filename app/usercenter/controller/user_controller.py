@@ -90,7 +90,7 @@ def query_user_list():
 @require_login
 @require_permission
 def query_user_all():
-    """查询所有用户"""
+    """查询全部用户"""
     return service.query_user_all()
 
 

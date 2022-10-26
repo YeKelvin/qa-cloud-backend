@@ -50,7 +50,7 @@ def query_variable_dataset_all():
 @require_login
 @require_permission
 def query_variable_dataset_all_in_private():
-    """查询用户所有空间下的所有变量集（用于私人空间）"""
+    """根据用户空间查询全部变量集"""
     req = JsonParser(
         Argument('datasetType')
     ).parse()
@@ -174,7 +174,7 @@ def update_current_value():
 @require_login
 @require_permission
 def query_variables_by_dataset():
-    """查询变量集下的变量"""
+    """根据集合查询全部变量"""
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
     ).parse()
@@ -186,7 +186,7 @@ def query_variables_by_dataset():
 @require_permission
 def query_variables():
     """
-    根据列表查询变量
+    根据列表批量查询变量
     example: ['dataset_no', 'dataset_no']
     """
     req = ListParser().parse()
@@ -277,7 +277,7 @@ def duplicate_variable_dataset():
 @require_login
 @require_permission
 def copy_variable_dataset_to_workspace():
-    """复制变量集至指定工作空间"""
+    """复制变量集到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')
@@ -289,7 +289,7 @@ def copy_variable_dataset_to_workspace():
 @require_login
 @require_permission
 def move_variable_dataset_to_workspace():
-    """移动变量集至指定工作空间"""
+    """移动变量集到指定工作空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空')

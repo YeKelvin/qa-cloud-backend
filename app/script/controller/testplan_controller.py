@@ -39,7 +39,7 @@ def query_testplan_list():
 @require_login
 @require_permission
 def query_testplan_all():
-    """查询所有测试计划"""
+    """查询全部测试计划"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
         Argument('stateList', type=list),
@@ -60,7 +60,7 @@ def query_testplan():
 @require_login
 @require_permission
 def create_testplan():
-    """创建测试计划"""
+    """新增测试计划"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
@@ -127,7 +127,7 @@ def modify_testplan_testphase():
 @require_login
 @require_permission
 def query_testplan_execution_all():
-    """查询所有测试计划执行记录"""
+    """查询全部执行记录"""
     req = JsonParser(Argument('planNo', required=True, nullable=False, help='计划编号不能为空')).parse()
     return service.query_testplan_execution_all(req)
 
@@ -136,6 +136,6 @@ def query_testplan_execution_all():
 @require_login
 @require_permission
 def query_testplan_execution_details():
-    """查询测试计划执行记录详情"""
+    """查询执行记录详情"""
     req = JsonParser(Argument('executionNo', required=True, nullable=False, help='执行编号不能为空')).parse()
     return service.query_testplan_execution_details(req)

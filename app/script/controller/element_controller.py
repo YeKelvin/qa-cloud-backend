@@ -41,7 +41,7 @@ def query_element_list():
 @require_login
 @require_permission
 def query_element_all():
-    """查询所有元素"""
+    """查询全部元素"""
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('elementType'),
@@ -55,7 +55,7 @@ def query_element_all():
 @require_login
 @require_permission
 def query_element_all_in_private():
-    """查询用户所有空间下的所有元素（用于私人空间）"""
+    """查询用户空间下的所有元素（用于私人空间）"""
     req = JsonParser(
         Argument('elementType'),
         Argument('elementClass'),
@@ -68,7 +68,7 @@ def query_element_all_in_private():
 @require_login
 @require_permission
 def query_element_all_with_children():
-    """查询所有元素及其子代"""
+    """查询全部元素及其子代"""
     req = JsonParser(
         Argument('workspaceNo'),
         Argument('elementType'),
@@ -105,7 +105,7 @@ def query_element_children():
 @require_login
 @require_permission
 def query_elements_children():
-    """根据元素编号列表查询子代元素"""
+    """根据编号列表批量查询子代元素"""
     req = JsonParser(
         Argument('elementNos', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
@@ -276,7 +276,7 @@ def paste_element():
 @require_login
 @require_permission
 def query_element_httpheader_template_refs():
-    """查询元素关联的HTTP请求头模板列表"""
+    """查询HTTP请求头引用"""
     req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
     return service.query_element_httpheader_template_refs(req)
 
@@ -285,7 +285,7 @@ def query_element_httpheader_template_refs():
 @require_login
 @require_permission
 def create_element_httpheader_template_refs():
-    """新增元素和HTTP请求头模板列表的关联"""
+    """新增HTTP请求头引用"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
@@ -297,7 +297,7 @@ def create_element_httpheader_template_refs():
 @require_login
 @require_permission
 def modify_element_httpheader_template_refs():
-    """修改元素关联的HTTP请求头模板关联列表"""
+    """修改HTTP请求头引用"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
@@ -342,7 +342,7 @@ def modify_element_builtins():
 @require_login
 @require_permission
 def copy_collection_to_workspace():
-    """复制集合至指定空间"""
+    """复制集合到指定空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
@@ -354,7 +354,7 @@ def copy_collection_to_workspace():
 @require_login
 @require_permission
 def move_collection_to_workspace():
-    """移动集合至指定空间"""
+    """移动集合到指定空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
@@ -367,7 +367,7 @@ def move_collection_to_workspace():
 @require_permission
 def create_http_sampler():
     """
-    新增 HTTP Sampler 元素
+    新增HTTP取样器
     request:
     {
         "rootNo": "",
@@ -403,7 +403,7 @@ def create_http_sampler():
 @require_permission
 def modify_http_sampler():
     """
-    修改 HTTP Sampler 元素
+    修改HTTP取样器
     request:
     {
         "elementNo": "",
@@ -439,7 +439,7 @@ def modify_http_sampler():
 @require_login
 @require_permission
 def query_workspace_components():
-    """查询空间所有组件"""
+    """根据空间查询全部组件"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
     ).parse()

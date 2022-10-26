@@ -51,6 +51,11 @@ class CRUDMixin:
         record and record_insert(entity)
 
     @classmethod
+    def insert_without_record(cls: MODEL, **kwargs):
+        kwargs['record'] = False
+        cls.insert(**kwargs)
+
+    @classmethod
     def filter(cls: MODEL, *args):
         return cls.query.filter(cls.DELETED == 0, *args)
 
@@ -169,7 +174,7 @@ class BaseColumn:
     # TODO: ID = db.Column(db.Integer, Sequence('ID_SEQ'), primary_key=True)
     ID = db.Column(db.Integer, primary_key=True)
     VERSION = db.Column(db.Integer, nullable=False, default=0, comment='版本号')
-    DELETED = db.Column(db.Integer, nullable=False, default=0, comment='软删除标识')
+    DELETED = db.Column(db.Integer, nullable=False, default=0, comment='删除标识')
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), default=get_userno_or_default, comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')

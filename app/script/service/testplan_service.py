@@ -65,7 +65,6 @@ def query_testplan_list(req):
 
 @http_service
 def query_testplan_all(req):
-    # 查询所有测试计划
     conds = QueryCondition()
     conds.equal(TTestplan.WORKSPACE_NO, req.workspaceNo)
     conds.in_(TTestplan.STATE, req.stateList)

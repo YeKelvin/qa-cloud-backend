@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : notification_service.py
+# @File    : message_service.py
 # @Time    : 2022-05-07 22:32:17
 # @Author  : Kelvin.Ye
 from app.public.dao import notification_robot_dao as NotificationRobotDao
@@ -20,7 +20,7 @@ log = get_logger(__name__)
 
 
 @http_service
-def query_notification_robot_list(req):
+def query_notice_robot_list(req):
     # 查询机器人列表
     pagination = NotificationRobotDao.select_list(
         workspaceNo=req.workspaceNo,
@@ -33,40 +33,41 @@ def query_notification_robot_list(req):
         pageSize=req.pageSize
     )
 
-    data = []
-    for robot in pagination.items:
-        data.append({
+    data = [
+        {
             'robotNo': robot.ROBOT_NO,
             'robotName': robot.ROBOT_NAME,
             'robotDesc': robot.ROBOT_DESC,
             'robotType': robot.ROBOT_TYPE,
             'state': robot.STATE
-        })
+        }
+        for robot in pagination.items
+    ]
 
     return {'data': data, 'total': pagination.total}
 
 
 @http_service
-def query_notification_robot_all(req):
+def query_notice_robot_all(req):
     # 查询所有机器人
     conds = QueryCondition()
     conds.equal(TNotificationRobot.WORKSPACE_NO, req.workspaceNo)
     robots = TNotificationRobot.filter(*conds).order_by(TNotificationRobot.CREATED_TIME.desc()).all()
 
-    result = []
-    for robot in robots:
-        result.append({
+    return [
+        {
             'robotNo': robot.ROBOT_NO,
             'robotName': robot.ROBOT_NAME,
             'robotDesc': robot.ROBOT_DESC,
             'robotType': robot.ROBOT_TYPE,
             'state': robot.STATE
-        })
-    return result
+        }
+        for robot in robots
+    ]
 
 
 @http_service
-def query_notification_robot(req):
+def query_notice_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
@@ -84,7 +85,7 @@ def query_notification_robot(req):
 
 @http_service
 @transactional
-def create_notification_robot(req):
+def create_notice_robot(req):
     # 空间编号不能为空
     if not req.workspaceNo:
         raise ServiceError('空间编号不能为空')
@@ -114,7 +115,7 @@ def create_notification_robot(req):
 
 @http_service
 @transactional
-def modify_notification_robot(req):
+def modify_notice_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
@@ -137,7 +138,7 @@ def modify_notification_robot(req):
 
 @http_service
 @transactional
-def modify_notification_robot_state(req):
+def modify_notice_robot_state(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
@@ -148,7 +149,7 @@ def modify_notification_robot_state(req):
 
 @http_service
 @transactional
-def remove_notification_robot(req):
+def remove_notice_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')

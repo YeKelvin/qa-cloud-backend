@@ -3,8 +3,6 @@
 # @File    : model.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from sqlalchemy import UniqueConstraint
-
 from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
@@ -20,7 +18,14 @@ class TUser(DBModel, BaseColumn):
     AVATAR = db.Column(db.String(256), comment='头像URL')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='用户状态(ENABLE:启用, DISABLE:禁用)')
     LOGGED_IN = db.Column(db.Boolean, nullable=False, default=False, comment='是否已登录')
-    UniqueConstraint('USER_NAME', 'DELETED', name='unique_username')
+
+
+class TGroup(DBModel, BaseColumn):
+    __tablename__ = 'GROUP'
+    GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
+    GROUP_NAME = db.Column(db.String(128), nullable=False, comment='分组名称')
+    GROUP_DESC = db.Column(db.String(128), nullable=False, comment='分组描述')
+    STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
 
 
 class TRole(DBModel, BaseColumn):
@@ -28,25 +33,47 @@ class TRole(DBModel, BaseColumn):
     __tablename__ = 'ROLE'
     ROLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
     ROLE_NAME = db.Column(db.String(128), nullable=False, comment='角色名称')
-    ROLE_CODE = db.Column(db.String(64), nullable=False, comment='角色代码')
-    ROLE_RANK = db.Column(db.Integer, nullable=False, default=1, comment='角色等级')
     ROLE_DESC = db.Column(db.String(256), comment='角色描述')
+    ROLE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='角色代码')
+    ROLE_RANK = db.Column(db.Integer, nullable=False, default=1, comment='角色等级')
     ROLE_TYPE = db.Column(db.String(64), comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, DISABLE:禁用)')
-    UniqueConstraint('ROLE_NAME', 'DELETED', name='unique_rolename')
-    UniqueConstraint('ROLE_CODE', 'DELETED', name='unique_rolecode')
 
 
 class TPermission(DBModel, BaseColumn):
     """权限表"""
     __tablename__ = 'PERMISSION'
+    MODULE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模块编号')
+    OBJECT_NO = db.Column(db.String(32), index=True, nullable=False, comment='对象编号')
     PERMISSION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='权限编号')
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
-    METHOD = db.Column(db.String(128), nullable=False, comment='HTTP请求方法')
-    ENDPOINT = db.Column(db.String(256), nullable=False, comment='路由路径')
+    PERMISSION_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='权限代码')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
-    UniqueConstraint('METHOD', 'ENDPOINT', 'DELETED', name='unique_method_endpoint')
+
+
+class TApi(DBModel, BaseColumn):
+    """接口表"""
+    __tablename__ = 'API'
+    API_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='接口编号')
+    API_NAME = db.Column(db.String(128), nullable=False, comment='接口名称')
+    API_DESC = db.Column(db.String(256), comment='接口描述')
+    API_TYPE = db.Column(db.String(32), nullable=False, comment='接口类型')
+    HTTP_METHOD = db.Column(db.String(128), comment='HTTP请求方法')
+    HTTP_PATH = db.Column(db.String(256), comment='HTTP请求路径')
+
+
+class TPermissionApi(DBModel, BaseColumn):
+    """权限接口表"""
+    __tablename__ = 'PERMISSION_API'
+    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
+    API_NO = db.Column(db.String(32), index=True, nullable=False, comment='接口编号')
+
+
+class TUserGroup(DBModel, BaseColumn):
+    __tablename__ = 'USER_GROUP'
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
 
 
 class TUserRole(DBModel, BaseColumn):
@@ -54,7 +81,12 @@ class TUserRole(DBModel, BaseColumn):
     __tablename__ = 'USER_ROLE'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-    UniqueConstraint('USER_NO', 'ROLE_NO', 'DELETED', name='unique_user_role')
+
+
+class TGroupRole(DBModel, BaseColumn):
+    __tablename__ = 'GROUP_ROLE'
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
 
 
 class TRolePermission(DBModel, BaseColumn):
@@ -62,7 +94,6 @@ class TRolePermission(DBModel, BaseColumn):
     __tablename__ = 'ROLE_PERMISSION'
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
-    UniqueConstraint('ROLE_NO', 'PERMISSION_NO', 'DELETED', name='unique_role_permission')
 
 
 class TUserLoginInfo(DBModel, BaseColumn):
@@ -71,7 +102,6 @@ class TUserLoginInfo(DBModel, BaseColumn):
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), nullable=False, comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
-    UniqueConstraint('USER_NO', 'LOGIN_NAME', 'LOGIN_TYPE', 'DELETED', name='unique_userno_loginname_logintype')
 
 
 class TUserLoginLog(DBModel, BaseColumn):
@@ -94,32 +124,29 @@ class TUserPassword(DBModel, BaseColumn):
     ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
     UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)')
-    UniqueConstraint('USER_NO', 'PASSWORD', 'PASSWORD_TYPE', 'DELETED', name='unique_userno_password_pwdtype')
 
 
 class TUserPasswordKey(DBModel, BaseColumn):
     """用户密码密钥表"""
+    # TODO: 单机改为读内存，集群改为读redis
     __tablename__ = 'USER_PASSWORD_KEY'
     LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
     PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
 
 
-class TGroup(DBModel, BaseColumn):
-    __tablename__ = 'GROUP'
-    GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
-    GROUP_NAME = db.Column(db.String(128), nullable=False, comment='分组名称')
-    GROUP_DESC = db.Column(db.String(128), nullable=False, comment='分组描述')
-    STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
-    UniqueConstraint('GROUP_NAME', 'DELETED', name='unique_groupname')
+class TPermissionModule(DBModel, BaseColumn):
+    """权限模块表"""
+    __tablename__ = 'PERMISSION_MODULE'
+    MODULE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模块编号')
+    MODULE_NAME = db.Column(db.String(128), nullable=False, comment='模块名称')
+    MODULE_DESC = db.Column(db.String(256), comment='模块描述')
+    MODULE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='模块代码')
 
 
-class TGroupRole(DBModel, BaseColumn):
-    __tablename__ = 'GROUP_ROLE'
-    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
-    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-
-
-class TUserGroup(DBModel, BaseColumn):
-    __tablename__ = 'USER_GROUP'
-    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+class TPermissionObject(DBModel, BaseColumn):
+    """权限对象表"""
+    __tablename__ = 'PERMISSION_OBJECT'
+    OBJECT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='对象编号')
+    OBJECT_NAME = db.Column(db.String(128), nullable=False, comment='对象名称')
+    OBJECT_DESC = db.Column(db.String(256), comment='对象描述')
+    OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')

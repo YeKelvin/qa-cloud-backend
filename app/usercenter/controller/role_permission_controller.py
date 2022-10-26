@@ -15,72 +15,24 @@ from app.usercenter.service import role_permission_service as service
 log = get_logger(__name__)
 
 
-@blueprint.get('/role/permission/list')
+@blueprint.get('/role/permissions')
 @require_login
 @require_permission
-def query_role_permission_list():
-    """分页查询角色权限列表"""
+def query_role_permissions():
+    """查询角色全部权限"""
     req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNo'),
-        Argument('roleName'),
-        Argument('permissionName'),
-        Argument('endpoint'),
-        Argument('method'),
-        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空')
     ).parse()
-    return service.query_role_permission_list(req)
-
-
-@blueprint.get('/role/permission/unbound/list')
-@require_login
-@require_permission
-def query_role_permission_unbound_list():
-    """分页查询角色未绑定的权限列表"""
-    req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNo'),
-        Argument('permissionName'),
-        Argument('endpoint'),
-        Argument('method'),
-        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
-    ).parse()
-    return service.query_role_permission_unbound_list(req)
+    return service.query_role_permissions(req)
 
 
 @blueprint.post('/role/permissions')
 @require_login
 @require_permission
-def create_role_permissions():
-    """批量新增角色权限"""
+def set_role_permissions():
+    """设置角色权限"""
     req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNos')
+        Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
+        Argument('permissionNumbers', type=list)
     ).parse()
-    return service.create_role_permissions(req)
-
-
-@blueprint.delete('/role/permission')
-@require_login
-@require_permission
-def remove_role_permission():
-    """删除角色权限"""
-    req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNo')
-    ).parse()
-    return service.remove_role_permission(req)
-
-
-@blueprint.delete('/role/permissions')
-@require_login
-@require_permission
-def remove_role_permissions():
-    """批量删除角色权限"""
-    req = JsonParser(
-        Argument('roleNo'),
-        Argument('permissionNos')
-    ).parse()
-    return service.remove_role_permissions(req)
+    return service.set_role_permissions(req)

@@ -34,7 +34,7 @@ def query_tag_list():
 @require_login
 @require_permission
 def query_tag_all():
-    """查询所有标签"""
+    """查询全部标签"""
     return service.query_tag_all()
 
 

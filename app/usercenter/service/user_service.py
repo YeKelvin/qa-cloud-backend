@@ -274,7 +274,7 @@ def query_user_all():
     conds = QueryCondition(TUser, TUserLoginInfo)
     conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
 
-    # 查询所有用户列表
+    # 查询用户列表
     users = db.session.query(
         TUser.USER_NO,
         TUser.USER_NAME,

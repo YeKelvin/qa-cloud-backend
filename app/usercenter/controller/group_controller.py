@@ -36,7 +36,7 @@ def query_group_list():
 @require_login
 @require_permission
 def query_group_all():
-    """查询所有分组"""
+    """查询全部分组"""
     return service.query_group_all()
 
 

@@ -28,7 +28,7 @@ def query_report():
 @require_login
 @require_permission
 def query_collection_result():
-    """根据 collectionId 查询 Collection 结果和 Group 结果列表"""
+    """根据集合编号查询集合结果列表和案例结果列表"""
     req = JsonParser(Argument('collectionId', required=True, nullable=False, help='collectionId不能为空')).parse()
     return service.query_collection_result(req)
 
@@ -37,7 +37,7 @@ def query_collection_result():
 @require_login
 @require_permission
 def query_group_result():
-    """根据 groupId 查询 Group 结果"""
+    """根据案例编号查询案例结果列表"""
     req = JsonParser(Argument('groupId', required=True, nullable=False, help='groupId不能为空')).parse()
     return service.query_group_result(req)
 
@@ -46,6 +46,6 @@ def query_group_result():
 @require_login
 @require_permission
 def query_sampler_result():
-    """根据 samplerId 查询 Sampler 结果"""
+    """根据取样器编号查询取样结果"""
     req = JsonParser(Argument('samplerId', required=True, nullable=False, help='samplerId不能为空')).parse()
     return service.query_sampler_result(req)
