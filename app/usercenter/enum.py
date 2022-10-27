@@ -24,15 +24,6 @@ class RoleState(Enum):
     DISABLE = 'DISABLE'
 
 
-class PermissionState(Enum):
-
-    # 启用
-    ENABLE = 'ENABLE'
-
-    # 禁用
-    DISABLE = 'DISABLE'
-
-
 class GroupState(Enum):
 
     # 启用

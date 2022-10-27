@@ -58,9 +58,9 @@ class QueryCondition(list):
             self.append(column >= value)
 
     def in_(self, column, *args):
-        if args is not None and args:
+        if args := [arg for arg in args if arg]:
             self.append(column.in_(*args))
 
     def notin_(self, column, *args):
-        if args is not None and args:
+        if args := [arg for arg in args if arg]:
             self.append(column.notin_(*args))

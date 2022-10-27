@@ -8,13 +8,16 @@ from typing import List
 from app.public.model import TWorkspaceRestriction
 
 
-def select_by_restriction(restriction_no) -> TWorkspaceRestriction:
-    return TWorkspaceRestriction.filter_by(RESTRICTION_NO=restriction_no).first()
-
-
-def select_first(**kwargs) -> TWorkspaceRestriction:
-    return TWorkspaceRestriction.filter_by(**kwargs).first()
+def select_by_workspace_and_permission(workspace_no, permission_no) -> TWorkspaceRestriction:
+    return TWorkspaceRestriction.filter_by(WORKSPACE_NO=workspace_no, PERMISSION_NO=permission_no).first()
 
 
 def select_all_by_workspace(workspace_no) -> List[TWorkspaceRestriction]:
     return TWorkspaceRestriction.filter_by(WORKSPACE_NO=workspace_no).all()
+
+
+def delete_all_by_workspace_and_notin_permission(workspace_no, *permission_numbers):
+    TWorkspaceRestriction.deletes(
+        TWorkspaceRestriction.WORKSPACE_NO == workspace_no,
+        TWorkspaceRestriction.PERMISSION_NO.notin_(*permission_numbers)
+    )

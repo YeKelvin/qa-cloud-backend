@@ -4,16 +4,17 @@
 # @Time    : 2019/11/21 15:04
 # @Author  : Kelvin.Ye
 import enum
-import re
 
 from flask import g
 from flask import request
 
-from app.public.model import TWorkspaceRestrictedExemption
 from app.public.model import TWorkspaceRestriction
+from app.public.model import TWorkspaceRestrictionExemption
 from app.public.model import TWorkspaceUser
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
+from app.usercenter.model import TApi
+from app.usercenter.model import TPermissionApi
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup
@@ -49,75 +50,56 @@ def get_user_group_numbers(user_no) -> list:
 
 def is_super_admin(user_no):
     conds = QueryCondition(TUser, TRole, TUserRole)
-    conds.equal(TUser.USER_NO, TUserRole.USER_NO)
-    conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
     conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
+    conds.equal(TUserRole.USER_NO, user_no)
+    conds.equal(TUserRole.USER_NO, TUser.USER_NO)
+    conds.equal(TUserRole.ROLE_NO, TRole.ROLE_NO)
     return bool(TUser.filter(*conds).first())
 
 
-def match_restriction(restriction: TWorkspaceRestriction):
-    if not restriction.MATCH_TYPE or not restriction.MATCH_CONTENT:
-        return True
-    if restriction.MATCH_TYPE == 'ALL':
-        return True
-    if restriction.MATCH_TYPE == 'IN' and restriction.MATCH_CONTENT in request.path:
-        return True
-    if restriction.MATCH_TYPE == 'NOTIN' and restriction.MATCH_CONTENT not in request.path:
-        return True
-    if restriction.MATCH_TYPE == 'STARTWITH' and request.path.startswith(restriction.MATCH_CONTENT):
-        return True
-    if restriction.MATCH_TYPE == 'STARTWITH' and request.path.endswith(restriction.MATCH_CONTENT):
-        return True
-    if restriction.MATCH_TYPE == 'PATTERN' and re.search(restriction.MATCH_CONTENT, request.path, re.IGNORECASE):
-        return True
-    return False
+def exists_workspace_restriction(workspace_no):
+    conds = QueryCondition(TApi, TPermissionApi, TWorkspaceRestriction)
+    conds.equal(TApi.HTTP_METHOD, request.method)
+    conds.equal(TApi.HTTP_PATH, request.path)
+    conds.equal(TApi.API_NO, TPermissionApi.API_NO)
+    conds.equal(TWorkspaceRestriction.WORKSPACE_NO, workspace_no)
+    conds.equal(TWorkspaceRestriction.PERMISSION_NO, TPermissionApi.PERMISSION_NO)
+    return bool(TWorkspaceRestriction.filter(*conds).first())
 
 
-def get_matched_restriction_numbers(workspace_no) -> list:
-    restrictions = TWorkspaceRestriction.filter_by(
-        WORKSPACE_NO=workspace_no,
-        MATCH_METHOD=request.method,
-        STATE='ENABLE'
-    ).all()
-    return [restriction.RESTRICTION_NO for restriction in restrictions if match_restriction(restriction)]
-
-
-def get_restricted_exemption_numbers(restriction_nos) -> list:
-    exemptions = TWorkspaceRestrictedExemption.filter(
-        TWorkspaceRestrictedExemption.RESTRICTION_NO.in_(restriction_nos)
-    ).all()
-    return [exemption.EXEMPTION_NO for exemption in exemptions]
+def is_restriction_exemption_member(workspace_no, user_no):
+    # 查询空间显示豁免
+    exemption = TWorkspaceRestrictionExemption.filter_by(WORKSPACE_NO=workspace_no).first()
+    # 校验用户是否为豁免成员
+    if user_no in exemption.USER_NUMBERS:
+        return True
+    # 校验用户所在分组是否为豁免分组
+    return any(group_no in exemption.GROUP_NUMBERS for group_no in get_user_group_numbers(user_no))
 
 
 def check_workspace_permission(source_workspace_no) -> None:
     # 获取用户编号
     user_no = getattr(g, 'user_no', None)
     if user_no is None:
-        raise ServiceError('空间权限不足，获取用户编号失败')
+        raise ServiceError('空间权限校验失败，用户未登录')
 
     # 判断用户是否是操作空间的成员
-    user_workspace_nos = get_user_workspace_numbers(user_no)
-    if source_workspace_no not in user_workspace_nos:
+    user_workspace_numbers = get_user_workspace_numbers(user_no)
+    if source_workspace_no not in user_workspace_numbers:
         if is_super_admin(user_no):
             return
         raise ServiceError('空间权限不足，用户非目标空间成员')
 
-    # 根据请求方法和请求路径，查询操作空间的限制项
-    restriction_nos = get_matched_restriction_numbers(source_workspace_no)
-    if not restriction_nos:
+    # 校验是否存在空间限制
+    if not exists_workspace_restriction(source_workspace_no):
         return
 
     # 校验用户是否为豁免成员
-    exemption_nos = get_restricted_exemption_numbers(restriction_nos)
-    if user_no in exemption_nos:
+    if is_restriction_exemption_member(source_workspace_no, user_no):
         return
 
-    # 校验用户分组是否为豁免分组
-    user_group_nos = get_user_group_numbers(user_no)
-    for group_no in user_group_nos:
-        if group_no in exemption_nos:
-            return
-
+    # 校验是否为超级管理员
     if is_super_admin(user_no):
         return
+
     raise ServiceError('空间权限不足')

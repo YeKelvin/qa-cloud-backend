@@ -21,30 +21,6 @@ class WorkspaceScope(Enum):
 
 
 @unique
-class RestrictionMatchMethod(Enum):
-    POST = 'POST'
-    PUT = 'PUT'
-    PATCH = 'PATCH'
-    DELETE = 'DELETE'
-
-
-@unique
-class RestrictionMatchType(Enum):
-    ALL = 'ALL'
-    IN = 'IN'
-    NOTIN = 'NOTIN'
-    STARTWITH = 'STARTWITH'
-    ENDWITH = 'ENDWITH'
-    PATTERN = 'PATTERN'
-
-
-@unique
-class RestrictedExemptionType(Enum):
-    USER = 'USER'
-    GROUP = 'GROUP'
-
-
-@unique
 class RobotState(Enum):
     # 启用
     ENABLE = 'ENABLE'

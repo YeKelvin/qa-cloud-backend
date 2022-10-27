@@ -5,11 +5,11 @@
 # @Author  : Kelvin.Ye
 from app.extension import db
 from app.public.dao import workspace_dao as WorkspaceDao
-from app.public.dao import workspace_restricted_exemption_dao as WorkspaceRestrictedExemptionDao
-from app.public.dao import workspace_restriction_dao as WorkspaceRestrictionDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
+from app.public.model import TWorkspaceRestriction
+from app.public.model import TWorkspaceRestrictionExemption
 from app.public.model import TWorkspaceUser
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
@@ -38,14 +38,16 @@ def query_workspace_list(req):
         pageSize=req.pageSize
     )
 
-    data = []
-    for workspace in workspaces.items:
-        data.append({
+    data = [
+        {
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
             'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
-        })
+        }
+        for workspace in workspaces.items
+    ]
+
     return {'data': data, 'total': workspaces.total}
 
 
@@ -69,15 +71,15 @@ def query_workspace_all(req):
         )
         workspaces = workspace_filter.union(public_workspace_filter).all()
 
-    result = []
-    for workspace in workspaces:
-        result.append({
+    return [
+        {
             'workspaceNo': workspace.WORKSPACE_NO,
             'workspaceName': workspace.WORKSPACE_NAME,
             'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
-        })
-    return result
+        }
+        for workspace in workspaces
+    ]
 
 
 @http_service
@@ -149,13 +151,9 @@ def remove_workspace(req):
         raise ServiceError('存在成员的团队空间不允许删除')
 
     # 删除空间限制
-    restrictions = WorkspaceRestrictionDao.select_all_by_workspace(req.workspaceNo)
-    for restriction in restrictions:
-        # 删除豁免成员
-        WorkspaceRestrictedExemptionDao.delete_all_by_restriction(restriction.RESTRICTION_NO)
-        # 删除限制
-        restriction.delete()
-
+    TWorkspaceRestriction.deletes_by(WORKSPACE_NO=req.workspaceNo)
+    # 删除空间限制豁免
+    TWorkspaceRestrictionExemption.deletes_by(WORKSPACE_NO=req.workspaceNo)
     # 删除空间
     workspace.delete()
 

@@ -22,17 +22,18 @@ log = get_logger(__name__)
 
 @http_service
 def query_role_permissions(req):
-    conds = QueryCondition(TPermission, TRolePermission)
-    conds.like(TRolePermission.ROLE_NO, req.roleNo)
+    conds = QueryCondition(TPermissionModule, TPermissionObject, TPermission, TRolePermission)
+    conds.equal(TRolePermission.ROLE_NO, req.roleNo)
     conds.equal(TRolePermission.PERMISSION_NO, TPermission.PERMISSION_NO)
+    conds.equal(TPermission.MODULE_NO, TPermissionModule.MODULE_NO)
+    conds.equal(TPermission.OBJECT_NO, TPermissionObject.OBJECT_NO)
 
     resutls = (
         dbquery(
             TPermissionModule.MODULE_CODE,
             TPermissionObject.OBJECT_CODE,
             TPermission.PERMISSION_NO,
-            TPermission.PERMISSION_NAME,
-            TPermission.PERMISSION_CODE
+            TPermission.PERMISSION_NAME
         )
         .filter(*conds)
         .order_by(TPermissionModule.MODULE_CODE.asc(), TPermissionObject.OBJECT_CODE.asc())
@@ -42,8 +43,7 @@ def query_role_permissions(req):
     return [
         {
             'permissionNo': resutl.PERMISSION_NO,
-            'permissionName': resutl.PERMISSION_NAME,
-            'permissionCode': resutl.PERMISSION_CODE
+            'permissionName': resutl.PERMISSION_NAME
         }
         for resutl in resutls
     ]
@@ -59,7 +59,7 @@ def set_role_permissions(req):
     for permission_no in req.permissionNumbers:
         # 查询角色权限
         role_permission = RolePermissionDao.select_by_role_and_permission(req.roleNo, permission_no)
-        # 绑定角色权限
+        # 新增角色权限
         if not role_permission:
             TRolePermission.insert(ROLE_NO=req.roleNo, PERMISSION_NO=permission_no)
 

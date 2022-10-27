@@ -33,19 +33,15 @@ class TWorkspaceRestriction(DBModel, BaseColumn):
     """空间限制表"""
     __tablename__ = 'WORKSPACE_RESTRICTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    RESTRICTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='限制编号')
-    MATCH_METHOD = db.Column(db.String(16), nullable=False, comment='匹配方法(POST, PUT, PATCH, DELETE)')
-    MATCH_TYPE = db.Column(db.String(16), nullable=False, comment='匹配类型(ALL, IN, NOTIN, STARTWITH, ENDWITH, PATTERN)')
-    MATCH_CONTENT = db.Column(db.String(128), nullable=False, comment='匹配内容')
-    STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='限制状态(ENABLE:启用, DISABLE:禁用)')
+    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
 
 
-class TWorkspaceRestrictedExemption(DBModel, BaseColumn):
+class TWorkspaceRestrictionExemption(DBModel, BaseColumn):
     """空间限制豁免表"""
-    __tablename__ = 'WORKSPACE_RESTRICTED_EXEMPTION'
-    RESTRICTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='限制编号')
-    EXEMPTION_TYPE = db.Column(db.String(16), nullable=False, comment='豁免类型(USER, GROUP)')
-    EXEMPTION_NO = db.Column(db.String(32), nullable=False, comment='豁免编号')
+    __tablename__ = 'WORKSPACE_RESTRICTION_EXEMPTION'
+    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
+    USER_NUMBERS = db.Column(JSONB, comment='豁免用户编号列表')
+    GROUP_NUMBERS = db.Column(JSONB, comment='豁免分组编号列表')
 
 
 class TTag(DBModel, BaseColumn):

@@ -49,6 +49,7 @@ class TPermission(DBModel, BaseColumn):
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
     PERMISSION_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='权限代码')
+    PERMISSION_ACT = db.Column(db.String(64), comment='权限行为')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
 
 

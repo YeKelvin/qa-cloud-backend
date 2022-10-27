@@ -53,12 +53,12 @@ PATCH       /user/attribute         修改用户的名称
 DELETE      /user                   删除用户
 ```
 
-#### Python路由方法命名规范
+#### 路由方法命名规范
 ```
 GET         def query_user_list()             分页查询用户列表
 GET         def query_user_all()              查询所有用户
 POST        def create_user()           新增用户
 PUT         def modify_user()           修改用户信息
 PATCH       def modify_user_name()      修改用户的名称
-DELETE      def delete_user()           删除用户
+DELETE      def remove_user()           删除用户
 ```
