@@ -168,9 +168,8 @@ def register_commands(app: Flask):
 
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
-    app.cli.add_command(command.dropdb)
+    # app.cli.add_command(command.dropdb)
     app.cli.add_command(command.create_single_table)
-    app.cli.add_command(command.initp)
 
 
 def orjson_serializer(obj):
