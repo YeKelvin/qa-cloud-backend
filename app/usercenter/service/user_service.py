@@ -4,6 +4,7 @@
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
 from datetime import datetime
+from datetime import timezone
 
 from flask import request
 
@@ -11,6 +12,7 @@ from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.tools import globals
+from app.tools.auth import JWTAuth
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
@@ -37,7 +39,6 @@ from app.usercenter.model import TUserLoginInfo
 from app.usercenter.model import TUserLoginLog
 from app.usercenter.model import TUserPassword
 from app.usercenter.model import TUserRole
-from app.utils.auth import JWTAuth
 from app.utils.rsa_util import decrypt_by_rsa_private_key
 from app.utils.security import check_password
 from app.utils.security import encrypt_password
@@ -46,7 +47,6 @@ from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
 
-from datetime import timezone
 log = get_logger(__name__)
 
 

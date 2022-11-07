@@ -13,9 +13,9 @@ from flask import request
 from app.extension import db
 from app.system.model import TSystemOperationLog
 from app.tools import globals
+from app.tools.auth import JWTAuth
 from app.tools.logger import get_logger
 from app.tools.response import http_response
-from app.utils.auth import JWTAuth
 
 
 log = get_logger(__name__)
