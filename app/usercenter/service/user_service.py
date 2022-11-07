@@ -46,6 +46,7 @@ from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
 
+from datetime import timezone
 log = get_logger(__name__)
 
 
@@ -77,7 +78,7 @@ def login(req):
 
     # 密码校验失败
     if not pwd_success:
-        user_password.LAST_ERROR_TIME = datetime.utcnow()
+        user_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
         if user_password.ERROR_TIMES < 3:
             user_password.ERROR_TIMES += 1
         raise ServiceError('账号或密码不正确')

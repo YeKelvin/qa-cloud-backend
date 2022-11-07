@@ -47,6 +47,7 @@ log = get_logger(__name__)
 class JWTAuth:
     SECRET_KEY = CONFIG.JWT_SECRET_KEY
     EXPIRE_TIME = int(CONFIG.JWT_EXPIRE_TIME)
+    DECODE_OPTIONS = {'require': ['exp', 'iat'], 'verify_exp': True}
 
     @staticmethod
     def encode_auth_token(user_no, issued_at):
@@ -85,10 +86,9 @@ class JWTAuth:
 
         Raises:
             jwt.ExpiredSignatureError（token过期）
-            jwt.InvalidTokenError（无效token）
+            jwt.InvalidTokenError（token无效）
         """
-
-        payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, algorithms=['HS256'], options={'verify_exp': True})
+        payload = jwt.decode(auth_token, JWTAuth.SECRET_KEY, algorithms=['HS256'], options=JWTAuth.DECODE_OPTIONS)
         if 'data' in payload and 'id' in payload['data']:
             return payload
         else:

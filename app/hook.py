@@ -55,9 +55,9 @@ def set_user():
             globals.put('user_no', payload['data']['id'])
             globals.put('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
-            log.info('token已失效')
+            log.info(f'accessToken:[ {auth_token} ] token已失效')
         except jwt.InvalidTokenError:
-            log.info('无效的token')
+            log.info(f'accessToken:[ {auth_token} ] 无效的token')
         except Exception:
             log.error(traceback.format_exc())
 
