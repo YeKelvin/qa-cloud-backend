@@ -36,28 +36,18 @@ def set_user():
 
     # 判断请求头部是否包含Authorization属性
     if 'Authorization' in request.headers:
-        # 判断Authorization是否符合规范
-        auth_header = request.headers.get('Authorization')
-        auth_data = auth_header.split(' ')
-        if not auth_data or len(auth_data) != 2:
-            log.info('解析 Authorization 失败')
-            return
-
-        auth_schema, auth_token = auth_data
-        if auth_schema != 'Bearer':
-            log.info('暂不支持的 schema')
-            return
-
+        access_toekn = request.headers.get('Authorization')
+        # noinspection PyBroadException
         try:
             # 解析token，获取payload
-            payload = JWTAuth.decode_auth_token(auth_token)
+            payload = JWTAuth.decode_auth_token(access_toekn)
             # 设置全局属性
             globals.put('user_no', payload['data']['id'])
             globals.put('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
-            log.info(f'accessToken:[ {auth_token} ] token已失效')
+            log.info(f'accessToken:[ {access_toekn} ] token已失效')
         except jwt.InvalidTokenError:
-            log.info(f'accessToken:[ {auth_token} ] 无效的token')
+            log.info(f'accessToken:[ {access_toekn} ] 无效的token')
         except Exception:
             log.error(traceback.format_exc())
 
