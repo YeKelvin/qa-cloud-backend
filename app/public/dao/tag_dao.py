@@ -28,7 +28,7 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TTag.filter(*conds).order_by(TTag.CREATED_TIME.desc()).paginate(page, page_size)
+    return TTag.filter(*conds).order_by(TTag.CREATED_TIME.desc()).paginate(page=page, per_page=page_size)
 
 
 def select_all() -> List[TTag]:

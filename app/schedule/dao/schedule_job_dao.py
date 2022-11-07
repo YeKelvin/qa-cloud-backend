@@ -30,4 +30,9 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TScheduleJob.filter(*conds).order_by(TScheduleJob.CREATED_TIME.desc()).paginate(page, page_size)
+    return (
+        TScheduleJob
+        .filter(*conds)
+        .order_by(TScheduleJob.CREATED_TIME.desc())
+        .paginate(page=page, per_page=page_size)
+    )

@@ -33,4 +33,4 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TGroup.filter(*conds).order_by(TGroup.CREATED_TIME.desc()).paginate(page, page_size)
+    return TGroup.filter(*conds).order_by(TGroup.CREATED_TIME.desc()).paginate(page=page, per_page=page_size)

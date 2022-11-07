@@ -28,17 +28,12 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TWorkspace.filter(
-        *conds
-    ).group_by(
-        TWorkspace.ID,
-        TWorkspace.WORKSPACE_SCOPE
-    ).order_by(
-        TWorkspace.WORKSPACE_SCOPE.desc(),
-        TWorkspace.CREATED_TIME.desc()
-    ).paginate(
-        page,
-        page_size
+    return (
+        TWorkspace
+        .filter(*conds)
+        .group_by(TWorkspace.ID, TWorkspace.WORKSPACE_SCOPE)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc(), TWorkspace.CREATED_TIME.desc())
+        .paginate(page=page, per_page=page_size)
     )
 
 

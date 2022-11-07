@@ -39,7 +39,7 @@ def query_httpheader_template_list(req):
         THttpHeaderTemplate
         .filter(*conds)
         .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
-        .paginate(req.page, req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize)
     )
 
     data = [

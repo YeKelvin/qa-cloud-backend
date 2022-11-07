@@ -35,7 +35,7 @@ def query_user_role_list(req):
         TUserRole.USER_NO,
         TUserRole.ROLE_NO,
         TUserRole.CREATED_TIME
-    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
 
     data = []
     for item in pagination.items:

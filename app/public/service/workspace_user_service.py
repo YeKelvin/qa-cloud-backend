@@ -36,16 +36,17 @@ def query_workspace_user_list(req):
         TWorkspace.WORKSPACE_NAME,
         TUser.USER_NO,
         TUser.USER_NAME
-    ).filter(*conds).order_by(TWorkspaceUser.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TWorkspaceUser.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'workspaceNo': item.WORKSPACE_NO,
             'workspaceName': item.WORKSPACE_NAME,
             'userNo': item.USER_NO,
-            'userName': item.USER_NAME,
-        })
+            'userName': item.USER_NAME
+        }
+        for item in pagination.items
+    ]
 
     return {'data': data, 'total': pagination.total}
 

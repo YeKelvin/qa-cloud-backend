@@ -50,7 +50,7 @@ from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.usercenter.dao import user_dao as UserDao
-from app.utils.notification import wecom as WeComTool
+from app.utils.notice import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import timestamp_now

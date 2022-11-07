@@ -85,7 +85,7 @@ def login(req):
 
     # 密码校验通过后生成token
     issued_at = timestamp_now()
-    token = JWTAuth.encode_auth_token(user.USER_NO, issued_at)
+    token = JWTAuth.encode_token(user.USER_NO, issued_at)
 
     # 更新用户登录时间
     # 清空用户登录失败次数
@@ -223,7 +223,7 @@ def query_user_list(req):
         TUser.STATE,
         TUser.AVATAR,
         TUserLoginInfo.LOGIN_NAME
-    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
 
     data = []
     for user in pagination.items:

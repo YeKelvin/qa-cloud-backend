@@ -40,7 +40,7 @@ def set_user():
         # noinspection PyBroadException
         try:
             # 解析token，获取payload
-            payload = JWTAuth.decode_auth_token(access_toekn)
+            payload = JWTAuth.decode_token(access_toekn)
             # 设置全局属性
             globals.put('user_no', payload['data']['id'])
             globals.put('issued_at', payload['iat'])

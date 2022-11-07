@@ -30,7 +30,7 @@ def select_list(**kwargs) -> Pagination:
     page = kwargs.pop('page')
     page_size = kwargs.pop('pageSize')
 
-    return TUser.filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page, page_size)
+    return TUser.filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page=page, per_page=page_size)
 
 
 def select_all(**kwargs) -> List[TUser]:

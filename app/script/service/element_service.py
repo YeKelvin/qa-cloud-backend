@@ -109,7 +109,7 @@ def query_element_list(req):
         TTestElement.ELEMENT_REMARK,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ENABLED
-    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
 
     data = [
         {

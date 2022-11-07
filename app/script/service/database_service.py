@@ -38,7 +38,7 @@ def query_database_engine_list(req):
         TDatabaseConfig
         .filter(*conds)
         .order_by(TDatabaseConfig.CREATED_TIME.desc())
-        .paginate(req.page, req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize)
     )
 
     data = [

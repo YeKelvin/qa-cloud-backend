@@ -23,13 +23,11 @@ def select_all_by_user(user_no) -> List[TWorkspaceUser]:
 
 
 def select_list_by_workspace(**kwargs) -> Pagination:
-    return TWorkspaceUser.filter_by(
-        WORKSPACE_NO=kwargs.pop('workspaceNo')
-    ).order_by(
-        TWorkspaceUser.CREATED_TIME.desc()
-    ).paginate(
-        kwargs.pop('page'),
-        kwargs.pop('pageSize')
+    return (
+        TWorkspaceUser
+        .filter_by(WORKSPACE_NO=kwargs.pop('workspaceNo'))
+        .order_by(TWorkspaceUser.CREATED_TIME.desc())
+        .paginate(page=kwargs.pop('page'), per_page=kwargs.pop('pageSize'))
     )
 
 

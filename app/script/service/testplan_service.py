@@ -45,11 +45,15 @@ def query_testplan_list(req):
     conds.like(TTestplan.TEST_PHASE, req.testPhase)
 
     # 分页查询
-    pagination = TTestplan.filter(*conds).order_by(TTestplan.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    pagination = (
+        TTestplan
+        .filter(*conds)
+        .order_by(TTestplan.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
+    )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'planNo': item.PLAN_NO,
             'planName': item.PLAN_NAME,
             'planDesc': item.PLAN_DESC,
@@ -58,8 +62,11 @@ def query_testplan_list(req):
             'testPhase': item.TEST_PHASE,
             'state': item.STATE,
             'startTime': item.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.START_TIME else None,
-            'endTime': item.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.END_TIME else None,
-        })
+            'endTime': item.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.END_TIME else None
+        }
+        for item in pagination.items
+    ]
+
     return {'data': data, 'total': pagination.total}
 
 

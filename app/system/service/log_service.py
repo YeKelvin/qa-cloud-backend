@@ -37,7 +37,7 @@ def query_operation_log_list(req):
         TSystemOperationLog.OPERATION_METHOD,
         TSystemOperationLog.OPERATION_ENDPOINT,
         TSystemOperationLog.CREATED_TIME,
-    ).filter(*conds).order_by(TSystemOperationLog.CREATED_TIME.desc()).paginate(req.page, req.pageSize)
+    ).filter(*conds).order_by(TSystemOperationLog.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
 
     data = []
     for item in pagination.items:
