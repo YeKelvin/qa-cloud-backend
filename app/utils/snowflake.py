@@ -68,7 +68,6 @@ class IdWorker:
         self.worker_id = worker_id
         self.datacenter_id = datacenter_id
         self.sequence = sequence
-
         self.last_timestamp = -1  # 上次计算的时间戳
 
     def new_id(self):
@@ -79,8 +78,7 @@ class IdWorker:
         # 雪花算法需要是强依赖时间，如果时间发生回拨，有可能会生成重复的ID
         # 用当前时间和上一次的时间进行判断，如果当前时间小于上一次的时间那么就发生了时间回拨，直接抛出异常
         if timestamp < self.last_timestamp:
-            logging.error('clock is moving backwards. Rejecting requests until {}'.format(self.last_timestamp))
-            raise InvalidSystemClock
+            raise InvalidSystemClock(f'clock is moving backwards. Rejecting requests until {self.last_timestamp}')
 
         if timestamp == self.last_timestamp:
             self.sequence = (self.sequence + 1) & SEQUENCE_MASK
@@ -91,17 +89,10 @@ class IdWorker:
 
         self.last_timestamp = timestamp
 
-        new_id = (
-            ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) |
-            (self.datacenter_id << DATACENTER_ID_SHIFT) |
-            (self.worker_id << WOKER_ID_SHIFT) |
-            self.sequence
-        )
-        return new_id
+        return ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) | (self.datacenter_id << DATACENTER_ID_SHIFT) | (self.worker_id << WOKER_ID_SHIFT) | self.sequence
 
     def __wait_until_next_millis(self):
-        """等待到下一毫秒
-        """
+        """等待到下一毫秒"""
         timestamp = int(time.time() * 1000)
         while timestamp <= self.last_timestamp:
             timestamp = int(time.time() * 1000)
