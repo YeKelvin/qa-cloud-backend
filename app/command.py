@@ -197,7 +197,7 @@ def init_api():
     create_api('PUBLIC', 'WORKSPACE', '查询空间', 'QUERY_WORKSPACE', 'QUERY', name='分页查询工作空间列表', method='GET', path='/public/workspace/list')
     create_api('PUBLIC', 'WORKSPACE', '查询空间', 'QUERY_WORKSPACE', 'QUERY', name='查询全部工作空间', method='GET', path='/public/workspace/all')
     create_api('PUBLIC', 'WORKSPACE', '查询空间', 'QUERY_WORKSPACE', 'QUERY', name='查询工作空间信息', method='GET', path='/public/workspace/info')
-    create_api('PUBLIC', 'WORKSPACE', '新增日志', 'CREATE_WORKSPACE', 'CREATE', name='新增工作空间', method='POST', path='/public/workspace')
+    create_api('PUBLIC', 'WORKSPACE', '新增空间', 'CREATE_WORKSPACE', 'CREATE', name='新增工作空间', method='POST', path='/public/workspace')
     create_api('PUBLIC', 'WORKSPACE', '修改空间', 'MODIFY_WORKSPACE', 'MODIFY', name='修改工作空间', method='PUT', path='/public/workspace')
     create_api('PUBLIC', 'WORKSPACE', '删除空间', 'REMOVE_WORKSPACE', 'REMOVE', name='删除工作空间', method='DELETE', path='/public/workspace')
     create_api('PUBLIC', 'WORKSPACE', '查询空间成员', 'QUERY_WORKSPACE_MEMBER', 'QUERY', name='分页查询空间成员列表', method='GET', path='/public/workspace/user/list')
