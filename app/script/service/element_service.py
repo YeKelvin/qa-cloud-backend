@@ -976,7 +976,8 @@ def copy_element(source: TTestElement, rename=False):
             PARENT_NO=copied_no,
             CHILD_NO=copied_builtin_no,
             CHILD_TYPE=source_relation.CHILD_TYPE,
-            SORT_NUMBER=source_relation.SORT_NUMBER
+            SORT_NUMBER=source_relation.SORT_NUMBER,
+            SORT_WEIGHT=source_relation.SORT_WEIGHT
         )
     return copied_no
 
