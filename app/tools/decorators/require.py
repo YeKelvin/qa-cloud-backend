@@ -82,7 +82,6 @@ def require_permission(func):
             return failed_response(ErrorCode.E401002)
 
         # 查询用户权限，判断权限是否存在且状态正常
-        # if query_user_permission(user_no):
         if exists_user_permission(user_no):
             return func(*args, **kwargs)
 
@@ -91,7 +90,7 @@ def require_permission(func):
             return func(*args, **kwargs)
 
         # 其余情况校验不通过
-        log.info('method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常')
+        log.info(f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常')
         return failed_response(ErrorCode.E401002)
 
     return wrapper
@@ -196,10 +195,6 @@ def user_role_permission_filter(user_no):
         TRolePermission.PERMISSION_NO == TPermission.PERMISSION_NO,
         TRolePermission.ROLE_NO == TUserRole.ROLE_NO,
     )
-
-
-def query_user_permission(user_no):
-    return user_group_permission_filter(user_no).union(user_role_permission_filter(user_no)).first()
 
 
 def is_super_admin(user_no):

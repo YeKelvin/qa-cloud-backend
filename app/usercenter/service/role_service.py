@@ -15,6 +15,7 @@ from app.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
 from app.usercenter.dao import user_role_dao as UserRoleDao  # noqa
 from app.usercenter.enum import RoleState
 from app.usercenter.model import TRole
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -23,22 +24,18 @@ log = get_logger(__name__)
 @http_service
 def query_role_list(req):
     # 查询角色列表
-    pagination = RoleDao.select_list(
-        roleNo=req.roleNo,
-        roleName=req.roleName,
-        roleCode=req.roleCode,
-        roleDesc=req.roleDesc,
-        roleType=req.roleType,
-        state=req.state,
-        page=req.page,
-        pageSize=req.pageSize
-    )
+    conds = QueryCondition()
+    conds.like(TRole.ROLE_NO, req.roleNo)
+    conds.like(TRole.ROLE_NAME, req.roleName)
+    conds.like(TRole.ROLE_CODE, req.roleCode)
+    conds.like(TRole.ROLE_DESC, req.roleDesc)
+    conds.like(TRole.ROLE_TYPE, req.roleType)
+    conds.like(TRole.STATE, req.state)
 
-    data = []
-    for role in pagination.items:
-        if role.ROLE_CODE == 'SUPER_ADMIN':
-            continue
-        data.append({
+    pagination = TRole.filter(*conds).order_by(TRole.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+
+    data = [
+        {
             'roleNo': role.ROLE_NO,
             'roleName': role.ROLE_NAME,
             'roleCode': role.ROLE_CODE,
@@ -46,18 +43,18 @@ def query_role_list(req):
             'roleType': role.ROLE_TYPE,
             'roleRank': role.ROLE_RANK,
             'state': role.STATE
-        })
+        }
+        for role in pagination.items if role.ROLE_CODE != 'SUPER_ADMIN'
+    ]
+
     return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_role_all():
     roles = RoleDao.select_all()
-    result = []
-    for role in roles:
-        if role.ROLE_CODE == 'SUPER_ADMIN':
-            continue
-        result.append({
+    return [
+        {
             'roleNo': role.ROLE_NO,
             'roleName': role.ROLE_NAME,
             'roleCode': role.ROLE_CODE,
@@ -65,8 +62,9 @@ def query_role_all():
             'roleType': role.ROLE_TYPE,
             'roleRank': role.ROLE_RANK,
             'state': role.STATE
-        })
-    return result
+        }
+        for role in roles if role.ROLE_CODE != 'SUPER_ADMIN'
+    ]
 
 
 @http_service

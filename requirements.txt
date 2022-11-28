@@ -4,11 +4,10 @@ flask-socketio==5.3.2
 flask-migrate==4.0.0
 flask-apscheduler==1.12.4
 apscheduler==3.9.1
-orjson==3.8.1
+orjson==3.8.2
 jsonpath==0.82
 pyjwt[crypto]==2.5.0
-pycryptodome==3.15.0
-pydantic==1.10.2
+pycryptodome==3.16.0
 python-dotenv==0.21.0
 environs==9.5.0
 uwsgi

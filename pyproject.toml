@@ -3,6 +3,9 @@ name = "qa-cloud-backend"
 version = "0.1.0"
 description = ""
 authors = ["Kelvin.Ye <testmankelvin@163.com>"]
+packages = [
+    {include = "app"}
+]
 
 # https://pypi.org/classifiers/
 #classifiers = [
@@ -14,11 +17,6 @@ name = "aliyun"
 url = "https://mirrors.aliyun.com/pypi/simple"
 default = true
 
-#[[tool.poetry.source]]
-#name = "tsinghua"
-#url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-#default = true
-
 [tool.poetry.dependencies]
 python = "^3.8"
 # Flask
@@ -29,13 +27,11 @@ flask-migrate = "4.0.0"
 flask-apscheduler = "1.12.4"
 apscheduler = "3.9.1"
 # Json
-orjson = "3.8.1"
+orjson = "3.8.2"
 jsonpath = "0.82"
 # Encryption
 pyjwt = "2.5.0"
-pycryptodome = "3.15.0"
-# Data Validation
-pydantic = "1.10.2"
+pycryptodome = "3.16.0"
 # Environment
 python-dotenv = "0.21.0"
 environs = "9.5.0"
@@ -65,14 +61,19 @@ multi_line_output = 3
 skip_glob = ["migrations/*"]
 
 #[tool.yapf]
-#based-on_style = "google"
-#arithmetic_precedence_indication = true
-#blank_line_before_nested_class_or_def = true
-#blank_lines_between_top_level_imports_and_variables = 2
-#column_limit = 120
-#coalesce_brackets = true
-#dedent_closing_brackets = true
-#indent_width = 4
-#join_multiple_lines = true
-#spaces_before_comment = 2
-#split_before_dot = true
+#BASED_ON_STYLE = "google"
+#ARITHMETIC_PRECEDENCE_INDICATION = true
+#BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = true
+#BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
+#COLUMN_LIMIT = 120
+#COALESCE_BRACKETS = true
+#DEDENT_CLOSING_BRACKETS = true
+#INDENT_WIDTH = 4
+#JOIN_MULTIPLE_LINES = true
+#SPACES_BEFORE_COMMENT = 2
+#SPLIT_BEFORE_DOT = true
+
+#[tool.yapfignore]
+#ignore_patterns = [
+#  "temp/**/*.py"
+#]

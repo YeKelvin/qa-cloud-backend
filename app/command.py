@@ -357,8 +357,8 @@ def init_global_variable_dataset():
     click.echo('初始化PyMeter全局变量成功')
 
 
-def create_role(name, code, rank, desc=''):
-    TRole.insert_without_record(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_DESC=desc)
+def create_role(name, code, rank):
+    TRole.insert_without_record(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_TYPE='SYSTEM')
 
 
 def create_api(m_code, o_code, p_name, p_code, p_act, name, method, path):
