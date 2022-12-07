@@ -4,11 +4,11 @@
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
 import traceback
-import uuid
 
 import jwt
 from flask import g
 from flask import request
+from ulid import microsecond as ulid
 
 from app.extension import db
 from app.system.model import TSystemOperationLog
@@ -25,7 +25,7 @@ def set_trace_id():
     """设置当前请求的全局 TraceID"""
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
-        g.trace_id = uuid.uuid4()
+        g.trace_id = ulid.new().str
 
 
 def set_user():

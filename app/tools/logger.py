@@ -5,13 +5,13 @@
 # @Author  : Kelvin.Ye
 import logging
 import multiprocessing
-import uuid
 from logging.config import dictConfig
 from logging.handlers import QueueHandler
 from logging.handlers import QueueListener
 from logging.handlers import TimedRotatingFileHandler
 
 import flask
+from ulid import microsecond as ulid
 
 from app import config as CONFIG
 from app.tools.locals import local
@@ -124,7 +124,7 @@ class ContextFilter(logging.Filter):
 
     def filter(self, record):
         if flask.has_app_context():
-            trace_id = getattr(flask.g, 'trace_id', None) or uuid.uuid4()
+            trace_id = getattr(flask.g, 'trace_id', None) or ulid.new().str
             flask.g.trace_id = trace_id
             record.traceId = trace_id
         elif trace_id := getattr(local, 'trace_id', None):

@@ -4,12 +4,12 @@
 # @Time    : 2022-05-15 23:34:10
 # @Author  : Kelvin.Ye
 import traceback
-import uuid
 
 from apscheduler.events import JobEvent
 from apscheduler.events import JobExecutionEvent
 from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
+from ulid import microsecond as ulid
 
 from app.extension import apscheduler
 from app.extension import db
@@ -226,4 +226,4 @@ def handle_event_all(event):
     A catch-all mask that includes every event type
     """
     # 重置[ 线程/协程 ]的日志号
-    setattr(local, 'trace_id', uuid.uuid4())
+    setattr(local, 'trace_id', ulid.new().str)

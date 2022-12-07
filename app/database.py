@@ -4,11 +4,11 @@
 # @Time    : 2019/11/7 10:57
 # @Author  : Kelvin.Ye
 import decimal
-import uuid
 from typing import Type
 
 from flask import g
 from sqlalchemy import func
+from ulid import microsecond as ulid
 
 from app.extension import db
 from app.tools.globals import get_userno_or_default
@@ -200,7 +200,7 @@ def get_trace_id():
 
     trace_id = getattr(local, 'trace_id', None)
     if not trace_id:
-        trace_id = uuid.uuid4()
+        trace_id = ulid.new().str
         setattr(local, 'trace_id', trace_id)
     return trace_id
 
