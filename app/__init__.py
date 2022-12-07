@@ -166,10 +166,11 @@ def register_commands(app: Flask):
     """Register Click commands"""
     from app import command
 
+    app.cli.add_command(command.newid)
     app.cli.add_command(command.initdb)
     app.cli.add_command(command.initdata)
     # app.cli.add_command(command.dropdb)
-    app.cli.add_command(command.create_single_table)
+    app.cli.add_command(command.create_table)
 
 
 def orjson_serializer(obj):

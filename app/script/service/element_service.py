@@ -692,6 +692,19 @@ def disable_element(req):
     element.update(ENABLED=ElementStatus.DISABLE.value)
 
 
+@http_service
+@transactional
+def toggle_element_state(req):
+    # 查询元素
+    element = TestElementDao.select_by_no(req.elementNo)
+    check_exists(element, error_msg='元素不存在')
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    # 更新元素状态
+    state = ElementStatus.DISABLE.value if element.ENABLED == ElementStatus.ENABLE.value else ElementStatus.ENABLE.value
+    element.update(ENABLED=state)
+
+
 def add_element_property(element_no, element_property: dict):
     """遍历添加元素属性"""
     if element_property is None:
@@ -866,7 +879,7 @@ def paste_element(req):
 
     # 排除不支持剪贴的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
-        raise ServiceError('暂不支持剪贴 Collection 元素')
+        raise ServiceError('暂不支持剪贴集合')
 
     # 检查元素是否允许剪贴
     check_allow_to_paste(source, target)
@@ -880,41 +893,24 @@ def paste_element(req):
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Group
     if is_group(source) and not is_collection(target):
-        raise ServiceError('[分组] 仅支持在 [集合] 下剪贴')
+        raise ServiceError('[用例] 仅支持在 [集合] 节点下剪贴')
     # Sampler
     elif is_sampler(source) and (
         is_test_collection(target) or not (is_snippet_collection(target) or is_group(target) or is_controller(target))
     ):
-        raise ServiceError('[取样器] 仅支持在 [片段|分组|控制器] 下剪贴')
+        raise ServiceError('[请求] 仅支持在 [片段|用例|逻辑控制器] 节点下剪贴')
     # Controller
     elif is_controller(source) and (
         is_test_collection(target) or not (is_snippet_collection(target) or is_group(target) or is_controller(target))
     ):
-        raise ServiceError('[控制器] 仅支持在 [片段|分组|控制器] 下剪贴')
-    # Config
-    elif is_config(source) and (
-        is_test_collection(target) or not (is_group(target) or is_controller(target))
-    ):
-        raise ServiceError('[配置器] 仅支持在 [片段|分组|控制器] 下剪贴')
+        raise ServiceError('[逻辑控制器] 仅支持在 [片段|用例|逻辑控制器] 节点下剪贴')
     # Timer
     elif is_timer(source) and (is_test_collection(target)
         or not (  # noqa
             is_snippet_collection(target) or is_group(target) or is_sampler(target) or is_controller(target)
         )  # noqa
     ):
-        raise ServiceError('[时间控制器] 仅支持在 [ 片段|分组|控制器|取样器 ] 下剪贴')
-    # Listener
-    elif is_listener(source) and not(is_collection(target) or is_group(target)):
-        raise ServiceError('[监听器] 仅支持在 [ 集合|片段|分组 ] 下剪贴')
-    # PreProcessor
-    elif is_pre_processor(source) and not is_sampler(target):
-        raise ServiceError('[前置处理器] 仅支持在 [取样器] 下剪贴')
-    # PostProcessor
-    elif is_post_processor(source) and not is_sampler(target):
-        raise ServiceError('[后置处理器] 仅支持在 [取样器] 下剪贴')
-    # Assertion
-    elif is_assertion(source) and not is_sampler(target):
-        raise ServiceError('[断言器] 仅支持在 [取样器] 下剪贴')
+        raise ServiceError('[时间控制器] 仅支持在 [ 片段|用例|逻辑控制器 ] 节点下剪贴')
 
 
 def paste_element_by_copy(source: TTestElement, target: TTestElement):

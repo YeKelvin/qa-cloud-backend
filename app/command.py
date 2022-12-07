@@ -35,6 +35,11 @@ log = get_logger(__name__)
 
 
 @click.command()
+def newid():
+    click.echo(new_id())
+
+
+@click.command()
 @with_appcontext
 def initdb():
     """创建表"""
@@ -248,6 +253,7 @@ def init_api():
     create_api('SCRIPT', 'ELEMENT', '删除元素', 'REMOVE_ELEMENT', 'REMOVE', name='删除元素', method='DELETE', path='/script/element')
     create_api('SCRIPT', 'ELEMENT', '修改元素', 'MODIFY_ELEMENT', 'MODIFY', name='启用元素', method='PATCH', path='/script/element/enable')
     create_api('SCRIPT', 'ELEMENT', '修改元素', 'MODIFY_ELEMENT', 'MODIFY', name='禁用元素', method='PATCH', path='/script/element/disable')
+    create_api('SCRIPT', 'ELEMENT', '修改元素', 'MODIFY_ELEMENT', 'MODIFY', name='切换元素状态', method='PATCH', path='/script/element/state/toggle')
     create_api('SCRIPT', 'ELEMENT', '移动元素', 'MOVE_ELEMENT', 'MOVE', name='移动元素', method='POST', path='/script/element/move')
     create_api('SCRIPT', 'ELEMENT', '复制元素', 'COPY_ELEMENT', 'COPY', name='复制元素及其子代', method='POST', path='/script/element/duplicate')
     create_api('SCRIPT', 'ELEMENT', '查询元素', 'QUERY_ELEMENT', 'QUERY', name='查询HTTP请求头引用', method='GET', path='/script/element/httpheader/template/refs')
@@ -410,7 +416,7 @@ def get_permission_object_no(code):
 @click.command('create-table')
 @click.option('-n', '--name', help='表名')
 @with_appcontext
-def create_single_table(name):
+def create_table(name):
     from sqlalchemy import create_engine
 
     from app import config as CONFIG

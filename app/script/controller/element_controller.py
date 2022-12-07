@@ -236,6 +236,15 @@ def disable_element():
     return service.disable_element(req)
 
 
+@blueprint.patch('/element/state/toggle')
+@require_login
+@require_permission
+def toggle_element_state():
+    """切换元素状态"""
+    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    return service.toggle_element_state(req)
+
+
 @blueprint.post('/element/move')
 @require_login
 @require_permission
