@@ -3,7 +3,7 @@
 # @File    : log_service.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from app.extension import db
+from app.database import dbquery
 from app.system.model import TSystemOperationLog
 from app.tools.decorators.service import http_service
 from app.tools.logger import get_logger
@@ -27,13 +27,18 @@ def query_operation_log_list(req):
     conds.equal(TSystemOperationLog.CREATED_BY, TUser.USER_NO)
 
     # 查询日志列表
-    pagination = db.session.query(
-        TUser.USER_NAME,
-        TSystemOperationLog.LOG_NO,
-        TSystemOperationLog.OPERATION_METHOD,
-        TSystemOperationLog.OPERATION_ENDPOINT,
-        TSystemOperationLog.CREATED_TIME,
-    ).filter(*conds).order_by(TSystemOperationLog.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        dbquery(
+            TUser.USER_NAME,
+            TSystemOperationLog.LOG_NO,
+            TSystemOperationLog.OPERATION_METHOD,
+            TSystemOperationLog.OPERATION_ENDPOINT,
+            TSystemOperationLog.CREATED_TIME,
+        )
+        .filter(*conds)
+        .order_by(TSystemOperationLog.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
+    )
 
     data = [
         {

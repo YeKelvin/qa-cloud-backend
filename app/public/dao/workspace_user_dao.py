@@ -5,8 +5,6 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
-from flask_sqlalchemy import Pagination
-
 from app.public.model import TWorkspaceUser
 
 
@@ -20,15 +18,6 @@ def count_by_workspace(workspace_no) -> int:
 
 def select_all_by_user(user_no) -> List[TWorkspaceUser]:
     return TWorkspaceUser.filter_by(USER_NO=user_no).all()
-
-
-def select_list_by_workspace(**kwargs) -> Pagination:
-    return (
-        TWorkspaceUser
-        .filter_by(WORKSPACE_NO=kwargs.pop('workspaceNo'))
-        .order_by(TWorkspaceUser.CREATED_TIME.desc())
-        .paginate(page=kwargs.pop('page'), per_page=kwargs.pop('pageSize'))
-    )
 
 
 def delete_all_by_workspace_and_notin_user(workspace_no, *args) -> None:

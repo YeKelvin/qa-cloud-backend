@@ -5,7 +5,7 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
-from flask_sqlalchemy import Pagination
+from flask_sqlalchemy.pagination import Pagination
 
 from app.usercenter.model import TGroup
 from app.utils.sqlalchemy_util import QueryCondition

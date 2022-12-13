@@ -11,6 +11,7 @@ from app.tools.identity import new_id
 from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
+from app.utils.sqlalchemy_util import QueryCondition
 
 
 log = get_logger(__name__)
@@ -18,35 +19,40 @@ log = get_logger(__name__)
 
 @http_service
 def query_tag_list(req):
-    tags = TagDao.select_list(
-        tagNo=req.tagNo,
-        tagName=req.tagName,
-        tagDesc=req.tagDesc,
-        page=req.page,
-        pageSize=req.pageSize
+    # 查询条件
+    conds = QueryCondition()
+    conds.like(TTag.TAG_NO, req.tagNo)
+    conds.like(TTag.TAG_NAME, req.tagName)
+    conds.like(TTag.TAG_DESC, req.tagDesc)
+    # 分页查询
+    pagination = (
+        TTag
+        .filter(*conds)
+        .order_by(TTag.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
     )
-
-    data = []
-    for tag in tags.items:
-        data.append({
+    data = [
+        {
             'tagNo': tag.WORKSPACE_NO,
             'tagName': tag.WORKSPACE_NAME,
             'tagDesc': tag.WORKSPACE_DESC
-        })
-    return {'data': data, 'total': tags.total}
+        }
+        for tag in pagination.items
+    ]
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
 def query_tag_all():
     tags = TagDao.select_all()
-    result = []
-    for tag in tags:
-        result.append({
+    return [
+        {
             'tagNo': tag.WORKSPACE_NO,
             'tagName': tag.WORKSPACE_NAME,
             'tagDesc': tag.WORKSPACE_DESC
-        })
-    return result
+        }
+        for tag in tags
+    ]
 
 
 @http_service

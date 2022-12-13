@@ -21,16 +21,21 @@ log = get_logger(__name__)
 
 @http_service
 def query_notice_robot_list(req):
+    # 查询条件
+    conds = QueryCondition()
+    conds.like(TNotificationRobot.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TNotificationRobot.ROBOT_NO, req.robotNo)
+    conds.like(TNotificationRobot.ROBOT_NAME, req.robotName)
+    conds.like(TNotificationRobot.ROBOT_DESC, req.robotDesc)
+    conds.like(TNotificationRobot.ROBOT_TYPE, req.robotType)
+    conds.like(TNotificationRobot.STATE, req.state)
+
     # 查询机器人列表
-    pagination = NotificationRobotDao.select_list(
-        workspaceNo=req.workspaceNo,
-        robotNo=req.robotNo,
-        robotName=req.robotName,
-        robotDesc=req.robotDesc,
-        robotType=req.robotType,
-        state=req.state,
-        page=req.page,
-        pageSize=req.pageSize
+    pagination = (
+        TNotificationRobot
+        .filter(*conds)
+        .order_by(TNotificationRobot.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
     )
 
     data = [

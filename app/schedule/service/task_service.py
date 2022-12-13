@@ -37,17 +37,22 @@ log = get_logger(__name__)
 
 @http_service
 def query_task_list(req):
+    # 查询条件
+    conds = QueryCondition()
+    conds.like(TScheduleJob.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TScheduleJob.JOB_NO, req.jobNo)
+    conds.like(TScheduleJob.JOB_NAME, req.jobName)
+    conds.like(TScheduleJob.JOB_DESC, req.jobDesc)
+    conds.like(TScheduleJob.JOB_TYPE, req.jobType)
+    conds.like(TScheduleJob.TRIGGER_TYPE, req.triggerType)
+    conds.like(TScheduleJob.STATE, req.state)
+
     # 查询定时任务列表
-    pagination = ScheduleJobDao.select_list(
-        workspaceNo=req.workspaceNo,
-        jobNo=req.jobNo,
-        jobName=req.jobName,
-        jobDesc=req.jobDesc,
-        jobType=req.jobType,
-        triggerType=req.triggerType,
-        state=req.state,
-        page=req.page,
-        pageSize=req.pageSize
+    pagination = (
+        TScheduleJob
+        .filter(*conds)
+        .order_by(TScheduleJob.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
     )
 
     data = [

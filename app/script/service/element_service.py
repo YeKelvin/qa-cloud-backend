@@ -6,7 +6,7 @@
 from typing import Iterable
 from typing import List
 
-from app.extension import db
+from app.database import dbquery
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.enum import WorkspaceScope
 from app.public.model import TWorkspace
@@ -24,15 +24,10 @@ from app.script.enum import ComponentSortWeight
 from app.script.enum import ElementStatus
 from app.script.enum import ElementType
 from app.script.enum import PasteType
-from app.script.enum import is_assertion
 from app.script.enum import is_collection
-from app.script.enum import is_config
 from app.script.enum import is_controller
 from app.script.enum import is_group
 from app.script.enum import is_http_sampler
-from app.script.enum import is_listener
-from app.script.enum import is_post_processor
-from app.script.enum import is_pre_processor
 from app.script.enum import is_sampler
 from app.script.enum import is_snippet_collection
 from app.script.enum import is_test_collection
@@ -103,7 +98,7 @@ def query_element_list(req):
         conds.equal(TWorkspaceCollection.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
 
     # TTestElement，TWorkspace，TWorkspaceCollection连表查询
-    pagination = db.session.query(
+    pagination = dbquery(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_REMARK,
@@ -135,7 +130,7 @@ def query_element_all(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
-    items = db.session.query(
+    items = dbquery(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_REMARK,
@@ -167,7 +162,7 @@ def query_element_all_in_private(req):
     public_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     public_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
     public_filter = (
-        db.session.query(
+        dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
             TWorkspace.WORKSPACE_SCOPE,
@@ -191,7 +186,7 @@ def query_element_all_in_private(req):
     protected_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     protected_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
     protected_filter = (
-        db.session.query(
+        dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
             TWorkspace.WORKSPACE_SCOPE,
@@ -215,7 +210,7 @@ def query_element_all_in_private(req):
     private_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     private_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
     private_filter = (
-        db.session.query(
+        dbquery(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
             TWorkspace.WORKSPACE_SCOPE,
@@ -262,7 +257,7 @@ def query_element_all_with_children(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
-    items = db.session.query(
+    items = dbquery(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_REMARK,
@@ -280,7 +275,7 @@ def query_element_all_with_children(req):
         childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         childconds.equal(TTestElement.ENABLED, req.enabled)
-        children = db.session.query(
+        children = dbquery(
             TElementChildren.SORT_NO,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
@@ -485,10 +480,7 @@ def update_element_options(element_no, element_options):
         return
     # 遍历更新元素属性
     for name, value in element_options.items():
-        # 查询元素属性
-        option = ElementOptionsDao.select_by_element_and_name(element_no, name)
-        # 有属性就更新，没有就新增
-        if option:
+        if option := ElementOptionsDao.select_by_element_and_name(element_no, name):
             option.update(OPTION_VALUE=value)
         else:
             TElementOptions.insert(
@@ -1040,13 +1032,10 @@ def create_element_httpheader_template_refs(req):
 
 def add_httpheader_template_refs(element_no, template_nos):
     for template_no in template_nos:
-        # 模板不存在则跳过
-        template = HttpHeaderTemplateDao.select_by_no(template_no)
-        if not template:
-            continue
-
-        # 添加模板关联
-        THttpHeaderTemplateRef.insert(SAMPLER_NO=element_no, TEMPLATE_NO=template_no)
+        # 模板存在才添加
+        if HttpHeaderTemplateDao.select_by_no(template_no):
+            # 添加模板关联
+            THttpHeaderTemplateRef.insert(SAMPLER_NO=element_no, TEMPLATE_NO=template_no)
 
 
 @http_service

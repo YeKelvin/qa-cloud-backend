@@ -3,7 +3,7 @@
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from app.extension import db
+from app.database import dbquery
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.dao import workspace_user_dao as WorkspaceUserDao
 from app.public.enum import WorkspaceScope
@@ -29,13 +29,18 @@ log = get_logger(__name__)
 
 @http_service
 def query_workspace_list(req):
-    workspaces = WorkspaceDao.select_list(
-        workspaceNo=req.workspaceNo,
-        workspaceName=req.workspaceName,
-        workspaceScope=req.workspaceScope,
-        workspaceDesc=req.workspaceDesc,
-        page=req.page,
-        pageSize=req.pageSize
+    conds = QueryCondition()
+    conds.like(TWorkspace.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
+    conds.like(TWorkspace.WORKSPACE_SCOPE, req.workspaceScope)
+    conds.like(TWorkspace.WORKSPACE_DESC, req.workspaceDesc)
+
+    pagination = (
+        TWorkspace
+        .filter(*conds)
+        .group_by(TWorkspace.ID, TWorkspace.WORKSPACE_SCOPE)
+        .order_by(TWorkspace.WORKSPACE_SCOPE.desc(), TWorkspace.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
     )
 
     data = [
@@ -45,10 +50,10 @@ def query_workspace_list(req):
             'workspaceScope': workspace.WORKSPACE_SCOPE,
             'workspaceDesc': workspace.WORKSPACE_DESC
         }
-        for workspace in workspaces.items
+        for workspace in pagination.items
     ]
 
-    return {'data': data, 'total': workspaces.total}
+    return {'data': data, 'total': pagination.total}
 
 
 @http_service
@@ -61,15 +66,15 @@ def query_workspace_all(req):
         conds.equal(TWorkspaceUser.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
         conds.equal(TWorkspaceUser.USER_NO, req.userNo)
         # 查询团队和个人空间
-        workspace_filter = TWorkspace.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc())
+        workspace_stmt = TWorkspace.filter(*conds).order_by(TWorkspace.CREATED_TIME.desc())
         # 查询公共空间
-        public_workspace_filter = TWorkspace.filter(
-            TWorkspace.WORKSPACE_SCOPE == 'PUBLIC',
-            TWorkspace.DELETED == 0
-        ).order_by(
-            TWorkspace.CREATED_TIME.desc()
+        public_workspace_stmt = (
+            TWorkspace
+            .filter(TWorkspace.WORKSPACE_SCOPE == 'PUBLIC')
+            .order_by(TWorkspace.CREATED_TIME.desc())
         )
-        workspaces = workspace_filter.union(public_workspace_filter).all()
+        # 连表查询
+        workspaces = workspace_stmt.union(public_workspace_stmt).all()
 
     return [
         {
@@ -166,7 +171,7 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
 
     # 查询超级管理员的用户编号
-    if result := db.session.query(TUser.USER_NO).filter(*conds).first():
+    if result := dbquery(TUser.USER_NO).filter(*conds).first():
         return result[0]
     else:
         raise ServiceError('查询超级管理员用户失败')

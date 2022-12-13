@@ -8,7 +8,7 @@ from datetime import timezone
 
 from flask import request
 
-from app.extension import db
+from app.database import dbquery
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
 from app.tools import localvars
@@ -29,6 +29,7 @@ from app.usercenter.dao import user_login_log_dao as UserLoginLogDao
 from app.usercenter.dao import user_password_dao as UserPasswordDao
 from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
+from app.usercenter.dao import user_settings_dao as UserSettingsDao
 from app.usercenter.enum import UserState
 from app.usercenter.model import TGroup
 from app.usercenter.model import TGroupRole
@@ -39,6 +40,7 @@ from app.usercenter.model import TUserLoginInfo
 from app.usercenter.model import TUserLoginLog
 from app.usercenter.model import TUserPassword
 from app.usercenter.model import TUserRole
+from app.usercenter.model import TUserSettings
 from app.utils.rsa_util import decrypt_by_rsa_private_key
 from app.utils.security import check_password
 from app.utils.security import encrypt_password
@@ -215,7 +217,7 @@ def query_user_list(req):
     conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
 
     # 查询用户列表
-    pagination = db.session.query(
+    pagination = dbquery(
         TUser.USER_NO,
         TUser.USER_NAME,
         TUser.MOBILE_NO,
@@ -234,26 +236,20 @@ def query_user_list(req):
         roles = []
         user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
         for user_role in user_role_list:
-            # 查询角色
-            role = RoleDao.select_by_no(user_role.ROLE_NO)
-            if not role:
-                continue
-            roles.append({
-                'roleNo': role.ROLE_NO,
-                'roleName': role.ROLE_NAME
-            })
+            if role := RoleDao.select_by_no(user_role.ROLE_NO):
+                roles.append({
+                    'roleNo': role.ROLE_NO,
+                    'roleName': role.ROLE_NAME
+                })
         # 查询用户分组列表
         groups = []
         user_group_list = UserGroupDao.select_all_by_user(user.USER_NO)
         for user_group in user_group_list:
-            # 查询分组
-            group = GroupDao.select_by_no(user_group.GROUP_NO)
-            if not group:
-                continue
-            groups.append({
-                'groupNo': group.GROUP_NO,
-                'groupName': group.GROUP_NAME
-            })
+            if group := GroupDao.select_by_no(user_group.GROUP_NO):
+                groups.append({
+                    'groupNo': group.GROUP_NO,
+                    'groupName': group.GROUP_NAME
+                })
 
         data.append({
             'userNo': user.USER_NO,
@@ -276,48 +272,38 @@ def query_user_all():
     conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
 
     # 查询用户列表
-    users = db.session.query(
+    users = dbquery(
         TUser.USER_NO,
         TUser.USER_NAME,
         TUser.STATE,
         TUserLoginInfo.LOGIN_NAME
     ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
 
-    result = []
-    for user in users:
-        # 跳过 administrator 用户
-        if user.LOGIN_NAME == 'admin':
-            continue
-        result.append({
+    return [
+        {
             'userNo': user.USER_NO,
             'userName': user.USER_NAME,
             'state': user.STATE
-        })
-    return result
+        }
+        for user in users if user.LOGIN_NAME != 'admin'
+    ]
 
 
 def get_user_roles(user_no):
-    user_roles = db.session.query(
-        TRole.ROLE_CODE
-    ).filter(
-        TRole.DELETED == 0,
-        TUserRole.DELETED == 0,
-        TUserRole.USER_NO == user_no,
-        TUserRole.ROLE_NO == TRole.ROLE_NO
-    )
-    group_roles = db.session.query(
-        TRole.ROLE_CODE
-    ).filter(
-        TGroup.DELETED == 0,
-        TRole.DELETED == 0,
-        TUserGroup.DELETED == 0,
-        TUserGroup.USER_NO == user_no,
-        TUserGroup.GROUP_NO == TGroup.GROUP_NO,
-        TGroupRole.DELETED == 0,
-        TGroupRole.ROLE_NO == TRole.ROLE_NO,
-        TGroupRole.GROUP_NO == TUserGroup.GROUP_NO
-    )
-    return user_roles.union(group_roles).all()
+    # 用户角色
+    user_role_conds = QueryCondition(TRole, TUserRole)
+    user_role_conds.equal(TUserRole.USER_NO, user_no)
+    user_role_conds.equal(TUserRole.ROLE_NO, TRole.ROLE_NO)
+    user_role_stmt = dbquery(TRole.ROLE_CODE).filter(*user_role_conds)
+    # 分组角色
+    group_role_conds = QueryCondition(TGroup, TRole, TUserGroup, TGroupRole)
+    group_role_conds.equal(TUserGroup.USER_NO, user_no)
+    group_role_conds.equal(TUserGroup.GROUP_NO, TGroup.GROUP_NO)
+    group_role_conds.equal(TGroupRole.ROLE_NO, TRole.ROLE_NO)
+    group_role_conds.equal(TGroupRole.GROUP_NO, TUserGroup.GROUP_NO)
+    group_role_stmt = dbquery(TRole.ROLE_CODE).filter(*group_role_conds)
+    # 连表查询
+    return user_role_stmt.union(group_role_stmt).all()
 
 
 @http_service
@@ -328,6 +314,8 @@ def query_user_info():
     user = UserDao.select_by_no(user_no)
     # 查询用户角色
     roles = [role.ROLE_CODE for role in get_user_roles(user_no)]
+    # 查询用户设置
+    settings = UserSettingsDao.select_by_user(user_no)
 
     return {
         'userNo': user_no,
@@ -335,7 +323,8 @@ def query_user_info():
         'mobileNo': user.MOBILE_NO,
         'email': user.EMAIL,
         'avatar': user.AVATAR,
-        'roles': roles
+        'roles': roles,
+        'settings': settings or {}
     }
 
 
@@ -357,7 +346,15 @@ def modify_user_info(req):
 @http_service
 @transactional
 def modify_user_settings(req):
-    ...
+    # 获取用户编号
+    user_no = localvars.get_user_no()
+    if settings := UserSettingsDao.select_by_user(user_no):
+        settings.update(DATA=req.data)
+    else:
+        TUserSettings.insert(
+            USER_NO=user_no,
+            DATA=req.data
+        )
 
 
 @http_service
@@ -365,8 +362,6 @@ def modify_user_settings(req):
 def modify_password(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
-    # 查询用户
-    user = UserDao.select_by_no(user_no)
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_user(user_no)
     # 查询用户密码
@@ -432,7 +427,7 @@ def get_private_workspace_by_user(user_no):
     conds.equal(TWorkspaceUser.USER_NO, user_no)
 
     # 查询私人空间
-    return db.session.query(TWorkspace).filter(*conds).first()
+    return dbquery(TWorkspace).filter(*conds).first()
 
 
 @http_service

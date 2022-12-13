@@ -3,7 +3,7 @@
 # @File    : user_role_service.py
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye
-from app.extension import db
+from app.database import dbquery
 from app.tools.decorators.service import http_service
 from app.tools.logger import get_logger
 from app.usercenter.model import TRole
@@ -28,24 +28,30 @@ def query_user_role_list(req):
     conds.like(TUserRole.ROLE_NO, req.roleNo)
 
     # TUser，TRole，TUserRole连表查询
-    pagination = db.session.query(
-        TUser.USER_NAME,
-        TRole.ROLE_NAME,
-        TRole.ROLE_CODE,
-        TUserRole.USER_NO,
-        TUserRole.ROLE_NO,
-        TUserRole.CREATED_TIME
-    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        dbquery(
+            TUser.USER_NAME,
+            TRole.ROLE_NAME,
+            TRole.ROLE_CODE,
+            TUserRole.USER_NO,
+            TUserRole.ROLE_NO,
+            TUserRole.CREATED_TIME
+        )
+        .filter(*conds)
+        .order_by(TUserRole.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize)
+    )
 
-    data = []
-    for item in pagination.items:
-        data.append({
+    data = [
+        {
             'userNo': item.USER_NO,
             'roleNo': item.ROLE_NO,
             'userName': item.USER_NAME,
             'roleName': item.ROLE_NAME,
-            'roleCode': item.ROLE_CODE,
-        })
+            'roleCode': item.ROLE_CODE
+        }
+        for item in pagination.items
+    ]
 
     return {'data': data, 'total': pagination.total}
 
@@ -63,23 +69,27 @@ def query_user_role_all(req):
     conds.like(TUserRole.ROLE_NO, req.roleNo)
 
     # TUser，TRole，TUserRole连表查询
-    entities = db.session.query(
-        TUser.USER_NAME,
-        TRole.ROLE_NAME,
-        TRole.ROLE_CODE,
-        TUserRole.USER_NO,
-        TUserRole.ROLE_NO,
-        TUserRole.CREATED_TIME
-    ).filter(*conds).order_by(TUserRole.CREATED_TIME.desc()).all()
+    entities = (
+        dbquery(
+            TUser.USER_NAME,
+            TRole.ROLE_NAME,
+            TRole.ROLE_CODE,
+            TUserRole.USER_NO,
+            TUserRole.ROLE_NO,
+            TUserRole.CREATED_TIME
+        )
+        .filter(*conds)
+        .order_by(TUserRole.CREATED_TIME.desc())
+        .all()
+    )
 
-    result = []
-    for entity in entities:
-        result.append({
+    return [
+        {
             'userNo': entity.USER_NO,
             'roleNo': entity.ROLE_NO,
             'userName': entity.USER_NAME,
             'roleName': entity.ROLE_NAME,
-            'roleCode': entity.ROLE_CODE,
-        })
-
-    return result
+            'roleCode': entity.ROLE_CODE
+        }
+        for entity in entities
+    ]

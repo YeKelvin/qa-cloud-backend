@@ -5,10 +5,7 @@
 # @Author  : Kelvin.Ye
 from typing import List
 
-from flask_sqlalchemy import Pagination
-
 from app.public.model import TTag
-from app.utils.sqlalchemy_util import QueryCondition
 
 
 def select_by_no(tag_no) -> TTag:
@@ -17,18 +14,6 @@ def select_by_no(tag_no) -> TTag:
 
 def select_by_name(tag_name) -> TTag:
     return TTag.filter_by(TAG_NAME=tag_name).first()
-
-
-def select_list(**kwargs) -> Pagination:
-    conds = QueryCondition()
-    conds.like(TTag.TAG_NO, kwargs.pop('tagNo', None))
-    conds.like(TTag.TAG_NAME, kwargs.pop('tagName', None))
-    conds.like(TTag.TAG_DESC, kwargs.pop('tagDesc', None))
-
-    page = kwargs.pop('page')
-    page_size = kwargs.pop('pageSize')
-
-    return TTag.filter(*conds).order_by(TTag.CREATED_TIME.desc()).paginate(page=page, per_page=page_size)
 
 
 def select_all() -> List[TTag]:
