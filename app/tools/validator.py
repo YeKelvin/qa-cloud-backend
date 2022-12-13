@@ -6,15 +6,13 @@
 import enum
 
 from flask import g
-from flask import request
 
 from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceRestrictionExemption
 from app.public.model import TWorkspaceUser
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
-from app.usercenter.model import TApi
-from app.usercenter.model import TPermissionApi
+from app.usercenter.model import TPermission
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserGroup
@@ -58,12 +56,13 @@ def is_super_admin(user_no):
 
 
 def exists_workspace_restriction(workspace_no):
-    conds = QueryCondition(TApi, TPermissionApi, TWorkspaceRestriction)
-    conds.equal(TApi.HTTP_METHOD, request.method)
-    conds.equal(TApi.HTTP_PATH, request.path)
-    conds.equal(TApi.API_NO, TPermissionApi.API_NO)
+    permission_code = getattr(g, 'permission_code', None)
+    if not permission_code:
+        return False
+    conds = QueryCondition(TPermission, TWorkspaceRestriction)
+    conds.equal(TPermission.PERMISSION_CODE, permission_code)
     conds.equal(TWorkspaceRestriction.WORKSPACE_NO, workspace_no)
-    conds.equal(TWorkspaceRestriction.PERMISSION_NO, TPermissionApi.PERMISSION_NO)
+    conds.equal(TWorkspaceRestriction.PERMISSION_NO, TPermission.PERMISSION_NO)
     return bool(TWorkspaceRestriction.filter(*conds).first())
 
 

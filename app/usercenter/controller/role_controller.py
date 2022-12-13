@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/role/list')
 @require_login
-@require_permission
+@require_permission('QUERY_ROLE')
 def query_role_list():
     """分页查询角色列表"""
     req = JsonParser(
@@ -36,7 +36,7 @@ def query_role_list():
 
 @blueprint.get('/role/all')
 @require_login
-@require_permission
+@require_permission('QUERY_ROLE')
 def query_role_all():
     """查询全部角色"""
     return service.query_role_all()
@@ -44,7 +44,7 @@ def query_role_all():
 
 @blueprint.get('/role/info')
 @require_login
-@require_permission
+@require_permission('QUERY_ROLE')
 def query_role_info():
     """查询角色信息"""
     req = JsonParser(
@@ -55,7 +55,7 @@ def query_role_info():
 
 @blueprint.post('/role')
 @require_login
-@require_permission
+@require_permission('CREATE_ROLE')
 def create_role():
     """新增角色"""
     req = JsonParser(
@@ -69,7 +69,7 @@ def create_role():
 
 @blueprint.put('/role')
 @require_login
-@require_permission
+@require_permission('MODIFY_ROLE')
 def modify_role():
     """更新角色信息"""
     req = JsonParser(
@@ -84,7 +84,7 @@ def modify_role():
 
 @blueprint.patch('/role/state')
 @require_login
-@require_permission
+@require_permission('MODIFY_ROLE')
 def modify_role_state():
     """更新角色状态"""
     req = JsonParser(
@@ -96,7 +96,7 @@ def modify_role_state():
 
 @blueprint.delete('/role')
 @require_login
-@require_permission
+@require_permission('REMOVE_ROLE')
 def remove_role():
     """删除角色"""
     req = JsonParser(

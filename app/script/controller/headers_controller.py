@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/httpheader/template/list')
 @require_login
-@require_permission
+@require_permission('QUERY_HTTPHEADER_TEMPLATE')
 def query_httpheader_template_list():
     """分页查询请求头模板列表"""
     req = JsonParser(
@@ -34,7 +34,7 @@ def query_httpheader_template_list():
 
 @blueprint.get('/httpheader/template/all')
 @require_login
-@require_permission
+@require_permission('QUERY_HTTPHEADER_TEMPLATE')
 def query_httpheader_template_all():
     """查询全部请求头模板"""
     req = JsonParser(
@@ -45,7 +45,7 @@ def query_httpheader_template_all():
 
 @blueprint.get('/httpheader/template/all/in/private')
 @require_login
-@require_permission
+@require_permission('QUERY_HTTPHEADER_TEMPLATE')
 def query_httpheader_template_all_in_private():
     """根据用户空间查询全部请求头模板"""
     return service.query_httpheader_template_all_in_private()
@@ -53,7 +53,7 @@ def query_httpheader_template_all_in_private():
 
 @blueprint.post('/httpheader/template')
 @require_login
-@require_permission
+@require_permission('CREATE_HTTPHEADER_TEMPLATE')
 def create_httpheader_template():
     """新增请求头模板"""
     req = JsonParser(
@@ -66,7 +66,7 @@ def create_httpheader_template():
 
 @blueprint.put('/httpheader/template')
 @require_login
-@require_permission
+@require_permission('MODIFY_HTTPHEADER_TEMPLATE')
 def modify_httpheader_template():
     """修改请求头模板"""
     req = JsonParser(
@@ -79,7 +79,7 @@ def modify_httpheader_template():
 
 @blueprint.delete('/httpheader/template')
 @require_login
-@require_permission
+@require_permission('REMOVE_HTTPHEADER_TEMPLATE')
 def remove_httpheader_template():
     """删除请求头模板"""
     req = JsonParser(
@@ -90,7 +90,7 @@ def remove_httpheader_template():
 
 @blueprint.post('/http/header')
 @require_login
-@require_permission
+@require_permission('CREATE_HTTP_HEADER')
 def create_http_header():
     """新增请求头"""
     req = JsonParser(
@@ -104,7 +104,7 @@ def create_http_header():
 
 @blueprint.put('/http/header')
 @require_login
-@require_permission
+@require_permission('MODIFY_HTTP_HEADER')
 def modify_http_header():
     """修改请求头"""
     req = JsonParser(
@@ -118,7 +118,7 @@ def modify_http_header():
 
 @blueprint.delete('/http/header')
 @require_login
-@require_permission
+@require_permission('REMOVE_HTTP_HEADER')
 def remove_http_header():
     """删除请求头"""
     req = JsonParser(
@@ -129,7 +129,7 @@ def remove_http_header():
 
 @blueprint.patch('/http/header/enable')
 @require_login
-@require_permission
+@require_permission('MODIFY_HTTP_HEADER')
 def enable_http_header():
     """启用变量"""
     req = JsonParser(
@@ -140,7 +140,7 @@ def enable_http_header():
 
 @blueprint.patch('/http/header/disable')
 @require_login
-@require_permission
+@require_permission('MODIFY_HTTP_HEADER')
 def disable_http_header():
     """禁用变量"""
     req = JsonParser(
@@ -151,7 +151,7 @@ def disable_http_header():
 
 @blueprint.get('/http/headers/by/template')
 @require_login
-@require_permission
+@require_permission('QUERY_HTTP_HEADER')
 def query_http_headers_by_template():
     """根据模板查询全部请求头"""
     req = JsonParser(
@@ -162,7 +162,7 @@ def query_http_headers_by_template():
 
 @blueprint.get('/http/headers')
 @require_login
-@require_permission
+@require_permission('QUERY_HTTP_HEADER')
 def query_http_headers():
     """根据列表批量查询请求头"""
     req = ListParser().parse()
@@ -171,7 +171,7 @@ def query_http_headers():
 
 @blueprint.post('/http/headers')
 @require_login
-@require_permission
+@require_permission('CREATE_HTTP_HEADER')
 def create_http_headers():
     """
     根据列表批量新增请求头
@@ -198,7 +198,7 @@ def create_http_headers():
 
 @blueprint.put('/http/headers')
 @require_login
-@require_permission
+@require_permission('MODIFY_HTTP_HEADER')
 def modify_http_headers():
     """
     根据列表批量修改请求头
@@ -225,7 +225,7 @@ def modify_http_headers():
 
 @blueprint.delete('/http/headers')
 @require_login
-@require_permission
+@require_permission('REMOVE_HTTP_HEADER')
 def remove_http_headers():
     """批量删除请求头"""
     req = JsonParser(
@@ -237,7 +237,7 @@ def remove_http_headers():
 
 @blueprint.post('/httpheader/template/duplicate')
 @require_login
-@require_permission
+@require_permission('COPY_HTTPHEADER_TEMPLATE')
 def duplicate_httpheader_template():
     """复制请求头模板"""
     req = JsonParser(
@@ -248,7 +248,7 @@ def duplicate_httpheader_template():
 
 @blueprint.post('/httpheader/template/copy/to/workspace')
 @require_login
-@require_permission
+@require_permission('COPY_HTTPHEADER_TEMPLATE')
 def copy_httpheader_template_to_workspace():
     """复制请求头模板到指定工作空间"""
     req = JsonParser(
@@ -260,7 +260,7 @@ def copy_httpheader_template_to_workspace():
 
 @blueprint.post('/httpheader/template/move/to/workspace')
 @require_login
-@require_permission
+@require_permission('MOVE_HTTPHEADER_TEMPLATE')
 def move_httpheader_template_to_workspace():
     """移动请求头模板到指定工作空间"""
     req = JsonParser(

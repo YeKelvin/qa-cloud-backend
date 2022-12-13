@@ -3,6 +3,8 @@
 # @File    : model.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
+from sqlalchemy.dialects.postgresql import JSONB
+
 from app.database import BaseColumn
 from app.database import DBModel
 from app.database import db
@@ -49,26 +51,8 @@ class TPermission(DBModel, BaseColumn):
     PERMISSION_NAME = db.Column(db.String(128), nullable=False, comment='权限名称')
     PERMISSION_DESC = db.Column(db.String(256), comment='权限描述')
     PERMISSION_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='权限代码')
-    PERMISSION_ACT = db.Column(db.String(64), comment='权限行为')
+    PERMISSION_ACT = db.Column(db.String(64), comment='权限行为，增删改查等')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
-
-
-class TApi(DBModel, BaseColumn):
-    """接口表"""
-    __tablename__ = 'API'
-    API_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='接口编号')
-    API_NAME = db.Column(db.String(128), nullable=False, comment='接口名称')
-    API_DESC = db.Column(db.String(256), comment='接口描述')
-    API_TYPE = db.Column(db.String(32), nullable=False, comment='接口类型')
-    HTTP_METHOD = db.Column(db.String(128), comment='HTTP请求方法')
-    HTTP_PATH = db.Column(db.String(256), comment='HTTP请求路径')
-
-
-class TPermissionApi(DBModel, BaseColumn):
-    """权限接口表"""
-    __tablename__ = 'PERMISSION_API'
-    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
-    API_NO = db.Column(db.String(32), index=True, nullable=False, comment='接口编号')
 
 
 class TUserGroup(DBModel, BaseColumn):
@@ -151,3 +135,10 @@ class TPermissionObject(DBModel, BaseColumn):
     OBJECT_NAME = db.Column(db.String(128), nullable=False, comment='对象名称')
     OBJECT_DESC = db.Column(db.String(256), comment='对象描述')
     OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')
+
+
+class TUserSettings(DBModel, BaseColumn):
+    """用户设置表"""
+    __tablename__ = 'USER_SETTINGS'
+    USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
+    DATA = db.Column(JSONB, comment='用户设置')

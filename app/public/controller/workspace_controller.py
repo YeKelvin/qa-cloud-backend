@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/workspace/list')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE')
 def query_workspace_list():
     """分页查询工作空间列表"""
     req = JsonParser(
@@ -33,7 +33,7 @@ def query_workspace_list():
 
 @blueprint.get('/workspace/all')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE')
 def query_workspace_all():
     """查询全部工作空间"""
     req = JsonParser(
@@ -44,7 +44,7 @@ def query_workspace_all():
 
 @blueprint.get('/workspace/info')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE')
 def query_workspace_info():
     """查询工作空间信息"""
     req = JsonParser(
@@ -55,7 +55,7 @@ def query_workspace_info():
 
 @blueprint.post('/workspace')
 @require_login
-@require_permission
+@require_permission('CREATE_WORKSPACE')
 def create_workspace():
     """新增工作空间"""
     req = JsonParser(
@@ -68,7 +68,7 @@ def create_workspace():
 
 @blueprint.put('/workspace')
 @require_login
-@require_permission
+@require_permission('MODIFY_WORKSPACE')
 def modify_workspace():
     """修改工作空间"""
     req = JsonParser(
@@ -82,7 +82,7 @@ def modify_workspace():
 
 @blueprint.delete('/workspace')
 @require_login
-@require_permission
+@require_permission('REMOVE_WORKSPACE')
 def remove_workspace():
     """删除工作空间"""
     req = JsonParser(

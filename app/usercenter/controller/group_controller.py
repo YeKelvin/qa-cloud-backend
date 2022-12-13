@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/group/list')
 @require_login
-@require_permission
+@require_permission('QUERY_GROUP')
 def query_group_list():
     """分页查询分组列表"""
     req = JsonParser(
@@ -34,7 +34,7 @@ def query_group_list():
 
 @blueprint.get('/group/all')
 @require_login
-@require_permission
+@require_permission('QUERY_GROUP')
 def query_group_all():
     """查询全部分组"""
     return service.query_group_all()
@@ -42,7 +42,7 @@ def query_group_all():
 
 @blueprint.get('/group/info')
 @require_login
-@require_permission
+@require_permission('QUERY_GROUP')
 def query_group_info():
     """查询分组信息"""
     req = JsonParser(
@@ -53,7 +53,7 @@ def query_group_info():
 
 @blueprint.post('/group')
 @require_login
-@require_permission
+@require_permission('CREATE_GROUP')
 def create_group():
     """新增分组"""
     req = JsonParser(
@@ -66,7 +66,7 @@ def create_group():
 
 @blueprint.put('/group')
 @require_login
-@require_permission
+@require_permission('MODIFY_GROUP')
 def modify_group():
     """更新分组信息"""
     req = JsonParser(
@@ -80,7 +80,7 @@ def modify_group():
 
 @blueprint.patch('/group/state')
 @require_login
-@require_permission
+@require_permission('MODIFY_GROUP')
 def modify_group_state():
     """更新分组状态"""
     req = JsonParser(
@@ -92,7 +92,7 @@ def modify_group_state():
 
 @blueprint.delete('/group')
 @require_login
-@require_permission
+@require_permission('REMOVE_GROUP')
 def remove_group():
     """删除分组"""
     req = JsonParser(

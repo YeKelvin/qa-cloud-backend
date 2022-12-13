@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.post('/collection/execute')
 @require_login
-@require_permission
+@require_permission('RUN_ELEMENT')
 def execute_collection():
     """运行测试集合"""
     req = JsonParser(
@@ -31,7 +31,7 @@ def execute_collection():
 
 @blueprint.post('/group/execute')
 @require_login
-@require_permission
+@require_permission('RUN_ELEMENT')
 def execute_group():
     """运行测试案例"""
     req = JsonParser(
@@ -46,7 +46,7 @@ def execute_group():
 
 @blueprint.post('/sampler/execute')
 @require_login
-@require_permission
+@require_permission('RUN_ELEMENT')
 def execute_sampler():
     """运行取样器"""
     req = JsonParser(
@@ -61,7 +61,7 @@ def execute_sampler():
 
 @blueprint.post('/snippets/execute')
 @require_login
-@require_permission
+@require_permission('RUN_ELEMENT')
 def execute_snippets():
     """运行片段集合"""
     req = JsonParser(
@@ -76,7 +76,7 @@ def execute_snippets():
 
 @blueprint.post('/testplan/execute')
 @require_login
-@require_permission
+@require_permission('RUN_TESTPLAN')
 def execute_testplan():
     """运行测试计划"""
     req = JsonParser(
@@ -89,7 +89,7 @@ def execute_testplan():
 
 @blueprint.post('/testplan/execution/interrupt')
 @require_login
-@require_permission
+@require_permission('INTERRUPT_TESTPLAN')
 def interrupt_testplan_execution():
     """中断运行测试计划"""
     req = JsonParser(
@@ -100,7 +100,7 @@ def interrupt_testplan_execution():
 
 @blueprint.get('/collection/json')
 @require_login
-@require_permission
+@require_permission('QUERY_JSON_SCRIPT')
 def query_collection_json():
     """查询测试集合的JSON脚本"""
     req = JsonParser(
@@ -113,7 +113,7 @@ def query_collection_json():
 
 @blueprint.get('/group/json')
 @require_login
-@require_permission
+@require_permission('QUERY_JSON_SCRIPT')
 def query_group_json():
     """查询测试案例的JSON脚本"""
     req = JsonParser(
@@ -126,7 +126,7 @@ def query_group_json():
 
 @blueprint.get('/snippets/json')
 @require_login
-@require_permission
+@require_permission('QUERY_JSON_SCRIPT')
 def query_snippets_json():
     """查询片段集合的JSON脚本"""
     req = JsonParser(

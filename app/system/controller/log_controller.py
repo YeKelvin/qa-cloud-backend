@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/operation/log/list')
 @require_login
-@require_permission
+@require_permission('QUERY_LOG')
 def query_operation_log_list():
     """分页查询操作日志列表"""
     req = JsonParser(

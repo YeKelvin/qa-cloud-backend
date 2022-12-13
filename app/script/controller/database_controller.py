@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/database/engine/list')
 @require_login
-@require_permission
+@require_permission('QUERY_DATABASE_ENGINE')
 def query_database_engine_list():
     """分页查询数据库配置列表"""
     req = JsonParser(
@@ -35,7 +35,7 @@ def query_database_engine_list():
 
 @blueprint.get('/database/engine/all')
 @require_login
-@require_permission
+@require_permission('QUERY_DATABASE_ENGINE')
 def query_database_engine_all():
     """查询全部数据库配置"""
     req = JsonParser(
@@ -47,7 +47,7 @@ def query_database_engine_all():
 
 @blueprint.get('/database/engine/all/in/private')
 @require_login
-@require_permission
+@require_permission('QUERY_DATABASE_ENGINE')
 def query_database_engine_all_in_private():
     """根据用户空间查询全部数据库配置"""
     return service.query_database_engine_all_in_private()
@@ -55,7 +55,7 @@ def query_database_engine_all_in_private():
 
 @blueprint.get('/database/engine')
 @require_login
-@require_permission
+@require_permission('QUERY_DATABASE_ENGINE')
 def query_database_engine_info():
     """查询数据库配置"""
     req = JsonParser(
@@ -66,7 +66,7 @@ def query_database_engine_info():
 
 @blueprint.post('/database/engine')
 @require_login
-@require_permission
+@require_permission('CREATE_DATABASE_ENGINE')
 def create_database_engine():
     """新增数据库配置"""
     req = JsonParser(
@@ -88,7 +88,7 @@ def create_database_engine():
 
 @blueprint.put('/database/engine')
 @require_login
-@require_permission
+@require_permission('MODIFY_DATABASE_ENGINE')
 def modify_database_engine():
     """修改数据库配置"""
     req = JsonParser(
@@ -110,7 +110,7 @@ def modify_database_engine():
 
 @blueprint.delete('/database/engine')
 @require_login
-@require_permission
+@require_permission('REMOVE_DATABASE_ENGINE')
 def remove_database_engine():
     """删除数据库配置"""
     req = JsonParser(
@@ -121,7 +121,7 @@ def remove_database_engine():
 
 @blueprint.post('/database/engine/duplicate')
 @require_login
-@require_permission
+@require_permission('COPY_DATABASE_ENGINE')
 def duplicate_database_engine():
     """复制数据库配置"""
     req = JsonParser(
@@ -132,7 +132,7 @@ def duplicate_database_engine():
 
 @blueprint.post('/database/engine/copy/to/workspace')
 @require_login
-@require_permission
+@require_permission('COPY_DATABASE_ENGINE')
 def copy_database_engine_to_workspace():
     """复制数据库配置到指定工作空间"""
     req = JsonParser(
@@ -144,7 +144,7 @@ def copy_database_engine_to_workspace():
 
 @blueprint.post('/database/engine/move/to/workspace')
 @require_login
-@require_permission
+@require_permission('MOVE_DATABASE_ENGINE')
 def move_database_engine_to_workspace():
     """移动数据库配置到指定工作空间"""
     req = JsonParser(

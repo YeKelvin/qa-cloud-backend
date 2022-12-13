@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/job/info')
 @require_login
-@require_permission
+@require_permission('QUERY_JOB')
 def query_job_info():
     """查询作业信息"""
     req = JsonParser(
@@ -28,7 +28,7 @@ def query_job_info():
 
 @blueprint.post('/job/run')
 @require_login
-@require_permission
+@require_permission('RUN_JOB')
 def run_job():
     """立即运行作业"""
     req = JsonParser(

@@ -40,9 +40,42 @@ def query_user_info():
     return service.query_user_info()
 
 
+@blueprint.put('/user/info')
+@require_login
+def modify_user_info():
+    """更新用户信息"""
+    req = JsonParser(
+        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('mobileNo'),
+        Argument('email')
+    ).parse()
+    return service.modify_user_info(req)
+
+
+@blueprint.put('/user/settings')
+@require_login
+def modify_user_settings():
+    """修改用户设置"""
+    req = JsonParser(
+        Argument('data', type=dict, required=True, nullable=False, help='用户设置不能为空')
+    ).parse()
+    return service.modify_user_settings(req)
+
+
+@blueprint.patch('/user/password')
+@require_login
+def modify_password():
+    """修改密码"""
+    req = JsonParser(
+        Argument('oldPassword', required=True, nullable=False, help='旧密码不能为空'),
+        Argument('newPassword', required=True, nullable=False, help='新密码不能为空')
+    ).parse()
+    return service.modify_password(req)
+
+
 @blueprint.post('/user/register')
 @require_login
-@require_permission
+@require_permission('REGISTER')
 def register():
     """用户注册"""
     req = JsonParser(
@@ -59,7 +92,7 @@ def register():
 
 @blueprint.patch('/user/password/reset')
 @require_login
-@require_permission
+@require_permission('RESET_PASSWORD')
 def reset_password():
     """重置密码"""
     req = JsonParser(
@@ -70,7 +103,7 @@ def reset_password():
 
 @blueprint.get('/user/list')
 @require_login
-@require_permission
+@require_permission('QUERY_USER')
 def query_user_list():
     """分页查询用户列表"""
     req = JsonParser(
@@ -88,7 +121,7 @@ def query_user_list():
 
 @blueprint.get('/user/all')
 @require_login
-@require_permission
+@require_permission('QUERY_USER')
 def query_user_all():
     """查询全部用户"""
     return service.query_user_all()
@@ -96,7 +129,7 @@ def query_user_all():
 
 @blueprint.put('/user')
 @require_login
-@require_permission
+@require_permission('MODIFY_USER')
 def modify_user():
     """更新用户信息"""
     req = JsonParser(
@@ -112,7 +145,7 @@ def modify_user():
 
 @blueprint.patch('/user/state')
 @require_login
-@require_permission
+@require_permission('MODIFY_USER')
 def modify_user_state():
     """更新用户状态"""
     req = JsonParser(
@@ -124,7 +157,7 @@ def modify_user_state():
 
 @blueprint.delete('/user')
 @require_login
-@require_permission
+@require_permission('REMOVE_USER')
 def remove_user():
     """删除用户"""
     req = JsonParser(

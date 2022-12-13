@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/report')
 @require_login
-@require_permission
+@require_permission('QUERY_TESTREPORT')
 def query_report():
     """查询测试报告"""
     req = JsonParser(Argument('reportNo', required=True, nullable=False, help='报告编号不能为空')).parse()
@@ -26,7 +26,7 @@ def query_report():
 
 @blueprint.get('/report/collection/result')
 @require_login
-@require_permission
+@require_permission('QUERY_TESTREPORT')
 def query_collection_result():
     """根据集合编号查询集合结果列表和案例结果列表"""
     req = JsonParser(Argument('collectionId', required=True, nullable=False, help='collectionId不能为空')).parse()
@@ -35,7 +35,7 @@ def query_collection_result():
 
 @blueprint.get('/report/group/result')
 @require_login
-@require_permission
+@require_permission('QUERY_TESTREPORT')
 def query_group_result():
     """根据案例编号查询案例结果列表"""
     req = JsonParser(Argument('groupId', required=True, nullable=False, help='groupId不能为空')).parse()
@@ -44,7 +44,7 @@ def query_group_result():
 
 @blueprint.get('/report/sampler/result')
 @require_login
-@require_permission
+@require_permission('QUERY_TESTREPORT')
 def query_sampler_result():
     """根据取样器编号查询取样结果"""
     req = JsonParser(Argument('samplerId', required=True, nullable=False, help='samplerId不能为空')).parse()

@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/user/role/list')
 @require_login
-@require_permission
+@require_permission('QUERY_USER')
 def query_user_role_list():
     """分页查询用户角色列表"""
     req = JsonParser(
@@ -34,7 +34,7 @@ def query_user_role_list():
 
 @blueprint.get('/user/role/all')
 @require_login
-@require_permission
+@require_permission('QUERY_USER')
 def query_user_role_all():
     """查询全部用户角色"""
     req = JsonParser(

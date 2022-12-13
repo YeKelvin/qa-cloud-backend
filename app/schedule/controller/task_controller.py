@@ -19,7 +19,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/task/list')
 @require_login
-@require_permission
+@require_permission('QUERY_TASK')
 def query_task_list():
     """分页查询定时任务列表"""
     req = JsonParser(
@@ -38,7 +38,7 @@ def query_task_list():
 
 @blueprint.get('/task/info')
 @require_login
-@require_permission
+@require_permission('QUERY_TASK')
 def query_task_info():
     """查询定时任务信息"""
     req = JsonParser(
@@ -49,7 +49,7 @@ def query_task_info():
 
 @blueprint.post('/task')
 @require_login
-@require_permission
+@require_permission('CREATE_TASK')
 def create_task():
     """新增定时任务"""
     req = JsonParser(
@@ -66,7 +66,7 @@ def create_task():
 
 @blueprint.put('/task')
 @require_login
-@require_permission
+@require_permission('MODIFY_TASK')
 def modify_task():
     """修改定时任务"""
     req = JsonParser(
@@ -82,7 +82,7 @@ def modify_task():
 
 @blueprint.patch('/task/pause')
 @require_login
-@require_permission
+@require_permission('PAUSE_TASK')
 def pause_task():
     """暂停定时任务"""
     req = JsonParser(
@@ -93,7 +93,7 @@ def pause_task():
 
 @blueprint.patch('/task/resume')
 @require_login
-@require_permission
+@require_permission('RESUME_TASK')
 def resume_task():
     """恢复定时任务"""
     req = JsonParser(
@@ -104,7 +104,7 @@ def resume_task():
 
 @blueprint.patch('/task/remove')
 @require_login
-@require_permission
+@require_permission('REMOVE_TASK')
 def remove_task():
     """关闭定时任务"""
     req = JsonParser(
@@ -115,7 +115,7 @@ def remove_task():
 
 @blueprint.get('/task/history/list')
 @require_login
-@require_permission
+@require_permission('QUERY_TASK')
 def query_task_history_list():
     """分业查询任务历史列表"""
     req = JsonParser(

@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/role/permissions')
 @require_login
-@require_permission
+@require_permission('QUERY_ROLE')
 def query_role_permissions():
     """查询角色全部权限"""
     req = JsonParser(
@@ -28,7 +28,7 @@ def query_role_permissions():
 
 @blueprint.post('/role/permissions')
 @require_login
-@require_permission
+@require_permission('MODIFY_ROLE')
 def set_role_permissions():
     """设置角色权限"""
     req = JsonParser(

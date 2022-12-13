@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/workspace/restriction')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE_RESTRICTION')
 def query_workspace_restriction():
     """查询空间全部限制"""
     req = JsonParser(
@@ -28,7 +28,7 @@ def query_workspace_restriction():
 
 @blueprint.post('/workspace/restriction')
 @require_login
-@require_permission
+@require_permission('SET_WORKSPACE_RESTRICTION')
 def set_workspace_restriction():
     """设置空间限制"""
     req = JsonParser(

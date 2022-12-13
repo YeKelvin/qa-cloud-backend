@@ -19,7 +19,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/variable/dataset/list')
 @require_login
-@require_permission
+@require_permission('QUERY_DATASET')
 def query_variable_dataset_list():
     """分页查询变量集列表"""
     req = JsonParser(
@@ -36,7 +36,7 @@ def query_variable_dataset_list():
 
 @blueprint.get('/variable/dataset/all')
 @require_login
-@require_permission
+@require_permission('QUERY_DATASET')
 def query_variable_dataset_all():
     """查询所有变量集"""
     req = JsonParser(
@@ -48,7 +48,7 @@ def query_variable_dataset_all():
 
 @blueprint.get('/variable/dataset/all/in/private')
 @require_login
-@require_permission
+@require_permission('QUERY_DATASET')
 def query_variable_dataset_all_in_private():
     """根据用户空间查询全部变量集"""
     req = JsonParser(
@@ -59,7 +59,7 @@ def query_variable_dataset_all_in_private():
 
 @blueprint.post('/variable/dataset')
 @require_login
-@require_permission
+@require_permission('CREATE_DATASET')
 def create_variable_dataset():
     """新增变量集"""
     req = JsonParser(
@@ -73,7 +73,7 @@ def create_variable_dataset():
 
 @blueprint.put('/variable/dataset')
 @require_login
-@require_permission
+@require_permission('MODIFY_DATASET')
 def modify_variable_dataset():
     """修改变量集"""
     req = JsonParser(
@@ -86,7 +86,7 @@ def modify_variable_dataset():
 
 @blueprint.delete('/variable/dataset')
 @require_login
-@require_permission
+@require_permission('REMOVE_DATASET')
 def remove_variable_dataset():
     """删除变量集"""
     req = JsonParser(
@@ -97,7 +97,7 @@ def remove_variable_dataset():
 
 @blueprint.post('/variable')
 @require_login
-@require_permission
+@require_permission('CREATE_VARIABLE')
 def create_variable():
     """新增变量"""
     req = JsonParser(
@@ -112,7 +112,7 @@ def create_variable():
 
 @blueprint.put('/variable')
 @require_login
-@require_permission
+@require_permission('MODIFY_VARIABLE')
 def modify_variable():
     """修改变量"""
     req = JsonParser(
@@ -127,7 +127,7 @@ def modify_variable():
 
 @blueprint.delete('/variable')
 @require_login
-@require_permission
+@require_permission('REMOVE_VARIABLE')
 def remove_variable():
     """删除变量"""
     req = JsonParser(
@@ -138,7 +138,7 @@ def remove_variable():
 
 @blueprint.patch('/variable/enable')
 @require_login
-@require_permission
+@require_permission('MODIFY_VARIABLE')
 def enable_variable():
     """启用变量"""
     req = JsonParser(
@@ -149,7 +149,7 @@ def enable_variable():
 
 @blueprint.patch('/variable/disable')
 @require_login
-@require_permission
+@require_permission('MODIFY_VARIABLE')
 def disable_variable():
     """禁用变量"""
     req = JsonParser(
@@ -160,7 +160,7 @@ def disable_variable():
 
 @blueprint.patch('/variable/current/value')
 @require_login
-@require_permission
+@require_permission('MODIFY_VARIABLE')
 def update_current_value():
     """更新变量当前值"""
     req = JsonParser(
@@ -172,7 +172,7 @@ def update_current_value():
 
 @blueprint.get('/variables/by/dataset')
 @require_login
-@require_permission
+@require_permission('QUERY_VARIABLE')
 def query_variables_by_dataset():
     """根据集合查询全部变量"""
     req = JsonParser(
@@ -183,7 +183,7 @@ def query_variables_by_dataset():
 
 @blueprint.get('/variables')
 @require_login
-@require_permission
+@require_permission('QUERY_VARIABLE')
 def query_variables():
     """
     根据列表批量查询变量
@@ -195,7 +195,7 @@ def query_variables():
 
 @blueprint.post('/variables')
 @require_login
-@require_permission
+@require_permission('CREATE_VARIABLE')
 def create_variables():
     """
     根据列表批量新增变量
@@ -223,7 +223,7 @@ def create_variables():
 
 @blueprint.put('/variables')
 @require_login
-@require_permission
+@require_permission('MODIFY_VARIABLE')
 def modify_variables():
     """
     根据列表批量修改变量
@@ -252,7 +252,7 @@ def modify_variables():
 
 @blueprint.delete('/variables')
 @require_login
-@require_permission
+@require_permission('REMOVE_VARIABLE')
 def remove_variables():
     """批量删除变量"""
     req = JsonParser(
@@ -264,7 +264,7 @@ def remove_variables():
 
 @blueprint.post('/variable/dataset/duplicate')
 @require_login
-@require_permission
+@require_permission('COPY_DATASET')
 def duplicate_variable_dataset():
     """复制变量集"""
     req = JsonParser(
@@ -275,7 +275,7 @@ def duplicate_variable_dataset():
 
 @blueprint.post('/variable/dataset/copy/to/workspace')
 @require_login
-@require_permission
+@require_permission('COPY_DATASET')
 def copy_variable_dataset_to_workspace():
     """复制变量集到指定工作空间"""
     req = JsonParser(
@@ -287,7 +287,7 @@ def copy_variable_dataset_to_workspace():
 
 @blueprint.post('/variable/dataset/move/to/workspace')
 @require_login
-@require_permission
+@require_permission('MOVE_DATASET')
 def move_variable_dataset_to_workspace():
     """移动变量集到指定工作空间"""
     req = JsonParser(

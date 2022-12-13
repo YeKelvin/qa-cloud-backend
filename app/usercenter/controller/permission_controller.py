@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/permission/all')
 @require_login
-@require_permission
+@require_permission('QUERY_PERMISSION')
 def query_permission_all():
     """查询全部权限"""
     req = JsonParser(

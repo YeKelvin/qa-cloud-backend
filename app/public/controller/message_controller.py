@@ -19,7 +19,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/notice/robot/list')
 @require_login
-@require_permission
+@require_permission('QUERY_ROBOT')
 def query_notice_robot_list():
     """分页查询通知机器人列表"""
     req = JsonParser(
@@ -37,7 +37,7 @@ def query_notice_robot_list():
 
 @blueprint.get('/notice/robot/all')
 @require_login
-@require_permission
+@require_permission('QUERY_ROBOT')
 def query_notice_robot_all():
     """查询全部通知机器人"""
     req = JsonParser(
@@ -48,7 +48,7 @@ def query_notice_robot_all():
 
 @blueprint.get('/notice/robot')
 @require_login
-@require_permission
+@require_permission('QUERY_ROBOT')
 def query_notice_robot():
     """查询通知机器人"""
     req = JsonParser(
@@ -59,7 +59,7 @@ def query_notice_robot():
 
 @blueprint.post('/notice/robot')
 @require_login
-@require_permission
+@require_permission('CREATE_ROBOT')
 def create_notice_robot():
     """新增通知机器人"""
     req = JsonParser(
@@ -74,7 +74,7 @@ def create_notice_robot():
 
 @blueprint.put('/notice/robot')
 @require_login
-@require_permission
+@require_permission('MODIFY_ROBOT')
 def modify_notice_robot():
     """修改通知机器人"""
     req = JsonParser(
@@ -88,7 +88,7 @@ def modify_notice_robot():
 
 @blueprint.patch('/notice/robot/state')
 @require_login
-@require_permission
+@require_permission('MODIFY_ROBOT')
 def modify_notice_robot_state():
     """修改通知机器人状态"""
     req = JsonParser(
@@ -100,7 +100,7 @@ def modify_notice_robot_state():
 
 @blueprint.delete('/notice/robot')
 @require_login
-@require_permission
+@require_permission('REMOVE_ROBOT')
 def remove_notice_robot():
     """删除通知机器人"""
     req = JsonParser(

@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/workspace/user/list')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE_MEMBER')
 def query_workspace_user_list():
     """分页查询空间用户列表"""
     req = JsonParser(
@@ -30,7 +30,7 @@ def query_workspace_user_list():
 
 @blueprint.get('/workspace/user/all')
 @require_login
-@require_permission
+@require_permission('QUERY_WORKSPACE_MEMBER')
 def query_workspace_user_all():
     """查询所有空间用户"""
     req = JsonParser(
@@ -41,7 +41,7 @@ def query_workspace_user_all():
 
 @blueprint.put('/workspace/user')
 @require_login
-@require_permission
+@require_permission('MODIFY_WORKSPACE_MEMBER')
 def modify_workspace_user():
     """修改空间用户"""
     req = JsonParser(

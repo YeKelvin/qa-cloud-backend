@@ -341,6 +341,57 @@ def query_user_info():
 
 @http_service
 @transactional
+def modify_user_info(req):
+    # 获取用户编号
+    user_no = globals.get_userno()
+    # 查询用户
+    user = UserDao.select_by_no(user_no)
+    # 更新用户信息
+    user.update(
+        USER_NAME=req.userName,
+        MOBILE_NO=req.mobileNo,
+        EMAIL=req.email
+    )
+    # 同步修改私人空间名称
+    workspace = get_private_workspace_by_user(user_no)
+    workspace.update(WORKSPACE_NAME=f'{req.userName}的个人空间')
+
+
+@http_service
+@transactional
+def modify_user_settings(req):
+    ...
+
+
+@http_service
+@transactional
+def modify_password(req):
+    # 获取用户编号
+    user_no = globals.get_userno()
+    # 查询用户
+    user = UserDao.select_by_no(user_no)
+    # 查询用户登录信息
+    login_info = UserLoginInfoDao.select_by_user(user_no)
+    # 查询用户密码
+    login_password = UserPasswordDao.select_loginpwd_by_user(user_no)
+    check_exists(login_password, error_msg='账号或密码不正确')
+    # 密码RSA解密
+    password_key = UserPasswordKeyDao.select_by_loginname(login_info.LOGIN_NAME)
+    decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, password_key.PASSWORD_KEY)
+    # 校验密码是否正确
+    check_pass = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, decrypted_password)
+    # 密码校验失败
+    if not check_pass:
+        login_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
+        if login_password.ERROR_TIMES < 3:
+            login_password.ERROR_TIMES += 1
+        raise ServiceError('账号或密码不正确')
+    # 更新用户登录密码
+    login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, req.newPassword))
+
+
+@http_service
+@transactional
 def modify_user(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)

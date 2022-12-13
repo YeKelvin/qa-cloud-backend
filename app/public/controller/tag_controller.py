@@ -17,7 +17,7 @@ log = get_logger(__name__)
 
 @blueprint.get('/tag/list')
 @require_login
-@require_permission
+@require_permission('QUERY_TAG')
 def query_tag_list():
     """分页查询标签列表"""
     req = JsonParser(
@@ -32,7 +32,7 @@ def query_tag_list():
 
 @blueprint.get('/tag/all')
 @require_login
-@require_permission
+@require_permission('QUERY_TAG')
 def query_tag_all():
     """查询全部标签"""
     return service.query_tag_all()
@@ -40,7 +40,7 @@ def query_tag_all():
 
 @blueprint.post('/tag')
 @require_login
-@require_permission
+@require_permission('CREATE_TAG')
 def create_tag():
     """新增标签"""
     req = JsonParser(
@@ -52,7 +52,7 @@ def create_tag():
 
 @blueprint.put('/tag')
 @require_login
-@require_permission
+@require_permission('MODIFY_TAG')
 def modify_tag():
     """修改标签"""
     req = JsonParser(
@@ -65,7 +65,7 @@ def modify_tag():
 
 @blueprint.delete('/tag')
 @require_login
-@require_permission
+@require_permission('REMOVE_TAG')
 def remove_tag():
     """删除标签"""
     req = JsonParser(
