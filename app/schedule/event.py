@@ -19,7 +19,7 @@ from app.schedule.enum import OperationType
 from app.schedule.model import TScheduleJobLog
 from app.system.model import TSystemOperationLog
 from app.tools.identity import new_id
-from app.tools.locals import local
+from app.tools.locals import threadlocal
 from app.tools.logger import get_logger
 from app.utils.time_util import datetime_now_by_utc8
 
@@ -128,7 +128,7 @@ def handle_job_removed(event: JobEvent):
                 task.update(STATE=JobState.CLOSED.value)
             # 记录操作日志
             TSystemOperationLog.insert(
-                LOG_NO=local.trace_id,
+                LOG_NO=threadlocal.trace_id,
                 OPERATION_SOURCE='APSCHEDULER',
                 OPERATION_EVENT='EVENT_JOB_REMOVED'
             )
@@ -168,7 +168,7 @@ def handle_job_submitted(event: JobSubmissionEvent):
                 return
             # 记录操作日志
             TSystemOperationLog.insert(
-                LOG_NO=local.trace_id,
+                LOG_NO=threadlocal.trace_id,
                 OPERATION_SOURCE='APSCHEDULER',
                 OPERATION_EVENT='EVENT_JOB_SUBMITTED'
             )
@@ -226,4 +226,4 @@ def handle_event_all(event):
     A catch-all mask that includes every event type
     """
     # 重置[ 线程/协程 ]的日志号
-    setattr(local, 'trace_id', ulid.new().str)
+    setattr(threadlocal, 'trace_id', ulid.new().str)

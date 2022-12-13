@@ -14,7 +14,7 @@ import flask
 from ulid import microsecond as ulid
 
 from app import config as CONFIG
-from app.tools.locals import local
+from app.tools.locals import threadlocal
 
 
 logging_record_factory = logging.getLogRecordFactory()
@@ -127,7 +127,7 @@ class ContextFilter(logging.Filter):
             trace_id = getattr(flask.g, 'trace_id', None) or ulid.new().str
             flask.g.trace_id = trace_id
             record.traceId = trace_id
-        elif trace_id := getattr(local, 'trace_id', None):
+        elif trace_id := getattr(threadlocal, 'trace_id', None):
             record.traceId = trace_id
         else:
             record.traceId = "unknown"

@@ -9,4 +9,4 @@ from threading import local as ThreadLocal
 from gevent.local import local as CoroutineLocal
 
 
-local = ThreadLocal() if os.environ.get('FLASK_ENV') == 'development' else CoroutineLocal()
+threadlocal = ThreadLocal() if os.environ.get('FLASK_ENV') == 'development' else CoroutineLocal()

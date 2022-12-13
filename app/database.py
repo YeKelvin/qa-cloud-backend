@@ -11,8 +11,8 @@ from sqlalchemy import func
 from ulid import microsecond as ulid
 
 from app.extension import db
+from app.tools.locals import threadlocal
 from app.tools.localvars import get_userno_or_default
-from app.tools.locals import local
 from app.tools.logger import get_logger
 from app.utils.json_util import to_json
 from app.utils.time_util import datetime_now_by_utc8
@@ -198,10 +198,10 @@ def get_trace_id():
     if hasattr(g, 'trace_id'):
         return g.trace_id
 
-    trace_id = getattr(local, 'trace_id', None)
+    trace_id = getattr(threadlocal, 'trace_id', None)
     if not trace_id:
         trace_id = ulid.new().str
-        setattr(local, 'trace_id', trace_id)
+        setattr(threadlocal, 'trace_id', trace_id)
     return trace_id
 
 

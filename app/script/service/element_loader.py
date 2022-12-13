@@ -33,9 +33,6 @@ from app.tools.validator import check_exists
 from app.utils.json_util import from_json
 
 
-# from gevent.local import local as CoroutineLocal
-
-
 log = get_logger(__name__)
 
 
