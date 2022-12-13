@@ -91,7 +91,7 @@ def init_user():
     worksapce_no = new_id()
     TWorkspace.insert_without_record(
         WORKSPACE_NO=worksapce_no,
-        WORKSPACE_NAME='超级管理员的个人空间',
+        WORKSPACE_NAME='个人空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
     TWorkspaceUser.insert_without_record(WORKSPACE_NO=worksapce_no, USER_NO=user_no)

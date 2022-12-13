@@ -166,7 +166,7 @@ def register(req):
     worksapce_no = new_id()
     TWorkspace.insert(
         WORKSPACE_NO=worksapce_no,
-        WORKSPACE_NAME=f'{req.userName}的个人空间',
+        WORKSPACE_NAME='个人空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
     TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
@@ -352,9 +352,6 @@ def modify_user_info(req):
         MOBILE_NO=req.mobileNo,
         EMAIL=req.email
     )
-    # 同步修改私人空间名称
-    workspace = get_private_workspace_by_user(user_no)
-    workspace.update(WORKSPACE_NAME=f'{req.userName}的个人空间')
 
 
 @http_service
@@ -403,10 +400,6 @@ def modify_user(req):
         MOBILE_NO=req.mobileNo,
         EMAIL=req.email
     )
-
-    # 同步修改私人空间名称
-    workspace = get_private_workspace_by_user(req.userNo)
-    workspace.update(WORKSPACE_NAME=f'{req.userName}的个人空间')
 
     # 绑定用户角色
     if req.roleNos is not None:
