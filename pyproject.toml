@@ -30,7 +30,7 @@ apscheduler = "3.9.1"
 # id
 ulid-py = "1.1.0"
 # Json
-orjson = "3.8.2"
+orjson = "3.8.3"
 jsonpath = "0.82"
 # Encryption
 pyjwt = "2.5.0"

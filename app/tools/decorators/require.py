@@ -72,8 +72,6 @@ def require_login(func):
 def require_permission(code):
     """权限校验装饰器"""
 
-    localvars.set('permission_code', code)  # 存储权限唯一代码
-
     def middleware(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -85,6 +83,7 @@ def require_permission(code):
 
             # 查询用户权限，判断权限是否存在且状态正常
             if exists_user_permission(user_no, code):
+                localvars.set('permission_code', code)  # 存储权限唯一代码
                 return func(*args, **kwargs)
 
             # 超级管理员无需校验权限
