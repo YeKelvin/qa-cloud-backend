@@ -11,7 +11,7 @@ from flask import request
 from app.extension import db
 from app.public.model import TWorkspace
 from app.public.model import TWorkspaceUser
-from app.tools import globals
+from app.tools import localvars
 from app.tools.auth import JWTAuth
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
@@ -120,7 +120,7 @@ def remote_addr():
 @transactional
 def logout():
     # 查询用户
-    user = UserDao.select_by_no(globals.get_userno())
+    user = UserDao.select_by_no(localvars.get_user_no())
     check_exists(user, error_msg='用户不存在')
     # 登出
     user.update(LOGGED_IN=False)
@@ -323,7 +323,7 @@ def get_user_roles(user_no):
 @http_service
 def query_user_info():
     # 获取用户编号
-    user_no = globals.get_userno()
+    user_no = localvars.get_user_no()
     # 查询用户
     user = UserDao.select_by_no(user_no)
     # 查询用户角色
@@ -343,7 +343,7 @@ def query_user_info():
 @transactional
 def modify_user_info(req):
     # 获取用户编号
-    user_no = globals.get_userno()
+    user_no = localvars.get_user_no()
     # 查询用户
     user = UserDao.select_by_no(user_no)
     # 更新用户信息
@@ -364,7 +364,7 @@ def modify_user_settings(req):
 @transactional
 def modify_password(req):
     # 获取用户编号
-    user_no = globals.get_userno()
+    user_no = localvars.get_user_no()
     # 查询用户
     user = UserDao.select_by_no(user_no)
     # 查询用户登录信息

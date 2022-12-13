@@ -12,7 +12,7 @@ from ulid import microsecond as ulid
 
 from app.extension import db
 from app.system.model import TSystemOperationLog
-from app.tools import globals
+from app.tools import localvars
 from app.tools.auth import JWTAuth
 from app.tools.logger import get_logger
 from app.tools.response import http_response
@@ -41,9 +41,9 @@ def set_user():
         try:
             # 解析token，获取payload
             payload = JWTAuth.decode_token(access_toekn)
-            # 设置全局属性
-            globals.put('user_no', payload['data']['id'])
-            globals.put('issued_at', payload['iat'])
+            # 设置用户信息
+            localvars.set('user_no', payload['data']['id'])
+            localvars.set('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
             log.info(f'accessToken:[ {access_toekn} ] token已失效')
         except jwt.InvalidTokenError:

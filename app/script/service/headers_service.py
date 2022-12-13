@@ -11,7 +11,7 @@ from app.script.dao import http_header_dao as HttpHeaderDao
 from app.script.dao import http_header_template_dao as HttpheaderTemplateDao
 from app.script.model import THttpHeader
 from app.script.model import THttpHeaderTemplate
-from app.tools import globals
+from app.tools import localvars
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
@@ -94,7 +94,7 @@ def query_httpheader_template_all_in_private():
     protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
-    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     protected_filter = (
         dbquery(
             TWorkspace.WORKSPACE_NO,
@@ -112,7 +112,7 @@ def query_httpheader_template_all_in_private():
     private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_NO, THttpHeaderTemplate.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
-    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     private_filter = (
         dbquery(
             TWorkspace.WORKSPACE_NO,

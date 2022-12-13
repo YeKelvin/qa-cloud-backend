@@ -44,7 +44,7 @@ from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
-from app.tools.globals import get_userno
+from app.tools.localvars import get_user_no
 from app.tools.identity import new_id
 from app.tools.logger import get_logger
 from app.tools.validator import check_exists
@@ -761,7 +761,7 @@ def interrupt_testplan_execution(req):
     # 标记执行中断
     execution.update(
         INTERRUPT=True,
-        INTERRUPT_BY=get_userno(),
+        INTERRUPT_BY=get_user_no(),
         INTERRUPT_TIME=datetime_now_by_utc8(),
         RUNNING_STATE=RunningState.INTERRUPTED.value
     )

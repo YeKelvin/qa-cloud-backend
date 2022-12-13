@@ -11,7 +11,7 @@ from sqlalchemy import func
 from ulid import microsecond as ulid
 
 from app.extension import db
-from app.tools.globals import get_userno_or_default
+from app.tools.localvars import get_userno_or_default
 from app.tools.locals import local
 from app.tools.logger import get_logger
 from app.utils.json_util import to_json

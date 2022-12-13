@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @File    : globals.py
+# @File    : localvars.py
 # @Time    : 2020/1/8 10:56
 # @Author  : Kelvin.Ye
 from flask import g
@@ -10,7 +10,7 @@ def get_trace_id():
     return getattr(g, 'trace_id', None)
 
 
-def get_userno():
+def get_user_no():
     return getattr(g, 'user_no', None)
 
 
@@ -26,5 +26,5 @@ def get_success():
     return getattr(g, 'success', None)
 
 
-def put(key, value):
+def set(key, value):  # noqa
     g.setdefault(key, value)

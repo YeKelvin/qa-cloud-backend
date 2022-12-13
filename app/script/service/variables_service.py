@@ -15,7 +15,7 @@ from app.script.enum import VariableDatasetType
 from app.script.enum import VariableDatasetWeight
 from app.script.model import TVariable
 from app.script.model import TVariableDataset
-from app.tools import globals
+from app.tools import localvars
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
@@ -111,7 +111,7 @@ def query_variable_dataset_all_in_private(req):
     protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
-    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     protected_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
     protected_filter = (
         dbquery(
@@ -131,7 +131,7 @@ def query_variable_dataset_all_in_private(req):
     private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
-    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     private_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
     private_filter = (
         dbquery(

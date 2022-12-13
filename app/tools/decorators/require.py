@@ -10,7 +10,7 @@ from flask import g
 from flask import request
 
 from app.extension import db
-from app.tools import globals
+from app.tools import localvars
 from app.tools.exceptions import ErrorCode
 from app.tools.logger import get_logger
 from app.tools.response import ResponseDTO
@@ -34,8 +34,8 @@ def require_login(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        user_no = globals.get_userno()
-        issued_at = globals.get_issued_at()
+        user_no = localvars.get_user_no()
+        issued_at = localvars.get_issued_at()
 
         # 用户不存在
         user = TUser.filter_by(USER_NO=user_no).first()
@@ -63,7 +63,7 @@ def require_login(func):
             )
             return failed_response(ErrorCode.E401001)
 
-        globals.put('operator', user.USER_NAME)
+        localvars.set('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -72,13 +72,13 @@ def require_login(func):
 def require_permission(code):
     """权限校验装饰器"""
 
-    globals.put('permission_code', code)  # 存储权限唯一代码
+    localvars.set('permission_code', code)  # 存储权限唯一代码
 
     def middleware(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             # 获取登录用户
-            user_no = globals.get_userno()
+            user_no = localvars.get_user_no()
             if not user_no:
                 log.info(f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败')
                 return failed_response(ErrorCode.E401002)

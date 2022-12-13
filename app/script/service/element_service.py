@@ -45,7 +45,7 @@ from app.script.model import THttpHeaderTemplateRef
 from app.script.model import TTestElement
 from app.script.model import TWorkspaceCollection
 from app.script.model import TWorkspaceComponent
-from app.tools import globals
+from app.tools import localvars
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
@@ -184,7 +184,7 @@ def query_element_all_in_private(req):
     # 保护空间条件查询
     protected_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
     protected_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    protected_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    protected_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
     protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
     protected_conds.equal(TTestElement.ENABLED, req.enabled)
@@ -208,7 +208,7 @@ def query_element_all_in_private(req):
     # 私人空间条件查询
     private_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
     private_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    private_conds.equal(TWorkspaceUser.USER_NO, globals.get_userno())
+    private_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
     private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
     private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
     private_conds.equal(TTestElement.ENABLED, req.enabled)

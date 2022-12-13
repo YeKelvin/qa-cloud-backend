@@ -20,7 +20,7 @@ from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
-from app.tools.globals import get_userno
+from app.tools.localvars import get_user_no
 from app.tools.identity import new_id
 from app.tools.logger import get_logger
 from app.tools.validator import check_exists
@@ -162,7 +162,7 @@ def create_task(req):
         JOB_NO=job_no,
         LOG_NO=new_id(),
         OPERATION_TYPE=OperationType.ADD.value,
-        OPERATION_BY=get_userno(),
+        OPERATION_BY=get_user_no(),
         OPERATION_TIME=datetime_now_by_utc8()
     )
 
@@ -209,7 +209,7 @@ def modify_task(req):
         JOB_NO=task.JOB_NO,
         LOG_NO=log_no,
         OPERATION_TYPE=OperationType.MODIFY.value,
-        OPERATION_BY=get_userno(),
+        OPERATION_BY=get_user_no(),
         OPERATION_TIME=datetime_now_by_utc8()
     )
     # TODO: 记录任务修改详情
@@ -275,7 +275,7 @@ def pause_task(req):
         JOB_NO=task.JOB_NO,
         LOG_NO=new_id(),
         OPERATION_TYPE=OperationType.PAUSE.value,
-        OPERATION_BY=get_userno(),
+        OPERATION_BY=get_user_no(),
         OPERATION_TIME=datetime_now_by_utc8()
     )
 
@@ -301,7 +301,7 @@ def resume_task(req):
         JOB_NO=task.JOB_NO,
         LOG_NO=new_id(),
         OPERATION_TYPE=OperationType.RESUME.value,
-        OPERATION_BY=get_userno(),
+        OPERATION_BY=get_user_no(),
         OPERATION_TIME=datetime_now_by_utc8()
     )
 

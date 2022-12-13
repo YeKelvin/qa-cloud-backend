@@ -8,7 +8,7 @@ from enum import Enum
 
 from flask import make_response
 
-from app.tools import globals
+from app.tools import localvars
 from app.tools.enums import HttpStatus
 from app.tools.exceptions import ErrorCode
 from app.utils.json_util import to_json
@@ -48,8 +48,7 @@ def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, *
     if not res:
         res = ResponseDTO(**kwargs)
 
-    globals.put('success', res.success)
-    res_json = to_json(res.__dict__)
-    response = make_response(res_json, status.value)
+    localvars.set('success', res.success)
+    response = make_response(to_json(res.__dict__), status.value)
     response.headers['Content-Type'] = 'application/json;charset=utf-8'
     return response
