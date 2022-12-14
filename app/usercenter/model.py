@@ -111,12 +111,12 @@ class TUserPassword(DBModel, BaseColumn):
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)')
 
 
-class TUserPasswordKey(DBModel, BaseColumn):
-    """用户密码密钥表"""
-    # TODO: 单机改为读内存，集群改为读redis
-    __tablename__ = 'USER_PASSWORD_KEY'
-    LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
-    PASSWORD_KEY = db.Column(db.Text, nullable=False, comment='密码密钥')
+class TUserSecretKey(DBModel, BaseColumn):
+    """用户密钥表"""
+    # TODO: 单机读内存，集群读redis
+    __tablename__ = 'USER_SECRET_KEY'
+    INDEX = db.Column(db.String(128), index=True, nullable=False, comment='索引编号')
+    DATA = db.Column(db.Text, nullable=False, comment='密钥')
 
 
 class TPermissionModule(DBModel, BaseColumn):

@@ -138,6 +138,11 @@ class CRUDMixin:
             cls.filter_by(**kwargs).update({cls.DELETED: cls.ID})
         db.session.flush()
 
+    @classmethod
+    def physical_delete_by(cls: MODEL, **kwargs):
+        """物理删除"""
+        cls.filter_by(**kwargs).delete()
+
     def update(self: MODEL, **kwargs):
         record = kwargs.pop('record', True)
         for attr, value in kwargs.items():

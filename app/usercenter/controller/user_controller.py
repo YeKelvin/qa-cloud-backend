@@ -21,7 +21,8 @@ def login():
     """用户登录"""
     req = JsonParser(
         Argument('loginName', required=True, nullable=False, help='登录账号或密码不能为空'),
-        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空')
+        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空'),
+        Argument('index', required=True, nullable=False, help='密钥索引不能为空')
     ).parse()
     return service.login(req)
 
@@ -64,13 +65,14 @@ def modify_user_settings():
 
 @blueprint.patch('/user/password')
 @require_login
-def modify_password():
+def modify_user_password():
     """修改密码"""
     req = JsonParser(
         Argument('oldPassword', required=True, nullable=False, help='旧密码不能为空'),
-        Argument('newPassword', required=True, nullable=False, help='新密码不能为空')
+        Argument('newPassword', required=True, nullable=False, help='新密码不能为空'),
+        Argument('index', required=True, nullable=False, help='密钥索引不能为空')
     ).parse()
-    return service.modify_password(req)
+    return service.modify_user_password(req)
 
 
 @blueprint.post('/user/register')

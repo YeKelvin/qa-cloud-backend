@@ -27,7 +27,7 @@ from app.usercenter.dao import user_group_dao as UserGroupDao
 from app.usercenter.dao import user_login_info_dao as UserLoginInfoDao
 from app.usercenter.dao import user_login_log_dao as UserLoginLogDao
 from app.usercenter.dao import user_password_dao as UserPasswordDao
-from app.usercenter.dao import user_password_key_dao as UserPasswordKeyDao
+from app.usercenter.dao import user_secret_key_dao as UserSecretKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
 from app.usercenter.dao import user_settings_dao as UserSettingsDao
 from app.usercenter.enum import UserState
@@ -55,57 +55,63 @@ log = get_logger(__name__)
 @http_service
 @transactional
 def login(req):
-    # 查询用户登录信息
-    login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
-    check_exists(login_info, error_msg='账号或密码不正确')
+    try:
+        # 查询用户登录信息
+        login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
+        check_exists(login_info, error_msg='账号或密码不正确')
 
-    # 查询用户
-    user = UserDao.select_by_no(login_info.USER_NO)
-    check_exists(user, error_msg='账号或密码不正确')
+        # 查询用户
+        user = UserDao.select_by_no(login_info.USER_NO)
+        check_exists(user, error_msg='账号或密码不正确')
 
-    # 校验用户状态
-    if user.STATE != UserState.ENABLE.value:
-        raise ServiceError('用户状态异常')
+        # 校验用户状态
+        if user.STATE != UserState.ENABLE.value:
+            raise ServiceError('用户状态异常')
 
-    # 查询用户密码
-    user_password = UserPasswordDao.select_loginpwd_by_user(user.USER_NO)
-    check_exists(user_password, error_msg='账号或密码不正确')
+        # 查询用户密码
+        user_password = UserPasswordDao.select_loginpwd_by_user(user.USER_NO)
+        check_exists(user_password, error_msg='账号或密码不正确')
 
-    # 密码RSA解密
-    user_password_key = UserPasswordKeyDao.select_by_loginname(req.loginName)
-    ras_decrypted_password = decrypt_by_rsa_private_key(req.password, user_password_key.PASSWORD_KEY)
+        # 密码RSA解密
+        secret_key = UserSecretKeyDao.select_by_index(req.index)
+        ras_decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
 
-    # 校验密码是否正确
-    pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
+        # 校验密码是否正确
+        pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
 
-    # 密码校验失败
-    if not pwd_success:
-        user_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
-        if user_password.ERROR_TIMES < 3:
-            user_password.ERROR_TIMES += 1
-        raise ServiceError('账号或密码不正确')
+        # 密码校验失败
+        if not pwd_success:
+            user_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
+            if user_password.ERROR_TIMES < 3:
+                user_password.ERROR_TIMES += 1
+            raise ServiceError('账号或密码不正确')
 
-    # 密码校验通过后生成token
-    issued_at = timestamp_now()
-    token = JWTAuth.encode_token(user.USER_NO, issued_at)
+        # 密码校验通过后生成token
+        issued_at = timestamp_now()
+        token = JWTAuth.encode_token(user.USER_NO, issued_at)
 
-    # 更新用户登录时间
-    # 清空用户登录失败次数
-    user_password.update(
-        LAST_SUCCESS_TIME=timestamp_to_utc8_datetime(issued_at),
-        ERROR_TIMES=0
-    )
+        # 更新用户登录时间
+        # 清空用户登录失败次数
+        user_password.update(
+            LAST_SUCCESS_TIME=timestamp_to_utc8_datetime(issued_at),
+            ERROR_TIMES=0
+        )
 
-    # 记录用户登录日志
-    TUserLoginLog.insert(
-        USER_NO=login_info.USER_NO,
-        LOGIN_NAME=login_info.LOGIN_NAME,
-        LOGIN_TYPE=login_info.LOGIN_TYPE,
-        IP=remote_addr()
-    )
+        # 记录用户登录日志
+        TUserLoginLog.insert(
+            USER_NO=login_info.USER_NO,
+            LOGIN_NAME=login_info.LOGIN_NAME,
+            LOGIN_TYPE=login_info.LOGIN_TYPE,
+            IP=remote_addr()
+        )
 
-    # 更新用户登录状态
-    user.update(LOGGED_IN=True)
+        # 更新用户登录状态
+        user.update(LOGGED_IN=True)
+    except Exception:
+        raise
+    finally:
+        # 删除密钥索引
+        UserSecretKeyDao.delete_by_index(req.index)
 
     return {'accessToken': token}
 
@@ -192,15 +198,15 @@ def reset_login_password(req):
     check_exists(user, error_msg='用户不存在')
 
     # 查询登录信息
-    user_login_info = UserLoginInfoDao.select_by_user(req.userNo)
-    check_exists(user_login_info, error_msg='用户登录信息不存在')
+    login_info = UserLoginInfoDao.select_by_user(req.userNo)
+    check_exists(login_info, error_msg='用户登录信息不存在')
 
     # 查询用户密码
     user_password = UserPasswordDao.select_loginpwd_by_user(req.userNo)
     check_exists(user_password, error_msg='用户登录密码不存在')
 
     # 更新用户密码
-    user_password.update(PASSWORD=encrypt_password(user_login_info.LOGIN_NAME, '123456'))
+    user_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, '123456'))
 
 
 @http_service
@@ -234,8 +240,8 @@ def query_user_list(req):
             continue
         # 查询用户绑定的角色列表
         roles = []
-        user_role_list = UserRoleDao.select_all_by_userno(user.USER_NO)
-        for user_role in user_role_list:
+        user_roles = UserRoleDao.select_all_by_userno(user.USER_NO)
+        for user_role in user_roles:
             if role := RoleDao.select_by_no(user_role.ROLE_NO):
                 roles.append({
                     'roleNo': role.ROLE_NO,
@@ -243,8 +249,8 @@ def query_user_list(req):
                 })
         # 查询用户分组列表
         groups = []
-        user_group_list = UserGroupDao.select_all_by_user(user.USER_NO)
-        for user_group in user_group_list:
+        user_groups = UserGroupDao.select_all_by_user(user.USER_NO)
+        for user_group in user_groups:
             if group := GroupDao.select_by_no(user_group.GROUP_NO):
                 groups.append({
                     'groupNo': group.GROUP_NO,
@@ -324,7 +330,7 @@ def query_user_info():
         'email': user.EMAIL,
         'avatar': user.AVATAR,
         'roles': roles,
-        'settings': settings or {}
+        'settings': settings.DATA if settings else {}
     }
 
 
@@ -359,27 +365,40 @@ def modify_user_settings(req):
 
 @http_service
 @transactional
-def modify_password(req):
-    # 获取用户编号
-    user_no = localvars.get_user_no()
-    # 查询用户登录信息
-    login_info = UserLoginInfoDao.select_by_user(user_no)
-    # 查询用户密码
-    login_password = UserPasswordDao.select_loginpwd_by_user(user_no)
-    check_exists(login_password, error_msg='账号或密码不正确')
-    # 密码RSA解密
-    password_key = UserPasswordKeyDao.select_by_loginname(login_info.LOGIN_NAME)
-    decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, password_key.PASSWORD_KEY)
-    # 校验密码是否正确
-    check_pass = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, decrypted_password)
-    # 密码校验失败
-    if not check_pass:
-        login_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
-        if login_password.ERROR_TIMES < 3:
-            login_password.ERROR_TIMES += 1
-        raise ServiceError('账号或密码不正确')
-    # 更新用户登录密码
-    login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, req.newPassword))
+def modify_user_password(req):
+    try:
+        # 获取用户编号
+        user_no = localvars.get_user_no()
+        # 查询用户登录信息
+        login_info = UserLoginInfoDao.select_by_user(user_no)
+        # 查询用户密码
+        login_password = UserPasswordDao.select_loginpwd_by_user(user_no)
+        check_exists(login_password, error_msg='账号或密码不正确')
+        # 查询密钥
+        secret_key = UserSecretKeyDao.select_by_index(req.index)
+        # 解密旧密码
+        decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key.DATA)
+        # 校验密码是否正确
+        check_pass = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, decrypted_password)
+        # 密码校验失败
+        if not check_pass:
+            login_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
+            if login_password.ERROR_TIMES < 3:
+                login_password.ERROR_TIMES += 1
+            raise ServiceError('账号或密码不正确')
+        # 解密新密码
+        decrypted_new_password = decrypt_by_rsa_private_key(req.newPassword, secret_key.DATA)
+        # 更新用户登录密码
+        login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, decrypted_new_password))
+        # 查询用户
+        user = UserDao.select_by_no(user_no)
+        # 登出
+        user.update(LOGGED_IN=False)
+    except Exception:
+        raise
+    finally:
+        # 删除密钥索引
+        UserSecretKeyDao.delete_by_index(req.index)
 
 
 @http_service
@@ -456,11 +475,6 @@ def remove_user(req):
 
     # 删除用户密码
     UserPasswordDao.delete_all_by_user(req.userNo)
-
-    # 删除用户密码秘钥
-    login_info_list = UserLoginInfoDao.select_all_by_user(req.userNo)
-    for login_info in login_info_list:
-        UserPasswordKeyDao.delete_by_loginname(login_info.LOGIN_NAME)
 
     # 删除用户登录历史记录
     UserLoginLogDao.delete_all_by_user(req.userNo)
