@@ -3,7 +3,8 @@
 # @File    : exceptions.py
 # @Time    : 2019/11/7 11:55
 # @Author  : Kelvin.Ye
-from enum import Enum, unique
+from enum import Enum
+from enum import unique
 
 
 class ServiceError(Exception):
