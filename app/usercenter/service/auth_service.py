@@ -6,12 +6,8 @@
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
 from app.usercenter.model import TUserSecretKey
 from app.utils.rsa_util import generate_rsa_key
-
-
-log = get_logger(__name__)
 
 
 @http_service

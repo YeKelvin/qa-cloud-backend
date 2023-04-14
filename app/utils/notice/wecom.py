@@ -4,12 +4,9 @@
 # @Time    : 2022-05-08 15:13:18
 # @Author  : Kelvin.Ye
 import requests
+from loguru import logger
 
-from app.tools.logger import get_logger
 from app.utils.json_util import to_json
-
-
-log = get_logger(__name__)
 
 
 webhookurl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='
@@ -35,7 +32,7 @@ def send_text_message(robotkey: str, content: str, mentioned_list: list = None, 
         }
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_markdown_message(robotkey: str, content: str):
@@ -52,7 +49,7 @@ def send_markdown_message(robotkey: str, content: str):
         }
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_image_message(robotkey: str, base64: str, md5: str):
@@ -71,7 +68,7 @@ def send_image_message(robotkey: str, base64: str, md5: str):
         }
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_news_message(robotkey: str, articles: list):
@@ -92,7 +89,7 @@ def send_news_message(robotkey: str, articles: list):
         }
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_file_message(robotkey: str, media_id: str):
@@ -109,7 +106,7 @@ def send_file_message(robotkey: str, media_id: str):
         }
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_textcard_message(robotkey: str, card: dict):
@@ -166,4 +163,4 @@ def send_textcard_message(robotkey: str, card: dict):
         'template_card': card
     }
     res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
-    res.status_code != 200 and log.error(f'发送企业微信通知失败，接口响应: {res.text}')
+    res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')

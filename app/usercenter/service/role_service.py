@@ -7,7 +7,6 @@ from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.usercenter.dao import role_dao as RoleDao  # noqa
@@ -16,9 +15,6 @@ from app.usercenter.dao import user_role_dao as UserRoleDao  # noqa
 from app.usercenter.enum import RoleState
 from app.usercenter.model import TRole
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 @http_service

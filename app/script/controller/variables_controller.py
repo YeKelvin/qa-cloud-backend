@@ -8,13 +8,9 @@ from app.script.enum import VariableDatasetType
 from app.script.service import variables_service as service
 from app.tools.decorators.require import require_login
 from app.tools.decorators.require import require_permission
-from app.tools.logger import get_logger
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 from app.tools.parser import ListParser
-
-
-log = get_logger(__name__)
 
 
 @blueprint.get('/variable/dataset/list')

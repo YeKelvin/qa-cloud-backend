@@ -8,11 +8,11 @@ from functools import wraps
 
 from flask import g
 from flask import request
+from loguru import logger
 
 from app.extension import db
 from app.tools import localvars
 from app.tools.exceptions import ErrorCode
-from app.tools.logger import get_logger
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
 from app.usercenter.model import TGroup
@@ -26,9 +26,6 @@ from app.usercenter.model import TUserPassword
 from app.usercenter.model import TUserRole
 
 
-log = get_logger(__name__)
-
-
 def require_login(func):
     """登录校验装饰器"""
 
@@ -40,26 +37,26 @@ def require_login(func):
         # 用户不存在
         user = TUser.filter_by(USER_NO=user_no).first()
         if not user:
-            log.info('用户不存在')
+            logger.bind(traceid=g.trace_id).info('用户不存在')
             return failed_response(ErrorCode.E401001)
 
         # 用户未登录，请先登录
         if not user.LOGGED_IN:
-            log.info('用户未登录，请先登录')
+            logger.bind(traceid=g.trace_id).info('用户未登录，请先登录')
             return failed_response(ErrorCode.E401001)
 
         # 用户状态异常
         if user.STATE != 'ENABLE':
-            log.info(f'userState:[ {user.STATE} ] 用户状态异常')
+            logger.bind(traceid=g.trace_id).info(f'userState:[ {user.STATE} ] 用户状态异常')
             return failed_response(ErrorCode.E401001)
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
         user_password = TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
         if datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
-            log.info(
+            logger.bind(traceid=g.trace_id).info(
                 f'签发时间:[ {datetime.fromtimestamp(issued_at)} ] '
                 f'最后成功登录时间:[ {user_password.LAST_SUCCESS_TIME} ] '
-                f'登录失败，Token 已失效'
+                f'token已失效'
             )
             return failed_response(ErrorCode.E401001)
 
@@ -78,7 +75,7 @@ def require_permission(code):
             # 获取登录用户
             user_no = localvars.get_user_no()
             if not user_no:
-                log.info(f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败')
+                logger.bind(traceid=g.trace_id).info(f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败')
                 return failed_response(ErrorCode.E401002)
 
             # 查询用户权限，判断权限是否存在且状态正常
@@ -91,7 +88,7 @@ def require_permission(code):
                 return func(*args, **kwargs)
 
             # 其余情况校验不通过
-            log.info(f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常')
+            logger.bind(traceid=g.trace_id).info(f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常')
             return failed_response(ErrorCode.E401002)
 
         return wrapper
@@ -100,14 +97,14 @@ def require_permission(code):
 
 
 def failed_response(error: ErrorCode):
-    log.info(
-        f'method:[ {request.method} ] path:[ {request.path} ] '
+    logger.bind(traceid=g.trace_id).info(
+        f'uri:[ {request.method} {request.path} ] '
         f'header:[ {dict(request.headers)} ] request:[ {request.values} ]'
     )
     res = ResponseDTO(error=error)
     http_res = http_response(res)
-    log.info(
-        f'method:[ {request.method} ] path:[ {request.path} ] '
+    logger.bind(traceid=g.trace_id).info(
+        f'uri:[ {request.method} {request.path} ] '
         f'header:[ {dict(http_res.headers)}] response:[ {res} ]'
     )
     return http_res

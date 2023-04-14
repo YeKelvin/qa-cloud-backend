@@ -11,15 +11,11 @@ from app.public.model import TWorkspaceUser
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 @http_service

@@ -5,14 +5,10 @@
 # @Author  : Kelvin.Ye
 from app.database import dbquery
 from app.tools.decorators.service import http_service
-from app.tools.logger import get_logger
 from app.usercenter.model import TRole
 from app.usercenter.model import TUser
 from app.usercenter.model import TUserRole
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 @http_service

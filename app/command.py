@@ -12,7 +12,7 @@ from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
+from loguru import logger
 from app.usercenter.model import TPermission  # noqa
 from app.usercenter.model import TPermissionModule  # noqa
 from app.usercenter.model import TPermissionObject  # noqa
@@ -28,9 +28,6 @@ from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
 from app.public.model import *  # noqa isort:skip
 from app.usercenter.model import *  # noqa isort:skip
-
-
-log = get_logger(__name__)
 
 
 @click.command()

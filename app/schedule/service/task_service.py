@@ -5,6 +5,7 @@
 # @Author  : Kelvin.Ye
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
+from loguru import logger
 
 from app.database import dbquery
 from app.extension import apscheduler
@@ -20,9 +21,8 @@ from app.schedule.model import TScheduleJobLog
 from app.schedule.service.task_function import TASK_FUNC
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
-from app.tools.localvars import get_user_no
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
+from app.tools.localvars import get_user_no
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
@@ -30,9 +30,6 @@ from app.usercenter.model import TUser
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
-
-
-log = get_logger(__name__)
 
 
 @http_service
@@ -325,7 +322,7 @@ def remove_task(req):
     try:
         apscheduler.remove_job(task.JOB_NO)
     except JobLookupError:
-        log.info('查找作业失败，作业不存在或已失效')
+        logger.info(f'jobNo:[{task.JOB_NO}] 作业不存在或已失效')
 
     # 更新作业状态
     task = ScheduleJobDao.select_by_no(req.jobNo)

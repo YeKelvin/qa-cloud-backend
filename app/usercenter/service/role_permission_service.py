@@ -6,7 +6,6 @@
 from app.database import dbquery
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.usercenter.dao import role_dao as RoleDao
 from app.usercenter.dao import role_permission_dao as RolePermissionDao
@@ -15,9 +14,6 @@ from app.usercenter.model import TPermissionModule
 from app.usercenter.model import TPermissionObject
 from app.usercenter.model import TRolePermission
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 @http_service

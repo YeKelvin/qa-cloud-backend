@@ -14,9 +14,9 @@ create table "USER"
     "DELETED"      integer      not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER"."ID" is '主键';
 comment on column "USER"."USER_NO" is '用户编号';
@@ -45,9 +45,9 @@ create table "USER_GROUP"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_GROUP"."ID" is '主键';
 comment on column "USER_GROUP"."USER_NO" is '用户编号';
@@ -74,9 +74,9 @@ create table "USER_LOGIN_INFO"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_LOGIN_INFO"."ID" is '主键';
 comment on column "USER_LOGIN_INFO"."USER_NO" is '用户编号';
@@ -105,9 +105,9 @@ create table "USER_LOGIN_LOG"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_LOGIN_LOG"."ID" is '主键';
 comment on column "USER_LOGIN_LOG"."USER_NO" is '用户编号';
@@ -131,18 +131,18 @@ create table "USER_PASSWORD"
     "USER_NO"           varchar(32)  not null,
     "PASSWORD"          varchar(256) not null,
     "PASSWORD_TYPE"     varchar(16)  not null,
-    "LAST_SUCCESS_TIME" timestamp,
-    "LAST_ERROR_TIME"   timestamp,
+    "LAST_SUCCESS_TIME" timestamp(6),
+    "LAST_ERROR_TIME"   timestamp(6),
     "ERROR_TIMES"       integer,
-    "UNLOCK_TIME"       timestamp,
+    "UNLOCK_TIME"       timestamp(6),
     "CREATE_TYPE"       varchar(16)  not null,
     "VERSION"           integer      not null,
     "DELETED"           integer      not null,
     "REMARK"            varchar(64),
     "CREATED_BY"        varchar(64),
-    "CREATED_TIME"      timestamp,
+    "CREATED_TIME"      timestamp(6),
     "UPDATED_BY"        varchar(64),
-    "UPDATED_TIME"      timestamp
+    "UPDATED_TIME"      timestamp(6)
 );
 comment on column "USER_PASSWORD"."ID" is '主键';
 comment on column "USER_PASSWORD"."USER_NO" is '用户编号';
@@ -173,9 +173,9 @@ create table "USER_SECRET_KEY"
     "DELETED"      integer      not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_SECRET_KEY"."ID" is '主键';
 comment on column "USER_SECRET_KEY"."INDEX" is '索引编号';
@@ -200,9 +200,9 @@ create table "USER_SETTINGS"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_SETTINGS"."ID" is '主键';
 comment on column "USER_SETTINGS"."USER_NO" is '用户编号';
@@ -227,9 +227,9 @@ create table "USER_ROLE"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "USER_ROLE"."ID" is '主键';
 comment on column "USER_ROLE"."USER_NO" is '用户编号';
@@ -257,9 +257,9 @@ create table "GROUP"
     "DELETED"      integer      not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "GROUP"."ID" is '主键';
 comment on column "GROUP"."GROUP_NO" is '分组编号';
@@ -284,9 +284,9 @@ create table "GROUP_ROLE"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp,
+    "UPDATED_TIME" timestamp(6),
     "GROUP_NO"     varchar(32) not null,
     "ROLE_NO"      varchar(32) not null
 );
@@ -319,9 +319,9 @@ create table "ROLE"
     "DELETED"      integer      not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "ROLE"."ID" is '主键';
 comment on column "ROLE"."ROLE_NO" is '角色编号';
@@ -351,9 +351,9 @@ create table "ROLE_PERMISSION"
     "DELETED"       integer     not null,
     "REMARK"        varchar(64),
     "CREATED_BY"    varchar(64),
-    "CREATED_TIME"  timestamp,
+    "CREATED_TIME"  timestamp(6),
     "UPDATED_BY"    varchar(64),
-    "UPDATED_TIME"  timestamp
+    "UPDATED_TIME"  timestamp(6)
 );
 comment on column "ROLE_PERMISSION"."ID" is '主键';
 comment on column "ROLE_PERMISSION"."ROLE_NO" is '角色编号';
@@ -385,9 +385,9 @@ create table "WORKSPACE"
     "DELETED"         integer      not null,
     "REMARK"          varchar(64),
     "CREATED_BY"      varchar(64),
-    "CREATED_TIME"    timestamp,
+    "CREATED_TIME"    timestamp(6),
     "UPDATED_BY"      varchar(64),
-    "UPDATED_TIME"    timestamp
+    "UPDATED_TIME"    timestamp(6)
 );
 comment on column "WORKSPACE"."ID" is '主键';
 comment on column "WORKSPACE"."WORKSPACE_NO" is '空间编号';
@@ -414,9 +414,9 @@ create table "WORKSPACE_USER"
     "DELETED"      integer     not null,
     "REMARK"       varchar(64),
     "CREATED_BY"   varchar(64),
-    "CREATED_TIME" timestamp,
+    "CREATED_TIME" timestamp(6),
     "UPDATED_BY"   varchar(64),
-    "UPDATED_TIME" timestamp
+    "UPDATED_TIME" timestamp(6)
 );
 comment on column "WORKSPACE_USER"."ID" is '主键';
 comment on column "WORKSPACE_USER"."WORKSPACE_NO" is '空间编号';

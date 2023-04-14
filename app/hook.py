@@ -3,33 +3,28 @@
 # @File    : hook.py
 # @Time    : 2019/11/7 20:02
 # @Author  : Kelvin.Ye
-import traceback
-
 import jwt
 from flask import g
 from flask import request
+from loguru import logger
 from ulid import microsecond as ulid
 
 from app.extension import db
 from app.system.model import TSystemOperationLog
 from app.tools import localvars
 from app.tools.auth import JWTAuth
-from app.tools.logger import get_logger
 from app.tools.response import http_response
 
 
-log = get_logger(__name__)
-
-
-def set_trace_id():
-    """设置当前请求的全局 TraceID"""
+def inject_traceid():
+    """注入当前traceid"""
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
         g.trace_id = ulid.new().str
 
 
-def set_user():
-    """设置当前请求的全局user信息"""
+def inject_user():
+    """注入当前user"""
     # 排除指定的请求
     if ('/user/login' in request.path) and ('POST' in request.method):
         return
@@ -45,14 +40,14 @@ def set_user():
             localvars.set('user_no', payload['data']['id'])
             localvars.set('issued_at', payload['iat'])
         except jwt.ExpiredSignatureError:
-            log.info(f'accessToken:[ {access_toekn} ] token已失效')
+            logger.bind(traceid=g.trace_id).info(f'access-token:[ {access_toekn} ] token已失效')
         except jwt.InvalidTokenError:
-            log.info(f'accessToken:[ {access_toekn} ] 无效的token')
+            logger.bind(traceid=g.trace_id).info(f'access-token:[ {access_toekn} ] 无效的token')
         except Exception:
-            log.error(traceback.format_exc())
+            logger.bind(traceid=g.trace_id).exception()
 
 
-def add_operation_log():
+def record_operation_log():
     # 过滤无需记录的操作
     if request.method not in ['POST', 'PUT', 'PATCH', 'DELETE'] or '/execute' in request.path:
         return
@@ -84,5 +79,4 @@ def page_not_found(_):
 
 # app.register_error_handler(Exception, exception_handler)
 def exception_handler(ex):
-    log.exception(ex)
     return http_response(errorMsg='服务器开小差')

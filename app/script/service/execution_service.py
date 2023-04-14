@@ -4,9 +4,9 @@
 # @Time    : 2020/3/20 15:00
 # @Author  : Kelvin.Ye
 import time
-import traceback
 
 import flask
+from loguru import logger
 from pymeter.runner import Runner
 
 from app import config as CONFIG
@@ -44,9 +44,8 @@ from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
-from app.tools.localvars import get_user_no
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
+from app.tools.localvars import get_user_no
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.usercenter.dao import user_dao as UserDao
@@ -55,9 +54,6 @@ from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
-
-
-log = get_logger(__name__)
 
 
 def get_root_no(element_no):
@@ -82,7 +78,7 @@ def debug_pymeter(script, sid):
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
-        log.error(traceback.format_exc())
+        logger.exception()
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
@@ -99,7 +95,7 @@ def debug_pymeter_by_loader(loader, app, sid):
         Runner.start([script], throw_ex=True, use_sio_log_handler=True, ext={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
-        log.error(traceback.format_exc())
+        logger.exception()
         socketio.emit(
             'pymeter_result_summary',
             {'resultId': result_id, 'result': {'name': 'error', 'loading': False, 'running': False}},
@@ -408,12 +404,12 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
                     notification_robot_nos
                 )
         except Exception:
-            log.error(f'执行编号:[ {execution_no} ] 执行异常\n{traceback.format_exc()}')
+            logger.exception(f'执行编号:[ {execution_no} ] 执行异常')
             with app.app_context():
                 try:
                     TestplanExecutionDao.update_running_state_by_no(execution_no, RunningState.ERROR.value)
                 except Exception:
-                    log.error(f'执行编号:[ {execution_no} ] 执行异常\n{traceback.format_exc()}')
+                    logger.exception(f'执行编号:[ {execution_no} ] 执行异常')
 
     # 先提交事务，防止新线程查询计划时拿不到
     db.session.commit()
@@ -436,7 +432,7 @@ def start_testplan(
         save_on_error,
         notification_robot_nos
 ):
-    log.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
+    logger.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
     # 记录开始时间
     start_time = timestamp_now()
     # 查询执行记录
@@ -510,21 +506,21 @@ def start_testplan(
 
     # 结果通知
     if notification_robot_nos:
-        log.info(f'执行编号:[ {execution_no} ] 发送执行结果消息')
+        logger.info(f'执行编号:[ {execution_no} ] 发送执行结果消息')
         for robot_no in notification_robot_nos:
             robot = NotificationRobotDao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
-                log.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 消息机器人状态已禁用')
+                logger.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 消息机器人状态已禁用')
                 continue
             # 企业微信
             if robot.ROBOT_TYPE == RobotType.WECOM.value:
-                log.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 发送企业微信消息')
+                logger.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 发送企业微信消息')
                 WeComTool.send_text_message(
                     robotkey=robot.ROBOT_CONFIG.get('key'),
                     content=get_notification_message(execution, report)
                 )
 
-    log.info(f'执行编号:[ {execution_no} ] 计划执行完成')
+    logger.info(f'执行编号:[ {execution_no} ] 计划执行完成')
 
 
 def get_notification_message(execution, report):
@@ -572,13 +568,13 @@ def start_testplan_by_loop(
 ):
     """循环运行测试计划"""
     # 批量解析脚本并临时存储
-    log.info(f'执行编号:[ {execution_no} ] 开始批量解析脚本')
+    logger.info(f'执行编号:[ {execution_no} ] 开始批量解析脚本')
     scripts = {}
     for collection_no in collection_nos:
         # 加载脚本
         collection = element_loader.loads_tree(collection_no, no_debuger=True)
         if not collection:
-            log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+            logger.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             continue
         # 添加自定义变量组件
         add_variable_dataset(collection, dataset_nos, use_current_value)
@@ -588,14 +584,14 @@ def start_testplan_by_loop(
         scripts[collection_no] = collection
 
     # 批量更新计划项目的运行状态至 RUNNING
-    log.info(f'执行编号:[ {execution_no} ] 脚本解析完成，开始运行测试计划')
+    logger.info(f'执行编号:[ {execution_no} ] 脚本解析完成，开始运行测试计划')
     TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ITERATING.value)
     db.session.commit()  # 这里要实时更新
 
     try:
         # 循环运行
         for i in range(iterations):
-            log.info(f'执行编号:[ {execution_no} ] 开始第[ {i+1} ]次迭代')
+            logger.info(f'执行编号:[ {execution_no} ] 开始第[ {i+1} ]次迭代')
             # 记录迭代次数
             execution = TestplanExecutionDao.select_by_no(execution_no)
             execution.update(
@@ -605,7 +601,7 @@ def start_testplan_by_loop(
             db.session.commit()  # 这里要实时更新
             # 延迟迭代
             if delay and i > 0:
-                log.info(f'间隔等待{delay}ms')
+                logger.info(f'间隔等待{delay}ms')
                 time.sleep(float(delay / 1000))
             # 顺序执行脚本
             for collection_no, collection in scripts.items():
@@ -617,14 +613,10 @@ def start_testplan_by_loop(
                 # 异步函数
                 def start(app):
                     try:
-                        log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 第[ {i} ]次开始执行脚本')
+                        logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 第[ {i} ]次开始执行脚本')
                         Runner.start([collection], throw_ex=True)
                     except Exception:
-                        log.error(
-                            f'执行编号:[ {execution_no} ] '
-                            f'集合编号:[ {collection_no} ] '
-                            f'脚本执行异常\n{traceback.format_exc()}'
-                        )
+                        logger.exception('执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常')
                         with app.app_context():
                             try:
                                 item = TestPlanExecutionItemsDao.select_by_execution_and_collection(
@@ -636,24 +628,20 @@ def start_testplan_by_loop(
                                     record=False
                                 )
                             except Exception:
-                                log.error(
-                                    f'执行编号:[ {execution_no} ] '
-                                    f'集合编号:[ {collection_no} ] '
-                                    f'更新异常\n{traceback.format_exc()}'
-                                )
+                                logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 更新异常')
 
                 task = executor.submit(start, app)  # 异步执行脚本
                 task.result()  # 阻塞等待脚本执行完成
     except TestplanInterruptError:
-        log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
+        logger.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
     except Exception:
-        log.error(f'执行编号:[ {execution_no} ] 运行异常\n{traceback.format_exc()}')
+        logger.exception(f'执行编号:[ {execution_no} ] 运行异常')
         TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ERROR.value)
 
     # 批量更新计划项目的运行状态至 COMPLETED
     TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.COMPLETED.value)
     db.session.commit()  # 这里要实时更新
-    log.info(f'执行编号:[ {execution_no} ] 计划迭代完成')
+    logger.info(f'执行编号:[ {execution_no} ] 计划迭代完成')
 
 
 def start_testplan_by_report(
@@ -683,7 +671,7 @@ def start_testplan_by_report(
             # 加载脚本
             collection = element_loader.loads_tree(collection_no, no_debuger=True)
             if not collection:
-                log.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+                logger.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
             # 添加自定义变量组件
             add_variable_dataset(collection, dataset_nos, use_current_value)
             # 添加报告存储器组件
@@ -692,14 +680,10 @@ def start_testplan_by_report(
             # 异步函数
             def start(app):
                 try:
-                    log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
+                    logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
                     Runner.start([collection], throw_ex=True)
                 except Exception:
-                    log.error(
-                        f'执行编号:[ {execution_no} ] '
-                        f'集合编号:[ {collection_no} ] '
-                        f'脚本执行异常\n{traceback.format_exc()}'
-                    )
+                    logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常')
                     with app.app_context():
                         try:
                             item = TestPlanExecutionItemsDao.select_by_execution_and_collection(
@@ -711,11 +695,7 @@ def start_testplan_by_report(
                                 record=False
                             )
                         except Exception:
-                            log.error(
-                                f'执行编号:[ {execution_no} ] '
-                                f'集合编号:[ {collection_no} ] '
-                                f'更新异常\n{traceback.format_exc()}'
-                            )
+                            logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 更新异常')
             task = executor.submit(start, app)  # 异步执行脚本
             task.result()  # 阻塞等待脚本执行完成
             # 更新项目运行状态
@@ -724,11 +704,11 @@ def start_testplan_by_report(
                 record=False
             )
             db.session.commit()  # 这里要实时更新
-            log.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
+            logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
     except TestplanInterruptError:
-        log.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
+        logger.info(f'执行编号:[ {execution_no} ] 用户中断迭代')
     except Exception:
-        log.error(f'执行编号:[ {execution_no} ] 运行异常\n{traceback.format_exc()}')
+        logger.exception(f'执行编号:[ {execution_no} ] 运行异常')
         TestPlanExecutionItemsDao.update_running_state_by_execution(execution_no, state=RunningState.ERROR.value)
 
 

@@ -11,15 +11,11 @@ from app.public.model import TWorkspaceRestriction
 from app.public.model import TWorkspaceRestrictionExemption
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.usercenter.model import TPermission
 from app.usercenter.model import TPermissionModule
 from app.usercenter.model import TPermissionObject
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 @http_service

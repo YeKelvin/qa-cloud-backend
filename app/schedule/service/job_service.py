@@ -10,12 +10,8 @@ from app.schedule.dao import schedule_job_dao as ScheduleJobDao
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
-
-
-log = get_logger(__name__)
 
 
 @http_service

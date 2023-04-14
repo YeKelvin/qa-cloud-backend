@@ -8,13 +8,9 @@ import datetime
 import jwt
 
 from app import config as CONFIG
-from app.tools.logger import get_logger
 from app.utils.jwt_util import jwt_decode
 from app.utils.jwt_util import jwt_encode
 from app.utils.time_util import timestamp_to_utc8_datetime
-
-
-log = get_logger(__name__)
 
 
 class JWTAuth:

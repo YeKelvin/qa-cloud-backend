@@ -3,7 +3,6 @@
 # @File    : snowflake_util
 # @Time    : 2020/6/17 13:55
 # @Author  : Kelvin.Ye
-import logging
 import time
 
 
@@ -46,7 +45,7 @@ TWEPOCH = 1288834974657
 
 class InvalidSystemClock(Exception):
     """时钟回拨异常"""
-    ...
+    pass
 
 
 class IdWorker:

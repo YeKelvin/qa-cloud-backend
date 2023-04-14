@@ -6,6 +6,8 @@
 from typing import Iterable
 from typing import List
 
+from loguru import logger
+
 from app.database import dbquery
 from app.public.dao import workspace_dao as WorkspaceDao
 from app.public.enum import WorkspaceScope
@@ -45,15 +47,11 @@ from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-log = get_logger(__name__)
 
 
 def get_root_no(element_no):
@@ -361,7 +359,7 @@ def query_elements_children(req):
     for element_no in req.elementNos:
         element = TestElementDao.select_by_no(element_no)
         if not element:
-            log.warning(f'elementNo:[ {element_no} ] 元素不存在')
+            logger.warning(f'elementNo:[ {element_no} ] 元素不存在')
             continue
         children = get_element_children(element_no, req.depth)
         result.append({
@@ -814,7 +812,7 @@ def move_element(req):
     target_children_relations = ElementChildrenDao.select_all_by_parent(req.targetParentNo)
     for index, target_relation in enumerate(target_children_relations):
         if target_relation.SORT_NO != index + 1:
-            log.error(
+            logger.error(
                 f'parentNo:[ {req.targetParentNo} ] '
                 f'elementNo:[ {target_relation.CHILD_NO} ] '
                 f'sortNo:[ {target_relation.SORT_NO} ]'
@@ -1159,7 +1157,7 @@ def modify_element_builtins(req):
         )
 
 
-def update_element_builtin(element_no, element_name,  element_remark, element_property=None, enabled: bool = None):
+def update_element_builtin(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
     # 查询内置元素
     builtin = TestElementDao.select_by_no(element_no)
     check_exists(builtin, error_msg='内置元素不存在')

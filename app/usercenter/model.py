@@ -30,6 +30,12 @@ class TGroup(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
 
 
+class TGroupRole(DBModel, BaseColumn):
+    __tablename__ = 'GROUP_ROLE'
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
+
+
 class TRole(DBModel, BaseColumn):
     """角色表"""
     __tablename__ = 'ROLE'
@@ -40,6 +46,13 @@ class TRole(DBModel, BaseColumn):
     ROLE_RANK = db.Column(db.Integer, nullable=False, default=1, comment='角色等级')
     ROLE_TYPE = db.Column(db.String(64), comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, DISABLE:禁用)')
+
+
+class TRolePermission(DBModel, BaseColumn):
+    """角色权限关联表"""
+    __tablename__ = 'ROLE_PERMISSION'
+    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
+    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
 
 
 class TPermission(DBModel, BaseColumn):
@@ -55,6 +68,24 @@ class TPermission(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
 
 
+class TPermissionModule(DBModel, BaseColumn):
+    """权限模块表"""
+    __tablename__ = 'PERMISSION_MODULE'
+    MODULE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模块编号')
+    MODULE_NAME = db.Column(db.String(128), nullable=False, comment='模块名称')
+    MODULE_DESC = db.Column(db.String(256), comment='模块描述')
+    MODULE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='模块代码')
+
+
+class TPermissionObject(DBModel, BaseColumn):
+    """权限对象表"""
+    __tablename__ = 'PERMISSION_OBJECT'
+    OBJECT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='对象编号')
+    OBJECT_NAME = db.Column(db.String(128), nullable=False, comment='对象名称')
+    OBJECT_DESC = db.Column(db.String(256), comment='对象描述')
+    OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')
+
+
 class TUserGroup(DBModel, BaseColumn):
     __tablename__ = 'USER_GROUP'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
@@ -66,19 +97,6 @@ class TUserRole(DBModel, BaseColumn):
     __tablename__ = 'USER_ROLE'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-
-
-class TGroupRole(DBModel, BaseColumn):
-    __tablename__ = 'GROUP_ROLE'
-    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
-    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-
-
-class TRolePermission(DBModel, BaseColumn):
-    """角色权限关联表"""
-    __tablename__ = 'ROLE_PERMISSION'
-    ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
-    PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
 
 
 class TUserLoginInfo(DBModel, BaseColumn):
@@ -108,7 +126,14 @@ class TUserPassword(DBModel, BaseColumn):
     LAST_ERROR_TIME = db.Column(db.DateTime, comment='最后一次密码校验错误时间')
     ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
     UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
-    CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOMER:客户设置, SYSTEM:系统生成)')
+    CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOM:客户设置, SYSTEM:系统生成)')
+
+
+class TUserSettings(DBModel, BaseColumn):
+    """用户设置表"""
+    __tablename__ = 'USER_SETTINGS'
+    USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
+    DATA = db.Column(JSONB, comment='用户设置')
 
 
 class TUserSecretKey(DBModel, BaseColumn):
@@ -117,28 +142,3 @@ class TUserSecretKey(DBModel, BaseColumn):
     __tablename__ = 'USER_SECRET_KEY'
     INDEX = db.Column(db.String(128), index=True, nullable=False, comment='索引编号')
     DATA = db.Column(db.Text, nullable=False, comment='密钥')
-
-
-class TPermissionModule(DBModel, BaseColumn):
-    """权限模块表"""
-    __tablename__ = 'PERMISSION_MODULE'
-    MODULE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模块编号')
-    MODULE_NAME = db.Column(db.String(128), nullable=False, comment='模块名称')
-    MODULE_DESC = db.Column(db.String(256), comment='模块描述')
-    MODULE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='模块代码')
-
-
-class TPermissionObject(DBModel, BaseColumn):
-    """权限对象表"""
-    __tablename__ = 'PERMISSION_OBJECT'
-    OBJECT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='对象编号')
-    OBJECT_NAME = db.Column(db.String(128), nullable=False, comment='对象名称')
-    OBJECT_DESC = db.Column(db.String(256), comment='对象描述')
-    OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')
-
-
-class TUserSettings(DBModel, BaseColumn):
-    """用户设置表"""
-    __tablename__ = 'USER_SETTINGS'
-    USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
-    DATA = db.Column(JSONB, comment='用户设置')

@@ -7,12 +7,8 @@ from app.script.controller import blueprint
 from app.script.service import execution_service as service
 from app.tools.decorators.require import require_login
 from app.tools.decorators.require import require_permission
-from app.tools.logger import get_logger
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-
-
-log = get_logger(__name__)
 
 
 @blueprint.post('/collection/execute')

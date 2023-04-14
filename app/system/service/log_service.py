@@ -6,13 +6,9 @@
 from app.database import dbquery
 from app.system.model import TSystemOperationLog
 from app.tools.decorators.service import http_service
-from app.tools.logger import get_logger
 from app.usercenter.model import TUser
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import STRFTIME_FORMAT
-
-
-log = get_logger(__name__)
 
 
 @http_service

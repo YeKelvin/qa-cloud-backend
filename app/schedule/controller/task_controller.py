@@ -9,12 +9,8 @@ from app.schedule.enum import TriggerType
 from app.schedule.service import task_service as service
 from app.tools.decorators.require import require_login
 from app.tools.decorators.require import require_permission
-from app.tools.logger import get_logger
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-
-
-log = get_logger(__name__)
 
 
 @blueprint.get('/task/list')

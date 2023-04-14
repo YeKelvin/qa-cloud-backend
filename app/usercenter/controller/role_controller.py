@@ -5,15 +5,11 @@
 # @Author  : Kelvin.Ye
 from app.tools.decorators.require import require_login
 from app.tools.decorators.require import require_permission
-from app.tools.logger import get_logger
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 from app.usercenter.controller import blueprint
 from app.usercenter.enum import RoleState
 from app.usercenter.service import role_service as service
-
-
-log = get_logger(__name__)
 
 
 @blueprint.get('/role/list')

@@ -7,12 +7,8 @@ from app.public.controller import blueprint
 from app.public.service import workspace_restriction_service as service
 from app.tools.decorators.require import require_login
 from app.tools.decorators.require import require_permission
-from app.tools.logger import get_logger
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-
-
-log = get_logger(__name__)
 
 
 @blueprint.get('/workspace/restriction')

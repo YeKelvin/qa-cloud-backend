@@ -3,22 +3,18 @@
 # @File    : transaction.py
 # @Time    : 2020/3/20 15:50
 # @Author  : Kelvin.Ye
-import inspect
 from functools import wraps
 
+from flask import g
 from flask import request
+from loguru import logger
 
 from app.extension import db
 from app.tools.exceptions import ServiceError
-from app.tools.logger import get_logger
-
-
-glog = get_logger(__name__)
 
 
 def transactional(func):
     """DB事务装饰器"""
-    log = getattr(inspect.getmodule(func), 'log', glog)
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -30,12 +26,12 @@ def transactional(func):
             db.session.commit()
             return result
         except ServiceError:
-            log.info(f'method:[ {request.method} ] path:[ {request.path} ] 回滚数据')
             db.session.rollback()
+            logger.bind(traceid=g.trace_id).info(f'uri:[ {request.method} {request.path} ] 数据回滚')
             raise  # 重新抛出异常给@http_service
         except Exception:
-            log.error(f'method:[ {request.method} ] path:[ {request.path} ] 回滚数据')
             db.session.rollback()
+            logger.bind(traceid=g.trace_id).exception(f'uri:[ {request.method} {request.path} ] 数据回滚')
             raise  # 重新抛出异常给@http_service
 
     return wrapper

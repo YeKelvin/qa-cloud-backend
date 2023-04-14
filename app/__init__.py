@@ -145,9 +145,9 @@ def register_blueprints(app: Flask):
 def register_hooks(app: Flask):
     from app import hook
 
-    app.before_request(hook.set_trace_id)
-    app.before_request(hook.set_user)
-    app.before_request(hook.add_operation_log)
+    app.before_request(hook.inject_traceid)
+    app.before_request(hook.inject_user)
+    app.before_request(hook.record_operation_log)
 
     if FLASK_ENV == 'development':
         app.after_request(hook.cross_domain_access)

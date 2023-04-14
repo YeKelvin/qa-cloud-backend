@@ -3,22 +3,18 @@
 # @File    : parser.py
 # @Time    : 2019/11/7 15:30
 # @Author  : Kelvin.Ye
-import traceback
 from enum import Enum
 from typing import List
 from typing import Tuple
 from typing import Type
 
 from flask import request
+from loguru import logger
 
 from app.tools.exceptions import ParseError
-from app.tools.logger import get_logger
 from app.tools.request import RequestDTO
 from app.tools.request import transform
 from app.utils.json_util import from_json
-
-
-log = get_logger(__name__)
 
 
 class Argument:
@@ -40,8 +36,8 @@ class Argument:
         self.default = default      # 参数默认值
         self.required = required    # 参数是否要求必传
         self.nullable = nullable    # 参数是否允许为null
-        self.min = min              # 参数允许的最小值或最小长度 TODO:
-        self.max = max              # 参数允许的最大值或最大长度 TODO:
+        self.min = min              # 参数允许的最小值或最小长度
+        self.max = max              # 参数允许的最大值或最大长度
         self.enum = enum            # 参数枚举校验
         self.help = help            # 参数不符合要求时的提示语
 
@@ -162,7 +158,7 @@ class JsonParser:
             dto.__error__ = err.message
         except Exception:
             dto.__error__ = '内部错误'
-            log.error(traceback.format_exc())
+            logger.exception()
         return dto
 
 
@@ -193,5 +189,5 @@ class ListParser:
             dto.__error__ = err.message
         except Exception:
             dto.__error__ = '内部错误'
-            log.error(traceback.format_exc())
+            logger.exception()
         return dto

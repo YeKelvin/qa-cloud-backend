@@ -3,20 +3,15 @@
 # @File    : pubilc_controller.py
 # @Time    : 2021/2/9 10:41
 # @Author  : Kelvin.Ye
-import traceback
-
 from flask import request
+from loguru import logger
 
 from app.extension import socketio
-from app.tools.logger import get_logger
-
-
-log = get_logger(__name__)
 
 
 @socketio.on('connect')
 def handle_connect():
-    log.info(
+    logger.info(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ]'
     )
@@ -24,7 +19,7 @@ def handle_connect():
 
 @socketio.on('connect_error')
 def handle_connect_error():
-    log.error(
+    logger.error(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ]'
     )
@@ -32,7 +27,7 @@ def handle_connect_error():
 
 @socketio.on('reconnect')
 def handle_reconnect():
-    log.info(
+    logger.info(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ]'
     )
@@ -40,7 +35,7 @@ def handle_reconnect():
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    log.info(
+    logger.info(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ]'
     )
@@ -48,10 +43,10 @@ def handle_disconnect():
 
 @socketio.on_error_default
 def handle_error_default(e):
-    log.error(
+    logger.exception(
         f'socket sid:[ {request.sid} ] event:[ {request.event["message"]} ] namespace:[ {request.namespace} ] '
         f'method:[{request.method}] path:[ {request.path} ] request:[ {request.values.to_dict()} ] '
-        f'\n{traceback.format_exc()}')
+    )
 
 
 # @socketio.on_error()

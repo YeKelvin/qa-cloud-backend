@@ -7,11 +7,6 @@ import orjson
 from jsonpath import jsonpath
 from orjson import JSONDecodeError
 
-from app.tools.logger import get_logger
-
-
-log = get_logger(__name__)
-
 
 def to_json(obj):
     """序列化"""

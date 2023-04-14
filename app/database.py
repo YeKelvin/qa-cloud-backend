@@ -13,12 +13,8 @@ from ulid import microsecond as ulid
 from app.extension import db
 from app.tools.locals import threadlocal
 from app.tools.localvars import get_userno_or_default
-from app.tools.logger import get_logger
 from app.utils.json_util import to_json
 from app.utils.time_util import datetime_now_by_utc8
-
-
-log = get_logger(__name__)
 
 
 MODEL = Type[db.Model]

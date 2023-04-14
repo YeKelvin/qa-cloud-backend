@@ -22,15 +22,11 @@ from app.script.model import TTestplanSettings
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_m_s
-
-
-log = get_logger(__name__)
 
 
 @http_service

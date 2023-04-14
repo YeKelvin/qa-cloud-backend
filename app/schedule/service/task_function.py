@@ -3,8 +3,7 @@
 # @File    : task_function.py
 # @Time    : 2022-05-15 11:57:06
 # @Author  : Kelvin.Ye
-import traceback
-
+from loguru import logger
 from pymeter.runner import Runner
 
 from app.extension import apscheduler
@@ -15,10 +14,6 @@ from app.script.service.element_component import add_variable_dataset
 from app.script.service.element_loader import loads_tree
 from app.script.service.execution_service import run_testplan
 from app.tools.exceptions import ServiceError
-from app.tools.logger import get_logger
-
-
-log = get_logger(__name__)
 
 
 def execute_testplan(planNo, datasetNos, useCurrentValue):  # noqa
@@ -43,7 +38,7 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
         try:
             Runner.start([script], throw_ex=True)
         except Exception:
-            log.error(traceback.format_exc())
+            logger.exception()
 
 
 def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
@@ -68,7 +63,7 @@ def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
         try:
             Runner.start([script], throw_ex=True)
         except Exception:
-            log.error(traceback.format_exc())
+            logger.exception()
 
 
 TASK_FUNC = {

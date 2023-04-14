@@ -5,6 +5,8 @@
 # @Author  : Kelvin.Ye
 from typing import Dict
 
+from loguru import logger
+
 from app.database import dbquery
 from app.script.dao import database_config_dao as DatabaseConfigDao
 from app.script.dao import element_children_dao as ElementChildrenDao
@@ -28,12 +30,8 @@ from app.script.model import TElementBuiltinChildren
 from app.script.service.element_component import add_database_engine
 from app.script.service.element_component import add_http_header_manager
 from app.tools.exceptions import ServiceError
-from app.tools.logger import get_logger
 from app.tools.validator import check_exists
 from app.utils.json_util import from_json
-
-
-log = get_logger(__name__)
 
 
 def loads_tree(
@@ -254,7 +252,6 @@ def add_builtin_children(element_no, children: list):
         .all()
     )
     for relation in relations:
-        log.error(f'{relation=}')
         if builtin := loads_element(relation.CHILD_NO):
             children.append(builtin)
 
@@ -441,7 +438,7 @@ def is_blank_python(element, properties):
 def is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
-        log.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
+        logger.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return True
 
     # 加载指定元素，如果当前元素非指定元素时返回空
