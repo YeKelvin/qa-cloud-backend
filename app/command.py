@@ -12,7 +12,6 @@ from app.public.model import TWorkspace  # noqa
 from app.public.model import TWorkspaceUser  # noqa
 from app.script.model import TVariableDataset  # noqa
 from app.tools.identity import new_id
-from loguru import logger
 from app.usercenter.model import TPermission  # noqa
 from app.usercenter.model import TPermissionModule  # noqa
 from app.usercenter.model import TPermissionObject  # noqa
@@ -24,6 +23,7 @@ from app.usercenter.model import TUserRole  # noqa
 from app.utils.security import encrypt_password
 
 
+from app.openplatform.model import *  # noqa isort:skip
 from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
 from app.public.model import *  # noqa isort:skip
@@ -308,6 +308,7 @@ def create_table(name):
     from sqlalchemy import create_engine
 
     from app import config as CONFIG
+    from app.openplatform import model as openplatform_model
     from app.public import model as public_model
     from app.schedule import model as schedule_model
     from app.script import model as script_model
@@ -316,7 +317,9 @@ def create_table(name):
 
     engine = create_engine(CONFIG.DB_URL)
 
-    if hasattr(public_model, name):
+    if hasattr(openplatform_model, name):
+        table = getattr(openplatform_model, name)
+    elif hasattr(public_model, name):
         table = getattr(public_model, name)
     elif hasattr(schedule_model, name):
         table = getattr(schedule_model, name)

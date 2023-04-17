@@ -3,7 +3,7 @@
 create table "USER"
 (
     "ID"           serial       primary key,
-    "USER_NO"      varchar(32)  not null    UNIQUE,
+    "USER_NO"      varchar(32)  not null   UNIQUE,
     "USER_NAME"    varchar(128) not null,
     "MOBILE_NO"    varchar(16),
     "EMAIL"        varchar(128),
@@ -33,6 +33,7 @@ comment on column "USER"."CREATED_BY" is '创建人';
 comment on column "USER"."CREATED_TIME" is '创建时间';
 comment on column "USER"."UPDATED_BY" is '更新人';
 comment on column "USER"."UPDATED_TIME" is '更新时间';
+create unique index "ix_USER_USER_NO" on "USER" ("USER_NO");
 
 
 -- 用户分组表
@@ -433,3 +434,42 @@ create index "ix_WORKSPACE_USER_WORKSPACE_NO" on "WORKSPACE_USER" ("WORKSPACE_NO
 
 
 ------------------------------⬆️ system ⬆️------------------------------
+
+
+
+------------------------------⬇️ openapi ⬇️------------------------------
+-- 第三方应用表
+create table "THIRD_PARTY_APPLICATION"
+(
+    "ID"           serial       primary key,
+    "APP_NO"       varchar(32)  not null,
+    "APP_NAME"     varchar(128) not null,
+    "APP_CODE"     varchar(64)  unique,
+    "APP_DESC"     varchar(256),
+    "APP_SECRET"   varchar(64)  not null,
+    "STATE"        varchar(16)  not null,
+    "VERSION"      integer      not null,
+    "DELETED"      integer      not null,
+    "REMARK"       varchar(64),
+    "CREATED_BY"   varchar(64),
+    "CREATED_TIME" timestamp,
+    "UPDATED_BY"   varchar(64),
+    "UPDATED_TIME" timestamp
+);
+comment on column "THIRD_PARTY_APPLICATION"."ID" is '主键';
+comment on column "THIRD_PARTY_APPLICATION"."APP_NO" is '应用编号';
+comment on column "THIRD_PARTY_APPLICATION"."APP_NAME" is '应用名称';
+comment on column "THIRD_PARTY_APPLICATION"."APP_CODE" is '应用代码';
+comment on column "THIRD_PARTY_APPLICATION"."APP_DESC" is '应用描述';
+comment on column "THIRD_PARTY_APPLICATION"."APP_SECRET" is '应用密钥';
+comment on column "THIRD_PARTY_APPLICATION"."STATE" is '应用状态(ENABLE:启用, DISABLE:禁用)';
+comment on column "THIRD_PARTY_APPLICATION"."VERSION" is '版本号';
+comment on column "THIRD_PARTY_APPLICATION"."DELETED" is '删除标识';
+comment on column "THIRD_PARTY_APPLICATION"."REMARK" is '备注';
+comment on column "THIRD_PARTY_APPLICATION"."CREATED_BY" is '创建人';
+comment on column "THIRD_PARTY_APPLICATION"."CREATED_TIME" is '创建时间';
+comment on column "THIRD_PARTY_APPLICATION"."UPDATED_BY" is '更新人';
+comment on column "THIRD_PARTY_APPLICATION"."UPDATED_TIME" is '更新时间';
+create unique index "ix_THIRD_PARTY_APPLICATION_APP_NO" on "THIRD_PARTY_APPLICATION" ("APP_NO");
+
+------------------------------⬆️ openapi ⬆️------------------------------

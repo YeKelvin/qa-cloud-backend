@@ -13,7 +13,10 @@ class TThirdPartyApplication(DBModel, BaseColumn):
     __tablename__ = 'THIRD_PARTY_APPLICATION'
     APP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='应用编号')
     APP_NAME = db.Column(db.String(128), nullable=False, comment='应用名称')
-    APP_SECRET = db.Column(db.String(32), comment='应用密钥')
+    APP_CODE = db.Column(db.String(64), unique=True, comment='应用代码')
+    APP_DESC = db.Column(db.String(256), comment='应用描述')
+    APP_SECRET = db.Column(db.String(64), nullable=False, comment='应用密钥')
+    STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='应用状态(ENABLE:启用, DISABLE:禁用)')
 
 
 class TOpenApiLog(DBModel, BaseColumn):

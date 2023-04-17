@@ -7,7 +7,7 @@ from app import config as CONFIG
 from app.utils.snowflake import IdWorker
 from app.utils.snowflake import get_datacenter_id
 from app.utils.snowflake import get_worker_id
-
+from ulid import microsecond as ulid
 
 __ID_WORKER__ = IdWorker(
     int(CONFIG.SNOWFLAKE_DATACENTER_ID) or get_datacenter_id(),
@@ -19,3 +19,7 @@ __ID_WORKER__ = IdWorker(
 def new_id():
     """生成编号"""
     return str(__ID_WORKER__.new_id())
+
+
+def new_ulid():
+    return ulid.new().str
