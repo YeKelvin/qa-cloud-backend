@@ -5,12 +5,14 @@
 # @Author  : Kelvin.Ye
 from app import config as CONFIG
 from app.utils.snowflake import IdWorker
+from app.utils.snowflake import get_datacenter_id
+from app.utils.snowflake import get_worker_id
 
 
 __ID_WORKER__ = IdWorker(
-    int(CONFIG.SNOWFLAKE_DATACENTER_ID),
-    int(CONFIG.SNOWFLAKE_WORKER_ID),
-    int(CONFIG.SNOWFLAKE_SEQUENCE)
+    int(CONFIG.SNOWFLAKE_DATACENTER_ID) or get_datacenter_id(),
+    int(CONFIG.SNOWFLAKE_WORKER_ID) or get_worker_id(),
+    int(CONFIG.SNOWFLAKE_SEQUENCE) or 1
 )
 
 

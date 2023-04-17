@@ -3,6 +3,7 @@
 # @File    : snowflake_util
 # @Time    : 2020/6/17 13:55
 # @Author  : Kelvin.Ye
+import socket
 import time
 
 
@@ -28,8 +29,8 @@ WORKER_ID_BITS = 5
 SEQUENCE_BITS = 12
 
 # 最大取值
-MAX_DATACENTER_ID = -1 ^ (-1 << DATACENTER_ID_BITS)
-MAX_WORKER_ID = -1 ^ (-1 << WORKER_ID_BITS)  # 2**5-1 0b11111
+MAX_DATACENTER_ID = -1 ^ (-1 << DATACENTER_ID_BITS)  # max 31
+MAX_WORKER_ID = -1 ^ (-1 << WORKER_ID_BITS)  # max 31
 
 # 移位偏移值
 DATACENTER_ID_SHIFT = SEQUENCE_BITS + WORKER_ID_BITS
@@ -98,6 +99,22 @@ class IdWorker:
         return timestamp
 
 
+def get_worker_id():
+    ip = socket.gethostbyname(socket.gethostname())
+    i = 0
+    for c in ip:
+        i = i + ord(c)
+    return i % 32
+
+
+def get_datacenter_id():
+    hostname = socket.gethostname()
+    i = 0
+    for c in hostname:
+        i = i + ord(c)
+    return i % 32
+
+
 if __name__ == '__main__':
-    worker = IdWorker(1, 2, 0)
+    worker = IdWorker(1, 1, 1)
     print(worker.new_id())
