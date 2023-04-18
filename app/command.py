@@ -23,7 +23,7 @@ from app.usercenter.model import TUserRole  # noqa
 from app.utils.security import encrypt_password
 
 
-from app.openplatform.model import *  # noqa isort:skip
+from app.opencenter.model import *  # noqa isort:skip
 from app.script.model import *  # noqa isort:skip
 from app.system.model import *  # noqa isort:skip
 from app.public.model import *  # noqa isort:skip
@@ -123,6 +123,7 @@ def init_permission_module():
     TPermissionModule.insert_without_record(MODULE_NO=new_id(), MODULE_NAME='公共', MODULE_CODE='PUBLIC')
     TPermissionModule.insert_without_record(MODULE_NO=new_id(), MODULE_NAME='脚本', MODULE_CODE='SCRIPT')
     TPermissionModule.insert_without_record(MODULE_NO=new_id(), MODULE_NAME='调度', MODULE_CODE='SCHEDULER')
+    TPermissionModule.insert_without_record(MODULE_NO=new_id(), MODULE_NAME='开放中心', MODULE_CODE='OPENCENTER')
 
 
 @with_appcontext
@@ -148,6 +149,8 @@ def init_permission_object():
     # SCHEDULE
     TPermissionObject.insert_without_record(OBJECT_NO=new_id(), OBJECT_NAME='定时任务', OBJECT_CODE='TASK')
     TPermissionObject.insert_without_record(OBJECT_NO=new_id(), OBJECT_NAME='定时作业', OBJECT_CODE='JOB')
+    # OPENCENTER
+    TPermissionObject.insert_without_record(OBJECT_NO=new_id(), OBJECT_NAME='第三方应用', OBJECT_CODE='THIRD_PARTY_APP')
 
 
 @with_appcontext
@@ -308,7 +311,7 @@ def create_table(name):
     from sqlalchemy import create_engine
 
     from app import config as CONFIG
-    from app.openplatform import model as openplatform_model
+    from app.opencenter import model as opencenter_model
     from app.public import model as public_model
     from app.schedule import model as schedule_model
     from app.script import model as script_model
@@ -317,8 +320,8 @@ def create_table(name):
 
     engine = create_engine(CONFIG.DB_URL)
 
-    if hasattr(openplatform_model, name):
-        table = getattr(openplatform_model, name)
+    if hasattr(opencenter_model, name):
+        table = getattr(opencenter_model, name)
     elif hasattr(public_model, name):
         table = getattr(public_model, name)
     elif hasattr(schedule_model, name):

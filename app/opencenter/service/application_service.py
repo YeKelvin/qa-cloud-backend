@@ -3,9 +3,9 @@
 # @File    : tpa_service.py
 # @Time    : 2023-04-17 17:15:40
 # @Author  : Kelvin.Ye
-from app.openplatform.dao import third_party_application_dao
-from app.openplatform.enum import APPState
-from app.openplatform.model import TThirdPartyApplication
+from app.opencenter.dao import third_party_application_dao
+from app.opencenter.enum import APPState
+from app.opencenter.model import TThirdPartyApplication
 from app.tools.decorators.service import http_service
 from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
@@ -114,6 +114,19 @@ def modify_tpa_state(req):
 
     # 更新应用状态
     tpa.update(STATE=req.state)
+
+
+@http_service
+@transactional
+def reset_tpa_secret(req):
+    # 查询应用
+    tpa = third_party_application_dao.select_by_no(req.appNo)
+    check_exists(tpa, error_msg='应用不存在')
+
+    # 重置应用密钥
+    tpa.update(
+        APP_SECRET=new_ulid()
+    )
 
 
 @http_service
