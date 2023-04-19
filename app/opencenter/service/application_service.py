@@ -15,7 +15,7 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 @http_service
-def query_tpa_list(req):
+def query_application_list(req):
     # 查询应用列表
     conds = QueryCondition()
     conds.like(TThirdPartyApplication.APP_NO, req.appNo)
@@ -37,6 +37,7 @@ def query_tpa_list(req):
             'appName': tpa.APP_NAME,
             'appCode': tpa.APP_CODE,
             'appDesc': tpa.APP_DESC,
+            'appSecret': tpa.APP_SECRET,
             'state': tpa.STATE
         }
         for tpa in pagination.items
@@ -46,7 +47,7 @@ def query_tpa_list(req):
 
 
 @http_service
-def query_tpa_info(req):
+def query_application_info(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
     check_exists(tpa, error_msg='应用不存在')
@@ -62,7 +63,7 @@ def query_tpa_info(req):
 
 @http_service
 @transactional
-def create_tpa(req):
+def create_application(req):
     # 唯一性校验
     if third_party_application_dao.select_by_name(req.appName):
         raise ServiceError('应用名称已存在')
@@ -71,7 +72,7 @@ def create_tpa(req):
 
     # 创建应用
     app_no = new_id()
-    third_party_application_dao.insert(
+    TThirdPartyApplication.insert(
         APP_NO=app_no,
         APP_NAME=req.appName,
         APP_CODE=req.appCode,
@@ -85,7 +86,7 @@ def create_tpa(req):
 
 @http_service
 @transactional
-def modify_tpa(req):
+def modify_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
     check_exists(tpa, error_msg='应用不存在')
@@ -106,7 +107,7 @@ def modify_tpa(req):
 
 @http_service
 @transactional
-def modify_tpa_state(req):
+def modify_application_state(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
     check_exists(tpa, error_msg='应用不存在')
@@ -117,7 +118,7 @@ def modify_tpa_state(req):
 
 @http_service
 @transactional
-def reset_tpa_secret(req):
+def reset_application_secret(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
     check_exists(tpa, error_msg='应用不存在')
@@ -130,7 +131,7 @@ def reset_tpa_secret(req):
 
 @http_service
 @transactional
-def remove_tpa(req):
+def remove_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
     check_exists(tpa, error_msg='应用不存在')

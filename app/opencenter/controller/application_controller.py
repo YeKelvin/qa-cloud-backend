@@ -11,10 +11,10 @@ from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 
 
-@blueprint.get('/tpa/list')
+@blueprint.get('/application/list')
 @require_login
 @require_permission('QUERY_THIRD_PARTY_APP')
-def query_tpa_list():
+def query_application_list():
     """分页查询应用列表"""
     req = JsonParser(
         Argument('appNo'),
@@ -25,37 +25,37 @@ def query_tpa_list():
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
-    return service.query_tpa_list(req)
+    return service.query_application_list(req)
 
 
-@blueprint.get('/tpa/info')
+@blueprint.get('/application/info')
 @require_login
 @require_permission('QUERY_THIRD_PARTY_APP')
-def query_tpa_info():
+def query_application_info():
     """查询应用信息"""
     req = JsonParser(
         Argument('appNo', required=True, nullable=False, help='应用编号不能为空')
     ).parse()
-    return service.query_tpa_info(req)
+    return service.query_application_info(req)
 
 
-@blueprint.post('/tpa')
+@blueprint.post('/application')
 @require_login
 @require_permission('CREATE_THIRD_PARTY_APP')
-def create_tpa():
+def create_application():
     """新增第三方应用"""
     req = JsonParser(
         Argument('appName', required=True, nullable=False, help='应用名称不能为空'),
         Argument('appCode'),
         Argument('appDesc')
     ).parse()
-    return service.create_tpa(req)
+    return service.create_application(req)
 
 
-@blueprint.put('/tpa')
+@blueprint.put('/application')
 @require_login
 @require_permission('MODIFY_THIRD_PARTY_APP')
-def modify_tpa():
+def modify_application():
     """更新应用信息"""
     req = JsonParser(
         Argument('appNo', required=True, nullable=False, help='应用编号不能为空'),
@@ -63,38 +63,38 @@ def modify_tpa():
         Argument('appCode'),
         Argument('appDesc')
     ).parse()
-    return service.modify_tpa(req)
+    return service.modify_application(req)
 
 
-@blueprint.put('/tpa/state')
+@blueprint.put('/application/state')
 @require_login
 @require_permission('MODIFY_THIRD_PARTY_APP')
-def modify_tpa_state():
+def modify_application_state():
     """更新应用状态"""
     req = JsonParser(
         Argument('appNo', required=True, nullable=False, help='应用编号不能为空'),
         Argument('state', required=True, nullable=False, enum=APPState, help='应用状态不能为空')
     ).parse()
-    return service.modify_tpa_state(req)
+    return service.modify_application_state(req)
 
 
-@blueprint.post('/tpa/secret/reset')
+@blueprint.post('/application/secret/reset')
 @require_login
 @require_permission('RESET_THIRD_PARTY_APP_SECRET')
-def reset_tpa_secret():
+def reset_application_secret():
     """重置应用密钥"""
     req = JsonParser(
         Argument('appNo', required=True, nullable=False, help='应用编号不能为空')
     ).parse()
-    return service.reset_tpa_secret(req)
+    return service.reset_application_secret(req)
 
 
-@blueprint.delete('/tpa')
+@blueprint.delete('/application')
 @require_login
 @require_permission('REMOVE_THIRD_PARTY_APP')
-def remove_tpa():
+def remove_application():
     """删除应用"""
     req = JsonParser(
         Argument('appNo', required=True, nullable=False, help='应用编号不能为空')
     ).parse()
-    return service.remove_tpa(req)
+    return service.remove_application(req)

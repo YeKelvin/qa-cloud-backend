@@ -12,6 +12,7 @@ from app.extension import db
 from app.tools.exceptions import ServiceError
 
 
+# TODO: 干掉
 def transactional(func):
     """DB事务装饰器"""
 
@@ -30,7 +31,7 @@ def transactional(func):
             raise  # 重新抛出异常给@http_service
         except Exception:
             db.session.rollback()
-            logger.bind(traceid=g.trace_id).exception(f'uri:[ {request.method} {request.path} ] 数据回滚')
+            logger.bind(traceid=g.trace_id).error(f'uri:[ {request.method} {request.path} ] 数据回滚')
             raise  # 重新抛出异常给@http_service
 
     return wrapper

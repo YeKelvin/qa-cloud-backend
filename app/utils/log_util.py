@@ -39,24 +39,28 @@ class InterceptHandler(logging.Handler):
 def console_formatter(record):
     name = str(record['name'])
     if 'werkzeug' in name:
-        return '{message}\n'
+        return '{message}\n{exception}'
     elif 'sqlalchemy' in name or 'apscheduler' in name:
-        return '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] {message}</level>\n'
+        return '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] {message}</level>\n{exception}'
     else:
         traceid = '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
         return (
             '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] [{module}:{function}:{line}] ' +
             traceid +
-            '{message}</level>\n'
+            '{message}</level>\n{exception}'
         )
 
 
 def file_formatter(record):
     name = str(record['name'])
     if 'werkzeug' in name:
-        return '{message}\n'
+        return '{message}\n{exception}'
     elif 'sqlalchemy' in name or 'apscheduler' in name:
-        return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] {message}\n'
+        return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] {message}\n{exception}'
     else:
         traceid = '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
-        return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}:{function}:{line}] ' + traceid + '{message}\n'
+        return (
+            '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}:{function}:{line}] ' +
+            traceid +
+            '{message}\n{exception}'
+        )

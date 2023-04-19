@@ -6,7 +6,7 @@
 from flask import Blueprint
 
 
-restapi = Blueprint('restapi', __name__, url_prefix='/rest/api')
+restapi = Blueprint('restapi', __name__)
 
 # noqa
 
