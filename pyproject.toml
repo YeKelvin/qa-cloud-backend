@@ -36,43 +36,57 @@ python-dotenv = "1.0.0"
 environs = "9.5.0"
 # HTTP
 requests="*"
-# Coroutine
-gevent = "*"
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-html = "*"
-flake8 = "*"
+ruff = "*"
 yapf = "*"
-isort = "*"
+black = "*"
+types-orjson = "*"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.isort]
-profile = "pycharm"
-line_length = 120
-force_single_line = true
-multi_line_output = 3
-skip_glob = ["migrations/*"]
+[tool.ruff]
+line-length = 120
+src = ["app"]
+select = [
+    "F",    # pyflakes
+    "UP",   # pyupgrade
+    "E",    # pycodestyle-error
+    "W",    # pycodestyle-warning
+    "D",    # pydocstyle
+    "I",    # isort
+]
+ignore = [
+    "D103"
+]
+exclude = [
+    "__pycache__/",
+    ".cache/",
+    ".git/",
+    "*.log"
+]
 
-#[tool.yapf]
-#BASED_ON_STYLE = "google"
-#ARITHMETIC_PRECEDENCE_INDICATION = true
-#BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = true
-#BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
-#COLUMN_LIMIT = 120
-#COALESCE_BRACKETS = true
-#DEDENT_CLOSING_BRACKETS = true
-#INDENT_WIDTH = 4
-#JOIN_MULTIPLE_LINES = true
-#SPACES_BEFORE_COMMENT = 2
-#SPLIT_BEFORE_DOT = true
+[tool.ruff.pydocstyle]
+convention = "google"
 
-#[tool.yapfignore]
-#ignore_patterns = [
-#  "temp/**/*.py"
-#]
+[tool.ruff.isort]
+known-local-folder = ["app"]
+force-single-line = true
+
+[tool.yapf]
+column_limit = 120
+indent_width = 4
+arithmetic_precedence_indication = true
+blank_line_before_nested_class_or_def = true
+blank_lines_between_top_level_imports_and_variables = 2
+coalesce_brackets = true
+dedent_closing_brackets = true
+join_multiple_lines = true
+spaces_before_comment = 2
+split_before_dot = true

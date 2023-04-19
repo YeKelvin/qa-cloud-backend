@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @File    : application_controller.py
 # @Time    : 2023-04-17 17:14:51
 # @Author  : Kelvin.Ye
