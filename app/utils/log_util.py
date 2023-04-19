@@ -10,6 +10,7 @@ from loguru import logger
 
 class InterceptHandler(logging.Handler):
     """logging转loguru的handler"""
+
     def emit(self, record):
         # Get corresponding Loguru level if it exists.
         try:
@@ -24,7 +25,10 @@ class InterceptHandler(logging.Handler):
             depth += 1
 
         # 过滤
-        if ('werkzeug' in record.name or 'sqlalchemy' in record.name or 'apscheduler' in record.name) and record.levelno < logging.INFO:
+        if (
+            ('werkzeug' in record.name or 'sqlalchemy' in record.name or 'apscheduler' in record.name) and
+            record.levelno < logging.INFO
+        ):
             return
         if ('httpx' in record.name or 'httpcore' in record.name) and record.levelno < logging.WARNING:
             return
@@ -40,7 +44,11 @@ def console_formatter(record):
         return '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] {message}</level>\n'
     else:
         traceid = '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
-        return '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] [{module}:{function}:{line}] ' + traceid + '{message}</level>\n'
+        return (
+            '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] [{module}:{function}:{line}] ' +
+            traceid +
+            '{message}</level>\n'
+        )
 
 
 def file_formatter(record):
