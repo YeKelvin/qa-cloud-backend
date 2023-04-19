@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : role_controller.py
 # @Time    : 2020/3/17 15:36
 # @Author  : Kelvin.Ye

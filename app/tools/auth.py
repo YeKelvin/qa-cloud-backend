@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : auth.py
 # @Time    : 2019/11/8 15:07
 # @Author  : Kelvin.Ye

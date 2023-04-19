@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : security
 # @Time    : 2020/6/30 15:01
 # @Author  : Kelvin.Ye

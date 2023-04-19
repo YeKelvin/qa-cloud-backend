@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : log_util.py
 # @Time    : 2023-04-14 15:43:04
 # @Author  : Kelvin.Ye

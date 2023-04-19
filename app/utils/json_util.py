@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : json_util.py
 # @Time    : 2019/11/7 10:04
 # @Author  : Kelvin.Ye

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : enums.py
 # @Time    : 2020/10/30 14:49
 # @Author  : Kelvin.Ye

@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : testplan_execution_dao.py
 # @Time    : 2021-09-09 19:58:39
 # @Author  : Kelvin.Ye
-from app.database import setter
-from app.database import where_by
 from typing import List
 
+from app.database import setter
+from app.database import where_by
 from app.script.enum import RunningState
 from app.script.model import TTestplanExecution
 

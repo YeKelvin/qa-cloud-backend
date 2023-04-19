@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : exceptions.py
 # @Time    : 2019/11/7 11:55
 # @Author  : Kelvin.Ye

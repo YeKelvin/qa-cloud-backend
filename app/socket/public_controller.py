@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : pubilc_controller.py
 # @Time    : 2021/2/9 10:41
 # @Author  : Kelvin.Ye

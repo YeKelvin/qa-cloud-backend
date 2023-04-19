@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : workspace_dao.py
 # @Time    : 2021/6/5 23:28
 # @Author  : Kelvin.Ye

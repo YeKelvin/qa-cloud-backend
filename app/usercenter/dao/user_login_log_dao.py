@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_login_log_dao.py
 # @Time    : 2021/6/3 14:17
 # @Author  : Kelvin.Ye
 from typing import List
+
 from app.usercenter.model import TUserLoginLog
 
 

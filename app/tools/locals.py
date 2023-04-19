@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : locals.py
 # @Time    : 2022/7/18 14:00
 # @Author  : Kelvin.Ye

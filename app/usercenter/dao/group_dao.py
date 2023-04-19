@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : group_dao.py
 # @Time    : 2021-09-23 23:48:02
 # @Author  : Kelvin.Ye

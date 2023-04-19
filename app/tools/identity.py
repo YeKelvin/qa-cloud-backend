@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : identity.py
 # @Time    : 2020/3/20 14:03
 # @Author  : Kelvin.Ye
+from ulid import microsecond as ulid
+
 from app import config as CONFIG
 from app.utils.snowflake import IdWorker
 from app.utils.snowflake import get_datacenter_id
 from app.utils.snowflake import get_worker_id
-from ulid import microsecond as ulid
+
 
 __ID_WORKER__ = IdWorker(
     int(CONFIG.SNOWFLAKE_DATACENTER_ID) or get_datacenter_id(),

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : test_element_dao.py
 # @Time    : 2021/6/6 11:26
 # @Author  : Kelvin.Ye

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : database_config_dao.py
 # @Time    : 2022-04-04 17:32:16
 # @Author  : Kelvin.Ye

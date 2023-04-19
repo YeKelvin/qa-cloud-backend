@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : jwt_util.py
 # @Time    : 2022/11/7 11:37
 # @Author  : Kelvin.Ye

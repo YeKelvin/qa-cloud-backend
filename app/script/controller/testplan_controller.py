@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : testplan_controller.py
 # @Time    : 2020/3/17 14:31
 # @Author  : Kelvin.Ye

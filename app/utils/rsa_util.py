@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : rsa_util
 # @Time    : 2020/6/1 11:57
 # @Author  : Kelvin.Ye

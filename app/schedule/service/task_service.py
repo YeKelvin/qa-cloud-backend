@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : task_service.py
 # @Time    : 2022/5/13 14:50
 # @Author  : Kelvin.Ye
@@ -10,11 +9,13 @@ from loguru import logger
 from app.database import dbquery
 from app.extension import apscheduler
 from app.schedule.dao import schedule_job_dao as ScheduleJobDao
+
 # from app.schedule.enum import ChangeType
 from app.schedule.enum import JobState
 from app.schedule.enum import JobType
 from app.schedule.enum import OperationType
 from app.schedule.enum import TriggerType
+
 # from app.schedule.model import TScheduleJobChangeDetails
 from app.schedule.model import TScheduleJob
 from app.schedule.model import TScheduleJobLog

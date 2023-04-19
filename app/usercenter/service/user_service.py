@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
@@ -26,8 +25,8 @@ from app.usercenter.dao import user_group_dao as UserGroupDao
 from app.usercenter.dao import user_login_info_dao as UserLoginInfoDao
 from app.usercenter.dao import user_login_log_dao as UserLoginLogDao
 from app.usercenter.dao import user_password_dao as UserPasswordDao
-from app.usercenter.dao import user_secret_key_dao as UserSecretKeyDao
 from app.usercenter.dao import user_role_dao as UserRoleDao
+from app.usercenter.dao import user_secret_key_dao as UserSecretKeyDao
 from app.usercenter.dao import user_settings_dao as UserSettingsDao
 from app.usercenter.enum import UserState
 from app.usercenter.model import TGroup

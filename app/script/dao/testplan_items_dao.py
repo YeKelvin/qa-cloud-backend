@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : testplan_items_dao.py
 # @Time    : 2021-09-09 19:59:21
 # @Author  : Kelvin.Ye

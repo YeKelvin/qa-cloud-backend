@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : snowflake_util
 # @Time    : 2020/6/17 13:55
 # @Author  : Kelvin.Ye

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : tag_service.py
 # @Time    : 2021-08-17 11:01:35
 # @Author  : Kelvin.Ye

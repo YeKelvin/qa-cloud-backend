@@ -63,7 +63,9 @@ select = [
     "I",    # isort
 ]
 ignore = [
-    "D103"
+    "D100",
+    "D103",
+    "D104"
 ]
 exclude = [
     "__pycache__/",
@@ -78,6 +80,7 @@ convention = "google"
 [tool.ruff.isort]
 known-local-folder = ["app"]
 force-single-line = true
+lines-after-imports = 2
 
 [tool.yapf]
 column_limit = 120

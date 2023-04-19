@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : transaction.py
 # @Time    : 2020/3/20 15:50
 # @Author  : Kelvin.Ye

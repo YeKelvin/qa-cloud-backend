@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : workspace_restriction_dao.py
 # @Time    : 2022/4/22 15:50
 # @Author  : Kelvin.Ye

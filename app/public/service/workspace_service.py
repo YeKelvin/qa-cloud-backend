@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye

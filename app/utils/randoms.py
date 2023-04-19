@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : randoms.py
 # @Time    : 2019/11/18 11:19
 # @Author  : Kelvin.Ye

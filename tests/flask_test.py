@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : flask_test.py
 # @Time    : 2019/11/13 17:59
 # @Author  : Kelvin.Ye

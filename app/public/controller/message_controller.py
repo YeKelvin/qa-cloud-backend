@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : message_controller.py
 # @Time    : 2022-05-07 22:32:14
 # @Author  : Kelvin.Ye

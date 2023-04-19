@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : require.py
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye

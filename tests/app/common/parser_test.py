@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : test_parser.py
 # @Time    : 2019/11/14 15:22
 # @Author  : Kelvin.Ye
-from app.tools.parser import JsonParser, Argument
+from app.tools.parser import Argument
+from app.tools.parser import JsonParser
 
 
 def test_argument():

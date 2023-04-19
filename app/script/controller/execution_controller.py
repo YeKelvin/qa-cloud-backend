@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : execution_controller.py
 # @Time    : 2020/3/20 15:00
 # @Author  : Kelvin.Ye

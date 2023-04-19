@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_password_dao.py
 # @Time    : 2021/6/2 18:05
 # @Author  : Kelvin.Ye
 from typing import List
+
 from app.usercenter.model import TUserPassword
 
 

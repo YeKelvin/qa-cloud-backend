@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : element_builtin_children_dao.py
 # @Time    : 2021-09-06 12:47:41
 # @Author  : Kelvin.Ye

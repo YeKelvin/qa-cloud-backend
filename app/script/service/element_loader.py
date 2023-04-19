@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye

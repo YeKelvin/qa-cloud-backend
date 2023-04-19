@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_password_key_dao.py
 # @Time    : 2021/6/2 18:07
 # @Author  : Kelvin.Ye

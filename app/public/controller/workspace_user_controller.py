@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : workspace_user_controller.py
 # @Time    : 2021-09-24 22:47:22
 # @Author  : Kelvin.Ye

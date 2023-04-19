@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : request.py
 # @Time    : 2019/11/13 16:26
 # @Author  : Kelvin.Ye

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : model.py
 # @Time    : 2023-04-11 18:18:01
 # @Author  : Kelvin.Ye

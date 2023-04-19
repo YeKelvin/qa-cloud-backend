@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_role_service.py
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye

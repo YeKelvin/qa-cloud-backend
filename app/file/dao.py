@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : dao.py
 # @Time    : 2021/6/2 13:33
 # @Author  : Kelvin.Ye

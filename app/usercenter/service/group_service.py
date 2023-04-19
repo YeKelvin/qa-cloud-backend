@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : group_service.py
 # @Time    : 2022/4/25 9:37
 # @Author  : Kelvin.Ye

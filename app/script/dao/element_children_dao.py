@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : element_children_dao.py
 # @Time    : 2021/6/5 11:28
 # @Author  : Kelvin.Ye

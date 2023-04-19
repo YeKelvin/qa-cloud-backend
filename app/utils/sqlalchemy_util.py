@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : sqlalchemy_util.py
 # @Time    : 2020/1/6 17:07
 # @Author  : Kelvin.Ye

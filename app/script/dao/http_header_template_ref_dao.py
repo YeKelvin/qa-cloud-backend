@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : http_header_template_ref_dao.py
 # @Time    : 2021-08-21 23:00:19
 # @Author  : Kelvin.Ye

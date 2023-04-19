@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : service.py
 # @Time    : 2020/1/14 10:49
 # @Author  : Kelvin.Ye
 from functools import wraps
 
-from flask import request
 from flask import g
+from flask import request
 from loguru import logger
 
 from app.tools.exceptions import ErrorCode

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : element_options_dao.py
 # @Time    : 2022/10/18 18:17
 # @Author  : Kelvin.Ye

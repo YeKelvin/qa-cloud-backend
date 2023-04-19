@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : validator.py
 # @Time    : 2019/11/21 15:04
 # @Author  : Kelvin.Ye

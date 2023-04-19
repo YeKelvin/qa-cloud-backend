@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : tpa_service.py
 # @Time    : 2023-04-17 17:15:40
 # @Author  : Kelvin.Ye

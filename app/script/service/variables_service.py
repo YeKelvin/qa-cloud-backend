@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : variables_service.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye

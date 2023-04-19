@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : event.py
 # @Time    : 2022-05-15 23:34:10
 # @Author  : Kelvin.Ye

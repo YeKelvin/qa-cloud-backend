@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : test_group_result_dao.py
 # @Time    : 2021-09-17 11:23:15
 # @Author  : Kelvin.Ye

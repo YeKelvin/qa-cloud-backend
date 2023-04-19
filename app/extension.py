@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : extension.py
 # @Time    : 2019/11/7 10:56
 # @Author  : Kelvin.Ye

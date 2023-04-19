@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : workspace_restriction_service.py
 # @Time    : 2022/4/22 16:11
 # @Author  : Kelvin.Ye

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : user_role_dao.py
 # @Time    : 2021/6/3 13:01
 # @Author  : Kelvin.Ye

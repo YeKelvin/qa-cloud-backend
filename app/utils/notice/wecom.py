@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : wecom.py
 # @Time    : 2022-05-08 15:13:18
 # @Author  : Kelvin.Ye

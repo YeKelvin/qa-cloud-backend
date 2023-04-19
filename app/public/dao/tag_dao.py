@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : tag_dao.py
 # @Time    : 2021-08-17 11:02:04
 # @Author  : Kelvin.Ye

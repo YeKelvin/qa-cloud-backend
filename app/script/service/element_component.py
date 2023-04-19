@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : element_component.py
 # @Time    : 2022/9/9 21:50
 # @Author  : Kelvin.Ye

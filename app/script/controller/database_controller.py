@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : database_controller.py
 # @Time    : 2022-04-04 16:21:55
 # @Author  : Kelvin.Ye

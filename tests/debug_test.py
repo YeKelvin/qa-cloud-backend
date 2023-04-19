@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : debug_test.py
 # @Time    : 2019/11/14 14:49
 # @Author  : Kelvin.Ye

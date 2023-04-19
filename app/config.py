@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : config.py
 # @Time    : 2021-11-03 22:45:55
 # @Author  : Kelvin.Ye

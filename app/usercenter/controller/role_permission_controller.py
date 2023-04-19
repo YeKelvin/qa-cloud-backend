@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : role_permission_controller.py
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye

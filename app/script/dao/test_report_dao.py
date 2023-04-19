@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : test_report_dao.py
 # @Time    : 2021-09-09 19:57:39
 # @Author  : Kelvin.Ye

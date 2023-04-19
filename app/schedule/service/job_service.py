@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : job_service.py
 # @Time    : 2022/5/20 11:17
 # @Author  : Kelvin.Ye

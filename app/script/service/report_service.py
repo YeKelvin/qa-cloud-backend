@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/ python3
 # @File    : report_service.py
 # @Time    : 2021/9/22 14:21
 # @Author  : Kelvin.Ye
