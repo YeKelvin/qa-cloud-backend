@@ -40,12 +40,11 @@ from app.modules.script.service.element_component import add_flask_db_result_sto
 from app.modules.script.service.element_component import add_flask_sio_result_collector
 from app.modules.script.service.element_component import add_variable_dataset
 from app.modules.usercenter.dao import user_dao as UserDao
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
 from app.tools.identity import new_id
 from app.tools.localvars import get_user_no
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.notice import wecom as WeComTool
@@ -292,7 +291,6 @@ def execute_snippets(req):
 
 
 @http_service
-@transactional
 def execute_testplan(req):
     return run_testplan(req.planNo, req.datasetNos, req.useCurrentValue)
 
@@ -730,7 +728,6 @@ def start_testplan_by_error_report(
 
 
 @http_service
-@transactional
 def interrupt_testplan(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)

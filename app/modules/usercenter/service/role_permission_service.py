@@ -9,8 +9,7 @@ from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TPermissionModule
 from app.modules.usercenter.model import TPermissionObject
 from app.modules.usercenter.model import TRolePermission
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -45,7 +44,6 @@ def query_role_permissions(req):
 
 
 @http_service
-@transactional
 def set_role_permissions(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)

@@ -4,9 +4,8 @@
 # @Author  : Kelvin.Ye
 from app.modules.public.dao import tag_dao as TagDao
 from app.modules.public.model import TTag
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.utils.sqlalchemy_util import QueryCondition
@@ -51,7 +50,6 @@ def query_tag_all():
 
 
 @http_service
-@transactional
 def create_tag(req):
     tag = TagDao.select_by_name(req.tagName)
     check_not_exists(tag, error_msg='标签已存在')
@@ -64,7 +62,6 @@ def create_tag(req):
 
 
 @http_service
-@transactional
 def modify_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
     check_exists(tag, error_msg='标签不存在')
@@ -76,7 +73,6 @@ def modify_tag(req):
 
 
 @http_service
-@transactional
 def remove_tag(req):
     tag = TagDao.select_by_no(req.tagNo)
     check_exists(tag, error_msg='标签不存在')

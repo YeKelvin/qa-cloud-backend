@@ -6,7 +6,7 @@ from app.database import dbquery
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
-from app.tools.decorators.service import http_service
+from app.tools.service import http_service
 from app.utils.sqlalchemy_util import QueryCondition
 
 

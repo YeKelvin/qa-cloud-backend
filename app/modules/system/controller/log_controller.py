@@ -4,8 +4,8 @@
 # @Author  : Kelvin.Ye
 from app.modules.system.controller import blueprint
 from app.modules.system.service import log_service as service
-from app.tools.decorators.require import require_login
-from app.tools.decorators.require import require_permission
+from app.tools.require import require_login
+from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 

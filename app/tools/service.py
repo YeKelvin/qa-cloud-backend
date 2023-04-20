@@ -46,11 +46,24 @@ def http_service(func):
                     # 调用service
                     result = func(*args, **kwargs)
                     res = ResponseDTO(result)
+                    # 提交db事务
+                    if transaction:
+                        db.session.commit()
             except ServiceError as err:
                 # 捕获service层的业务异常
+                # 数据库回滚
+                if transaction:
+                    wlogger.info(f'uri:[ {uri} ] 数据回滚')
+                    db.session.rollback()
+                # 创建失败响应
                 res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
             except Exception:
+                # 数据库回滚
+                if transaction:
+                    wlogger.error(f'uri:[ {uri} ] 数据回滚')
+                    db.session.rollback()
                 wlogger.exception(f'uri:[ {uri} ]')
+                # 创建失败响应
                 res = ResponseDTO(error=ErrorCode.E500000)
             finally:
                 # 记录接口耗时（毫秒）
@@ -101,14 +114,14 @@ def open_service(func):
                 # 捕获service层的业务异常
                 # 数据库回滚
                 if transaction:
-                    wlogger.info(f'uri:[ {request.method} {request.path} ] 数据回滚')
+                    wlogger.info(f'uri:[ {uri} ] 数据回滚')
                     db.session.rollback()
                 # 创建失败响应
                 res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
             except Exception:
                 # 数据库回滚
                 if transaction:
-                    wlogger.error(f'uri:[ {request.method} {request.path} ] 数据回滚')
+                    wlogger.error(f'uri:[ {uri} ] 数据回滚')
                     db.session.rollback()
                 wlogger.exception(f'uri:[ {uri} ]')
                 # 创建失败响应

@@ -5,10 +5,9 @@
 from app.modules.public.dao import notification_robot_dao as NotificationRobotDao
 from app.modules.public.enum import RobotState
 from app.modules.public.model import TNotificationRobot
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.utils.sqlalchemy_util import QueryCondition
@@ -84,7 +83,6 @@ def query_notice_robot(req):
 
 
 @http_service
-@transactional
 def create_notice_robot(req):
     # 空间编号不能为空
     if not req.workspaceNo:
@@ -114,7 +112,6 @@ def create_notice_robot(req):
 
 
 @http_service
-@transactional
 def modify_notice_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
@@ -137,7 +134,6 @@ def modify_notice_robot(req):
 
 
 @http_service
-@transactional
 def modify_notice_robot_state(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)
@@ -148,7 +144,6 @@ def modify_notice_robot_state(req):
 
 
 @http_service
-@transactional
 def remove_notice_robot(req):
     # 查询机器人
     robot = NotificationRobotDao.select_by_no(req.robotNo)

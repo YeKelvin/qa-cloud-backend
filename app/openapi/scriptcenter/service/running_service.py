@@ -3,7 +3,7 @@
 # @Time    : 2023-04-20 14:34:59
 # @Author  : Kelvin.Ye
 from app.modules.script.service.execution_service import run_testplan
-from app.tools.decorators.service import open_service
+from app.tools.service import open_service
 
 
 @open_service

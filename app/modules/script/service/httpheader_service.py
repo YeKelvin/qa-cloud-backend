@@ -11,9 +11,8 @@ from app.modules.script.dao import http_header_template_dao as HttpheaderTemplat
 from app.modules.script.model import THttpHeader
 from app.modules.script.model import THttpHeaderTemplate
 from app.tools import localvars
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
@@ -141,7 +140,6 @@ def query_template_all_in_private():
 
 
 @http_service
-@transactional
 def create_template(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -163,7 +161,6 @@ def create_template(req):
 
 
 @http_service
-@transactional
 def modify_template(req):
     # 查询模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -180,7 +177,6 @@ def modify_template(req):
 
 
 @http_service
-@transactional
 def remove_template(req):
     # 查询模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -194,7 +190,6 @@ def remove_template(req):
 
 
 @http_service
-@transactional
 def create_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_template_and_name(req.templateNo, req.headerName)
@@ -222,7 +217,6 @@ def create_http_header(req):
 
 
 @http_service
-@transactional
 def modify_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -244,7 +238,6 @@ def modify_http_header(req):
 
 
 @http_service
-@transactional
 def remove_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -262,7 +255,6 @@ def remove_http_header(req):
 
 
 @http_service
-@transactional
 def enable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -282,7 +274,6 @@ def enable_http_header(req):
 
 
 @http_service
-@transactional
 def disable_http_header(req):
     # 查询请求头
     header = HttpHeaderDao.select_by_no(req.headerNo)
@@ -302,7 +293,6 @@ def disable_http_header(req):
 
 
 @http_service
-@transactional
 def query_httpheaders_by_template(req):
     headers = HttpHeaderDao.select_all_by_template(req.templateNo)
 
@@ -345,7 +335,6 @@ def query_httpheaders(req):
 
 
 @http_service
-@transactional
 def create_httpheaders(req):
     # 查询模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -375,7 +364,6 @@ def create_httpheaders(req):
 
 
 @http_service
-@transactional
 def modify_httpheaders(req):
     # 查询模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -414,7 +402,6 @@ def modify_httpheaders(req):
 
 
 @http_service
-@transactional
 def remove_httpheaders(req):
     # 查询模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -426,7 +413,6 @@ def remove_httpheaders(req):
 
 
 @http_service
-@transactional
 def duplicate_template(req):
     # 查询请求头模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -460,7 +446,6 @@ def duplicate_template(req):
 
 
 @http_service
-@transactional
 def copy_template_to_workspace(req):
     # 查询请求头模板
     template = HttpheaderTemplateDao.select_by_no(req.templateNo)
@@ -494,7 +479,6 @@ def copy_template_to_workspace(req):
 
 
 @http_service
-@transactional
 def move_template_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)

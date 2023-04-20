@@ -10,9 +10,8 @@ from app.modules.public.model import TWorkspaceUser
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -69,7 +68,6 @@ def query_workspace_user_all(req):
 
 
 @http_service
-@transactional
 def modify_workspace_user(req):
     # 查询元素
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)

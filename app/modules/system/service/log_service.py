@@ -5,7 +5,7 @@
 from app.database import dbquery
 from app.modules.system.model import TSystemOperationLog
 from app.modules.usercenter.model import TUser
-from app.tools.decorators.service import http_service
+from app.tools.service import http_service
 from app.utils.sqlalchemy_util import QueryCondition
 from app.utils.time_util import STRFTIME_FORMAT
 

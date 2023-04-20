@@ -33,10 +33,9 @@ from app.modules.usercenter.model import TUserRole
 from app.modules.usercenter.model import TUserSettings
 from app.tools import localvars
 from app.tools.auth import JWTAuth
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.utils.rsa_util import decrypt_by_rsa_private_key
@@ -48,7 +47,6 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 
 
 @http_service
-@transactional
 def login(req):
     try:
         # 查询用户登录信息
@@ -120,7 +118,6 @@ def remote_addr():
 
 
 @http_service
-@transactional
 def logout():
     # 查询用户
     user = UserDao.select_by_no(localvars.get_user_no())
@@ -130,7 +127,6 @@ def logout():
 
 
 @http_service
-@transactional
 def register(req):
     # 查询用户登录信息
     login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
@@ -186,7 +182,6 @@ def register(req):
 
 
 @http_service
-@transactional
 def reset_login_password(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
@@ -330,7 +325,6 @@ def query_user_info():
 
 
 @http_service
-@transactional
 def modify_user_info(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
@@ -345,7 +339,6 @@ def modify_user_info(req):
 
 
 @http_service
-@transactional
 def modify_user_settings(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
@@ -359,7 +352,6 @@ def modify_user_settings(req):
 
 
 @http_service
-@transactional
 def modify_user_password(req):
     try:
         # 获取用户编号
@@ -397,7 +389,6 @@ def modify_user_password(req):
 
 
 @http_service
-@transactional
 def modify_user(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
@@ -445,7 +436,6 @@ def get_private_workspace_by_user(user_no):
 
 
 @http_service
-@transactional
 def modify_user_state(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)
@@ -456,7 +446,6 @@ def modify_user_state(req):
 
 
 @http_service
-@transactional
 def remove_user(req):
     # 查询用户
     user = UserDao.select_by_no(req.userNo)

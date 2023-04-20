@@ -7,8 +7,8 @@ from app.modules.usercenter.dao import role_permission_dao as RolePermissionDao 
 from app.modules.usercenter.dao import user_role_dao as UserRoleDao  # noqa
 from app.modules.usercenter.enum import RoleState
 from app.modules.usercenter.model import TRole
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
+from app.tools.service import http_service
+
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.validator import check_exists
@@ -80,7 +80,6 @@ def query_role_info(req):
 
 
 @http_service
-@transactional
 def create_role(req):
     # 唯一性校验
     if RoleDao.select_by_name(req.roleName):
@@ -104,7 +103,6 @@ def create_role(req):
 
 
 @http_service
-@transactional
 def modify_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
@@ -126,7 +124,6 @@ def modify_role(req):
 
 
 @http_service
-@transactional
 def modify_role_state(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)
@@ -137,7 +134,6 @@ def modify_role_state(req):
 
 
 @http_service
-@transactional
 def remove_role(req):
     # 查询角色
     role = RoleDao.select_by_no(req.roleNo)

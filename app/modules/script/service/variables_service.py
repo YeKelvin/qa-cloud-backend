@@ -15,10 +15,9 @@ from app.modules.script.enum import VariableDatasetWeight
 from app.modules.script.model import TVariable
 from app.modules.script.model import TVariableDataset
 from app.tools import localvars
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
@@ -162,7 +161,6 @@ def query_dataset_all_in_private(req):
 
 
 @http_service
-@transactional
 def create_dataset(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -194,7 +192,6 @@ def create_dataset(req):
 
 
 @http_service
-@transactional
 def modify_dataset(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -211,7 +208,6 @@ def modify_dataset(req):
 
 
 @http_service
-@transactional
 def remove_dataset(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -225,7 +221,6 @@ def remove_dataset(req):
 
 
 @http_service
-@transactional
 def create_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_dataset_and_name(req.datasetNo, req.varName)
@@ -254,7 +249,6 @@ def create_variable(req):
 
 
 @http_service
-@transactional
 def modify_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -277,7 +271,6 @@ def modify_variable(req):
 
 
 @http_service
-@transactional
 def remove_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -295,7 +288,6 @@ def remove_variable(req):
 
 
 @http_service
-@transactional
 def enable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -315,7 +307,6 @@ def enable_variable(req):
 
 
 @http_service
-@transactional
 def disable_variable(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -335,7 +326,6 @@ def disable_variable(req):
 
 
 @http_service
-@transactional
 def update_current_value(req):
     # 查询变量信息
     variable = VariableDao.select_by_no(req.varNo)
@@ -401,7 +391,6 @@ def query_variables(req):
 
 
 @http_service
-@transactional
 def create_variables(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -432,7 +421,6 @@ def create_variables(req):
 
 
 @http_service
-@transactional
 def modify_variables(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -473,7 +461,6 @@ def modify_variables(req):
 
 
 @http_service
-@transactional
 def remove_variables(req):
     # 查询变量集信息
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -485,7 +472,6 @@ def remove_variables(req):
 
 
 @http_service
-@transactional
 def duplicate_dataset(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -522,7 +508,6 @@ def duplicate_dataset(req):
 
 
 @http_service
-@transactional
 def copy_dataset_to_workspace(req):
     # 查询变量集
     dataset = VariableDatasetDao.select_by_no(req.datasetNo)
@@ -559,7 +544,6 @@ def copy_dataset_to_workspace(req):
 
 
 @http_service
-@transactional
 def move_dataset_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)

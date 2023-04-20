@@ -6,8 +6,8 @@ from app.modules.script.controller import blueprint
 from app.modules.script.enum import TestPhase
 from app.modules.script.enum import TestplanState
 from app.modules.script.service import testplan_service as service
-from app.tools.decorators.require import require_login
-from app.tools.decorators.require import require_permission
+from app.tools.require import require_login
+from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 

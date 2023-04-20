@@ -5,11 +5,10 @@
 from app.modules.opencenter.dao import third_party_application_dao
 from app.modules.opencenter.enum import APPState
 from app.modules.opencenter.model import TThirdPartyApplication
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.identity import new_ulid
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -62,7 +61,6 @@ def query_application_info(req):
 
 
 @http_service
-@transactional
 def create_application(req):
     # 唯一性校验
     if third_party_application_dao.select_by_name(req.appName):
@@ -85,7 +83,6 @@ def create_application(req):
 
 
 @http_service
-@transactional
 def modify_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
@@ -106,7 +103,6 @@ def modify_application(req):
 
 
 @http_service
-@transactional
 def modify_application_state(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
@@ -117,7 +113,6 @@ def modify_application_state(req):
 
 
 @http_service
-@transactional
 def reset_application_secret(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
@@ -130,7 +125,6 @@ def reset_application_secret(req):
 
 
 @http_service
-@transactional
 def remove_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)

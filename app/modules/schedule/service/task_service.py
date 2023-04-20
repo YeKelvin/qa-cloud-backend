@@ -21,10 +21,9 @@ from app.modules.schedule.model import TScheduleJob
 from app.modules.schedule.model import TScheduleJobLog
 from app.modules.schedule.service.task_function import TASK_FUNC
 from app.modules.usercenter.model import TUser
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
 from app.tools.localvars import get_user_no
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
@@ -88,7 +87,6 @@ def query_task_info(req):
 
 
 @http_service
-@transactional
 def create_task(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -173,7 +171,6 @@ def create_task(req):
 
 
 @http_service
-@transactional
 def modify_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
@@ -258,7 +255,6 @@ def modify_task(req):
 
 
 @http_service
-@transactional
 def pause_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
@@ -284,7 +280,6 @@ def pause_task(req):
 
 
 @http_service
-@transactional
 def resume_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)
@@ -310,7 +305,6 @@ def resume_task(req):
 
 
 @http_service
-@transactional
 def remove_task(req):
     # 查询定时任务
     task = ScheduleJobDao.select_by_no(req.jobNo)

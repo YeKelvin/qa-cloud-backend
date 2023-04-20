@@ -6,7 +6,7 @@ from app.database import dbquery
 from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TPermissionModule
 from app.modules.usercenter.model import TPermissionObject
-from app.tools.decorators.service import http_service
+from app.tools.service import http_service
 from app.utils.sqlalchemy_util import QueryCondition
 
 

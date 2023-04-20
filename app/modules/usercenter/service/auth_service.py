@@ -3,14 +3,12 @@
 # @Time    : 2020/6/12 18:30
 # @Author  : Kelvin.Ye
 from app.modules.usercenter.model import TUserSecretKey
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.utils.rsa_util import generate_rsa_key
 
 
 @http_service
-@transactional
 def create_rsa_public_key():
     # 索引编号
     index = new_id()

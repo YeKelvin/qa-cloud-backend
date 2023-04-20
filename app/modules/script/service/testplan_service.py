@@ -18,9 +18,8 @@ from app.modules.script.enum import TestplanState
 from app.modules.script.model import TTestplan
 from app.modules.script.model import TTestplanItems
 from app.modules.script.model import TTestplanSettings
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
@@ -117,7 +116,6 @@ def query_testplan(req):
 
 
 @http_service
-@transactional
 def create_testplan(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -164,7 +162,6 @@ def create_testplan(req):
 
 
 @http_service
-@transactional
 def modify_testplan(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
@@ -213,7 +210,6 @@ def modify_testplan(req):
 
 
 @http_service
-@transactional
 def modify_testplan_state(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)
@@ -232,7 +228,6 @@ def modify_testplan_state(req):
 
 
 @http_service
-@transactional
 def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = TestPlanDao.select_by_no(req.planNo)

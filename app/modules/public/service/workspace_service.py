@@ -13,10 +13,9 @@ from app.modules.public.model import TWorkspaceUser
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.utils.sqlalchemy_util import QueryCondition
@@ -96,7 +95,6 @@ def query_workspace_info(req):
 
 
 @http_service
-@transactional
 def create_workspace(req):
     # 名称唯一性校验
     workspace = WorkspaceDao.select_by_name(req.workspaceName)
@@ -120,7 +118,6 @@ def create_workspace(req):
 
 
 @http_service
-@transactional
 def modify_workspace(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
@@ -134,7 +131,6 @@ def modify_workspace(req):
 
 
 @http_service
-@transactional
 def remove_workspace(req):
     # 查询工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)

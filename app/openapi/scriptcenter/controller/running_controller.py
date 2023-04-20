@@ -4,7 +4,7 @@
 # @Author  : Kelvin.Ye
 from app.openapi.scriptcenter.controller import blueprint
 from app.openapi.scriptcenter.service import running_service as service
-from app.tools.decorators.require import require_thirdparty_access
+from app.tools.require import require_thirdparty_access
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 

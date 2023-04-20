@@ -4,7 +4,6 @@
 # @Author  : Kelvin.Ye
 from flask import g
 from flask import request
-from loguru import logger
 
 from app.extension import db
 from app.modules.system.model import TSystemOperationLog
@@ -14,7 +13,6 @@ from app.tools.response import http_response
 
 def inject_traceid():
     """注入当前traceid"""
-    logger.error('inject_traceid')
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
         g.trace_id = new_ulid()

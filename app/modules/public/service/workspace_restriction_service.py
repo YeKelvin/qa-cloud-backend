@@ -11,8 +11,7 @@ from app.modules.public.model import TWorkspaceRestrictionExemption
 from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TPermissionModule
 from app.modules.usercenter.model import TPermissionObject
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.sqlalchemy_util import QueryCondition
 
@@ -29,7 +28,6 @@ def query_workspace_restriction(req):
 
 
 @http_service
-@transactional
 def set_workspace_restriction(req):
     # 查询空间，判断空间是否有效
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)

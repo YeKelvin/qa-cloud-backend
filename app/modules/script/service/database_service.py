@@ -9,9 +9,8 @@ from app.modules.public.model import TWorkspaceUser
 from app.modules.script.dao import database_config_dao as DatabaseConfigDao
 from app.modules.script.model import TDatabaseConfig
 from app.tools import localvars
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
@@ -169,7 +168,6 @@ def query_database_engine_info(req):
 
 
 @http_service
-@transactional
 def create_database_engine(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -204,7 +202,6 @@ def create_database_engine(req):
 
 
 @http_service
-@transactional
 def modify_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -230,7 +227,6 @@ def modify_database_engine(req):
 
 
 @http_service
-@transactional
 def remove_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -244,7 +240,6 @@ def remove_database_engine(req):
 
 
 @http_service
-@transactional
 def duplicate_database_engine(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -275,7 +270,6 @@ def duplicate_database_engine(req):
 
 
 @http_service
-@transactional
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
     engine = DatabaseConfigDao.select_by_no(req.configNo)
@@ -306,7 +300,6 @@ def copy_database_engine_to_workspace(req):
 
 
 @http_service
-@transactional
 def move_database_engine_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)

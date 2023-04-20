@@ -42,10 +42,9 @@ from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
 from app.tools import localvars
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.json_util import from_json
@@ -404,7 +403,6 @@ def get_element_children(parent_no, depth):
 
 
 @http_service
-@transactional
 def create_collection(req):
     # 校验工作空间
     workspace = WorkspaceDao.select_by_no(req.workspaceNo)
@@ -490,7 +488,6 @@ def update_element_options(element_no, element_options):
 
 
 @http_service
-@transactional
 def create_element_child(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
@@ -501,7 +498,6 @@ def create_element_child(req):
 
 
 @http_service
-@transactional
 def create_element_children(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
@@ -513,11 +509,11 @@ def add_element_child(root_no, parent_no, child: dict):
     # 新建子代元素
     element_no = add_element(
         element_name=child.get('elementName'),
-        element_remark=child.get('elementRemark', None),
+        element_remark=child.get('elementRemark'),
         element_type=child.get('elementType'),
         element_class=child.get('elementClass'),
-        element_property=child.get('property', None),
-        element_options=child.get('options', None)
+        element_property=child.get('property'),
+        element_options=child.get('options')
     )
     # 建立父子关联
     TElementChildren.insert(
@@ -527,7 +523,7 @@ def add_element_child(root_no, parent_no, child: dict):
         SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
     )
     # 新建内置元素
-    add_element_builtins(root_no=root_no, parent_no=element_no, builtins=child.get('builtins', None))
+    add_element_builtins(root_no=root_no, parent_no=element_no, builtins=child.get('builtins'))
 
     return element_no
 
@@ -543,7 +539,6 @@ def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
 
 
 @http_service
-@transactional
 def modify_element(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -584,7 +579,6 @@ def update_element(
 
 
 @http_service
-@transactional
 def remove_element(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -654,7 +648,6 @@ def delete_element_property(element_no):
 
 
 @http_service
-@transactional
 def enable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -668,7 +661,6 @@ def enable_element(req):
 
 
 @http_service
-@transactional
 def disable_element(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -682,7 +674,6 @@ def disable_element(req):
 
 
 @http_service
-@transactional
 def toggle_element_state(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -746,7 +737,6 @@ def update_element_property(element_no, element_property: dict):
 
 
 @http_service
-@transactional
 def move_element(req):
     # 查询 source 元素子代关联
     source_relation = ElementChildrenDao.select_by_child(req.sourceNo)
@@ -821,7 +811,6 @@ def move_element(req):
 
 
 @http_service
-@transactional
 def duplicate_element(req):
     # 查询元素
     source = TestElementDao.select_by_no(req.elementNo)
@@ -853,7 +842,6 @@ def duplicate_element(req):
 
 
 @http_service
-@transactional
 def paste_element(req):
     # 查询 source 元素
     source = TestElementDao.select_by_no(req.sourceNo)
@@ -1016,7 +1004,6 @@ def query_element_httpheader_template_refs(req):
 
 
 @http_service
-@transactional
 def create_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -1036,7 +1023,6 @@ def add_httpheader_template_refs(element_no, template_nos):
 
 
 @http_service
-@transactional
 def modify_element_httpheader_template_refs(req):
     # 查询元素
     element = TestElementDao.select_by_no(req.elementNo)
@@ -1095,7 +1081,6 @@ def query_element_builtins(req):
 
 
 @http_service
-@transactional
 def create_element_builtins(req):
     # TODO: del
     # 校验空间权限
@@ -1140,7 +1125,6 @@ def add_element_builtin(root_no, parent_no, builtin):
 
 
 @http_service
-@transactional
 def modify_element_builtins(req):
     # TODO: 干掉
     for builtin in req.list:
@@ -1238,7 +1222,6 @@ def delete_element_builtins_by_parent(parent_no):
 
 
 @http_service
-@transactional
 def copy_collection_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -1259,7 +1242,6 @@ def copy_collection_to_workspace(req):
 
 
 @http_service
-@transactional
 def move_collection_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))  # 校验原空间权限
@@ -1279,7 +1261,6 @@ def move_collection_to_workspace(req):
 
 
 @http_service
-@transactional
 def create_http_sampler(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
@@ -1292,7 +1273,6 @@ def create_http_sampler(req):
 
 
 @http_service
-@transactional
 def modify_http_sampler(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -1338,7 +1318,6 @@ def query_workspace_components(req):
 
 
 @http_service
-@transactional
 def set_workspace_components(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
@@ -1379,13 +1358,13 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
     TTestElement.insert(
         ELEMENT_NO=component_no,
         ELEMENT_NAME=component.get('elementName'),
-        ELEMENT_REMARK=component.get('elementRemark', None),
+        ELEMENT_REMARK=component.get('elementRemark'),
         ELEMENT_TYPE=component.get('elementType'),
         ELEMENT_CLASS=component.get('elementClass'),
         ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
     )
     # 创建内置元素属性
-    add_element_property(component_no, component.get('property', None))
+    add_element_property(component_no, component.get('property'))
     # 创建内置元素关联
     TWorkspaceComponent.insert(
         WORKSPACE_NO=workspace_no,

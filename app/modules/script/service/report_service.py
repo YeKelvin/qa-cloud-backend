@@ -6,7 +6,7 @@ from app.modules.script.dao import test_collection_result_dao as TestCollectionR
 from app.modules.script.dao import test_group_result_dao as TestGroupResultDao
 from app.modules.script.dao import test_report_dao as TestReportDao
 from app.modules.script.dao import test_sampler_result_dao as TestSamplerResultDao
-from app.tools.decorators.service import http_service
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import microsecond_to_m_s

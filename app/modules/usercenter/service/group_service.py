@@ -9,10 +9,9 @@ from app.modules.usercenter.dao import user_group_dao as UserGroupDao
 from app.modules.usercenter.enum import GroupState
 from app.modules.usercenter.model import TGroup
 from app.modules.usercenter.model import TGroupRole
-from app.tools.decorators.service import http_service
-from app.tools.decorators.transaction import transactional
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 
 
@@ -82,7 +81,6 @@ def query_group_info(req):
 
 
 @http_service
-@transactional
 def create_group(req):
     # 唯一性校验
     if GroupDao.select_by_name(req.groupName):
@@ -104,7 +102,6 @@ def create_group(req):
 
 
 @http_service
-@transactional
 def modify_group(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
@@ -135,7 +132,6 @@ def modify_group(req):
 
 
 @http_service
-@transactional
 def modify_group_state(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
@@ -146,7 +142,6 @@ def modify_group_state(req):
 
 
 @http_service
-@transactional
 def remove_group(req):
     # 查询分组
     group = GroupDao.select_by_no(req.groupNo)
