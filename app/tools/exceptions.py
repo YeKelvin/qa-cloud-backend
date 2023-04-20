@@ -32,8 +32,7 @@ class TestplanInterruptError(Exception):
 
 @unique
 class ErrorCode(Enum):
-    """
-    业务错误码枚举
+    """业务错误码枚举
 
     错误码命名规范：E前缀+后三位数，后三位数从000开始递增
     +-----------------------+
@@ -59,6 +58,7 @@ class ErrorCode(Enum):
     E401000 = '未授权'
     E401001 = '用户未登录'
     E401002 = '用户无权限'
+    E401003 = '应用未授权'
 
     # 403
     E403000 = '禁止操作'

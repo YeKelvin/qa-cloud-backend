@@ -3,6 +3,7 @@
 # @Time    : 2019/11/7 11:52
 # @Author  : Kelvin.Ye
 from datetime import datetime
+from datetime import timezone
 from enum import Enum
 
 from flask import make_response
@@ -32,9 +33,12 @@ class ResponseDTO:
         else:
             self.errorCode = error.name
             self.errorMsg = error.value
+        # 可覆盖枚举的msg
+        if error and errorMsg:
+            self.errorMsg = errorMsg
         if error or errorCode or errorMsg:
             self.success = False
-        self.responseTm = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+        self.responseTm = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')
 
     def __repr__(self):
         return str(self.__dict__)

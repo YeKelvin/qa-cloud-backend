@@ -5,7 +5,7 @@
 from flask import Blueprint
 
 
-# note  : /rest/api 由nginx代理，后端不需要处理
 blueprint = Blueprint('system', __name__, url_prefix='/system')
+
 
 from . import log_controller  # noqa

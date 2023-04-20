@@ -81,7 +81,7 @@ def modify_notice_robot():
     return service.modify_notice_robot(req)
 
 
-@blueprint.patch('/notice/robot/state')
+@blueprint.put('/notice/robot/state')
 @require_login
 @require_permission('MODIFY_ROBOT')
 def modify_notice_robot_state():

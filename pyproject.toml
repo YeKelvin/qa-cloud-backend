@@ -52,6 +52,7 @@ requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
+target-version = "py38"
 line-length = 120
 src = ["app"]
 select = [
@@ -69,6 +70,7 @@ ignore = [
     "D103",
     "D104",
     "D105",
+    "D107",
     "D415"
 ]
 exclude = [

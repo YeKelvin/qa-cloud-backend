@@ -5,8 +5,8 @@
 from flask import Blueprint
 
 
-# note  : /rest/api 由nginx代理，后端不需要处理
 blueprint = Blueprint('script', __name__, url_prefix='/script')
+
 
 from . import database_controller   # noqa
 from . import element_controller    # noqa

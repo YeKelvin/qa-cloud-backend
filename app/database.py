@@ -218,9 +218,9 @@ def record_update(entity, columnname, new):
     old = getattr(entity, columnname, None)
     if old is None:
         return
-    if isinstance(old, dict | list):
+    if isinstance(old, (dict, list)):
         old = to_json(old)
-    if isinstance(new, dict | list):
+    if isinstance(new, (dict, list)):
         new = to_json(new)
     content = TSystemOperationLogContent()
     content.LOG_NO = get_trace_id(),

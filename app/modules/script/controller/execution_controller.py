@@ -63,8 +63,8 @@ def execute_snippets():
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
-        Argument('useCurrentValue', type=bool, default=False),
-        Argument('variables', type=dict, default={})
+        Argument('variables', type=dict, default={}),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_snippets(req)
 
@@ -85,12 +85,12 @@ def execute_testplan():
 @blueprint.post('/testplan/execution/interrupt')
 @require_login
 @require_permission('INTERRUPT_TESTPLAN')
-def interrupt_testplan_execution():
+def interrupt_testplan():
     """中断运行测试计划"""
     req = JsonParser(
         Argument('executionNo', required=True, nullable=False, help='执行编号不能为空')
     ).parse()
-    return service.interrupt_testplan_execution(req)
+    return service.interrupt_testplan(req)
 
 
 @blueprint.get('/collection/json')
@@ -127,7 +127,7 @@ def query_snippets_json():
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
-        Argument('useCurrentValue', type=bool, default=False),
-        Argument('variables', type=dict)
+        Argument('variables', type=dict, default={}),
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_snippets_json(req)

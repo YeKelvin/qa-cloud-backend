@@ -94,7 +94,7 @@ def modify_testplan():
     return service.modify_testplan(req)
 
 
-@blueprint.patch('/testplan/state')
+@blueprint.put('/testplan/state')
 @require_login
 @require_permission('MODIFY_TESTPLAN')
 def modify_testplan_state():
@@ -106,7 +106,7 @@ def modify_testplan_state():
     return service.modify_testplan_state(req)
 
 
-@blueprint.patch('/testplan/testphase')
+@blueprint.put('/testplan/testphase')
 @require_login
 @require_permission('MODIFY_TESTPLAN')
 def modify_testplan_testphase():

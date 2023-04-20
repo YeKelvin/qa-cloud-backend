@@ -122,7 +122,7 @@ def remove_http_header():
     return service.remove_http_header(req)
 
 
-@blueprint.patch('/http/header/enable')
+@blueprint.put('/http/header/enable')
 @require_login
 @require_permission('MODIFY_HTTP_HEADER')
 def enable_http_header():
@@ -133,7 +133,7 @@ def enable_http_header():
     return service.enable_http_header(req)
 
 
-@blueprint.patch('/http/header/disable')
+@blueprint.put('/http/header/disable')
 @require_login
 @require_permission('MODIFY_HTTP_HEADER')
 def disable_http_header():

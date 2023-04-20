@@ -213,7 +213,7 @@ def remove_element():
     return service.remove_element(req)
 
 
-@blueprint.patch('/element/enable')
+@blueprint.put('/element/enable')
 @require_login
 @require_permission('MODIFY_ELEMENT')
 def enable_element():
@@ -222,7 +222,7 @@ def enable_element():
     return service.enable_element(req)
 
 
-@blueprint.patch('/element/disable')
+@blueprint.put('/element/disable')
 @require_login
 @require_permission('MODIFY_ELEMENT')
 def disable_element():
@@ -231,7 +231,7 @@ def disable_element():
     return service.disable_element(req)
 
 
-@blueprint.patch('/element/state/toggle')
+@blueprint.put('/element/state/toggle')
 @require_login
 @require_permission('MODIFY_ELEMENT')
 def toggle_element_state():

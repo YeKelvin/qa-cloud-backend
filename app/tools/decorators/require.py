@@ -5,11 +5,13 @@
 from datetime import datetime
 from functools import wraps
 
+import jwt
 from flask import g
 from flask import request
 from loguru import logger
 
 from app.extension import db
+from app.modules.opencenter.model import TThirdPartyApplication
 from app.modules.usercenter.model import TGroup
 from app.modules.usercenter.model import TGroupRole
 from app.modules.usercenter.model import TPermission
@@ -20,6 +22,7 @@ from app.modules.usercenter.model import TUserGroup
 from app.modules.usercenter.model import TUserPassword
 from app.modules.usercenter.model import TUserRole
 from app.tools import localvars
+from app.tools.auth import JWTAuth
 from app.tools.exceptions import ErrorCode
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
@@ -30,8 +33,28 @@ def require_login(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        user_no = localvars.get_user_no()
-        issued_at = localvars.get_issued_at()
+        user_no = None
+        issued_at = None
+        # 校验access-token
+        if 'access-token' not in request.headers:
+            # 缺失请求头
+            return failed_response(ErrorCode.E401001, msg='请求头缺失access-token')
+        # 获取access-token
+        access_toekn = request.headers.get('access-token')
+        try:
+            # 解析token，获取payload
+            payload = JWTAuth.decode_token(access_toekn)
+            user_no = payload['data']['id']
+            issued_at = payload['iat']
+            # 存储用户编号
+            localvars.set('user_no', user_no)
+        except jwt.ExpiredSignatureError:
+            return failed_response(ErrorCode.E401001, msg='token已失效')
+        except jwt.InvalidTokenError:
+            return failed_response(ErrorCode.E401001, msg='无效的token')
+        except Exception:
+            logger.bind(traceid=g.trace_id).exception()
+            return failed_response(ErrorCode.E500000)
 
         # 用户不存在
         user = TUser.filter_by(USER_NO=user_no).first()
@@ -41,22 +64,18 @@ def require_login(func):
 
         # 用户未登录，请先登录
         if not user.LOGGED_IN:
-            logger.bind(traceid=g.trace_id).info('用户未登录，请先登录')
+            logger.bind(traceid=g.trace_id).info('用户未登录')
             return failed_response(ErrorCode.E401001)
 
         # 用户状态异常
         if user.STATE != 'ENABLE':
-            logger.bind(traceid=g.trace_id).info(f'userState:[ {user.STATE} ] 用户状态异常')
+            logger.bind(traceid=g.trace_id).info('用户状态异常')
             return failed_response(ErrorCode.E401001)
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
         user_password = TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
         if datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
-            logger.bind(traceid=g.trace_id).info(
-                f'签发时间:[ {datetime.fromtimestamp(issued_at)} ] '
-                f'最后成功登录时间:[ {user_password.LAST_SUCCESS_TIME} ] '
-                f'token已失效'
-            )
+            logger.bind(traceid=g.trace_id).info('token已失效')
             return failed_response(ErrorCode.E401001)
 
         localvars.set('operator', user.USER_NAME)
@@ -74,7 +93,9 @@ def require_permission(code):
             # 获取登录用户
             user_no = localvars.get_user_no()
             if not user_no:
-                logger.bind(traceid=g.trace_id).info(f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败')
+                logger.bind(traceid=g.trace_id).info(
+                    f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败'
+                )
                 return failed_response(ErrorCode.E401002)
 
             # 查询用户权限，判断权限是否存在且状态正常
@@ -87,7 +108,9 @@ def require_permission(code):
                 return func(*args, **kwargs)
 
             # 其余情况校验不通过
-            logger.bind(traceid=g.trace_id).info(f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常')
+            logger.bind(traceid=g.trace_id).info(
+                f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常'
+            )
             return failed_response(ErrorCode.E401002)
 
         return wrapper
@@ -95,12 +118,41 @@ def require_permission(code):
     return middleware
 
 
-def failed_response(error: ErrorCode):
+def require_thirdparty_access(func):
+    """OpenAPI校验装饰器"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 从请求头中获取app信息
+        appno = request.headers['app-no']
+        appsecret = request.headers['app-secret']
+        # 校验密钥
+        tpa = (
+            TThirdPartyApplication
+            .filter_by(APP_NO=appno, APP_SECRET=appsecret)
+            .first()
+        )
+        # 应用不存在
+        if not tpa:
+            logger.bind(traceid=g.trace_id).info('第三方应用不存在')
+            return failed_response(ErrorCode.E401003)
+        # 应用状态异常
+        if tpa.STATE != 'ENABLE':
+            logger.bind(traceid=g.trace_id).info('第三方应用状态异常')
+            return failed_response(ErrorCode.E401003)
+        # 存储appno
+        localvars.set('thirdparty_app_no', appno)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def failed_response(error: ErrorCode, msg=None):
     logger.bind(traceid=g.trace_id).info(
         f'uri:[ {request.method} {request.path} ] '
         f'header:[ {dict(request.headers)} ] request:[ {request.values} ]'
     )
-    res = ResponseDTO(error=error)
+    res = ResponseDTO(error=error, errorMsg=msg)
     http_res = http_response(res)
     logger.bind(traceid=g.trace_id).info(
         f'uri:[ {request.method} {request.path} ] '

@@ -6,6 +6,7 @@
 from flask import Blueprint
 
 
+# note  : /rest/api 由nginx代理，后端不需要处理
 restapi = Blueprint('restapi', __name__)
 
 

@@ -7,3 +7,11 @@ from flask import Blueprint
 
 
 api = Blueprint('openapi', __name__, url_prefix='/open/api')
+
+
+"""
+uri: /open/api/xxx
+header:
+    app-no:     xxx
+    app-secret: xxx
+"""

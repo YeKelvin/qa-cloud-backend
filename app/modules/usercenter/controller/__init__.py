@@ -5,8 +5,8 @@
 from flask import Blueprint
 
 
-# note  : /rest/api 由nginx代理，后端不需要处理
 blueprint = Blueprint('user', __name__, url_prefix='/usercenter')
+
 
 from . import auth_controller               # noqa
 from . import group_controller              # noqa

@@ -573,7 +573,9 @@ def start_testplan_by_loop(
         # 加载脚本
         collection = element_loader.loads_tree(collection_no, no_debuger=True)
         if not collection:
-            logger.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+            logger.warning(
+                f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
+            )
             continue
         # 添加自定义变量组件
         add_variable_dataset(collection, dataset_nos, use_current_value)
@@ -612,7 +614,9 @@ def start_testplan_by_loop(
                 # 异步函数
                 def start(app):
                     try:
-                        logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 第[ {i} ]次开始执行脚本')
+                        logger.info(
+                            f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 第[ {i} ]次开始执行脚本'
+                        )
                         Runner.start([collection], throw_ex=True)
                     except Exception:
                         logger.exception('执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常')
@@ -670,7 +674,9 @@ def start_testplan_by_report(
             # 加载脚本
             collection = element_loader.loads_tree(collection_no, no_debuger=True)
             if not collection:
-                logger.warning(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本')
+                logger.warning(
+                    f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
+                )
             # 添加自定义变量组件
             add_variable_dataset(collection, dataset_nos, use_current_value)
             # 添加报告存储器组件
@@ -725,7 +731,7 @@ def start_testplan_by_error_report(
 
 @http_service
 @transactional
-def interrupt_testplan_execution(req):
+def interrupt_testplan(req):
     # 查询执行记录
     execution = TestplanExecutionDao.select_by_no(req.executionNo)
     check_exists(execution, error_msg='执行记录不存在')

@@ -77,7 +77,7 @@ def modify_role():
     return service.modify_role(req)
 
 
-@blueprint.patch('/role/state')
+@blueprint.put('/role/state')
 @require_login
 @require_permission('MODIFY_ROLE')
 def modify_role_state():

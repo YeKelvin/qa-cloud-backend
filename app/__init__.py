@@ -140,7 +140,6 @@ def register_hooks(app: Flask):
     from app import hook
 
     app.before_request(hook.inject_traceid)
-    app.before_request(hook.inject_user)
     app.before_request(hook.record_operation_log)
 
     if FLASK_ENV == 'development':

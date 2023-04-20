@@ -73,7 +73,7 @@ def modify_group():
     return service.modify_group(req)
 
 
-@blueprint.patch('/group/state')
+@blueprint.put('/group/state')
 @require_login
 @require_permission('MODIFY_GROUP')
 def modify_group_state():

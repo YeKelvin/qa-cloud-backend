@@ -24,6 +24,7 @@ class TOpenApiLog(DBModel, BaseColumn):
     LOG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='日志编号')
     APP_NO = db.Column(db.String(32), index=True, nullable=False, comment='应用编号')
     URI = db.Column(db.String(256), comment='接口路径')
+    METHOD = db.Column(db.String(128), comment='请求方法')
     REQUEST = db.Column(db.Text, comment='接口请求')
     RESPONSE = db.Column(db.Text, comment='接口响应')
-    STATUS = db.Column(db.String(16), comment='响应状态')
+    SUCCESS = db.Column(db.String(16), comment='是否成功')

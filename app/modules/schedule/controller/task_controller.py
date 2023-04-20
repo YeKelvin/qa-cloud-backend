@@ -75,7 +75,7 @@ def modify_task():
     return service.modify_task(req)
 
 
-@blueprint.patch('/task/pause')
+@blueprint.put('/task/pause')
 @require_login
 @require_permission('PAUSE_TASK')
 def pause_task():
@@ -86,7 +86,7 @@ def pause_task():
     return service.pause_task(req)
 
 
-@blueprint.patch('/task/resume')
+@blueprint.put('/task/resume')
 @require_login
 @require_permission('RESUME_TASK')
 def resume_task():
@@ -97,7 +97,7 @@ def resume_task():
     return service.resume_task(req)
 
 
-@blueprint.patch('/task/remove')
+@blueprint.put('/task/remove')
 @require_login
 @require_permission('REMOVE_TASK')
 def remove_task():

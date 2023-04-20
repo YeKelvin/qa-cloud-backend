@@ -310,12 +310,12 @@ def create_table(name):
     from sqlalchemy import create_engine
 
     from app import config as CONFIG
-    from app.opencenter import model as opencenter_model
-    from app.public import model as public_model
-    from app.schedule import model as schedule_model
-    from app.script import model as script_model
-    from app.system import model as system_model
-    from app.usercenter import model as usercenter_model
+    from app.modules.opencenter import model as opencenter_model
+    from app.modules.public import model as public_model
+    from app.modules.schedule import model as schedule_model
+    from app.modules.script import model as script_model
+    from app.modules.system import model as system_model
+    from app.modules.usercenter import model as usercenter_model
 
     engine = create_engine(CONFIG.DB_URL)
 

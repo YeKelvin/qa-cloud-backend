@@ -58,7 +58,7 @@ def modify_user_settings():
     return service.modify_user_settings(req)
 
 
-@blueprint.patch('/user/password')
+@blueprint.put('/user/password')
 @require_login
 def modify_user_password():
     """修改密码"""
@@ -87,7 +87,7 @@ def register():
     return service.register(req)
 
 
-@blueprint.patch('/user/password/reset')
+@blueprint.put('/user/password/reset')
 @require_login
 @require_permission('RESET_PASSWORD')
 def reset_password():
@@ -140,7 +140,7 @@ def modify_user():
     return service.modify_user(req)
 
 
-@blueprint.patch('/user/state')
+@blueprint.put('/user/state')
 @require_login
 @require_permission('MODIFY_USER')
 def modify_user_state():

@@ -131,7 +131,7 @@ def remove_variable():
     return service.remove_variable(req)
 
 
-@blueprint.patch('/variable/enable')
+@blueprint.put('/variable/enable')
 @require_login
 @require_permission('MODIFY_VARIABLE')
 def enable_variable():
@@ -142,7 +142,7 @@ def enable_variable():
     return service.enable_variable(req)
 
 
-@blueprint.patch('/variable/disable')
+@blueprint.put('/variable/disable')
 @require_login
 @require_permission('MODIFY_VARIABLE')
 def disable_variable():
@@ -153,7 +153,7 @@ def disable_variable():
     return service.disable_variable(req)
 
 
-@blueprint.patch('/variable/current/value')
+@blueprint.put('/variable/current/value')
 @require_login
 @require_permission('MODIFY_VARIABLE')
 def update_current_value():
