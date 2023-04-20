@@ -107,7 +107,8 @@ def register_extensions(app: Flask):
 
 def register_socketio(app: Flask):
     # 服务启动前加载 events
-    from app import socket  # noqa
+    from app import socketx  # noqa
+
     socketio.init_app(app)
 
 
