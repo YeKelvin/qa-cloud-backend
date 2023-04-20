@@ -6,10 +6,10 @@ from app.modules.public.controller import blueprint
 from app.modules.public.enum import RobotState
 from app.modules.public.enum import RobotType
 from app.modules.public.service import message_service as service
-from app.tools.require import require_login
-from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
+from app.tools.require import require_login
+from app.tools.require import require_permission
 
 
 @blueprint.get('/notice/robot/list')

@@ -4,10 +4,10 @@
 # @Author  : Kelvin.Ye
 from app.modules.public.controller import blueprint
 from app.modules.public.service import workspace_restriction_service as service
-from app.tools.require import require_login
-from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
+from app.tools.require import require_login
+from app.tools.require import require_permission
 
 
 @blueprint.get('/workspace/restriction')

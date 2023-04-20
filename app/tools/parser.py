@@ -162,6 +162,7 @@ class JsonParser:
 
 
 class ListParser:
+    # TODO: 干掉
 
     def __init__(self):
         self.data = None

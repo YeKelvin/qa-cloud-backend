@@ -6,10 +6,10 @@ from app.modules.schedule.controller import blueprint
 from app.modules.schedule.enum import JobType
 from app.modules.schedule.enum import TriggerType
 from app.modules.schedule.service import task_service as service
-from app.tools.require import require_login
-from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
+from app.tools.require import require_login
+from app.tools.require import require_permission
 
 
 @blueprint.get('/task/list')

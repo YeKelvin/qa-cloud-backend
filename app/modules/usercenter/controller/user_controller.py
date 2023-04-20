@@ -5,10 +5,10 @@
 from app.modules.usercenter.controller import blueprint
 from app.modules.usercenter.enum import UserState
 from app.modules.usercenter.service import user_service as service
-from app.tools.require import require_login
-from app.tools.require import require_permission
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
+from app.tools.require import require_login
+from app.tools.require import require_permission
 
 
 @blueprint.post('/user/login')
