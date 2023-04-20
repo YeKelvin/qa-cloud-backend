@@ -7,9 +7,9 @@ from typing import Type
 
 from flask import g
 from sqlalchemy import func
-from ulid import microsecond as ulid
 
 from app.extension import db
+from app.tools.identity import new_ulid
 from app.tools.locals import threadlocal
 from app.tools.localvars import get_userno_or_default
 from app.utils.json_util import to_json
@@ -64,8 +64,7 @@ class CRUDMixin:
 
     @classmethod
     def sum_by(cls: MODEL, field, cons: dict) -> decimal.Decimal:
-        """
-        e.g.:
+        """e.g.:
 
         from app.database import where_by
 
@@ -79,8 +78,7 @@ class CRUDMixin:
 
     @classmethod
     def updates(cls: MODEL, setter: dict, cons: list, record=True):
-        """
-        e.g.:
+        """e.g.:
 
         from app.database import setter
         from app.database import where
@@ -97,8 +95,7 @@ class CRUDMixin:
 
     @classmethod
     def updates_by(cls: MODEL, setter: dict, cons: dict, record=True):
-        """
-        e.g.:
+        """e.g.:
 
         from app.database import setter
         from app.database import where_by
@@ -198,7 +195,7 @@ def get_trace_id():
 
     trace_id = getattr(threadlocal, 'trace_id', None)
     if not trace_id:
-        trace_id = ulid.new().str
+        trace_id = new_ulid()
         setattr(threadlocal, 'trace_id', trace_id)
     return trace_id
 
@@ -221,9 +218,9 @@ def record_update(entity, columnname, new):
     old = getattr(entity, columnname, None)
     if old is None:
         return
-    if isinstance(old, (dict, list)):
+    if isinstance(old, dict | list):
         old = to_json(old)
-    if isinstance(new, (dict, list)):
+    if isinstance(new, dict | list):
         new = to_json(new)
     content = TSystemOperationLogContent()
     content.LOG_NO = get_trace_id(),

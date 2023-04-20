@@ -6,12 +6,12 @@ import jwt
 from flask import g
 from flask import request
 from loguru import logger
-from ulid import microsecond as ulid
 
 from app.extension import db
-from app.system.model import TSystemOperationLog
+from app.modules.system.model import TSystemOperationLog
 from app.tools import localvars
 from app.tools.auth import JWTAuth
+from app.tools.identity import new_ulid
 from app.tools.response import http_response
 
 
@@ -19,7 +19,7 @@ def inject_traceid():
     """注入当前traceid"""
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
-        g.trace_id = ulid.new().str
+        g.trace_id = new_ulid()
 
 
 def inject_user():

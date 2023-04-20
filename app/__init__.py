@@ -3,7 +3,6 @@
 # @Time    : 2019/11/7 9:39
 # @Author  : Kelvin.Ye
 import os
-from typing import Optional
 
 import orjson
 from apscheduler.events import EVENT_ALL
@@ -48,7 +47,7 @@ def set_app(app: Flask):
     __app__ = app
 
 
-def get_app() -> Optional[Flask]:
+def get_app() -> Flask:
     global __app__
 
     if __app__ is None:
@@ -113,7 +112,8 @@ def register_socketio(app: Flask):
 
 
 def register_apscheduler(app: Flask):
-    from app.schedule import event
+    from app.modules.schedule import event
+
     apscheduler.add_listener(event.handle_event_all, EVENT_ALL)
     apscheduler.add_listener(event.handle_job_added, EVENT_JOB_ADDED)
     apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
@@ -128,19 +128,11 @@ def register_apscheduler(app: Flask):
 
 def register_blueprints(app: Flask):
     """Register Flask blueprints"""
-    from app.opencenter.controller import blueprint as opencenter_blueprint
-    from app.public.controller import blueprint as public_blueprint
-    from app.schedule.controller import blueprint as schedule_blueprint
-    from app.script.controller import blueprint as script_blueprint
-    from app.system.controller import blueprint as system_blueprint
-    from app.usercenter.controller import blueprint as usercenter_blueprint
+    from app.modules import restapi
+    from app.openapi import api as openapi
 
-    app.register_blueprint(opencenter_blueprint)
-    app.register_blueprint(public_blueprint)
-    app.register_blueprint(schedule_blueprint)
-    app.register_blueprint(script_blueprint)
-    app.register_blueprint(system_blueprint)
-    app.register_blueprint(usercenter_blueprint)
+    app.register_blueprint(restapi)
+    app.register_blueprint(openapi)
 
 
 def register_hooks(app: Flask):
@@ -175,9 +167,7 @@ def register_commands(app: Flask):
 
 
 def orjson_serializer(obj):
-    """
-    Note that `orjson.dumps()` return byte array, while sqlalchemy expects string, thus `decode()` call.
-    """
+    """Note that `orjson.dumps()` return byte array, while sqlalchemy expects string, thus `decode()` call."""
     return orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NAIVE_UTC).decode('utf8')
 
 

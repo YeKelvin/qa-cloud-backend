@@ -3,5 +3,7 @@
 # @File    : __init__.py
 # @Time    : 2023-04-19 16:40:05
 # @Author  : Kelvin.Ye
+from flask import Blueprint
 
-"""/external"""
+
+api = Blueprint('openapi', __name__, url_prefix='/open/api')

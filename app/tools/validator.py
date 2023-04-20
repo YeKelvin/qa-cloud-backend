@@ -6,16 +6,16 @@ import enum
 
 from flask import g
 
-from app.public.model import TWorkspaceRestriction
-from app.public.model import TWorkspaceRestrictionExemption
-from app.public.model import TWorkspaceUser
+from app.modules.public.model import TWorkspaceRestriction
+from app.modules.public.model import TWorkspaceRestrictionExemption
+from app.modules.public.model import TWorkspaceUser
+from app.modules.usercenter.model import TPermission
+from app.modules.usercenter.model import TRole
+from app.modules.usercenter.model import TUser
+from app.modules.usercenter.model import TUserGroup
+from app.modules.usercenter.model import TUserRole
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
-from app.usercenter.model import TPermission
-from app.usercenter.model import TRole
-from app.usercenter.model import TUser
-from app.usercenter.model import TUserGroup
-from app.usercenter.model import TUserRole
 from app.utils.sqlalchemy_util import QueryCondition
 
 

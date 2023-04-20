@@ -10,19 +10,19 @@ from flask import request
 from loguru import logger
 
 from app.extension import db
+from app.modules.usercenter.model import TGroup
+from app.modules.usercenter.model import TGroupRole
+from app.modules.usercenter.model import TPermission
+from app.modules.usercenter.model import TRole
+from app.modules.usercenter.model import TRolePermission
+from app.modules.usercenter.model import TUser
+from app.modules.usercenter.model import TUserGroup
+from app.modules.usercenter.model import TUserPassword
+from app.modules.usercenter.model import TUserRole
 from app.tools import localvars
 from app.tools.exceptions import ErrorCode
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
-from app.usercenter.model import TGroup
-from app.usercenter.model import TGroupRole
-from app.usercenter.model import TPermission
-from app.usercenter.model import TRole
-from app.usercenter.model import TRolePermission
-from app.usercenter.model import TUser
-from app.usercenter.model import TUserGroup
-from app.usercenter.model import TUserPassword
-from app.usercenter.model import TUserRole
 
 
 def require_login(func):

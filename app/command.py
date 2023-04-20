@@ -7,26 +7,26 @@ from flask.cli import with_appcontext
 
 from app.database import TSystemOperationLogContent  # noqa
 from app.extension import db  # noqa
-from app.public.model import TWorkspace  # noqa
-from app.public.model import TWorkspaceUser  # noqa
-from app.script.model import TVariableDataset  # noqa
+from app.modules.public.model import TWorkspace  # noqa
+from app.modules.public.model import TWorkspaceUser  # noqa
+from app.modules.script.model import TVariableDataset  # noqa
+from app.modules.usercenter.model import TPermission  # noqa
+from app.modules.usercenter.model import TPermissionModule  # noqa
+from app.modules.usercenter.model import TPermissionObject  # noqa
+from app.modules.usercenter.model import TRole  # noqa
+from app.modules.usercenter.model import TUser  # noqa
+from app.modules.usercenter.model import TUserLoginInfo  # noqa
+from app.modules.usercenter.model import TUserPassword  # noqa
+from app.modules.usercenter.model import TUserRole  # noqa
 from app.tools.identity import new_id
-from app.usercenter.model import TPermission  # noqa
-from app.usercenter.model import TPermissionModule  # noqa
-from app.usercenter.model import TPermissionObject  # noqa
-from app.usercenter.model import TRole  # noqa
-from app.usercenter.model import TUser  # noqa
-from app.usercenter.model import TUserLoginInfo  # noqa
-from app.usercenter.model import TUserPassword  # noqa
-from app.usercenter.model import TUserRole  # noqa
 from app.utils.security import encrypt_password
 
 
-from app.opencenter.model import *  # noqa isort:skip
-from app.script.model import *  # noqa isort:skip
-from app.system.model import *  # noqa isort:skip
-from app.public.model import *  # noqa isort:skip
-from app.usercenter.model import *  # noqa isort:skip
+from app.modules.opencenter.model import *  # noqa isort:skip
+from app.modules.script.model import *  # noqa isort:skip
+from app.modules.system.model import *  # noqa isort:skip
+from app.modules.public.model import *  # noqa isort:skip
+from app.modules.usercenter.model import *  # noqa isort:skip
 
 
 @click.command()
