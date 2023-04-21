@@ -99,20 +99,16 @@ def configure_flask(app: Flask):
 
 def register_extensions(app: Flask):
     """Register Flask extensions"""
-    db.init_app(app)
-    migrate.init_app(app, db)
-    register_socketio(app)
-    register_apscheduler(app)
-
-
-def register_socketio(app: Flask):
-    # 服务启动前加载 events
+    from app import signals  # noqa
     from app import socketx  # noqa
 
+    db.init_app(app)
+    migrate.init_app(app, db)
     socketio.init_app(app)
+    init_apscheduler(app)
 
 
-def register_apscheduler(app: Flask):
+def init_apscheduler(app: Flask):
     from app.modules.schedule import event
 
     apscheduler.add_listener(event.handle_event_all, EVENT_ALL)
@@ -140,6 +136,7 @@ def register_hooks(app: Flask):
     from app import hook
 
     app.before_request(hook.inject_traceid)
+    app.before_request(hook.inject_ip)
     app.before_request(hook.record_operation_log)
 
     if FLASK_ENV == 'development':

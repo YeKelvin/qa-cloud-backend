@@ -27,6 +27,8 @@ flask-migrate = "4.0.4"
 flask-apscheduler = "1.12.4"
 # job
 apscheduler = "3.10.1"
+# signal
+blinker = "1.6.2"
 # id
 ulid-py = "1.1.0"
 # Encryption
@@ -42,10 +44,10 @@ pymeter = { path = "../pymeter", develop = true }
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-html = "*"
+types-orjson = "*"
 ruff = "*"
 yapf = "*"
 black = "*"
-types-orjson = "*"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]

@@ -5,14 +5,13 @@
 import decimal
 from typing import Type
 
-from flask import g
 from sqlalchemy import func
 
 from app.extension import db
-from app.tools.identity import new_ulid
-from app.tools.locals import threadlocal
+from app.signals import record_delete_signal
+from app.signals import record_insert_signal
+from app.signals import record_update_signal
 from app.tools.localvars import get_userno_or_default
-from app.utils.json_util import to_json
 from app.utils.time_util import datetime_now_by_utc8
 
 
@@ -23,15 +22,15 @@ def dbquery(*args, **kwargs):
     return db.session.query(*args, **kwargs)
 
 
-class setter(dict):  # noqa
+class setter(dict):  # noqa  TODO: 干掉
     ...
 
 
-class where(list):  # noqa
+class where(list):  # noqa  TODO: 干掉
     ...
 
 
-class where_by(dict):  # noqa
+class where_by(dict):  # noqa  TODO: 干掉
     ...
 
 
@@ -43,7 +42,7 @@ class CRUDMixin:
         record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
-        record and record_insert(entity)
+        record and record_insert_signal.send(entity=entity)
 
     @classmethod
     def insert_without_record(cls: MODEL, **kwargs):
@@ -137,15 +136,15 @@ class CRUDMixin:
 
     def update(self: MODEL, **kwargs):
         record = kwargs.pop('record', True)
-        for attr, value in kwargs.items():
-            record and record_update(self, attr, value)
-            setattr(self, attr, value)
+        for column, value in kwargs.items():
+            record and record_update_signal.send(entity=self, columnname=column, newvalue=value)
+            setattr(self, column, value)
         self.submit()
 
     def delete(self: MODEL, record=True):
         """软删除"""
         setattr(self, 'DELETED', self.ID)
-        record and record_delete(self)
+        record and record_delete_signal.send(entity=self)
         self.submit()
 
     def submit(self):
@@ -173,73 +172,9 @@ class BaseColumn:
     REMARK = db.Column(db.String(64), comment='备注')
     CREATED_BY = db.Column(db.String(64), default=get_userno_or_default, comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
-    UPDATED_BY = db.Column(db.String(64), default=get_userno_or_default, onupdate=get_userno_or_default, comment='更新人')
-    UPDATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间')
-
-
-class TSystemOperationLogContent(DBModel, BaseColumn):
-    """操作日志内容表"""
-    __tablename__ = 'SYSTEM_OPERATION_LOG_CONTENT'
-    LOG_NO = db.Column(db.String(64), index=True, nullable=False, comment='日志编号')
-    OPERATION_TYPE = db.Column(db.String(32), nullable=False, comment='操作类型(INSERT:新增, UPDATE:修改, DELETE:删除)')
-    TABLE_NAME = db.Column(db.String(128), comment='列名')
-    ROW_ID = db.Column(db.Integer, comment='新增行或删除行的ID')
-    COLUMN_NAME = db.Column(db.String(128), comment='列名')
-    OLD_VALUE = db.Column(db.Text, comment='旧值')
-    NEW_VALUE = db.Column(db.Text, comment='新值')
-
-
-def get_trace_id():
-    if hasattr(g, 'trace_id'):
-        return g.trace_id
-
-    trace_id = getattr(threadlocal, 'trace_id', None)
-    if not trace_id:
-        trace_id = new_ulid()
-        setattr(threadlocal, 'trace_id', trace_id)
-    return trace_id
-
-
-def record_insert(entity):
-    """记录新增的行ID"""
-    content = TSystemOperationLogContent()
-    content.LOG_NO = get_trace_id(),
-    content.OPERATION_TYPE = 'INSERT',
-    content.TABLE_NAME = entity.__tablename__,
-    content.ROW_ID = entity.ID
-    db.session.add(content)
-    db.session.flush()
-
-
-def record_update(entity, columnname, new):
-    """记录更新数据的旧值和新值"""
-    if columnname in ['ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME']:
-        return
-    old = getattr(entity, columnname, None)
-    if old is None:
-        return
-    if isinstance(old, (dict, list)):
-        old = to_json(old)
-    if isinstance(new, (dict, list)):
-        new = to_json(new)
-    content = TSystemOperationLogContent()
-    content.LOG_NO = get_trace_id(),
-    content.OPERATION_TYPE = 'UPDATE',
-    content.TABLE_NAME = entity.__tablename__,
-    content.ROW_ID = entity.ID
-    content.COLUMN_NAME = columnname,
-    content.OLD_VALUE = old
-    content.NEW_VALUE = new
-    db.session.add(content)
-    db.session.flush()
-
-
-def record_delete(entity):
-    """记录删除的行ID"""
-    content = TSystemOperationLogContent()
-    content.LOG_NO = get_trace_id(),
-    content.OPERATION_TYPE = 'DELETE',
-    content.TABLE_NAME = entity.__tablename__,
-    content.ROW_ID = entity.ID
-    db.session.add(content)
-    db.session.flush()
+    UPDATED_BY = db.Column(
+        db.String(64), default=get_userno_or_default, onupdate=get_userno_or_default, comment='更新人'
+    )
+    UPDATED_TIME = db.Column(
+        db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间'
+    )

@@ -9,7 +9,7 @@ from flask import request
 from loguru import logger
 
 from app.extension import db
-from app.modules.opencenter.model import TOpenApiLog
+from app.signals import openapi_log_signal
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
 from app.tools.request import RequestDTO
@@ -66,10 +66,10 @@ def http_service(func):
                 # 创建失败响应
                 res = ResponseDTO(error=ErrorCode.E500000)
             finally:
-                # 记录接口耗时（毫秒）
-                elapsed_time = timestamp_as_ms() - starttime
                 # 包装http响应
                 http_res = http_response(res)
+                # 记录接口耗时
+                elapsed_time = timestamp_as_ms() - starttime
                 # 输出http响应日志
                 wlogger.info(
                     f'uri:[ {uri} ] header:[ {dict(http_res.headers)}] response:[ {res} ] elapsed:[ {elapsed_time}ms ]'
@@ -127,20 +127,19 @@ def open_service(func):
                 # 创建失败响应
                 res = ResponseDTO(error=ErrorCode.E500000)
             finally:
-                # 记录请求日志
-                TOpenApiLog.insert(
-                    LOG_NO=g.trace_id,
-                    APP_NO=g.thirdparty_app_no,
-                    URI=request.path,
-                    METHOD=request.method,
-                    REQUEST=req,
-                    RESPONSE=res,
-                    SUCCESS=res.success
-                )
                 # 包装http响应
                 http_res = http_response(res)
-                # 记录接口耗时（毫秒）
+                # 记录接口耗时
                 elapsed_time = timestamp_as_ms() - starttime
+                # 记录请求日志
+                openapi_log_signal.send(
+                    uri=request.path,
+                    method=request.method,
+                    request=req,
+                    response=res,
+                    success=res.success,
+                    elapsed=elapsed_time
+                )
                 # 输出http响应日志
                 wlogger.info(
                     f'uri:[ {uri} ] header:[ {dict(http_res.headers)}] response:[ {res} ] elapsed:[ {elapsed_time}ms ]'

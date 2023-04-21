@@ -12,10 +12,19 @@ from app.tools.response import http_response
 
 
 def inject_traceid():
-    """注入当前traceid"""
+    """注入traceid"""
     trace_id = getattr(g, 'trace_id', None)
     if not trace_id:
         g.trace_id = new_ulid()
+
+
+def inject_ip():
+    """注入请求ip"""
+    if x_forwarded_for := request.headers.get('X-Forwarded-For'):
+        ip_list = x_forwarded_for.split(',')
+        g.ip = ip_list[0]
+    else:
+        g.ip = request.remote_addr
 
 
 def record_operation_log():

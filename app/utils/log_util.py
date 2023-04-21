@@ -30,7 +30,10 @@ class InterceptHandler(logging.Handler):
             record.levelno < logging.INFO
         ):
             return
-        if ('httpx' in record.name or 'httpcore' in record.name) and record.levelno < logging.WARNING:
+        if (
+            ('httpx' in record.name or 'httpcore' in record.name or 'blinker' in record.name) and
+            record.levelno < logging.WARNING
+        ):
             return
 
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())

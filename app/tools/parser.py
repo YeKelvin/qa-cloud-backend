@@ -44,90 +44,111 @@ class Argument:
             raise TypeError('argument name must be string')
 
     def parse(self, has_key, value):
-        """解析HTTP参数
-
-        Args:
-            has_key:    key是否存在
-            value:      keyValue
-
-        Returns:        HTTP参数值
-
-        """
-        # 请求中不存在该参数
+        """解析HTTP参数"""
+        # 不存在该参数，返回默认值
         if not has_key:
-            if self.required and self.default is None:
-                # 若该参数必须且没有定义默认值则抛异常
-                raise ParseError(self.help or f'required error: {self.name} is required')
-            else:
-                # 返回默认值
-                return self.default
+            return self.get_required_default()
+
+        # 存在该参数，但值为null，返回默认值
+        if value is None:
+            return self.get_nullable_default()
 
         # 类型转换
+        value = self.convert_type(value)
+
+        # 数据校验
+        self.validate(value)
+
+        return value
+
+    def get_required_default(self):
+        if self.required and self.default is None:
+            # 若该参数为必填项、且没有定义默认值则抛出异常
+            raise ParseError(self.help or f'Required Error: {self.name} is required')
+        else:
+            # 返回默认值
+            return self.default
+
+    def get_nullable_default(self):
+        if self.default:
+            # 返回默认值
+            return self.default
+        elif not self.nullable and self.required:
+            # 若该参数为必填项、且不能为空，且没有定义默认值则抛出异常
+            raise ParseError(self.help or f'Value Error: {self.name} must not be null')
+        else:
+            # 若该参数可为空则返回None
+            return None
+
+    def convert_type(self, value):
+        # sourcery skip: raise-from-previous-error
         try:
-            if self.type == int:
-                value = self.type(value)
+            # string
+            if self.type == str:
+                if not isinstance(value, str):
+                    value = str(value)
+            # int
+            elif self.type == int:
+                if not isinstance(value, int):
+                    value = int(value)
+            # float
+            elif self.type == float:
+                if not isinstance(value, float):
+                    value = float(value)
+            # bool
             elif self.type == bool:
-                assert str(value).lower() in {'true', 'false'}
-                value = str(value).lower() == 'true'
+                value = str(value).lower()
+                assert value in {'true', 'false'}
+                value = value == 'true'
+            # list
             elif self.type == list:
-                if request.args:  # url传递数组
+                # url-query传递数组
+                if request.args:
                     value = request.args.getlist(self.name)
-                elif not isinstance(value, list):  # body传递数组
+                # body传递数组
+                if not isinstance(value, list):
                     value = from_json(value)
+                    assert isinstance(value, list)
+                # 转换为attribute对象
                 value = transform(value)
+            # dict
             elif self.type == dict:
                 if not isinstance(value, dict):
                     value = from_json(value)
+                    assert isinstance(value, dict)
+                # 转换为attribute对象
                 value = transform(value)
-        except (ValueError, AssertionError) as e:
-            raise ParseError(self.help or f'type error: {self.name} type must be {self.type}') from e
-
-        # 请求中存在该参数，但值为null
-        if value is None:
-            if self.default:
-                # 返回默认值
-                return self.default
-            elif not self.nullable and self.required:
-                # 若该参数必须、不能为空且没有定义默认值则抛异常
-                raise ParseError(self.help or f'value error: {self.name} must not be null')
             else:
-                # 若该参数可为空时，返回None
-                return None
+                raise TypeError('Invalid Type')
+            return value
+        except (TypeError, ValueError, AssertionError):
+            raise ParseError(f'Type Error: {self.name} type must be {self.type}')
 
-        # 值不为 None 时开始各种校验
-        else:
-            # 枚举校验
-            if self.enum:
-                if value not in self.enum.__members__:
-                    # 参数值不在枚举中则抛异常
-                    raise ParseError(self.help or f'value error: {self.name} invalid enumeration')
+    def validate(self, value):
+        # 枚举校验
+        if self.enum and value not in self.enum.__members__:
+            raise ParseError(self.help or f'Value Error: {self.name} invalid enumeration')
 
-            # 整型最大最小值校验
-            if self.type == int:
-                if self.min is not None and value < self.min:
-                    raise ParseError(f'value error: {self.name} cannot be less than {self.min}')
-                if self.max is not None and value > self.max:
-                    raise ParseError(f'value error: {self.name} cannot be greater than {self.max}')
+        # 整型最大最小值校验
+        if self.type == int:
+            if self.min is not None and value < self.min:
+                raise ParseError(f'Value Error: {self.name} cannot be < {self.min}')
+            if self.max is not None and value > self.max:
+                raise ParseError(f'Value Error: {self.name} cannot be > {self.max}')
 
-            # 字符串最大最小长度校验
-            if self.type == str:
-                if self.min is not None and len(value) < self.min:
-                    raise ParseError(f'value error: {self.name} length cannot be less than {self.min}')
-                if self.max is not None and len(value) > self.max:
-                    raise ParseError(f'value error: {self.name} length cannot be greater than {self.max}')
-
-        return value
+        # 字符串最大最小长度校验
+        if self.type == str:
+            if self.min is not None and len(value) < self.min:
+                raise ParseError(f'Value Error: {self.name} length cannot be < {self.min}')
+            if self.max is not None and len(value) > self.max:
+                raise ParseError(f'Value Error: {self.name} length cannot be > {self.max}')
 
 
 class JsonParser:
 
     def __init__(self, *args):
         self.data = None
-        self.args: List[Argument] = []
-        for arg in args:
-            if not isinstance(arg, Argument):
-                raise TypeError(f'{arg} is not instance of Argument class')
-            self.args.append(arg)
+        self.args: List[Argument] = args
 
     def get(self, key) -> Tuple[bool, any]:
         """通过key获取value"""
@@ -142,23 +163,29 @@ class JsonParser:
         elif isinstance(data, dict):
             self.data = data
         else:
-            raise ParseError('invalid data type for parse')
+            raise ParseError('Invalid data type for parse')
 
     def parse(self, data=None) -> RequestDTO:
         """解析HTTP请求参数"""
         dto = RequestDTO(dict)
         try:
+            # 校验非空
             if not self.args:
-                raise ParseError('arguments are not allowed to be empty')
+                raise ParseError('Arguments are not allowed to be empty')
+            # 初始化数据
             self.initialize(data)
+            # 遍历解析
             for arg in self.args:
+                if not isinstance(arg, Argument):
+                    raise TypeError(f'{arg} is not instance of Argument class')
                 dto[arg.name] = arg.parse(*self.get(arg.name))
         except ParseError as err:
             dto.__error__ = err.message
         except Exception:
             dto.__error__ = '内部错误'
             logger.exception()
-        return dto
+        finally:
+            return dto
 
 
 class ListParser:

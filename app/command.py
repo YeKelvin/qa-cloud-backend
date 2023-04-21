@@ -5,7 +5,6 @@
 import click
 from flask.cli import with_appcontext
 
-from app.database import TSystemOperationLogContent  # noqa
 from app.extension import db  # noqa
 from app.modules.public.model import TWorkspace  # noqa
 from app.modules.public.model import TWorkspaceUser  # noqa
