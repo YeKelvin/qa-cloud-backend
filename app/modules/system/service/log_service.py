@@ -7,7 +7,7 @@ from app.modules.system.model import TSystemOperationLog
 from app.modules.usercenter.model import TUser
 from app.tools.service import http_service
 from app.utils.sqlalchemy_util import QueryCondition
-from app.utils.time_util import STRFTIME_FORMAT
+from app.utils.time_util import TIMEFMT
 
 
 @http_service
@@ -41,7 +41,7 @@ def query_operation_log_list(req):
             'operationMethod': item.OPERATION_METHOD,
             'operationEndpoint': item.OPERATION_ENDPOINT,
             'operationBy': item.USER_NAME,
-            'operationTime': item.CREATED_TIME.strftime(STRFTIME_FORMAT)
+            'operationTime': item.CREATED_TIME.strftime(TIMEFMT)
         }
         for item in pagination.items
     ]

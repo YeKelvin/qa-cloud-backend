@@ -8,10 +8,10 @@ from datetime import timedelta
 from datetime import timezone
 
 
-STRFTIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+TIMEFMT = '%Y-%m-%d %H:%M:%S'
 
 
-def strftime(format: str = STRFTIME_FORMAT) -> str:
+def strftime(format: str = TIMEFMT) -> str:
     """获取当前时间并格式化为时间字符串
 
     :param format:  时间格式
@@ -40,7 +40,7 @@ def timestamp_as_micro_s() -> int:
     return int(round(time.time() * 1000000))
 
 
-def timestamp_to_strftime(format: str = STRFTIME_FORMAT, timestamp: float = 0):
+def timestamp_to_strftime(format: str = TIMEFMT, timestamp: float = 0):
     """时间戳转时间字符串
 
     :param format:      时间格式
@@ -50,7 +50,7 @@ def timestamp_to_strftime(format: str = STRFTIME_FORMAT, timestamp: float = 0):
     return time.strftime(format, time.localtime(timestamp))
 
 
-def strftime_to_timestamp_as_ms(strftime: str, format: str = STRFTIME_FORMAT):
+def strftime_to_timestamp_as_ms(strftime: str, format: str = TIMEFMT):
     """时间字符串转毫秒级时间戳
 
     :param strftime:    时间字符串
@@ -60,7 +60,7 @@ def strftime_to_timestamp_as_ms(strftime: str, format: str = STRFTIME_FORMAT):
     return int(time.mktime(time.strptime(strftime, format)) * 1000)
 
 
-def change_strftime_format(strftime: str, old_format: str, new_format: str = STRFTIME_FORMAT):
+def change_strftime_format(strftime: str, old_format: str, new_format: str = TIMEFMT):
     """更改时间字符串的格式
 
     :param strftime:    时间字符串
