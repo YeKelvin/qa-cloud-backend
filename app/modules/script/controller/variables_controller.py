@@ -180,8 +180,8 @@ def query_variables_by_dataset():
 @require_login
 @require_permission('QUERY_VARIABLE')
 def query_variables():
-    """根据列表批量查询变量
-
+    """根据列表批量查询变量"""
+    """
     Example:
     ['dataset_no', 'dataset_no']
     """
@@ -193,8 +193,8 @@ def query_variables():
 @require_login
 @require_permission('CREATE_VARIABLE')
 def create_variables():
-    """根据列表批量新增变量
-
+    """根据列表批量新增变量"""
+    """
     Example:
     {
         "datasetNo": "",
@@ -220,8 +220,8 @@ def create_variables():
 @require_login
 @require_permission('MODIFY_VARIABLE')
 def modify_variables():
-    """根据列表批量修改变量
-
+    """根据列表批量修改变量"""
+    """
     Example:
     {
         "datasetNo": "",

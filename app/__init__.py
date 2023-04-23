@@ -37,6 +37,7 @@ def create_app() -> Flask:
     register_hooks(app)
     register_shell_context(app)
     register_commands(app)
+    init_rule_map(app)
     set_app(app)
     return app
 
@@ -131,11 +132,6 @@ def register_blueprints(app: Flask):
     app.register_blueprint(restapi)
     app.register_blueprint(openapi)
 
-    # TODO: init rule map
-    # for rule in app.url_map.iter_rules():
-    #     func = app.view_functions[rule.endpoint]
-    #     print(f'{rule.rule=}, {func.__name__=}, {func.__doc__=}')
-
 
 def register_hooks(app: Flask):
     from app import hook
@@ -174,3 +170,10 @@ def orjson_serializer(obj):
 
 def orjson_deserializer(val):
     return orjson.loads(val)
+
+
+def init_rule_map(app: Flask):
+    from app.tools.cache import RULE_MAP
+
+    for rule in app.url_map.iter_rules():
+        RULE_MAP[rule.endpoint] = app.view_functions[rule.endpoint].__doc__

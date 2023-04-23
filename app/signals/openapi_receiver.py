@@ -7,6 +7,7 @@ from flask import g
 from app.extension import db
 from app.modules.opencenter.model import TOpenApiLog
 from app.signals import openapi_log_signal
+from app.utils.json_util import to_json
 
 
 @openapi_log_signal.connect
@@ -18,8 +19,8 @@ def record_openapi_log(sender, uri, method, request, response, success, elapsed)
     record.IP=g.ip,
     record.URI=uri,
     record.METHOD=method,
-    record.REQUEST=request,
-    record.RESPONSE=response,
+    record.REQUEST=to_json(request),
+    record.RESPONSE=to_json(response),
     record.SUCCESS=success
     record.ELAPSED_TIME=elapsed
     db.session.add(record)

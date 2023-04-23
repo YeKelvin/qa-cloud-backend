@@ -29,6 +29,7 @@ def query_openapi_log_list(req):
         dbquery(
             TThirdPartyApplication.APP_NAME,
             TOpenApiLog.LOG_NO,
+            TOpenApiLog.DESC,
             TOpenApiLog.IP,
             TOpenApiLog.METHOD,
             TOpenApiLog.URI,
@@ -48,6 +49,7 @@ def query_openapi_log_list(req):
             'logNo': entity.LOG_NO,
             'method': entity.METHOD,
             'path': entity.URI,
+            'desc': entity.DESC,
             'request': entity.REQUEST,
             'response': entity.RESPONSE,
             'success': entity.SUCCESS,

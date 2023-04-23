@@ -75,8 +75,8 @@ def http_service(func):
                 restapi_log_signal.send(
                     uri=request.path,
                     method=request.method,
-                    request=req,
-                    response=res,
+                    request=req.__attrs__,
+                    response=res.__dict__,
                     success=res.success,
                     elapsed=elapsed_time
                 )
@@ -145,8 +145,8 @@ def open_service(func):
                 openapi_log_signal.send(
                     uri=request.path,
                     method=request.method,
-                    request=req,
-                    response=res,
+                    request=req.__attrs__,
+                    response=res.__dict__,
                     success=res.success,
                     elapsed=elapsed_time
                 )

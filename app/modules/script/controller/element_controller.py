@@ -130,8 +130,8 @@ def create_collection():
 @require_login
 @require_permission('CREATE_ELEMENT')
 def create_element_child():
+    """新增子代元素"""
     """
-    新增子代元素
     request:
     {
         "rootNo": "",
@@ -159,8 +159,8 @@ def create_element_child():
 @require_login
 @require_permission('CREATE_ELEMENT')
 def create_element_children():
+    """根据列表新增子代元素"""
     """
-    根据列表新增子代元素
     request:
     {
         "rootNo": "",
@@ -370,8 +370,8 @@ def move_collection_to_workspace():
 @require_login
 @require_permission('CREATE_ELEMENT')
 def create_http_sampler():
+    """新增HTTP取样器"""
     """
-    新增HTTP取样器
     request:
     {
         "rootNo": "",
@@ -406,8 +406,8 @@ def create_http_sampler():
 @require_login
 @require_permission('MODIFY_ELEMENT')
 def modify_http_sampler():
+    """修改HTTP取样器"""
     """
-    修改HTTP取样器
     request:
     {
         "elementNo": "",
@@ -424,7 +424,7 @@ def modify_http_sampler():
                 "sortNumber": ""
             }
             ...
-         ],
+        ],
         "headerTemplateNos": [ ... ]
     }
     """
@@ -454,8 +454,8 @@ def query_workspace_components():
 @require_login
 @require_permission('SET_WORKSPACE_COMPONENT')
 def set_workspace_components():
+    """设置空间组件"""
     """
-    设置空间组件
     request:
     {
         "workspaceNo": "",
@@ -471,7 +471,7 @@ def set_workspace_components():
                 "sortNumber": ""
             }
             ...
-         ]
+        ]
     }
     """
     req = JsonParser(

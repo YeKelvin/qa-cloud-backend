@@ -161,6 +161,9 @@ def query_httpheaders_by_template():
 def query_httpheaders():
     """根据列表批量查询请求头"""
     req = ListParser().parse()
+    # req = JsonParser(
+    #     Argument('templates', type=list, required=True, nullable=False, help='模板编号不能为空')
+    # ).parse()
     return service.query_httpheaders(req)
 
 
@@ -168,8 +171,8 @@ def query_httpheaders():
 @require_login
 @require_permission('CREATE_HTTP_HEADER')
 def create_httpheaders():
-    """根据列表批量新增请求头
-
+    """根据列表批量新增请求头"""
+    """
     Example:
     {
         "templateNo": "",
@@ -194,8 +197,8 @@ def create_httpheaders():
 @require_login
 @require_permission('MODIFY_HTTP_HEADER')
 def modify_httpheaders():
-    """根据列表批量修改请求头
-
+    """根据列表批量修改请求头"""
+    """
     Example:
     {
         "templateNo": "",

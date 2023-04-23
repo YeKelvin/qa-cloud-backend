@@ -17,7 +17,7 @@ class TRestApiLog(DBModel, BaseColumn):
     METHOD = db.Column(db.String(128), comment='请求方法')
     REQUEST = db.Column(db.Text, comment='请求数据')
     RESPONSE = db.Column(db.Text, comment='响应数据')
-    SUCCESS = db.Column(db.String(16), comment='是否成功')
+    SUCCESS = db.Column(db.Boolean, comment='是否成功')
     ELAPSED_TIME = db.Column(db.Integer, comment='服务耗时')
 
 

@@ -13,5 +13,5 @@ record_update_signal = signal('RecordUpdate')
 record_delete_signal = signal('RecordDelete')
 
 
-from . import openapi_subscriber    # noqa
-from . import system_subscriber     # noqa
+from . import openapi_receiver  # noqa
+from . import system_receiver   # noqa
