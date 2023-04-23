@@ -131,13 +131,17 @@ def register_blueprints(app: Flask):
     app.register_blueprint(restapi)
     app.register_blueprint(openapi)
 
+    # TODO: init rule map
+    # for rule in app.url_map.iter_rules():
+    #     func = app.view_functions[rule.endpoint]
+    #     print(f'{rule.rule=}, {func.__name__=}, {func.__doc__=}')
+
 
 def register_hooks(app: Flask):
     from app import hook
 
     app.before_request(hook.inject_traceid)
     app.before_request(hook.inject_ip)
-    app.before_request(hook.record_operation_log)
 
     if FLASK_ENV == 'development':
         app.after_request(hook.cross_domain_access)

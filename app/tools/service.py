@@ -10,6 +10,7 @@ from loguru import logger
 
 from app.extension import db
 from app.signals import openapi_log_signal
+from app.signals import restapi_log_signal
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
 from app.tools.request import RequestDTO
@@ -70,6 +71,15 @@ def http_service(func):
                 http_res = http_response(res)
                 # 记录接口耗时
                 elapsed_time = timestamp_as_ms() - starttime
+                # 记录请求日志
+                restapi_log_signal.send(
+                    uri=request.path,
+                    method=request.method,
+                    request=req,
+                    response=res,
+                    success=res.success,
+                    elapsed=elapsed_time
+                )
                 # 输出http响应日志
                 wlogger.info(
                     f'uri:[ {uri} ] header:[ {dict(http_res.headers)}] response:[ {res} ] elapsed:[ {elapsed_time}ms ]'

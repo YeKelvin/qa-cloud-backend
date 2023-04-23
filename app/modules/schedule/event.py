@@ -14,7 +14,6 @@ from app.modules.schedule.dao import schedule_job_dao as ScheduleJobDao
 from app.modules.schedule.enum import JobState
 from app.modules.schedule.enum import OperationType
 from app.modules.schedule.model import TScheduleJobLog
-from app.modules.system.model import TSystemOperationLog
 from app.tools.identity import new_id
 from app.tools.identity import new_ulid
 from app.tools.locals import threadlocal
@@ -120,12 +119,13 @@ def handle_job_removed(event: JobEvent):
             if task.STATE != JobState.CLOSED.value:
                 logger.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
                 task.update(STATE=JobState.CLOSED.value)
+            # TODO: 优化日志
             # 记录操作日志
-            TSystemOperationLog.insert(
-                LOG_NO=threadlocal.trace_id,
-                OPERATION_SOURCE='APSCHEDULER',
-                OPERATION_EVENT='EVENT_JOB_REMOVED'
-            )
+            # TSystemOperationLog.insert(
+            #     LOG_NO=threadlocal.trace_id,
+            #     OPERATION_SOURCE='APSCHEDULER',
+            #     OPERATION_EVENT='EVENT_JOB_REMOVED'
+            # )
             # 新增历史记录
             TScheduleJobLog.insert(
                 JOB_NO=task.JOB_NO,
@@ -160,12 +160,13 @@ def handle_job_submitted(event: JobSubmissionEvent):
             task = ScheduleJobDao.select_by_no(event.job_id)
             if not task:
                 return
+            # TODO: 优化日志
             # 记录操作日志
-            TSystemOperationLog.insert(
-                LOG_NO=threadlocal.trace_id,
-                OPERATION_SOURCE='APSCHEDULER',
-                OPERATION_EVENT='EVENT_JOB_SUBMITTED'
-            )
+            # TSystemOperationLog.insert(
+            #     LOG_NO=threadlocal.trace_id,
+            #     OPERATION_SOURCE='APSCHEDULER',
+            #     OPERATION_EVENT='EVENT_JOB_SUBMITTED'
+            # )
             # 新增历史记录
             TScheduleJobLog.insert(
                 JOB_NO=task.JOB_NO,

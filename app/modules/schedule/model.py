@@ -40,3 +40,6 @@ class TScheduleJobChangeDetails(DBModel, BaseColumn):
     CHANGE_TYPE = db.Column(db.String(32), comment='参数类型(JOB, TRIGGER)')
     CHANGE_FROM = db.Column(JSONB, nullable=False, comment='变更前的参数')
     CHANGE_TO = db.Column(JSONB, nullable=False, comment='变更后的参数')
+
+# TODO: log???
+# class TScheduleLog

@@ -5,8 +5,6 @@
 from flask import g
 from flask import request
 
-from app.extension import db
-from app.modules.system.model import TSystemOperationLog
 from app.tools.identity import new_ulid
 from app.tools.response import http_response
 
@@ -25,20 +23,6 @@ def inject_ip():
         g.ip = ip_list[0]
     else:
         g.ip = request.remote_addr
-
-
-def record_operation_log():
-    # 过滤无需记录的操作
-    if request.method not in ['POST', 'PUT', 'DELETE']:
-        return
-    # 记录操作日志
-    oplog = TSystemOperationLog()
-    oplog.LOG_NO = g.trace_id,
-    oplog.OPERATION_SOURCE = 'HTTP'
-    oplog.OPERATION_METHOD = request.method,
-    oplog.OPERATION_ENDPOINT = request.path
-    db.session.add(oplog)
-    db.session.flush()
 
 
 def cross_domain_access(response):

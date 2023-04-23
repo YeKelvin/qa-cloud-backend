@@ -5,7 +5,7 @@
 from flask import Blueprint
 
 
-blueprint = Blueprint('user', __name__, url_prefix='/usercenter')
+blueprint = Blueprint('usercenter', __name__, url_prefix='/usercenter')
 
 
 from . import auth_controller               # noqa

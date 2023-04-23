@@ -7,14 +7,18 @@ from app.database import DBModel
 from app.database import db
 
 
-class TSystemOperationLog(DBModel, BaseColumn):
-    """操作日志表"""
-    __tablename__ = 'SYSTEM_OPERATION_LOG'
-    LOG_NO = db.Column(db.String(64), index=True, nullable=False, comment='日志编号')
-    OPERATION_SOURCE = db.Column(db.String(32), comment='操作来源(HTTP, APSCHEDULER)')
-    OPERATION_METHOD = db.Column(db.String(128), comment='操作方法')
-    OPERATION_ENDPOINT = db.Column(db.String(256), comment='操作路由')
-    OPERATION_EVENT = db.Column(db.String(256), comment='操作事件')
+class TRestApiLog(DBModel, BaseColumn):
+    """RestAPI日志表"""
+    __tablename__ = 'REST_API_LOG'
+    LOG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='日志编号')
+    DESC = db.Column(db.String(256), comment='请求描述')
+    IP = db.Column(db.String(32), comment='请求IP')
+    URI = db.Column(db.String(256), comment='请求路径')
+    METHOD = db.Column(db.String(128), comment='请求方法')
+    REQUEST = db.Column(db.Text, comment='请求数据')
+    RESPONSE = db.Column(db.Text, comment='响应数据')
+    SUCCESS = db.Column(db.String(16), comment='是否成功')
+    ELAPSED_TIME = db.Column(db.Integer, comment='服务耗时')
 
 
 class TSystemOperationLogContent(DBModel, BaseColumn):

@@ -29,11 +29,13 @@ def query_openapi_log_list(req):
         dbquery(
             TThirdPartyApplication.APP_NAME,
             TOpenApiLog.LOG_NO,
+            TOpenApiLog.IP,
             TOpenApiLog.METHOD,
             TOpenApiLog.URI,
             TOpenApiLog.REQUEST,
             TOpenApiLog.RESPONSE,
             TOpenApiLog.SUCCESS,
+            TOpenApiLog.ELAPSED_TIME,
             TOpenApiLog.CREATED_TIME
         )
         .filter(*conds)
@@ -44,13 +46,15 @@ def query_openapi_log_list(req):
     data = [
         {
             'logNo': entity.LOG_NO,
-            'appName': entity.APP_NAME,
             'method': entity.METHOD,
             'path': entity.URI,
             'request': entity.REQUEST,
             'response': entity.RESPONSE,
             'success': entity.SUCCESS,
-            'createTime': entity.CREATED_TIME.strftime(TIMEFMT)
+            'elapsedTime': entity.ELAPSED_TIME,
+            'appName': entity.APP_NAME,
+            'invokeIp': entity.IP,
+            'invokeTime': entity.CREATED_TIME.strftime(TIMEFMT)
         }
         for entity in pagination.items
     ]

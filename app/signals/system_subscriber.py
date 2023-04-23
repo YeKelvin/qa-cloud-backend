@@ -6,13 +6,44 @@
 from flask import g
 
 from app.extension import db
+from app.modules.system.model import TRestApiLog
 from app.modules.system.model import TSystemOperationLogContent
 from app.signals import record_delete_signal
 from app.signals import record_insert_signal
 from app.signals import record_update_signal
+from app.signals import restapi_log_signal
 from app.tools.identity import new_ulid
 from app.tools.locals import threadlocal
 from app.utils.json_util import to_json
+
+
+# resrapi排除列表
+URI_EXCLUDE = ['/execute']
+
+
+@restapi_log_signal.connect
+def record_restapi_log(sender, uri, method, request, response, success, elapsed):
+    """记录restapi调用日志（POST、PUT、DELETE）"""
+    # 仅记录POST、PUT或DELETE的请求
+    if request.method not in ['POST', 'PUT', 'DELETE']:
+        return
+    # 过滤指定路径的请求
+    for path in URI_EXCLUDE:
+        if path in uri:
+            return
+    # 记录日志
+    record = TRestApiLog()
+    record.LOG_NO=g.trace_id,
+    # record.DESC=g.restapi_desc, # TODO: 从map取描述
+    record.IP=g.ip,
+    record.URI=uri,
+    record.METHOD=method,
+    record.REQUEST=request,
+    record.RESPONSE=response,
+    record.SUCCESS=success
+    record.ELAPSED_TIME=elapsed
+    db.session.add(record)
+    db.session.flush()
 
 
 @record_insert_signal.connect
@@ -27,7 +58,8 @@ def record_insert(sender, entity):
     db.session.flush()
 
 
-FILTERED_UPDATE_COLUMNS = [
+# 数据更新排除列名
+UPDATE_COLUMN_EXCLUDE = [
     'ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME'
 ]
 
@@ -35,7 +67,7 @@ FILTERED_UPDATE_COLUMNS = [
 @record_update_signal.connect
 def record_update(sender, entity, columnname, newvalue):
     """记录更新数据"""
-    if columnname in FILTERED_UPDATE_COLUMNS:
+    if columnname in UPDATE_COLUMN_EXCLUDE:
         return
     oldvalue = getattr(entity, columnname, None)
     if oldvalue is None:
