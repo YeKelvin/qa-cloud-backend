@@ -311,8 +311,7 @@ def query_httpheaders_by_template(req):
 @http_service
 def query_httpheaders(req):
     result = []
-    for template_no in req.list:
-    # for template_no in req.templates:
+    for template_no in req.templates:
         # 查询模板
         template = HttpheaderTemplateDao.select_by_no(template_no)
         if not template:

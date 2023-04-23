@@ -102,9 +102,6 @@ class Argument:
                 value = value == 'true'
             # list
             elif self.type == list:
-                # url-query传递数组
-                if request.args:
-                    value = request.args.getlist(self.name)
                 # body传递数组
                 if not isinstance(value, list):
                     value = from_json(value)
@@ -150,9 +147,14 @@ class JsonParser:
         self.data = None
         self.args: List[Argument] = args
 
-    def get(self, key) -> Tuple[bool, any]:
+    def get(self, key, argtype) -> Tuple[bool, any]:
         """通过key获取value"""
-        return key in self.data, self.data.get(key)
+        if request.method == 'GET' and argtype == list:
+            value = request.args.getlist(key)
+        else:
+            value = self.data.get(key)
+        # 返回是否存在key和值
+        return key in self.data, value
 
     def initialize(self, data) -> None:
         """把HTTP请求参数转换为Json对象"""
@@ -178,43 +180,11 @@ class JsonParser:
             for arg in self.args:
                 if not isinstance(arg, Argument):
                     raise TypeError(f'{arg} is not instance of Argument class')
-                dto[arg.name] = arg.parse(*self.get(arg.name))
+                dto[arg.name] = arg.parse(*self.get(arg.name, arg.type))
         except ParseError as err:
             dto.__error__ = err.message
-        except Exception:
+        except Exception as e:
             dto.__error__ = '内部错误'
-            logger.exception()
+            logger.exception(e)
         finally:
             return dto
-
-
-class ListParser:
-    # TODO: 干掉
-
-    def __init__(self):
-        self.data = None
-
-    def initialize(self, data) -> None:
-        if not data:
-            self.data = request.json if request.is_json else list(request.values.values())
-        elif isinstance(data, str):
-            self.data = from_json(data)
-        elif isinstance(data, list):
-            self.data = data
-        elif isinstance(data, dict):
-            raise ParseError('data type is a dict, please use JsonParser')
-        else:
-            raise ParseError('invalid data type for parse')
-
-    def parse(self, data=None) -> RequestDTO:
-        """解析HTTP请求参数"""
-        dto = RequestDTO(list)
-        try:
-            self.initialize(data)
-            dto.list = transform(self.data)
-        except ParseError as err:
-            dto.__error__ = err.message
-        except Exception:
-            dto.__error__ = '内部错误'
-            logger.exception()
-        return dto

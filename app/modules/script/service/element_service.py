@@ -1127,7 +1127,7 @@ def add_element_builtin(root_no, parent_no, builtin):
 @http_service
 def modify_element_builtins(req):
     # TODO: 干掉
-    for builtin in req.list:
+    for builtin in req.elements:
         # 校验空间权限
         check_workspace_permission(get_workspace_no(get_root_no(builtin.elementNo)))
         # 更新内置元素

@@ -7,7 +7,6 @@ from app.modules.script.enum import PasteType
 from app.modules.script.service import element_service as service
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-from app.tools.parser import ListParser
 from app.tools.require import require_login
 from app.tools.require import require_permission
 
@@ -338,7 +337,9 @@ def create_element_builtins():
 @require_permission('MODIFY_ELEMENT')
 def modify_element_builtins():
     """修改内置元素"""
-    req = ListParser().parse()
+    req = JsonParser(
+        Argument('elements', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.modify_element_builtins(req)
 
 

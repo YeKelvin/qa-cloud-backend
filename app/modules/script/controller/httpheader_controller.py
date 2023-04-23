@@ -6,7 +6,6 @@ from app.modules.script.controller import blueprint
 from app.modules.script.service import httpheader_service as service
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-from app.tools.parser import ListParser
 from app.tools.require import require_login
 from app.tools.require import require_permission
 
@@ -160,10 +159,9 @@ def query_httpheaders_by_template():
 @require_permission('QUERY_HTTP_HEADER')
 def query_httpheaders():
     """根据列表批量查询请求头"""
-    req = ListParser().parse()
-    # req = JsonParser(
-    #     Argument('templates', type=list, required=True, nullable=False, help='模板编号不能为空')
-    # ).parse()
+    req = JsonParser(
+        Argument('templates', type=list, required=True, nullable=False, help='模板编号不能为空')
+    ).parse()
     return service.query_httpheaders(req)
 
 

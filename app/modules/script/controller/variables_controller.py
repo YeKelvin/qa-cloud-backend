@@ -7,7 +7,6 @@ from app.modules.script.enum import VariableDatasetType
 from app.modules.script.service import variables_service as service
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
-from app.tools.parser import ListParser
 from app.tools.require import require_login
 from app.tools.require import require_permission
 
@@ -181,11 +180,9 @@ def query_variables_by_dataset():
 @require_permission('QUERY_VARIABLE')
 def query_variables():
     """根据列表批量查询变量"""
-    """
-    Example:
-    ['dataset_no', 'dataset_no']
-    """
-    req = ListParser().parse()
+    req = JsonParser(
+        Argument('datasets', required=True, nullable=False, help='变量集编号不能为空')
+    ).parse()
     return service.query_variables(req)
 
 

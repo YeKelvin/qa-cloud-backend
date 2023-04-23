@@ -364,7 +364,7 @@ def query_variable_by_dataset(req):
 @http_service
 def query_variables(req):
     result = []
-    for dataset_no in req.list:
+    for dataset_no in req.datasets:
         # 查询变量集信息
         dataset = VariableDatasetDao.select_by_no(dataset_no)
         if not dataset:
