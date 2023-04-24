@@ -56,6 +56,7 @@ def login(req):
         # 查询用户
         user = UserDao.select_by_no(login_info.USER_NO)
         check_exists(user, error_msg='账号或密码不正确')
+        localvars.set('user_no', user.USER_NO)
 
         # 校验用户状态
         if user.STATE != UserState.ENABLE.value:

@@ -21,9 +21,5 @@ def get_issued_at():
     return getattr(g, 'issued_at', None)
 
 
-def get_success():
-    return getattr(g, 'success', None)
-
-
 def set(key, value):  # noqa
     g.setdefault(key, value)

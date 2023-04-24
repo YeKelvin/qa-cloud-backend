@@ -73,8 +73,8 @@ def http_service(func):
                 elapsed_time = timestamp_as_ms() - starttime
                 # 记录请求日志
                 restapi_log_signal.send(
-                    uri=request.path,
                     method=request.method,
+                    uri=request.path,
                     request=req.__attrs__,
                     response=res.__dict__,
                     success=res.success,
@@ -143,8 +143,8 @@ def open_service(func):
                 elapsed_time = timestamp_as_ms() - starttime
                 # 记录请求日志
                 openapi_log_signal.send(
-                    uri=request.path,
                     method=request.method,
+                    uri=request.path,
                     request=req.__attrs__,
                     response=res.__dict__,
                     success=res.success,

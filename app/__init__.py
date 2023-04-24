@@ -173,7 +173,15 @@ def orjson_deserializer(val):
 
 
 def init_rule_map(app: Flask):
+    """缓存接口路径和注释，用于记录请求日志"""
     from app.tools.cache import RULE_MAP
 
-    for rule in app.url_map.iter_rules():
-        RULE_MAP[rule.endpoint] = app.view_functions[rule.endpoint].__doc__
+    required_methods = ['GET', 'POST', 'PUT', 'DELETE']
+    for api in app.url_map.iter_rules():
+        method = None
+        for m in api.methods:
+            if m in required_methods:
+                method = m
+        if not method:
+            continue
+        RULE_MAP[f'{method} {api.rule}'] = app.view_functions[api.endpoint].__doc__

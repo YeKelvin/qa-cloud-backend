@@ -11,7 +11,7 @@ from app.utils.json_util import to_json
 
 
 @openapi_log_signal.connect
-def record_openapi_log(sender, uri, method, request, response, success, elapsed):
+def record_openapi_log(sender, method, uri, request, response, success, elapsed):
     """记录openapi调用日志（POST、PUT、DELETE）"""
     record = TOpenApiLog()
     record.LOG_NO=g.trace_id,

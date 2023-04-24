@@ -4,6 +4,7 @@
 # @Author  : Kelvin.Ye
 # from loguru import logger
 from flask import g
+from loguru import logger
 
 from app.extension import db
 from app.modules.system.model import TRestApiLog
@@ -23,7 +24,7 @@ URI_EXCLUDE = ['/execute']
 
 
 @restapi_log_signal.connect
-def record_restapi_log(sender, uri, method, request, response, success, elapsed):
+def record_restapi_log(sender, method, uri, request, response, success, elapsed):
     """记录restapi调用日志（POST、PUT、DELETE）"""
     # 仅记录POST、PUT或DELETE的请求
     if method not in ['POST', 'PUT', 'DELETE']:
@@ -32,10 +33,14 @@ def record_restapi_log(sender, uri, method, request, response, success, elapsed)
     for path in URI_EXCLUDE:
         if path in uri:
             return
+    # 获取接口描述
+    desc = RULE_MAP.get(f'{method} {uri}')
+    if not desc:
+        logger.warning(f'uri:[ {method} {uri} ] 缺失接口描述')
     # 记录日志
     record = TRestApiLog()
     record.LOG_NO=g.trace_id,
-    record.DESC=RULE_MAP[uri]
+    record.DESC=desc
     record.IP=g.ip,
     record.URI=uri,
     record.METHOD=method,
