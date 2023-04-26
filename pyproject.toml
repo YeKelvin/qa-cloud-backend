@@ -20,7 +20,7 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.8"
 # Flask
-flask = "2.2.3"
+flask = "2.3.1"
 flask-sqlalchemy = "3.0.3"
 flask-socketio = "5.3.3"
 flask-migrate = "4.0.4"

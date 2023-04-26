@@ -2,8 +2,6 @@
 # @File    : __init__.py
 # @Time    : 2019/11/7 9:39
 # @Author  : Kelvin.Ye
-import os
-
 import orjson
 from apscheduler.events import EVENT_ALL
 from apscheduler.events import EVENT_JOB_ADDED
@@ -15,6 +13,7 @@ from apscheduler.events import EVENT_JOB_REMOVED
 from apscheduler.events import EVENT_JOB_SUBMITTED
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from flask import Flask
+from flask.json.provider import JSONProvider
 
 from app import config as CONFIG
 from app.extension import apscheduler
@@ -25,12 +24,22 @@ from app.extension import socketio
 
 __app__ = None
 
-FLASK_ENV = os.environ.get('FLASK_ENV')
-FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
+
+class ORJSONProvider(JSONProvider):
+    def __init__(self, *args, **kwargs):
+        self.options = kwargs
+        super().__init__(*args, **kwargs)
+
+    def loads(self, s, **kwargs):
+        return orjson.loads(s)
+
+    def dumps(self, obj, **kwargs):
+        return orjson.dumps(obj, option=orjson.OPT_NON_STR_KEYS).decode('utf-8')
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    app.json = ORJSONProvider(app)
     configure_flask(app)
     register_extensions(app)
     register_blueprints(app)
@@ -59,7 +68,7 @@ def get_app() -> Flask:
 def configure_flask(app: Flask):
     # https://viniciuschiele.github.io/flask-apscheduler/rst/api.html
     scheduler_api_enabled = False
-    if FLASK_ENV == 'development':
+    if app.debug:
         scheduler_api_enabled = True
         scheduler_executors = {'default': {'type': 'threadpool', 'max_workers': 10}}
     else:
@@ -139,7 +148,7 @@ def register_hooks(app: Flask):
     app.before_request(hook.inject_traceid)
     app.before_request(hook.inject_ip)
 
-    if FLASK_ENV == 'development':
+    if app.debug:
         app.after_request(hook.cross_domain_access)
 
 

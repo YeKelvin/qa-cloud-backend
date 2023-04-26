@@ -14,24 +14,14 @@ from flask_sqlalchemy import SQLAlchemy
 from app import config as CONFIG
 
 
-FLASK_ENV = os.environ.get('FLASK_ENV')
-FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
+FLASK_DEBUG = bool(os.environ.get('FLASK_DEBUG'))
 
+sio_opts = {}
+if FLASK_DEBUG:
+    sio_opts['cors_allowed_origins'] = '*'
 
 db = SQLAlchemy()
 migrate = Migrate()
+socketio = SocketIO(**sio_opts)
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
-
-if FLASK_ENV == 'development':
-    apscheduler = APScheduler()
-else:
-    apscheduler = APScheduler(GeventScheduler())
-
-
-sio_kwargs = {}
-if FLASK_ENV == 'development':
-    sio_kwargs['cors_allowed_origins'] = '*'
-if FLASK_DEBUG == '1':
-    sio_kwargs['logger'] = True
-    sio_kwargs['engineio_logger'] = True
-socketio = SocketIO(**sio_kwargs)
+apscheduler = APScheduler() if FLASK_DEBUG else APScheduler(GeventScheduler())

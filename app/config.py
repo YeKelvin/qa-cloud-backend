@@ -31,8 +31,6 @@ BASE_URL = __config__.get('service', 'baseurl')
 # 日志相关配置
 LOG_FILE = __config__.get('log', 'file')
 LOG_LEVEL = __config__.get('log', 'level')
-if os.environ.get('FLASK_ENV') == 'development':
-    LOG_FILE = 'app.log'
 
 # 数据库相关配置
 DB_TYPE = __config__.get('db', 'type')
