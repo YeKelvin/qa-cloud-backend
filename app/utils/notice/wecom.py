@@ -2,7 +2,7 @@
 # @File    : wecom.py
 # @Time    : 2022-05-08 15:13:18
 # @Author  : Kelvin.Ye
-import requests
+import httpx
 from loguru import logger
 
 from app.utils.json_util import to_json
@@ -19,7 +19,8 @@ def send_text_message(robotkey: str, content: str, mentioned_list: list = None, 
     Args:
         robotkey (str): 机器人唯一标识
         content (str): 文本内容，最长不超过2048个字节，必须是utf8编码
-        mentioned_list (list): userid的列表，提醒群中的指定成员(@某个成员)，@all表示提醒所有人，如果开发者获取不到userid，可以使用mentioned_mobile_list
+        mentioned_list (list):  userid的列表，提醒群中的指定成员(@某个成员)，
+                                @all表示提醒所有人，如果开发者获取不到userid，可以使用mentioned_mobile_list
         mentioned_mobile_list (list): 手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人
     """
     data = {
@@ -30,7 +31,7 @@ def send_text_message(robotkey: str, content: str, mentioned_list: list = None, 
             'mentioned_mobile_list': mentioned_mobile_list or []
         }
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
@@ -47,7 +48,7 @@ def send_markdown_message(robotkey: str, content: str):
             'content': content
         }
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
@@ -66,7 +67,7 @@ def send_image_message(robotkey: str, base64: str, md5: str):
             'md5': md5
         }
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
@@ -87,7 +88,7 @@ def send_news_message(robotkey: str, articles: list):
             'articles': articles
         }
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
@@ -104,12 +105,13 @@ def send_file_message(robotkey: str, media_id: str):
             'media_id': media_id
         }
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')
 
 
 def send_textcard_message(robotkey: str, card: dict):
-    """
+    """e.g
+
     {
         'template_card': {
             'card_type': 'text_notice',
@@ -161,5 +163,5 @@ def send_textcard_message(robotkey: str, card: dict):
         'msgtype': 'template_card',
         'template_card': card
     }
-    res = requests.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
+    res = httpx.post(url=f'{webhookurl}{robotkey}', headers=headers, data=to_json(data).encode(encoding=encoding))
     res.status_code != 200 and logger.error(f'发送企业微信通知失败，接口响应: {res.text}')

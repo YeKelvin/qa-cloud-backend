@@ -20,9 +20,9 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.8"
 # Flask
-flask = "2.3.1"
+flask = "2.3.2"
 flask-sqlalchemy = "3.0.3"
-flask-socketio = "5.3.3"
+flask-socketio = "5.3.4"
 flask-migrate = "4.0.4"
 flask-apscheduler = "1.12.4"
 # job
@@ -36,8 +36,6 @@ pyjwt = "2.5.0"
 # Environment
 python-dotenv = "1.0.0"
 environs = "9.5.0"
-# HTTP
-requests="*"
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
 
