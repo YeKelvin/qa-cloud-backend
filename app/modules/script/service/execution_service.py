@@ -76,7 +76,7 @@ def debug_pymeter(script, sid):
         Runner.start([script], throw_ex=True, extra={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
-        logger.exception()
+        logger.exception('Exception Occurred')
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
 
 
@@ -93,7 +93,7 @@ def debug_pymeter_by_loader(loader, app, sid):
         Runner.start([script], throw_ex=True, extra={'sio': socketio, 'sid': sid})
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
-        logger.exception()
+        logger.exception('Exception Occurred')
         socketio.emit(
             'pymeter_result_summary',
             {'resultId': result_id, 'result': {'name': 'error', 'loading': False, 'running': False}},

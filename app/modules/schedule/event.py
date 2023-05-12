@@ -137,7 +137,7 @@ def handle_job_removed(event: JobEvent):
             # 需要手动提交
             db.session.commit()
         except Exception:
-            logger.exception()
+            logger.exception('Exception Occurred')
 
 
 def handle_job_modified(event: JobEvent):
@@ -179,7 +179,7 @@ def handle_job_submitted(event: JobSubmissionEvent):
             # 需要手动提交
             db.session.commit()
         except Exception:
-            logger.exception()
+            logger.exception('Exception Occurred')
 
 
 def handle_job_max_instances(event: JobSubmissionEvent):

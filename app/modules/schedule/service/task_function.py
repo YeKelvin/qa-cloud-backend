@@ -37,7 +37,7 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
         try:
             Runner.start([script], throw_ex=True)
         except Exception:
-            logger.exception()
+            logger.exception('Exception Occurred')
 
 
 def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
@@ -62,7 +62,7 @@ def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
         try:
             Runner.start([script], throw_ex=True)
         except Exception:
-            logger.exception()
+            logger.exception('Exception Occurred')
 
 
 TASK_FUNC = {
