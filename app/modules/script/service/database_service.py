@@ -6,7 +6,7 @@ from app.database import dbquery
 from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
-from app.modules.script.dao import database_config_dao as DatabaseConfigDao
+from app.modules.script.dao import database_config_dao
 from app.modules.script.model import TDatabaseConfig
 from app.tools import localvars
 from app.tools.identity import new_id
@@ -148,7 +148,7 @@ def query_database_engine_all_in_private():
 @http_service
 def query_database_engine_info(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
 
     return {
@@ -173,7 +173,7 @@ def create_database_engine(req):
     check_workspace_permission(req.workspaceNo)
 
     # 唯一性校验
-    engine = DatabaseConfigDao.select_first(
+    engine = database_config_dao.select_first(
         WORKSPACE_NO=req.workspaceNo,
         CONFIG_NAME=req.configName,
         DATABASE_TYPE=req.databaseType
@@ -204,7 +204,7 @@ def create_database_engine(req):
 @http_service
 def modify_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
@@ -229,7 +229,7 @@ def modify_database_engine(req):
 @http_service
 def remove_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
@@ -242,7 +242,7 @@ def remove_database_engine(req):
 @http_service
 def duplicate_database_engine(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
@@ -272,7 +272,7 @@ def duplicate_database_engine(req):
 @http_service
 def copy_database_engine_to_workspace(req):
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
 
     # 校验空间权限
@@ -304,7 +304,7 @@ def move_database_engine_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
     # 查询数据库引擎
-    engine = DatabaseConfigDao.select_by_no(req.configNo)
+    engine = database_config_dao.select_by_no(req.configNo)
     check_exists(engine, error_msg='数据库引擎不存在')
     # 移动数据库引擎
     engine.update(WORKSPACE_NO=req.workspaceNo)

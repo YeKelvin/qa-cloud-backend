@@ -2,25 +2,26 @@
 # @File    : element_service.py
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
+# sourcery skip: dont-import-test-modules
 from typing import Iterable
 from typing import List
 
 from loguru import logger
 
 from app.database import dbquery
-from app.modules.public.dao import workspace_dao as WorkspaceDao
+from app.modules.public.dao import workspace_dao
 from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
-from app.modules.script.dao import element_builtin_children_dao as ElementBuiltinChildrenDao
-from app.modules.script.dao import element_children_dao as ElementChildrenDao
-from app.modules.script.dao import element_options_dao as ElementOptionsDao
-from app.modules.script.dao import element_property_dao as ElementPropertyDao
-from app.modules.script.dao import http_header_template_dao as HttpHeaderTemplateDao
-from app.modules.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
-from app.modules.script.dao import test_element_dao as TestElementDao
-from app.modules.script.dao import workspace_collection_dao as WorkspaceCollectionDao
-from app.modules.script.dao import workspace_component_dao as WorkspaceComponentDao
+from app.modules.script.dao import element_builtin_children_dao
+from app.modules.script.dao import element_children_dao
+from app.modules.script.dao import element_options_dao
+from app.modules.script.dao import element_property_dao
+from app.modules.script.dao import http_header_template_dao
+from app.modules.script.dao import http_header_template_ref_dao
+from app.modules.script.dao import test_element_dao
+from app.modules.script.dao import workspace_collection_dao
+from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ComponentSortWeight
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
@@ -54,7 +55,7 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
-    if not (relation := ElementChildrenDao.select_by_child(element_no)):
+    if not (relation := element_children_dao.select_by_child(element_no)):
         return element_no
     if not relation.ROOT_NO:
         raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
@@ -63,7 +64,7 @@ def get_root_no(element_no):
 
 def get_workspace_no(collection_no) -> str:
     """获取元素空间编号"""
-    if workspace_collection := WorkspaceCollectionDao.select_by_collection(collection_no):
+    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
         return workspace_collection.WORKSPACE_NO
     else:
         raise ServiceError('查询元素空间失败')
@@ -305,7 +306,7 @@ def query_element_all_with_children(req):
 @http_service
 def query_element_info(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
 
     # 查询元素属性
@@ -328,7 +329,7 @@ def query_element_info(req):
 def get_element_property(element_no):
     """查询元素属性"""
     properties = {}
-    props = ElementPropertyDao.select_all_by_element(element_no)
+    props = element_property_dao.select_all_by_element(element_no)
     for prop in props:
         if prop.PROPERTY_TYPE in ['DICT', 'LIST']:
             properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
@@ -339,7 +340,7 @@ def get_element_property(element_no):
 
 def get_element_options(element_no):
     """查询元素选项"""
-    opts = ElementOptionsDao.select_all_by_element(element_no)
+    opts = element_options_dao.select_all_by_element(element_no)
     return {
         opt.OPTION_NAME: opt.OPTION_VALUE
         for opt in opts
@@ -355,7 +356,7 @@ def query_element_children(req):
 def query_elements_children(req):
     result = []
     for element_no in req.elementNos:
-        element = TestElementDao.select_by_no(element_no)
+        element = test_element_dao.select_by_no(element_no)
         if not element:
             logger.warning(f'elementNo:[ {element_no} ] 元素不存在')
             continue
@@ -377,7 +378,7 @@ def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
     # 查询元素所有子代关系
-    children_relations = ElementChildrenDao.select_all_by_parent(parent_no)
+    children_relations = element_children_dao.select_all_by_parent(parent_no)
     if not children_relations:
         return result
 
@@ -385,7 +386,7 @@ def get_element_children(parent_no, depth):
     children_relations.sort(key=lambda k: k.SORT_NO)
     for relation in children_relations:
         # 查询子代元素
-        if element := TestElementDao.select_by_no(relation.CHILD_NO):
+        if element := test_element_dao.select_by_no(relation.CHILD_NO):
             # 递归查询子代
             children = depth and get_element_children(relation.CHILD_NO, depth) or []
             result.append({
@@ -405,7 +406,7 @@ def get_element_children(parent_no, depth):
 @http_service
 def create_collection(req):
     # 校验工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 校验空间权限
@@ -475,7 +476,7 @@ def update_element_options(element_no, element_options):
         return
     # 遍历更新元素属性
     for name, value in element_options.items():
-        if option := ElementOptionsDao.select_by_element_and_name(element_no, name):
+        if option := element_options_dao.select_by_element_and_name(element_no, name):
             option.update(OPTION_VALUE=value)
         else:
             TElementOptions.insert(
@@ -484,7 +485,7 @@ def update_element_options(element_no, element_options):
                 OPTION_VALUE=value
             )
     # 删除请求中没有的属性
-    ElementOptionsDao.delete_all_by_element_and_notin_name(element_no, list(element_options.keys()))
+    element_options_dao.delete_all_by_element_and_notin_name(element_no, list(element_options.keys()))
 
 
 @http_service
@@ -520,7 +521,7 @@ def add_element_child(root_no, parent_no, child: dict):
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
         CHILD_NO=element_no,
-        SORT_NO=ElementChildrenDao.next_serial_number_by_parent(parent_no)
+        SORT_NO=element_children_dao.next_serial_number_by_parent(parent_no)
     )
     # 新建内置元素
     add_element_builtins(root_no=root_no, parent_no=element_no, builtins=child.get('builtins'))
@@ -565,7 +566,7 @@ def update_element(
         element_options: dict = None
 ):
     # 查询元素
-    element = TestElementDao.select_by_no(element_no)
+    element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
     # 更新元素
     element.update(
@@ -589,7 +590,7 @@ def remove_element(req):
 def delete_element(element_no):
     """递归删除元素"""
     # 查询元素
-    element = TestElementDao.select_by_no(element_no)
+    element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
 
     # 递归删除元素子代和子代关联
@@ -611,12 +612,12 @@ def delete_element(element_no):
 def delete_element_children(parent_no):
     """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、子代内置元素和子代内置元素属性）"""
     # 查询所有子代关联列表
-    children_relations = ElementChildrenDao.select_all_by_parent(parent_no)
+    children_relations = element_children_dao.select_all_by_parent(parent_no)
     for relation in children_relations:
         # 如果子代存在内置元素，一并删除
         delete_element_builtins_by_parent(relation.CHILD_NO)
         # 查询子代元素
-        child = TestElementDao.select_by_no(relation.CHILD_NO)
+        child = test_element_dao.select_by_no(relation.CHILD_NO)
         # 递归删除子代元素的子代和关联
         delete_element_children(relation.CHILD_NO)
         # 删除子代元素属性
@@ -629,7 +630,7 @@ def delete_element_children(parent_no):
 
 def delete_element_child(child_no):
     # 如果子代存在父级关联，则删除关联并重新排序子代元素
-    if relation := ElementChildrenDao.select_by_child(child_no):
+    if relation := element_children_dao.select_by_child(child_no):
         # 重新排序父级子代
         TElementChildren.filter(
             TElementChildren.PARENT_NO == relation.PARENT_NO, TElementChildren.SORT_NO > relation.SORT_NO
@@ -642,7 +643,7 @@ def delete_element_child(child_no):
 
 def delete_element_property(element_no):
     # 查询所有元素属性
-    props = ElementPropertyDao.select_all_by_element(element_no)
+    props = element_property_dao.select_all_by_element(element_no)
     for prop in props:
         prop.delete()
 
@@ -650,7 +651,7 @@ def delete_element_property(element_no):
 @http_service
 def enable_element(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
@@ -663,7 +664,7 @@ def enable_element(req):
 @http_service
 def disable_element(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
 
     # 校验空间权限
@@ -676,7 +677,7 @@ def disable_element(req):
 @http_service
 def toggle_element_state(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -713,7 +714,7 @@ def update_element_property(element_no, element_property: dict):
     # 遍历更新元素属性
     for name, value in element_property.items():
         # 查询元素属性
-        prop = ElementPropertyDao.select_by_element_and_name(element_no, name)
+        prop = element_property_dao.select_by_element_and_name(element_no, name)
         property_type = 'STR'
         if isinstance(value, dict):
             property_type = 'DICT'
@@ -733,13 +734,13 @@ def update_element_property(element_no, element_property: dict):
                 PROPERTY_TYPE=property_type
             )
     # 删除请求中没有的属性
-    ElementPropertyDao.delete_all_by_element_and_notin_name(element_no, list(element_property.keys()))
+    element_property_dao.delete_all_by_element_and_notin_name(element_no, list(element_property.keys()))
 
 
 @http_service
 def move_element(req):
     # 查询 source 元素子代关联
-    source_relation = ElementChildrenDao.select_by_child(req.sourceNo)
+    source_relation = element_children_dao.select_by_child(req.sourceNo)
     check_exists(source_relation, error_msg='source元素关联不存在')
 
     # 校验元素序号
@@ -798,7 +799,7 @@ def move_element(req):
         )
 
     # 校验 target 父级子代元素序号的连续性，避免埋坑
-    target_children_relations = ElementChildrenDao.select_all_by_parent(req.targetParentNo)
+    target_children_relations = element_children_dao.select_all_by_parent(req.targetParentNo)
     for index, target_relation in enumerate(target_children_relations):
         if target_relation.SORT_NO != index + 1:
             logger.error(
@@ -813,7 +814,7 @@ def move_element(req):
 @http_service
 def duplicate_element(req):
     # 查询元素
-    source = TestElementDao.select_by_no(req.elementNo)
+    source = test_element_dao.select_by_no(req.elementNo)
     check_exists(source, error_msg='元素不存在')
 
     # 校验空间权限
@@ -826,7 +827,7 @@ def duplicate_element(req):
     # 递归复制元素
     copied_no = copy_element(source, rename=True)
     # 下移 source 元素的下方的元素
-    source_relation = ElementChildrenDao.select_by_child(source.ELEMENT_NO)
+    source_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_relation.PARENT_NO,
         TElementChildren.SORT_NO > source_relation.SORT_NO
@@ -844,14 +845,14 @@ def duplicate_element(req):
 @http_service
 def paste_element(req):
     # 查询 source 元素
-    source = TestElementDao.select_by_no(req.sourceNo)
+    source = test_element_dao.select_by_no(req.sourceNo)
     check_exists(source, error_msg='source元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
 
     # 查询 target 元素
-    target = TestElementDao.select_by_no(req.targetNo)
+    target = test_element_dao.select_by_no(req.targetNo)
     check_exists(target, error_msg='target元素不存在')
 
     # 排除不支持剪贴的元素
@@ -899,13 +900,13 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=copied_no,
-        SORT_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
+        SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
     )
 
 
 def paste_element_by_cut(source: TTestElement, target: TTestElement):
     # 查询 source 元素与父级元素关联
-    source_relation = ElementChildrenDao.select_by_child(source.ELEMENT_NO)
+    source_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
     # 上移 source 元素下方的元素
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_relation.PARENT_NO,
@@ -921,7 +922,7 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
         ROOT_NO=get_root_no(target_no),
         PARENT_NO=target_no,
         CHILD_NO=source.ELEMENT_NO,
-        SORT_NO=ElementChildrenDao.next_serial_number_by_parent(target_no)
+        SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -929,9 +930,9 @@ def copy_element(source: TTestElement, rename=False):
     # 克隆元素和属性
     copied_no = clone_element(source, rename)
     # 遍历克隆元素子代
-    source_children_relations = ElementChildrenDao.select_all_by_parent(source.ELEMENT_NO)
+    source_children_relations = element_children_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_relation in source_children_relations:
-        source_child = TestElementDao.select_by_no(source_relation.CHILD_NO)
+        source_child = test_element_dao.select_by_no(source_relation.CHILD_NO)
         copied_child_no = copy_element(source_child)
         TElementChildren.insert(
             ROOT_NO=source_relation.ROOT_NO,
@@ -940,9 +941,9 @@ def copy_element(source: TTestElement, rename=False):
             SORT_NO=source_relation.SORT_NO
         )
     # 遍历克隆内建元素
-    source_builtin_relations = ElementBuiltinChildrenDao.select_all_by_parent(source.ELEMENT_NO)
+    source_builtin_relations = element_builtin_children_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_relation in source_builtin_relations:
-        source_builtin = TestElementDao.select_by_no(source_relation.CHILD_NO)
+        source_builtin = test_element_dao.select_by_no(source_relation.CHILD_NO)
         copied_builtin_no = copy_element(source_builtin)
         TElementBuiltinChildren.insert(
             ROOT_NO=source_relation.ROOT_NO,
@@ -966,7 +967,7 @@ def clone_element(source: TTestElement, rename=False):
         ELEMENT_CLASS=source.ELEMENT_CLASS
     )
     # 克隆元素属性
-    props = ElementPropertyDao.select_all_by_element(source.ELEMENT_NO)
+    props = element_property_dao.select_all_by_element(source.ELEMENT_NO)
     for prop in props:
         TElementProperty.insert(
             ELEMENT_NO=cloned_no,
@@ -975,7 +976,7 @@ def clone_element(source: TTestElement, rename=False):
             PROPERTY_TYPE=prop.PROPERTY_TYPE
         )
     # 克隆元素选项
-    opts = ElementOptionsDao.select_all_by_element(source.ELEMENT_NO)
+    opts = element_options_dao.select_all_by_element(source.ELEMENT_NO)
     for opt in opts:
         TElementOptions.insert(
             ELEMENT_NO=cloned_no,
@@ -984,7 +985,7 @@ def clone_element(source: TTestElement, rename=False):
         )
     # 如果是 HTTPSampler ，克隆请求头模板
     if is_http_sampler(source):
-        refs = HttpHeaderTemplateRefDao.select_all_by_sampler(source.ELEMENT_NO)
+        refs = http_header_template_ref_dao.select_all_by_sampler(source.ELEMENT_NO)
         for ref in refs:
             THttpHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
 
@@ -994,11 +995,11 @@ def clone_element(source: TTestElement, rename=False):
 @http_service
 def query_element_httpheader_template_refs(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
 
     # 查询所有关联的模板
-    refs = HttpHeaderTemplateRefDao.select_all_by_sampler(req.elementNo)
+    refs = http_header_template_ref_dao.select_all_by_sampler(req.elementNo)
 
     return [ref.TEMPLATE_NO for ref in refs]
 
@@ -1006,7 +1007,7 @@ def query_element_httpheader_template_refs(req):
 @http_service
 def create_element_httpheader_template_refs(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -1017,7 +1018,7 @@ def create_element_httpheader_template_refs(req):
 def add_httpheader_template_refs(element_no, template_nos):
     for template_no in template_nos:
         # 模板存在才添加
-        if HttpHeaderTemplateDao.select_by_no(template_no):
+        if http_header_template_dao.select_by_no(template_no):
             # 添加模板关联
             THttpHeaderTemplateRef.insert(SAMPLER_NO=element_no, TEMPLATE_NO=template_no)
 
@@ -1025,7 +1026,7 @@ def add_httpheader_template_refs(element_no, template_nos):
 @http_service
 def modify_element_httpheader_template_refs(req):
     # 查询元素
-    element = TestElementDao.select_by_no(req.elementNo)
+    element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -1038,12 +1039,12 @@ def update_httpheader_template_refs(element_no, template_nos):
         return
     for template_no in template_nos:
         # 模板不存在则跳过
-        template = HttpHeaderTemplateDao.select_by_no(template_no)
+        template = http_header_template_dao.select_by_no(template_no)
         if not template:
             continue
 
         # 查询元素请求头模板
-        ref = HttpHeaderTemplateRefDao.select_by_sampler_and_template(element_no, template_no)
+        ref = http_header_template_ref_dao.select_by_sampler_and_template(element_no, template_no)
         if not ref:
             # 添加模板关联
             THttpHeaderTemplateRef.insert(
@@ -1052,7 +1053,7 @@ def update_httpheader_template_refs(element_no, template_nos):
             )
 
     # 删除不在请求中的模板
-    HttpHeaderTemplateRefDao.delete_all_by_sampler_and_notin_template(element_no, template_nos)
+    http_header_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, template_nos)
 
 
 @http_service
@@ -1060,13 +1061,13 @@ def query_element_builtins(req):
     result = []
 
     # 查询元素的内置元素关联
-    builtin_relations = ElementBuiltinChildrenDao.select_all_by_parent(req.elementNo)
+    builtin_relations = element_builtin_children_dao.select_all_by_parent(req.elementNo)
     if not builtin_relations:
         return result
 
     for relation in builtin_relations:
         # 查询内置元素
-        if builtin := TestElementDao.select_by_no(relation.CHILD_NO):
+        if builtin := test_element_dao.select_by_no(relation.CHILD_NO):
             result.append({
                 'elementNo': builtin.ELEMENT_NO,
                 'elementName': builtin.ELEMENT_NAME,
@@ -1142,7 +1143,7 @@ def modify_element_builtins(req):
 
 def update_element_builtin(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
     # 查询内置元素
-    builtin = TestElementDao.select_by_no(element_no)
+    builtin = test_element_dao.select_by_no(element_no)
     check_exists(builtin, error_msg='内置元素不存在')
     # 更新内置元素
     if enabled is not None:
@@ -1167,7 +1168,7 @@ def update_element_builtins(parent_no: str, builtins: list):
     builtin_numbers = []
     for builtin in builtins:
         # 内置元素存在则更新
-        if element := TestElementDao.select_by_no(builtin.elementNo):
+        if element := test_element_dao.select_by_no(builtin.elementNo):
             # 存储内置元素的编号
             builtin_numbers.append(builtin.elementNo)
             # 更新内置元素
@@ -1179,7 +1180,7 @@ def update_element_builtins(parent_no: str, builtins: list):
             # 更新内置元素属性
             update_element_property(builtin.elementNo, builtin.get('property', None))
             # 更新序号
-            element_builtin = ElementBuiltinChildrenDao.select_by_child(builtin.elementNo)
+            element_builtin = element_builtin_children_dao.select_by_child(builtin.elementNo)
             element_builtin.update(SORT_NUMBER=builtin.sortNumber)
         # 内置元素不存在则新增
         else:
@@ -1203,7 +1204,7 @@ def update_element_builtins(parent_no: str, builtins: list):
 
 def delete_element_builtin(element_no):
     # 查询内置元素
-    element = TestElementDao.select_by_no(element_no)
+    element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='内置元素不存在')
     # 删除内置元素属性
     delete_element_property(element_no)
@@ -1213,7 +1214,7 @@ def delete_element_builtin(element_no):
 
 def delete_element_builtins_by_parent(parent_no):
     # 根据父级删除所有内置元素
-    if builtin_relations := ElementBuiltinChildrenDao.select_all_by_parent(parent_no):
+    if builtin_relations := element_builtin_children_dao.select_all_by_parent(parent_no):
         for relation in builtin_relations:
             # 删除内置元素
             delete_element_builtin(relation.CHILD_NO)
@@ -1227,12 +1228,12 @@ def copy_collection_to_workspace(req):
     check_workspace_permission(req.workspaceNo)
 
     # 查询集合
-    collection = TestElementDao.select_by_no(req.elementNo)
+    collection = test_element_dao.select_by_no(req.elementNo)
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅支持复制集合')
 
     # 查询集合的空间
-    workspace_collection = WorkspaceCollectionDao.select_by_collection(req.elementNo)
+    workspace_collection = workspace_collection_dao.select_by_collection(req.elementNo)
     if not workspace_collection:
         raise ServiceError('集合空间不存在')
 
@@ -1248,12 +1249,12 @@ def move_collection_to_workspace(req):
     check_workspace_permission(req.workspaceNo)  # 校验目标空间权限
 
     # 查询集合
-    collection = TestElementDao.select_by_no(req.elementNo)
+    collection = test_element_dao.select_by_no(req.elementNo)
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅运行移动集合')
 
     # 查询集合的空间
-    if workspace_collection := WorkspaceCollectionDao.select_by_collection(req.elementNo):
+    if workspace_collection := workspace_collection_dao.select_by_collection(req.elementNo):
         # 移动空间
         workspace_collection.update(WORKSPACE_NO=req.workspaceNo)
     else:
@@ -1297,13 +1298,13 @@ def query_workspace_components(req):
     result = []
 
     # 查询空间的所有组件
-    workspace_component_list = WorkspaceComponentDao.select_all_by_workspace(req.workspaceNo)
+    workspace_component_list = workspace_component_dao.select_all_by_workspace(req.workspaceNo)
     if not workspace_component_list:
         return result
 
     for workspace_component in workspace_component_list:
         # 查询元素
-        if element := TestElementDao.select_by_no(workspace_component.COMPONENT_NO):
+        if element := test_element_dao.select_by_no(workspace_component.COMPONENT_NO):
             result.append({
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
@@ -1325,7 +1326,7 @@ def set_workspace_components(req):
     component_nos = []
     for component in req.components:
         # 组件元素存在则更新
-        if element := TestElementDao.select_by_no(component.elementNo):
+        if element := test_element_dao.select_by_no(component.elementNo):
             # 存储内置元素的编号
             component_nos.append(component.elementNo)
             # 更新组件元素
@@ -1337,7 +1338,7 @@ def set_workspace_components(req):
             # 更新组件元素属性
             update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
-            workspace_component = WorkspaceComponentDao.select_by_component(component.elementNo)
+            workspace_component = workspace_component_dao.select_by_component(component.elementNo)
             workspace_component.update(SORT_NUMBER=component.sortNumber)
         # 组件元素不存在则新增
         else:

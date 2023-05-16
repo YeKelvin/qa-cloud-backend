@@ -3,8 +3,8 @@
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
 from app.database import dbquery
-from app.modules.public.dao import workspace_dao as WorkspaceDao
-from app.modules.public.dao import workspace_user_dao as WorkspaceUserDao
+from app.modules.public.dao import workspace_dao
+from app.modules.public.dao import workspace_user_dao
 from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceRestriction
@@ -84,7 +84,7 @@ def query_workspace_all(req):
 @http_service
 def query_workspace_info(req):
     # 查询工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
     return {
         'workspaceNo': workspace.WORKSPACE_NO,
@@ -97,7 +97,7 @@ def query_workspace_info(req):
 @http_service
 def create_workspace(req):
     # 名称唯一性校验
-    workspace = WorkspaceDao.select_by_name(req.workspaceName)
+    workspace = workspace_dao.select_by_name(req.workspaceName)
     check_not_exists(workspace, error_msg='工作空间已存在')
 
     # 新增空间
@@ -120,7 +120,7 @@ def create_workspace(req):
 @http_service
 def modify_workspace(req):
     # 查询工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
     # 更新空间信息
     workspace.update(
@@ -133,7 +133,7 @@ def modify_workspace(req):
 @http_service
 def remove_workspace(req):
     # 查询工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 私人空间随用户，删除用户时才会删除私人空间
@@ -142,7 +142,7 @@ def remove_workspace(req):
     # 团队空间有成员时不允许删除
     if (
             req.workspaceScope == WorkspaceScope.PROTECTED.value
-            and WorkspaceUserDao.count_by_workspace(req.workspaceNo) != 0
+            and workspace_user_dao.count_by_workspace(req.workspaceNo) != 0
     ):
         raise ServiceError('存在成员的团队空间不允许删除')
 

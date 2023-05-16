@@ -3,8 +3,8 @@
 # @Time    : 2021/6/5 23:39
 # @Author  : Kelvin.Ye
 from app.database import dbquery
-from app.modules.public.dao import workspace_dao as WorkspaceDao
-from app.modules.public.dao import workspace_user_dao as WorkspaceUserDao
+from app.modules.public.dao import workspace_dao
+from app.modules.public.dao import workspace_user_dao
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
 from app.modules.usercenter.model import TRole
@@ -70,7 +70,7 @@ def query_workspace_user_all(req):
 @http_service
 def modify_workspace_user(req):
     # 查询元素
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 成员列表添加超级管理用户编号
@@ -80,7 +80,7 @@ def modify_workspace_user(req):
     # 更新空间成员
     for user_no in user_nos:
         # 查询空间成员
-        workspace_user = WorkspaceUserDao.select_by_workspace_and_user(req.workspaceNo, user_no)
+        workspace_user = workspace_user_dao.select_by_workspace_and_user(req.workspaceNo, user_no)
         if workspace_user:
             continue
         else:
@@ -88,7 +88,7 @@ def modify_workspace_user(req):
             TWorkspaceUser.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
 
     # 删除不在请求中的空间成员
-    WorkspaceUserDao.delete_all_by_workspace_and_notin_user(req.workspaceNo, user_nos)
+    workspace_user_dao.delete_all_by_workspace_and_notin_user(req.workspaceNo, user_nos)
 
 
 def get_super_admin_userno():

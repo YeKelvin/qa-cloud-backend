@@ -8,7 +8,7 @@ from loguru import logger
 
 from app.database import dbquery
 from app.extension import apscheduler
-from app.modules.schedule.dao import schedule_job_dao as ScheduleJobDao
+from app.modules.schedule.dao import schedule_job_dao
 
 # from app.modules.schedule.enum import ChangeType
 from app.modules.schedule.enum import JobState
@@ -71,7 +71,7 @@ def query_task_list(req):
 @http_service
 def query_task_info(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     return {
@@ -173,7 +173,7 @@ def create_task(req):
 @http_service
 def modify_task(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
@@ -257,7 +257,7 @@ def modify_task(req):
 @http_service
 def pause_task(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
@@ -282,7 +282,7 @@ def pause_task(req):
 @http_service
 def resume_task(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
@@ -307,7 +307,7 @@ def resume_task(req):
 @http_service
 def remove_task(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限
@@ -320,7 +320,7 @@ def remove_task(req):
         logger.info(f'jobNo:[{task.JOB_NO}] 作业不存在或已失效')
 
     # 更新作业状态
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     if task and task.STATE != JobState.CLOSED.value:
         task.update(STATE=JobState.CLOSED.value)
 

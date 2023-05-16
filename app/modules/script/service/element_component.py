@@ -4,10 +4,10 @@
 # @Author  : Kelvin.Ye
 from typing import Dict
 
-from app.modules.script.dao import http_header_dao as HttpHeaderDao
-from app.modules.script.dao import http_header_template_ref_dao as HttpHeaderTemplateRefDao
-from app.modules.script.dao import variable_dao as VariableDao
-from app.modules.script.dao import variable_dataset_dao as VariableDatasetDao
+from app.modules.script.dao import http_header_dao
+from app.modules.script.dao import http_header_template_ref_dao
+from app.modules.script.dao import variable_dao
+from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
@@ -102,13 +102,13 @@ def add_variable_dataset(script: dict, dataset_nos: list, use_current_value: boo
 def get_variables(dataset_nos: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = VariableDatasetDao.select_list_in_set_orderby_weight(*dataset_nos)
+    dataset_list = variable_dataset_dao.select_list_in_set_orderby_weight(*dataset_nos)
     if not dataset_list:
         return result
 
     for dataset in dataset_list:
         # 查询变量列表
-        variables = VariableDao.select_all_by_dataset(dataset.DATASET_NO)
+        variables = variable_dao.select_all_by_dataset(dataset.DATASET_NO)
 
         for variable in variables:
             # 过滤非启用状态的变量
@@ -124,7 +124,7 @@ def get_variables(dataset_nos: list, use_current_value: bool) -> Dict:
 
 def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[str, dict]):
     # 查询元素关联的请求头模板
-    refs = HttpHeaderTemplateRefDao.select_all_by_sampler(sampler.ELEMENT_NO)
+    refs = http_header_template_ref_dao.select_all_by_sampler(sampler.ELEMENT_NO)
 
     # 没有关联模板时直接跳过
     if not refs:
@@ -141,7 +141,7 @@ def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[s
         # 先查缓存
         headers_cache = header_manager_cache.get(ref.TEMPLATE_NO, [])
         if not headers_cache:
-            headers = HttpHeaderDao.select_all_by_template(ref.TEMPLATE_NO)
+            headers = http_header_dao.select_all_by_template(ref.TEMPLATE_NO)
             for header in headers:
                 headers_cache.append({
                     'class': 'HTTPHeader',

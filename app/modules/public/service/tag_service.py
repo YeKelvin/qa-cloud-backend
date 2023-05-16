@@ -2,7 +2,7 @@
 # @File    : tag_service.py
 # @Time    : 2021-08-17 11:01:35
 # @Author  : Kelvin.Ye
-from app.modules.public.dao import tag_dao as TagDao
+from app.modules.public.dao import tag_dao
 from app.modules.public.model import TTag
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -38,7 +38,7 @@ def query_tag_list(req):
 
 @http_service
 def query_tag_all():
-    tags = TagDao.select_all()
+    tags = tag_dao.select_all()
     return [
         {
             'tagNo': tag.WORKSPACE_NO,
@@ -51,7 +51,7 @@ def query_tag_all():
 
 @http_service
 def create_tag(req):
-    tag = TagDao.select_by_name(req.tagName)
+    tag = tag_dao.select_by_name(req.tagName)
     check_not_exists(tag, error_msg='标签已存在')
 
     TTag.insert(
@@ -63,7 +63,7 @@ def create_tag(req):
 
 @http_service
 def modify_tag(req):
-    tag = TagDao.select_by_no(req.tagNo)
+    tag = tag_dao.select_by_no(req.tagNo)
     check_exists(tag, error_msg='标签不存在')
 
     tag.update(
@@ -74,7 +74,7 @@ def modify_tag(req):
 
 @http_service
 def remove_tag(req):
-    tag = TagDao.select_by_no(req.tagNo)
+    tag = tag_dao.select_by_no(req.tagNo)
     check_exists(tag, error_msg='标签不存在')
 
     tag.delete()

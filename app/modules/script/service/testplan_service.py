@@ -2,17 +2,18 @@
 # @File    : testplan_service.py
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
-from app.modules.public.dao import workspace_dao as WorkspaceDao
-from app.modules.script.dao import test_collection_result_dao as TestCollectionResultDao
-from app.modules.script.dao import test_element_dao as TestElementDao
-from app.modules.script.dao import test_report_dao as TestReportDao
-from app.modules.script.dao import testplan_dao as TestPlanDao
-from app.modules.script.dao import testplan_execution_dao as TestplanExecutionDao
-from app.modules.script.dao import testplan_execution_items_dao as TestPlanExecutionItemsDao
-from app.modules.script.dao import testplan_execution_settings_dao as TestPlanExecutionSettingsDao
-from app.modules.script.dao import testplan_items_dao as TestPlanItemsDao
-from app.modules.script.dao import testplan_settings_dao as TestPlanSettingsDao
-from app.modules.script.dao import variable_dataset_dao as VariableDatasetDao
+# sourcery skip: dont-import-test-modules
+from app.modules.public.dao import workspace_dao
+from app.modules.script.dao import test_collection_result_dao
+from app.modules.script.dao import test_element_dao
+from app.modules.script.dao import test_report_dao
+from app.modules.script.dao import testplan_dao
+from app.modules.script.dao import testplan_execution_dao
+from app.modules.script.dao import testplan_execution_items_dao
+from app.modules.script.dao import testplan_execution_settings_dao
+from app.modules.script.dao import testplan_items_dao
+from app.modules.script.dao import testplan_settings_dao
+from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import RunningState
 from app.modules.script.enum import TestplanState
 from app.modules.script.model import TTestplan
@@ -71,32 +72,32 @@ def query_testplan_all(req):
     conds.in_(TTestplan.STATE, req.stateList)
     testplans = TTestplan.filter(*conds).order_by(TTestplan.CREATED_TIME.desc()).all()
 
-    result = []
-    for testplan in testplans:
-        result.append({
+    return [
+        {
             'planNo': testplan.PLAN_NO,
             'planName': testplan.PLAN_NAME,
             'planDesc': testplan.PLAN_DESC,
             'productRequirementsVersion': testplan.PRODUCT_REQUIREMENTS_VERSION,
             'collectionTotal': testplan.COLLECTION_TOTAL,
             'testPhase': testplan.TEST_PHASE,
-            'state': testplan.STATE
-        })
-    return result
+            'state': testplan.STATE,
+        }
+        for testplan in testplans
+    ]
 
 
 @http_service
 def query_testplan(req):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = testplan_dao.select_by_no(req.planNo)
     check_exists(testplan, error_msg='测试计划不存在')
 
     # 查询测试计划设置项
-    settings = TestPlanSettingsDao.select_by_no(req.planNo)
+    settings = testplan_settings_dao.select_by_no(req.planNo)
     check_exists(settings, error_msg='计划设置不存在')
 
     # 查询测试计划关联的集合
-    items = TestPlanItemsDao.select_all_by_plan(req.planNo)
+    items = testplan_items_dao.select_all_by_plan(req.planNo)
     collection_nos = [item.COLLECTION_NO for item in items]
 
     return {
@@ -121,7 +122,7 @@ def create_testplan(req):
     check_workspace_permission(req.workspaceNo)
 
     # 查询工作空间
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 创建计划编号
@@ -164,14 +165,14 @@ def create_testplan(req):
 @http_service
 def modify_testplan(req):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = testplan_dao.select_by_no(req.planNo)
     check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
 
     # 查询测试计划设置项
-    settings = TestPlanSettingsDao.select_by_no(req.planNo)
+    settings = testplan_settings_dao.select_by_no(req.planNo)
     check_exists(settings, error_msg='计划设置不存在')
 
     # 修改测试计划项目明细
@@ -179,7 +180,7 @@ def modify_testplan(req):
     for collection in req.collectionList:
         collection_nos.append(collection.elementNo)
         # 查询测试计划关联的集合
-        if item := TestPlanItemsDao.select_by_plan_and_collection(req.planNo, collection.elementNo):
+        if item := testplan_items_dao.select_by_plan_and_collection(req.planNo, collection.elementNo):
             item.update(SORT_NO=collection.sortNo)
         else:
             TTestplanItems.insert(
@@ -188,7 +189,7 @@ def modify_testplan(req):
                 SORT_NO=collection.sortNo
             )
     # 删除不在请求中的集合
-    TestPlanItemsDao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_nos)
+    testplan_items_dao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_nos)
 
     # 修改测试计划
     testplan.update(
@@ -212,7 +213,7 @@ def modify_testplan(req):
 @http_service
 def modify_testplan_state(req):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = testplan_dao.select_by_no(req.planNo)
     check_exists(testplan, error_msg='测试计划不存在')
 
     # 校验空间权限
@@ -230,7 +231,7 @@ def modify_testplan_state(req):
 @http_service
 def modify_testplan_testphase(req):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = testplan_dao.select_by_no(req.planNo)
     check_exists(testplan, error_msg='测试计划不存在')
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
@@ -241,14 +242,14 @@ def modify_testplan_testphase(req):
 @http_service
 def query_testplan_execution_all(req):
     # 查询测试计划
-    testplan = TestPlanDao.select_by_no(req.planNo)
+    testplan = testplan_dao.select_by_no(req.planNo)
     check_exists(testplan, error_msg='测试计划不存在')
 
     # 查询所有执行记录
-    executions = TestplanExecutionDao.select_all_by_plan(req.planNo)
+    executions = testplan_execution_dao.select_all_by_plan(req.planNo)
     result = []
     for execution in executions:
-        report = TestReportDao.select_by_execution(execution.EXECUTION_NO)
+        report = test_report_dao.select_by_execution(execution.EXECUTION_NO)
         result.append({
             'executionNo': execution.EXECUTION_NO,
             'runningState': execution.RUNNING_STATE,
@@ -264,26 +265,26 @@ def query_testplan_execution_all(req):
 @http_service
 def query_testplan_execution_details(req):
     # 查询执行记录
-    execution = TestplanExecutionDao.select_by_no(req.executionNo)
+    execution = testplan_execution_dao.select_by_no(req.executionNo)
     check_exists(execution, error_msg='执行记录不存在')
 
     # 查询执行记录设置项
-    settings = TestPlanExecutionSettingsDao.select_by_no(req.executionNo)
+    settings = testplan_execution_settings_dao.select_by_no(req.executionNo)
     check_exists(settings, error_msg='计划设置不存在')
 
     # 查询测试报告，如果没有勾选保存结果就没有测试报告
-    report = TestReportDao.select_by_execution(execution.EXECUTION_NO)
+    report = test_report_dao.select_by_execution(execution.EXECUTION_NO)
 
     # 查询执行记录关联的集合
-    items = TestPlanExecutionItemsDao.select_all_by_execution(req.executionNo)
+    items = testplan_execution_items_dao.select_all_by_execution(req.executionNo)
     collection_list = []
     for item in items:
         result = None
         if report:
-            result = TestCollectionResultDao.select_by_report_and_collectionno(report.REPORT_NO, item.COLLECTION_NO)
+            result = test_collection_result_dao.select_by_report_and_collectionno(report.REPORT_NO, item.COLLECTION_NO)
         collection = None
         if not result:
-            collection = TestElementDao.select_by_no(item.COLLECTION_NO)
+            collection = test_element_dao.select_by_no(item.COLLECTION_NO)
         collection_list.append({
             'elementNo': item.COLLECTION_NO,
             'elementName': result.COLLECTION_NAME if result else collection.ELEMENT_NAME,
@@ -307,7 +308,7 @@ def query_testplan_execution_details(req):
     variable_dataset_list = []
     if settings.VARIABLE_DATASET_LIST:
         for dataset_no in settings.VARIABLE_DATASET_LIST:
-            dataset = VariableDatasetDao.select_by_number_with_deleted(dataset_no)
+            dataset = variable_dataset_dao.select_by_number_with_deleted(dataset_no)
             dataset and variable_dataset_list.append({
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME

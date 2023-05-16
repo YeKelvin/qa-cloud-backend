@@ -10,16 +10,16 @@ from flask import request
 from app.database import dbquery
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
-from app.modules.usercenter.dao import group_dao as GroupDao
-from app.modules.usercenter.dao import role_dao as RoleDao
-from app.modules.usercenter.dao import user_dao as UserDao
-from app.modules.usercenter.dao import user_group_dao as UserGroupDao
-from app.modules.usercenter.dao import user_login_info_dao as UserLoginInfoDao
-from app.modules.usercenter.dao import user_login_log_dao as UserLoginLogDao
-from app.modules.usercenter.dao import user_password_dao as UserPasswordDao
-from app.modules.usercenter.dao import user_role_dao as UserRoleDao
-from app.modules.usercenter.dao import user_secret_key_dao as UserSecretKeyDao
-from app.modules.usercenter.dao import user_settings_dao as UserSettingsDao
+from app.modules.usercenter.dao import group_dao
+from app.modules.usercenter.dao import role_dao
+from app.modules.usercenter.dao import user_dao
+from app.modules.usercenter.dao import user_group_dao
+from app.modules.usercenter.dao import user_login_info_dao
+from app.modules.usercenter.dao import user_login_log_dao
+from app.modules.usercenter.dao import user_password_dao
+from app.modules.usercenter.dao import user_role_dao
+from app.modules.usercenter.dao import user_secret_key_dao
+from app.modules.usercenter.dao import user_settings_dao
 from app.modules.usercenter.enum import UserState
 from app.modules.usercenter.model import TGroup
 from app.modules.usercenter.model import TGroupRole
@@ -50,11 +50,11 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 def login(req):
     try:
         # 查询用户登录信息
-        login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
+        login_info = user_login_info_dao.select_by_loginname(req.loginName)
         check_exists(login_info, error_msg='账号或密码不正确')
 
         # 查询用户
-        user = UserDao.select_by_no(login_info.USER_NO)
+        user = user_dao.select_by_no(login_info.USER_NO)
         check_exists(user, error_msg='账号或密码不正确')
         localvars.set('user_no', user.USER_NO)
 
@@ -63,11 +63,11 @@ def login(req):
             raise ServiceError('用户状态异常')
 
         # 查询用户密码
-        user_password = UserPasswordDao.select_loginpwd_by_user(user.USER_NO)
+        user_password = user_password_dao.select_loginpwd_by_user(user.USER_NO)
         check_exists(user_password, error_msg='账号或密码不正确')
 
         # 密码RSA解密
-        secret_key = UserSecretKeyDao.select_by_index(req.index)
+        secret_key = user_secret_key_dao.select_by_index(req.index)
         ras_decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
 
         # 校验密码是否正确
@@ -105,7 +105,7 @@ def login(req):
         raise
     finally:
         # 删除密钥索引
-        UserSecretKeyDao.delete_by_index(req.index)
+        user_secret_key_dao.delete_by_index(req.index)
 
     return {'accessToken': token}
 
@@ -121,7 +121,7 @@ def remote_addr():
 @http_service
 def logout():
     # 查询用户
-    user = UserDao.select_by_no(localvars.get_user_no())
+    user = user_dao.select_by_no(localvars.get_user_no())
     check_exists(user, error_msg='用户不存在')
     # 登出
     user.update(LOGGED_IN=False)
@@ -130,11 +130,11 @@ def logout():
 @http_service
 def register(req):
     # 查询用户登录信息
-    login_info = UserLoginInfoDao.select_by_loginname(req.loginName)
+    login_info = user_login_info_dao.select_by_loginname(req.loginName)
     check_not_exists(login_info, error_msg='登录账号已存在')
 
     # 查询用户
-    user = UserDao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
+    user = user_dao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
     check_not_exists(user, error_msg='用户已存在')
 
     # 创建用户
@@ -185,15 +185,15 @@ def register(req):
 @http_service
 def reset_login_password(req):
     # 查询用户
-    user = UserDao.select_by_no(req.userNo)
+    user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
 
     # 查询登录信息
-    login_info = UserLoginInfoDao.select_by_user(req.userNo)
+    login_info = user_login_info_dao.select_by_user(req.userNo)
     check_exists(login_info, error_msg='用户登录信息不存在')
 
     # 查询用户密码
-    user_password = UserPasswordDao.select_loginpwd_by_user(req.userNo)
+    user_password = user_password_dao.select_loginpwd_by_user(req.userNo)
     check_exists(user_password, error_msg='用户登录密码不存在')
 
     # 更新用户密码
@@ -231,18 +231,18 @@ def query_user_list(req):
             continue
         # 查询用户绑定的角色列表
         roles = []
-        user_roles = UserRoleDao.select_all_by_userno(user.USER_NO)
+        user_roles = user_role_dao.select_all_by_userno(user.USER_NO)
         for user_role in user_roles:
-            if role := RoleDao.select_by_no(user_role.ROLE_NO):
+            if role := role_dao.select_by_no(user_role.ROLE_NO):
                 roles.append({
                     'roleNo': role.ROLE_NO,
                     'roleName': role.ROLE_NAME
                 })
         # 查询用户分组列表
         groups = []
-        user_groups = UserGroupDao.select_all_by_user(user.USER_NO)
+        user_groups = user_group_dao.select_all_by_user(user.USER_NO)
         for user_group in user_groups:
-            if group := GroupDao.select_by_no(user_group.GROUP_NO):
+            if group := group_dao.select_by_no(user_group.GROUP_NO):
                 groups.append({
                     'groupNo': group.GROUP_NO,
                     'groupName': group.GROUP_NAME
@@ -308,11 +308,11 @@ def query_user_info():
     # 获取用户编号
     user_no = localvars.get_user_no()
     # 查询用户
-    user = UserDao.select_by_no(user_no)
+    user = user_dao.select_by_no(user_no)
     # 查询用户角色
     roles = [role.ROLE_CODE for role in get_user_roles(user_no)]
     # 查询用户设置
-    settings = UserSettingsDao.select_by_user(user_no)
+    settings = user_settings_dao.select_by_user(user_no)
 
     return {
         'userNo': user_no,
@@ -330,7 +330,7 @@ def modify_user_info(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
     # 查询用户
-    user = UserDao.select_by_no(user_no)
+    user = user_dao.select_by_no(user_no)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
@@ -343,7 +343,7 @@ def modify_user_info(req):
 def modify_user_settings(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
-    if settings := UserSettingsDao.select_by_user(user_no):
+    if settings := user_settings_dao.select_by_user(user_no):
         settings.update(DATA=req.data)
     else:
         TUserSettings.insert(
@@ -358,12 +358,12 @@ def modify_user_password(req):
         # 获取用户编号
         user_no = localvars.get_user_no()
         # 查询用户登录信息
-        login_info = UserLoginInfoDao.select_by_user(user_no)
+        login_info = user_login_info_dao.select_by_user(user_no)
         # 查询用户密码
-        login_password = UserPasswordDao.select_loginpwd_by_user(user_no)
+        login_password = user_password_dao.select_loginpwd_by_user(user_no)
         check_exists(login_password, error_msg='账号或密码不正确')
         # 查询密钥
-        secret_key = UserSecretKeyDao.select_by_index(req.index)
+        secret_key = user_secret_key_dao.select_by_index(req.index)
         # 解密旧密码
         decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key.DATA)
         # 校验密码是否正确
@@ -379,20 +379,20 @@ def modify_user_password(req):
         # 更新用户登录密码
         login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, decrypted_new_password))
         # 查询用户
-        user = UserDao.select_by_no(user_no)
+        user = user_dao.select_by_no(user_no)
         # 登出
         user.update(LOGGED_IN=False)
     except Exception:
         raise
     finally:
         # 删除密钥索引
-        UserSecretKeyDao.delete_by_index(req.index)
+        user_secret_key_dao.delete_by_index(req.index)
 
 
 @http_service
 def modify_user(req):
     # 查询用户
-    user = UserDao.select_by_no(req.userNo)
+    user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
 
     # 更新用户信息
@@ -406,23 +406,23 @@ def modify_user(req):
     if req.roleNos is not None:
         for role_no in req.roleNos:
             # 查询用户角色
-            user_role = UserRoleDao.select_by_user_and_role(req.userNo, role_no)
+            user_role = user_role_dao.select_by_user_and_role(req.userNo, role_no)
             if not user_role:
                 TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
 
         # 删除不在请求中的角色
-        UserRoleDao.delete_all_by_user_and_notin_role(req.userNo, req.roleNos)
+        user_role_dao.delete_all_by_user_and_notin_role(req.userNo, req.roleNos)
 
     # 绑定用户分组
     if req.groupNos is not None:
         for group_no in req.groupNos:
             # 查询用户分组
-            group_user = UserGroupDao.select_by_user_and_group(req.userNo, group_no)
+            group_user = user_group_dao.select_by_user_and_group(req.userNo, group_no)
             if not group_user:
                 TUserGroup.insert(USER_NO=req.userNo, GROUP_NO=group_no)
 
         # 解绑不在请求中的分组
-        UserGroupDao.delete_all_by_user_and_notin_group(req.userNo, req.groupNos)
+        user_group_dao.delete_all_by_user_and_notin_group(req.userNo, req.groupNos)
 
 
 def get_private_workspace_by_user(user_no):
@@ -439,7 +439,7 @@ def get_private_workspace_by_user(user_no):
 @http_service
 def modify_user_state(req):
     # 查询用户
-    user = UserDao.select_by_no(req.userNo)
+    user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
 
     # 更新用户状态
@@ -449,23 +449,23 @@ def modify_user_state(req):
 @http_service
 def remove_user(req):
     # 查询用户
-    user = UserDao.select_by_no(req.userNo)
+    user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
 
     # 删除用户角色
-    UserRoleDao.delete_all_by_user(req.userNo)
+    user_role_dao.delete_all_by_user(req.userNo)
 
     # 删除用户分组
-    UserGroupDao.delete_all_by_user(req.userNo)
+    user_group_dao.delete_all_by_user(req.userNo)
 
     # 删除用户密码
-    UserPasswordDao.delete_all_by_user(req.userNo)
+    user_password_dao.delete_all_by_user(req.userNo)
 
     # 删除用户登录历史记录
-    UserLoginLogDao.delete_all_by_user(req.userNo)
+    user_login_log_dao.delete_all_by_user(req.userNo)
 
     # 删除用户登录账号
-    UserLoginInfoDao.delete_all_by_user(req.userNo)
+    user_login_info_dao.delete_all_by_user(req.userNo)
 
     # 删除私人空间
     workspace = get_private_workspace_by_user(req.userNo)

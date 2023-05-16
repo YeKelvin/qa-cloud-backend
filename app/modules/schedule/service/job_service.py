@@ -5,7 +5,7 @@
 from apscheduler.jobstores.base import JobLookupError
 
 from app.extension import apscheduler
-from app.modules.schedule.dao import schedule_job_dao as ScheduleJobDao
+from app.modules.schedule.dao import schedule_job_dao as schedule_job_dao
 from app.tools.exceptions import ServiceError
 from app.tools.service import http_service
 from app.tools.validator import check_exists
@@ -15,7 +15,7 @@ from app.tools.validator import check_workspace_permission
 @http_service
 def query_job_info(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 查询作业信息
@@ -45,7 +45,7 @@ def query_job_info(req):
 @http_service
 def run_job(req):
     # 查询定时任务
-    task = ScheduleJobDao.select_by_no(req.jobNo)
+    task = schedule_job_dao.select_by_no(req.jobNo)
     check_exists(task, error_msg='任务不存在')
 
     # 校验空间权限

@@ -2,12 +2,13 @@
 # @File    : task_function.py
 # @Time    : 2022-05-15 11:57:06
 # @Author  : Kelvin.Ye
+# sourcery skip: dont-import-test-modules
 from loguru import logger
 from pymeter.runner import Runner
 
 from app.extension import apscheduler
-from app.modules.script.dao import element_children_dao as ElementChildrenDao
-from app.modules.script.dao import test_element_dao as TestElementDao
+from app.modules.script.dao import element_children_dao
+from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.service.element_component import add_variable_dataset
 from app.modules.script.service.element_loader import loads_tree
@@ -23,7 +24,7 @@ def execute_testplan(planNo, datasetNos, useCurrentValue):  # noqa
 def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
-        collection = TestElementDao.select_by_no(collectionNo)
+        collection = test_element_dao.select_by_no(collectionNo)
         if not collection.ENABLED:
             raise ServiceError('元素已禁用')
         if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
@@ -43,13 +44,13 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
 def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
-        group = TestElementDao.select_by_no(groupNo)
+        group = test_element_dao.select_by_no(groupNo)
         if not group.ENABLED:
             raise ServiceError('元素已禁用')
         if group.ELEMENT_TYPE != ElementType.GROUP.value:
             raise ServiceError('仅支持运行 Group 元素')
         # 获取 collectionNo
-        group_parent_relation = ElementChildrenDao.select_by_child(groupNo)
+        group_parent_relation = element_children_dao.select_by_child(groupNo)
         if not group_parent_relation:
             raise ServiceError('元素父级关联不存在')
         # 根据 collectionNo 递归加载脚本

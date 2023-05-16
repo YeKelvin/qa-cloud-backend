@@ -9,6 +9,16 @@ from flask import Blueprint
 api = Blueprint('openapi', __name__, url_prefix='/open/api')
 
 
+# 加载子路由
+from .scriptcenter.controller import blueprint as scriptcenter_blueprint    # noqa
+from .testing.controller import blueprint as testing_blueprint    # noqa
+
+
+# 注册子路由
+api.register_blueprint(scriptcenter_blueprint)
+api.register_blueprint(testing_blueprint)
+
+
 """
 uri: /open/api/xxx
 header:

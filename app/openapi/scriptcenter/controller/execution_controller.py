@@ -1,9 +1,9 @@
 #!/usr/bin python3
-# @File    : running_controller.py
+# @File    : execution_controller.py
 # @Time    : 2023-04-20 14:34:42
 # @Author  : Kelvin.Ye
 from app.openapi.scriptcenter.controller import blueprint
-from app.openapi.scriptcenter.service import running_service as service
+from app.openapi.scriptcenter.service import execution_service as service
 from app.tools.parser import Argument
 from app.tools.parser import JsonParser
 from app.tools.require import require_thirdparty_access

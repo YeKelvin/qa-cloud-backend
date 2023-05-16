@@ -2,18 +2,19 @@
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
+# sourcery skip: dont-import-test-modules
 from typing import Dict
 
 from loguru import logger
 
 from app.database import dbquery
-from app.modules.script.dao import database_config_dao as DatabaseConfigDao
-from app.modules.script.dao import element_children_dao as ElementChildrenDao
-from app.modules.script.dao import element_options_dao as ElementOptionsDao
-from app.modules.script.dao import element_property_dao as ElementPropertyDao
-from app.modules.script.dao import test_element_dao as TestElementDao
-from app.modules.script.dao import workspace_collection_dao as WorkspaceCollectionDao
-from app.modules.script.dao import workspace_component_dao as WorkspaceComponentDao
+from app.modules.script.dao import database_config_dao
+from app.modules.script.dao import element_children_dao
+from app.modules.script.dao import element_options_dao
+from app.modules.script.dao import element_property_dao
+from app.modules.script.dao import test_element_dao
+from app.modules.script.dao import workspace_collection_dao
+from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
@@ -86,7 +87,7 @@ def loads_element(
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
-    element = TestElementDao.select_by_no(element_no)
+    element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
@@ -109,7 +110,7 @@ def loads_element(
     # 元素为 SQLSampler 时，添加全局的数据库引擎配置器
     if is_sql_sampler(element):
         # 查询数据库引擎
-        engine = DatabaseConfigDao.select_by_no(properties.get('engineNo'))
+        engine = database_config_dao.select_by_no(properties.get('engineNo'))
         check_exists(engine, error_msg='数据库引擎不存在')
         # 删除引擎编号，PyMeter中不需要
         properties.pop('engineNo')
@@ -151,7 +152,7 @@ def loads_element(
 
 def loads_property(element_no):
     # 查询元素属性，只查询 enabled 的属性
-    props = ElementPropertyDao.select_all_by_enable_element(element_no)
+    props = element_property_dao.select_all_by_enable_element(element_no)
 
     properties = {}
     for prop in props:
@@ -170,7 +171,7 @@ def loads_property(element_no):
 
 def loads_options(element_no):
     # 查询元素选项
-    opts = ElementOptionsDao.select_all_by_element(element_no)
+    opts = element_options_dao.select_all_by_element(element_no)
     return {
         opt.OPTION_NAME: opt.OPTION_VALUE
         for opt in opts
@@ -187,7 +188,7 @@ def loads_children(
 ):
     """TODO: 太多 if 逻辑，待优化"""
     # 递归查询子代，并根据序号正序排序
-    children_relations = ElementChildrenDao.select_all_by_parent(element_no)
+    children_relations = element_children_dao.select_all_by_parent(element_no)
     children = []
     # 添加子代
     for relation in children_relations:
@@ -333,7 +334,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     properties = loads_property(snippet_no)
     use_http_session = properties.get('useHTTPSession', 'false')
     # 递归查询子代，并根据序号正序排序
-    children_relations = ElementChildrenDao.select_all_by_parent(snippet_no)
+    children_relations = element_children_dao.select_all_by_parent(snippet_no)
     children = []
     # 添加 HTTP Session 组件
     if use_http_session:
@@ -384,7 +385,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
 def add_workspace_components(script: dict, element_no: str):
     collection_no = get_root_no(element_no)
     workspace_no = get_workspace_no(collection_no)
-    workspace_components = WorkspaceComponentDao.select_all_by_workspace(workspace_no)
+    workspace_components = workspace_component_dao.select_all_by_workspace(workspace_no)
     if not workspace_components:
         return
     components = []
@@ -468,7 +469,7 @@ def get_real_class(element):
 
 def get_root_no(element_no):
     """根据元素编号获取根元素编号（集合编号）"""
-    if not (element_child := ElementChildrenDao.select_by_child(element_no)):
+    if not (element_child := element_children_dao.select_by_child(element_no)):
         return element_no
     if not element_child.ROOT_NO:
         raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
@@ -477,7 +478,7 @@ def get_root_no(element_no):
 
 def get_workspace_no(collection_no) -> str:
     """获取元素空间编号"""
-    if workspace_collection := WorkspaceCollectionDao.select_by_collection(collection_no):
+    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
         return workspace_collection.WORKSPACE_NO
     else:
         raise ServiceError('查询元素空间失败')

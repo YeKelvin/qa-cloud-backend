@@ -9,4 +9,4 @@ from flask import Blueprint
 blueprint = Blueprint('scriptcenter', __name__, url_prefix='/scriptcenter')
 
 
-from . import running_controller  # noqa
+from . import execution_controller  # noqa

@@ -1,11 +1,10 @@
 .idea/
 .cache/
-.venv/
+.ruff_cache/
 __pycache__/
 
 # pytest
 .pytest_cache/
-assets/
 report.html
 
 # flask-migrate
@@ -14,5 +13,4 @@ migrations/
 *.lock
 *.db
 *.log
-*.pid
-.env
+*.env

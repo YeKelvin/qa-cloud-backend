@@ -32,7 +32,7 @@ blinker = "1.6.2"
 # id
 ulid-py = "1.1.0"
 # Encryption
-pyjwt = "2.5.0"
+pyjwt = "2.7.0"
 # Environment
 python-dotenv = "1.0.0"
 environs = "9.5.0"
@@ -88,6 +88,7 @@ convention = "google"
 known-local-folder = ["app"]
 force-single-line = true
 lines-after-imports = 2
+lines-between-types = 1
 
 [tool.yapf]
 column_limit = 120

@@ -3,9 +3,9 @@
 # @Time    : 2022/4/22 16:11
 # @Author  : Kelvin.Ye
 from app.database import dbquery
-from app.modules.public.dao import workspace_dao as WorkspaceDao
-from app.modules.public.dao import workspace_restriction_dao as WorkspaceRestrictionDao
-from app.modules.public.dao import workspace_restriction_exemption_dao as WorkspaceRestrictionExemptionDao
+from app.modules.public.dao import workspace_dao
+from app.modules.public.dao import workspace_restriction_dao
+from app.modules.public.dao import workspace_restriction_exemption_dao
 from app.modules.public.model import TWorkspaceRestriction
 from app.modules.public.model import TWorkspaceRestrictionExemption
 from app.modules.usercenter.model import TPermission
@@ -18,7 +18,7 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 @http_service
 def query_workspace_restriction(req):
-    exemption = WorkspaceRestrictionExemptionDao.select_by_workspace(req.workspaceNo)
+    exemption = workspace_restriction_exemption_dao.select_by_workspace(req.workspaceNo)
 
     return {
         'permissionList': get_workspace_restriction_list(req.workspaceNo),
@@ -30,7 +30,7 @@ def query_workspace_restriction(req):
 @http_service
 def set_workspace_restriction(req):
     # 查询空间，判断空间是否有效
-    workspace = WorkspaceDao.select_by_no(req.workspaceNo)
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 设置空间限制
@@ -73,18 +73,18 @@ def set_workspace_permission(workspace_no, permission_numbers):
     for permission_no in permission_numbers:
         # 查询空间限制
         workspace_restriction = (
-            WorkspaceRestrictionDao.select_by_workspace_and_permission(workspace_no, permission_no)
+            workspace_restriction_dao.select_by_workspace_and_permission(workspace_no, permission_no)
         )
         # 新增空间限制
         if not workspace_restriction:
             TWorkspaceRestriction.insert(WORKSPACE_NO=workspace_no, PERMISSION_NO=permission_no)
 
     # 删除不在请求中的空间限制
-    WorkspaceRestrictionDao.delete_all_by_workspace_and_notin_permission(workspace_no, permission_numbers)
+    workspace_restriction_dao.delete_all_by_workspace_and_notin_permission(workspace_no, permission_numbers)
 
 
 def set_workspace_exemption(workspace_no, user_numbers, group_numbers):
-    if exemption := WorkspaceRestrictionExemptionDao.select_by_workspace(workspace_no):
+    if exemption := workspace_restriction_exemption_dao.select_by_workspace(workspace_no):
         if user_numbers is not None:
             exemption.USER_NUMBERS = user_numbers
         if group_numbers is not None:

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "njpwerner.autodocstring",
+        "sourcery.sourcery",
+        "charliermarsh.ruff",
+        "alefragnani.separators"
+    ]
+}

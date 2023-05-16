@@ -2,15 +2,14 @@
 # @File    : role_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from app.modules.usercenter.dao import role_dao as RoleDao  # noqa
-from app.modules.usercenter.dao import role_permission_dao as RolePermissionDao  # noqa
-from app.modules.usercenter.dao import user_role_dao as UserRoleDao  # noqa
+from app.modules.usercenter.dao import role_dao
+from app.modules.usercenter.dao import role_permission_dao
+from app.modules.usercenter.dao import user_role_dao
 from app.modules.usercenter.enum import RoleState
 from app.modules.usercenter.model import TRole
-from app.tools.service import http_service
-
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
+from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.utils.sqlalchemy_util import QueryCondition
@@ -47,7 +46,7 @@ def query_role_list(req):
 
 @http_service
 def query_role_all():
-    roles = RoleDao.select_all()
+    roles = role_dao.select_all()
     return [
         {
             'roleNo': role.ROLE_NO,
@@ -65,7 +64,7 @@ def query_role_all():
 @http_service
 def query_role_info(req):
     # 查询角色
-    role = RoleDao.select_by_no(req.roleNo)
+    role = role_dao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
     return {
@@ -82,9 +81,9 @@ def query_role_info(req):
 @http_service
 def create_role(req):
     # 唯一性校验
-    if RoleDao.select_by_name(req.roleName):
+    if role_dao.select_by_name(req.roleName):
         raise ServiceError('角色名称已存在')
-    if RoleDao.select_by_code(req.roleCode):
+    if role_dao.select_by_code(req.roleCode):
         raise ServiceError('角色代码已存在')
 
     # 创建角色
@@ -105,13 +104,13 @@ def create_role(req):
 @http_service
 def modify_role(req):
     # 查询角色
-    role = RoleDao.select_by_no(req.roleNo)
+    role = role_dao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
     # 唯一性校验
-    if role.ROLE_NAME != req.roleName and RoleDao.select_by_name(req.roleName):
+    if role.ROLE_NAME != req.roleName and role_dao.select_by_name(req.roleName):
         raise ServiceError('角色名称已存在')
-    if role.ROLE_CODE != req.roleCode and RoleDao.select_by_code(req.roleCode):
+    if role.ROLE_CODE != req.roleCode and role_dao.select_by_code(req.roleCode):
         raise ServiceError('角色代码已存在')
 
     # 更新角色信息
@@ -126,7 +125,7 @@ def modify_role(req):
 @http_service
 def modify_role_state(req):
     # 查询角色
-    role = RoleDao.select_by_no(req.roleNo)
+    role = role_dao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
     # 更新角色状态
@@ -136,15 +135,15 @@ def modify_role_state(req):
 @http_service
 def remove_role(req):
     # 查询角色
-    role = RoleDao.select_by_no(req.roleNo)
+    role = role_dao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
     # 查询用户角色列表
-    user_role_list = UserRoleDao.select_all_by_roleno(req.roleNo)
+    user_role_list = user_role_dao.select_all_by_roleno(req.roleNo)
     check_not_exists(user_role_list, error_msg='角色与用户存在关联，请先解除关联')
 
     # 删除角色权限
-    RolePermissionDao.delete_by_role(req.roleNo)
+    role_permission_dao.delete_by_role(req.roleNo)
 
     # 删除角色
     role.delete()

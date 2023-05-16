@@ -2,7 +2,7 @@
 # @File    : message_service.py
 # @Time    : 2022-05-07 22:32:17
 # @Author  : Kelvin.Ye
-from app.modules.public.dao import notification_robot_dao as NotificationRobotDao
+from app.modules.public.dao import notification_robot_dao
 from app.modules.public.enum import RobotState
 from app.modules.public.model import TNotificationRobot
 from app.tools.exceptions import ServiceError
@@ -68,7 +68,7 @@ def query_notice_robot_all(req):
 @http_service
 def query_notice_robot(req):
     # 查询机器人
-    robot = NotificationRobotDao.select_by_no(req.robotNo)
+    robot = notification_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     return {
@@ -89,7 +89,7 @@ def create_notice_robot(req):
         raise ServiceError('空间编号不能为空')
 
     # 查询机器人
-    robot = NotificationRobotDao.select_first(
+    robot = notification_robot_dao.select_first(
         WORKSPACE_NO=req.workspaceNo,
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=req.robotType
@@ -114,11 +114,11 @@ def create_notice_robot(req):
 @http_service
 def modify_notice_robot(req):
     # 查询机器人
-    robot = NotificationRobotDao.select_by_no(req.robotNo)
+    robot = notification_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 唯一性校验
-    if robot.ROBOT_NAME != req.robotName and NotificationRobotDao.select_first(
+    if robot.ROBOT_NAME != req.robotName and notification_robot_dao.select_first(
         WORKSPACE_NO=robot.WORKSPACE_NO,
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=robot.ROBOT_TYPE
@@ -136,7 +136,7 @@ def modify_notice_robot(req):
 @http_service
 def modify_notice_robot_state(req):
     # 查询机器人
-    robot = NotificationRobotDao.select_by_no(req.robotNo)
+    robot = notification_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 更新机器人状态
@@ -146,7 +146,7 @@ def modify_notice_robot_state(req):
 @http_service
 def remove_notice_robot(req):
     # 查询机器人
-    robot = NotificationRobotDao.select_by_no(req.robotNo)
+    robot = notification_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 删除机器人
