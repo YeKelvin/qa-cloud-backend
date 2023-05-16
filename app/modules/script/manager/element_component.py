@@ -5,7 +5,7 @@
 from typing import Dict
 
 from app.modules.script.dao import http_header_dao
-from app.modules.script.dao import http_header_template_ref_dao
+from app.modules.script.dao import httpheader_template_ref_dao
 from app.modules.script.dao import variable_dao
 from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import DatabaseDriver
@@ -124,7 +124,7 @@ def get_variables(dataset_nos: list, use_current_value: bool) -> Dict:
 
 def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[str, dict]):
     # 查询元素关联的请求头模板
-    refs = http_header_template_ref_dao.select_all_by_sampler(sampler.ELEMENT_NO)
+    refs = httpheader_template_ref_dao.select_all_by_sampler(sampler.ELEMENT_NO)
 
     # 没有关联模板时直接跳过
     if not refs:

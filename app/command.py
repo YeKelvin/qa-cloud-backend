@@ -3,6 +3,7 @@
 # @Time    : 2019/11/7 10:55
 # @Author  : Kelvin.Ye
 import click
+
 from flask.cli import with_appcontext
 
 from app.extension import db  # noqa
@@ -22,9 +23,9 @@ from app.utils.security import encrypt_password
 
 
 from app.modules.opencenter.model import *  # noqa isort:skip
-from app.modules.script.model import *  # noqa isort:skip
-from app.modules.system.model import *  # noqa isort:skip
-from app.modules.public.model import *  # noqa isort:skip
+from app.modules.script.model import *      # noqa isort:skip
+from app.modules.system.model import *      # noqa isort:skip
+from app.modules.public.model import *      # noqa isort:skip
 from app.modules.usercenter.model import *  # noqa isort:skip
 
 

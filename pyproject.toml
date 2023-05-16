@@ -19,7 +19,7 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
-# Flask
+# flask
 flask = "2.3.2"
 flask-sqlalchemy = "3.0.3"
 flask-socketio = "5.3.4"
@@ -31,11 +31,13 @@ apscheduler = "3.10.1"
 blinker = "1.6.2"
 # id
 ulid-py = "1.1.0"
-# Encryption
+# encryption
 pyjwt = "2.7.0"
 # Environment
 python-dotenv = "1.0.0"
 environs = "9.5.0"
+# config
+tomli = "2.0.1"
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
 

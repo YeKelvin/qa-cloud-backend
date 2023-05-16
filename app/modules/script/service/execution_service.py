@@ -27,20 +27,21 @@ from app.modules.script.dao import testplan_execution_items_dao
 from app.modules.script.dao import testplan_items_dao
 from app.modules.script.dao import testplan_settings_dao
 from app.modules.script.dao import variable_dataset_dao
-from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import RunningState
 from app.modules.script.enum import VariableDatasetType
 from app.modules.script.enum import is_snippet_collection
+from app.modules.script.manager import element_loader
+from app.modules.script.manager.element_component import add_flask_db_iteration_storage
+from app.modules.script.manager.element_component import add_flask_db_result_storage
+from app.modules.script.manager.element_component import add_flask_sio_result_collector
+from app.modules.script.manager.element_component import add_variable_dataset
+from app.modules.script.manager.element_manager import get_root_no
+from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TTestplanExecution
 from app.modules.script.model import TTestplanExecutionItems
 from app.modules.script.model import TTestplanExecutionSettings
 from app.modules.script.model import TTestReport
-from app.modules.script.service import element_loader
-from app.modules.script.service.element_component import add_flask_db_iteration_storage
-from app.modules.script.service.element_component import add_flask_db_result_storage
-from app.modules.script.service.element_component import add_flask_sio_result_collector
-from app.modules.script.service.element_component import add_variable_dataset
 from app.modules.usercenter.dao import user_dao
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
@@ -54,23 +55,6 @@ from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_h_m_s
 from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
-
-
-def get_root_no(element_no):
-    """根据元素编号获取根元素编号（集合编号）"""
-    if not (relation := element_children_dao.select_by_child(element_no)):
-        return element_no
-    if not relation.ROOT_NO:
-        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-    return relation.ROOT_NO
-
-
-def get_workspace_no(collection_no) -> str:
-    """获取元素空间编号"""
-    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
-        return workspace_collection.WORKSPACE_NO
-    else:
-        raise ServiceError('查询元素空间失败')
 
 
 def debug_pymeter(script, sid):
@@ -113,7 +97,9 @@ def get_flask_app():
 @http_service
 def execute_collection(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.collectionNo)))
+    check_workspace_permission(
+        get_workspace_no(get_root_no(req.collectionNo))
+    )
 
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
@@ -157,7 +143,9 @@ def execute_collection(req):
 @http_service
 def execute_group(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.groupNo)))
+    check_workspace_permission(
+        get_workspace_no(get_root_no(req.groupNo))
+    )
 
     # 查询元素
     group = test_element_dao.select_by_no(req.groupNo)
@@ -211,7 +199,9 @@ def execute_group(req):
 @http_service
 def execute_sampler(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.samplerNo)))
+    check_workspace_permission(
+        get_workspace_no(get_root_no(req.samplerNo))
+    )
 
     # 查询元素
     sampler = test_element_dao.select_by_no(req.samplerNo)
@@ -255,7 +245,9 @@ def execute_sampler(req):
 @http_service
 def execute_snippets(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.collectionNo)))
+    check_workspace_permission(
+        get_workspace_no(get_root_no(req.collectionNo))
+    )
 
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)

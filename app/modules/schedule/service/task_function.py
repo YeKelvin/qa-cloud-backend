@@ -10,8 +10,8 @@ from app.extension import apscheduler
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
-from app.modules.script.service.element_component import add_variable_dataset
-from app.modules.script.service.element_loader import loads_tree
+from app.modules.script.manager.element_component import add_variable_dataset
+from app.modules.script.manager.element_loader import loads_tree
 from app.modules.script.service.execution_service import run_testplan
 from app.tools.exceptions import ServiceError
 

@@ -13,7 +13,6 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_options_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
@@ -26,9 +25,11 @@ from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_sql_sampler
 from app.modules.script.enum import is_teardown_group_debuger
 from app.modules.script.enum import is_test_collection
+from app.modules.script.manager.element_component import add_database_engine
+from app.modules.script.manager.element_component import add_http_header_manager
+from app.modules.script.manager.element_manager import get_root_no
+from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementBuiltinChildren
-from app.modules.script.service.element_component import add_database_engine
-from app.modules.script.service.element_component import add_http_header_manager
 from app.tools.exceptions import ServiceError
 from app.tools.validator import check_exists
 from app.utils.json_util import from_json
@@ -465,20 +466,3 @@ def get_real_class(element):
         return ElementClass.TEARDOWN_GROUP_DEBUGER.value
     else:
         return element.ELEMENT_CLASS
-
-
-def get_root_no(element_no):
-    """根据元素编号获取根元素编号（集合编号）"""
-    if not (element_child := element_children_dao.select_by_child(element_no)):
-        return element_no
-    if not element_child.ROOT_NO:
-        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-    return element_child.ROOT_NO
-
-
-def get_workspace_no(collection_no) -> str:
-    """获取元素空间编号"""
-    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
-        return workspace_collection.WORKSPACE_NO
-    else:
-        raise ServiceError('查询元素空间失败')

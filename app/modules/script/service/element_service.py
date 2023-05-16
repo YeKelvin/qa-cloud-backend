@@ -17,8 +17,8 @@ from app.modules.script.dao import element_builtin_children_dao
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_options_dao
 from app.modules.script.dao import element_property_dao
-from app.modules.script.dao import http_header_template_dao
-from app.modules.script.dao import http_header_template_ref_dao
+from app.modules.script.dao import httpheader_template_dao
+from app.modules.script.dao import httpheader_template_ref_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
@@ -34,6 +34,8 @@ from app.modules.script.enum import is_sampler
 from app.modules.script.enum import is_snippet_collection
 from app.modules.script.enum import is_test_collection
 from app.modules.script.enum import is_timer
+from app.modules.script.manager.element_manager import get_root_no
+from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementBuiltinChildren
 from app.modules.script.model import TElementChildren
 from app.modules.script.model import TElementOptions
@@ -51,23 +53,6 @@ from app.tools.validator import check_workspace_permission
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
-
-
-def get_root_no(element_no):
-    """根据元素编号获取根元素编号（集合编号）"""
-    if not (relation := element_children_dao.select_by_child(element_no)):
-        return element_no
-    if not relation.ROOT_NO:
-        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-    return relation.ROOT_NO
-
-
-def get_workspace_no(collection_no) -> str:
-    """获取元素空间编号"""
-    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
-        return workspace_collection.WORKSPACE_NO
-    else:
-        raise ServiceError('查询元素空间失败')
 
 
 @http_service
@@ -985,7 +970,7 @@ def clone_element(source: TTestElement, rename=False):
         )
     # 如果是 HTTPSampler ，克隆请求头模板
     if is_http_sampler(source):
-        refs = http_header_template_ref_dao.select_all_by_sampler(source.ELEMENT_NO)
+        refs = httpheader_template_ref_dao.select_all_by_sampler(source.ELEMENT_NO)
         for ref in refs:
             THttpHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
 
@@ -999,7 +984,7 @@ def query_element_httpheader_template_refs(req):
     check_exists(element, error_msg='元素不存在')
 
     # 查询所有关联的模板
-    refs = http_header_template_ref_dao.select_all_by_sampler(req.elementNo)
+    refs = httpheader_template_ref_dao.select_all_by_sampler(req.elementNo)
 
     return [ref.TEMPLATE_NO for ref in refs]
 
@@ -1018,7 +1003,7 @@ def create_element_httpheader_template_refs(req):
 def add_httpheader_template_refs(element_no, template_nos):
     for template_no in template_nos:
         # 模板存在才添加
-        if http_header_template_dao.select_by_no(template_no):
+        if httpheader_template_dao.select_by_no(template_no):
             # 添加模板关联
             THttpHeaderTemplateRef.insert(SAMPLER_NO=element_no, TEMPLATE_NO=template_no)
 
@@ -1039,12 +1024,12 @@ def update_httpheader_template_refs(element_no, template_nos):
         return
     for template_no in template_nos:
         # 模板不存在则跳过
-        template = http_header_template_dao.select_by_no(template_no)
+        template = httpheader_template_dao.select_by_no(template_no)
         if not template:
             continue
 
         # 查询元素请求头模板
-        ref = http_header_template_ref_dao.select_by_sampler_and_template(element_no, template_no)
+        ref = httpheader_template_ref_dao.select_by_sampler_and_template(element_no, template_no)
         if not ref:
             # 添加模板关联
             THttpHeaderTemplateRef.insert(
@@ -1053,7 +1038,7 @@ def update_httpheader_template_refs(element_no, template_nos):
             )
 
     # 删除不在请求中的模板
-    http_header_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, template_nos)
+    httpheader_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, template_nos)
 
 
 @http_service

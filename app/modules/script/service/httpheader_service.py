@@ -7,7 +7,7 @@ from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
 from app.modules.script.dao import http_header_dao
-from app.modules.script.dao import http_header_template_dao
+from app.modules.script.dao import httpheader_template_dao
 from app.modules.script.model import THttpHeader
 from app.modules.script.model import THttpHeaderTemplate
 from app.tools import localvars
@@ -145,7 +145,7 @@ def create_template(req):
     check_workspace_permission(req.workspaceNo)
 
     # 查询模板
-    template = http_header_template_dao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
+    template = httpheader_template_dao.select_by_workspace_and_name(req.workspaceNo, req.templateName)
     check_not_exists(template, error_msg='模板已存在')
 
     # 新增模板
@@ -163,7 +163,7 @@ def create_template(req):
 @http_service
 def modify_template(req):
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -179,7 +179,7 @@ def modify_template(req):
 @http_service
 def remove_template(req):
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -196,7 +196,7 @@ def create_http_header(req):
     check_not_exists(header, error_msg='请求头已存在')
 
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -223,7 +223,7 @@ def modify_http_header(req):
     check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = http_header_template_dao.select_by_no(header.TEMPLATE_NO)
+    template = httpheader_template_dao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -244,7 +244,7 @@ def remove_http_header(req):
     check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = http_header_template_dao.select_by_no(header.TEMPLATE_NO)
+    template = httpheader_template_dao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -261,7 +261,7 @@ def enable_http_header(req):
     check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = http_header_template_dao.select_by_no(header.TEMPLATE_NO)
+    template = httpheader_template_dao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -280,7 +280,7 @@ def disable_http_header(req):
     check_exists(header, error_msg='请求头不存在')
 
     # 查询模板
-    template = http_header_template_dao.select_by_no(header.TEMPLATE_NO)
+    template = httpheader_template_dao.select_by_no(header.TEMPLATE_NO)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -313,7 +313,7 @@ def query_httpheaders(req):
     result = []
     for template_no in req.templates:
         # 查询模板
-        template = http_header_template_dao.select_by_no(template_no)
+        template = httpheader_template_dao.select_by_no(template_no)
         if not template:
             continue
 
@@ -337,7 +337,7 @@ def query_httpheaders(req):
 @http_service
 def create_httpheaders(req):
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
 
     # 校验空间权限
@@ -366,7 +366,7 @@ def create_httpheaders(req):
 @http_service
 def modify_httpheaders(req):
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -404,7 +404,7 @@ def modify_httpheaders(req):
 @http_service
 def remove_httpheaders(req):
     # 查询模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='模板不存在')
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
@@ -415,7 +415,7 @@ def remove_httpheaders(req):
 @http_service
 def duplicate_template(req):
     # 查询请求头模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='请求头模板不存在')
 
     # 校验空间权限
@@ -448,7 +448,7 @@ def duplicate_template(req):
 @http_service
 def copy_template_to_workspace(req):
     # 查询请求头模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='请求头模板不存在')
 
     # 校验空间权限
@@ -483,7 +483,7 @@ def move_template_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
     # 查询请求头模板
-    template = http_header_template_dao.select_by_no(req.templateNo)
+    template = httpheader_template_dao.select_by_no(req.templateNo)
     check_exists(template, error_msg='请求头模板不存在')
     # 移动请求头模板
     template.update(WORKSPACE_NO=req.workspaceNo)

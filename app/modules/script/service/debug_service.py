@@ -7,8 +7,8 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_snippet_collection
-from app.modules.script.service import element_loader
-from app.modules.script.service.element_component import add_variable_dataset
+from app.modules.script.manager import element_loader
+from app.modules.script.manager.element_component import add_variable_dataset
 from app.tools.exceptions import ServiceError
 from app.tools.service import http_service
 
