@@ -5,10 +5,8 @@
 # sourcery skip: dont-import-test-modules
 import time
 
-import flask
-
 from loguru import logger
-from pymeter.runner import Runner
+from pymeter.runner import Runner as PyMeterRunner
 
 from app import config as CONFIG
 from app.extension import db
@@ -50,6 +48,7 @@ from app.tools.localvars import get_user_no
 from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.tools.validator import check_workspace_permission
+from app.utils.flask_util import get_flask_app
 from app.utils.notice import wecom as WeComTool
 from app.utils.time_util import datetime_now_by_utc8
 from app.utils.time_util import microsecond_to_h_m_s
@@ -59,7 +58,11 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 
 def debug_pymeter(script, sid):
     try:
-        Runner.start([script], throw_ex=True, extra={'sio': socketio, 'sid': sid})
+        PyMeterRunner.start(
+            [script],
+            throw_ex=True,
+            extra={'sio': socketio, 'sid': sid}
+        )
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
         logger.exception('Exception Occurred')
@@ -76,7 +79,11 @@ def debug_pymeter_by_loader(loader, app, sid):
             to=sid
         )
         script = loader(app, result_id)
-        Runner.start([script], throw_ex=True, extra={'sio': socketio, 'sid': sid})
+        PyMeterRunner.start(
+            [script],
+            throw_ex=True,
+            extra={'sio': socketio, 'sid': sid}
+        )
         socketio.emit('pymeter_completed', namespace='/', to=sid)
     except Exception:
         logger.exception('Exception Occurred')
@@ -87,11 +94,6 @@ def debug_pymeter_by_loader(loader, app, sid):
             to=sid
         )
         socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
-
-
-def get_flask_app():
-    """获取当前 flask 实例"""
-    return flask.current_app._get_current_object()  # noqa
 
 
 @http_service
@@ -609,7 +611,7 @@ def start_testplan_by_loop(
                         logger.info(
                             f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 第[ {i} ]次开始执行脚本'
                         )
-                        Runner.start([collection], throw_ex=True)
+                        PyMeterRunner.start([collection], throw_ex=True)
                     except Exception:
                         logger.exception('执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常')
                         with app.app_context():
@@ -678,7 +680,7 @@ def start_testplan_by_report(
             def start(app):
                 try:
                     logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 开始执行脚本')
-                    Runner.start([collection], throw_ex=True)
+                    PyMeterRunner.start([collection], throw_ex=True)
                 except Exception:
                     logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本执行异常')
                     with app.app_context():
