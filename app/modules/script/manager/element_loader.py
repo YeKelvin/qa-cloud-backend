@@ -27,6 +27,8 @@ from app.modules.script.enum import is_teardown_group_debuger
 from app.modules.script.enum import is_test_collection
 from app.modules.script.manager.element_component import add_database_engine
 from app.modules.script.manager.element_component import add_http_header_manager
+from app.modules.script.manager.element_context import loads_cache
+from app.modules.script.manager.element_context import loads_configurator
 from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementBuiltinChildren
@@ -44,10 +46,9 @@ def loads_tree(
         no_debuger=False,
 ):
     """根据元素编号加载脚本"""
-    # 临时缓存
-    cache = {}
-    # 全局配置临时变量
-    config_components = {}
+    # 配置上下文变量，用于临时缓存
+    cache_token = loads_cache.set({})
+    configurator_token = loads_configurator.set({})
     # 递归加载元素
     script = loads_element(
         element_no,
@@ -55,24 +56,23 @@ def loads_tree(
         specified_sampler_no=specified_sampler_no,
         specified_selfonly=specified_selfonly,
         no_sampler=no_sampler,
-        no_debuger=no_debuger,
-        config_components=config_components,
-        cache=cache
+        no_debuger=no_debuger
     )
     if not script:
         raise ServiceError('脚本异常，请重试')
     # 添加全局配置
-    # TODO: 空间和全局配置的顺序，后续需要调整
-    if config_components:
-        for configs in config_components.values():
-            for config in configs:
-                script['children'].insert(0, config)
+    for configs in loads_configurator.get().values():
+        for config in configs:
+            script['children'].insert(0, config)
     # 加载元素选项
     collection_options = loads_options(element_no)
     exclude_workspaces = collection_options.get('exclude_workspaces', False)
     if not exclude_workspaces:
         # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
         add_workspace_components(script, element_no)
+    # 清空上下文变量
+    loads_cache.reset(cache_token)
+    loads_configurator.reset(configurator_token)
     return script
 
 
@@ -82,9 +82,7 @@ def loads_element(
         specified_sampler_no: str = None,
         specified_selfonly: bool = False,
         no_sampler: bool = False,
-        no_debuger: bool = False,
-        config_components: Dict[str, list] = None,
-        cache: Dict[str, dict] = None
+        no_debuger: bool = False
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
@@ -106,7 +104,7 @@ def loads_element(
 
     # 元素为 HttpSampler 时，添加 HTTP 请求头管理器
     if is_http_sampler(element):
-        add_http_header_manager(element, children, cache)
+        add_http_header_manager(element, children)
 
     # 元素为 SQLSampler 时，添加全局的数据库引擎配置器
     if is_sql_sampler(element):
@@ -118,7 +116,7 @@ def loads_element(
         # 实时将引擎变量名称写入元素属性中
         properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
         # 添加数据库引擎配置组件
-        add_database_engine(engine, config_components)
+        add_database_engine(engine)
 
     # 添加内置元素
     if is_test_collection(element) or is_group(element) or is_http_sampler(element):
@@ -131,14 +129,12 @@ def loads_element(
                 element_no,
                 specified_group_no,
                 specified_sampler_no,
-                specified_selfonly,
-                config_components,
-                cache
+                specified_selfonly
             )
         )
     # 元素为 SnippetSampler 时，读取片段内容
     else:
-        add_snippets(properties, children, config_components, cache)
+        add_snippets(properties, children)
         properties = None  # SnippetSampler 的属性不需要添加至脚本中
 
     return {
@@ -183,9 +179,7 @@ def loads_children(
         element_no,
         specified_group_no,
         specified_sampler_no,
-        specified_selfonly,
-        config_components: Dict[str, list],
-        cache: Dict[str, dict]
+        specified_selfonly
 ):
     """TODO: 太多 if 逻辑，待优化"""
     # 递归查询子代，并根据序号正序排序
@@ -199,7 +193,7 @@ def loads_children(
             # 独立运行
             if specified_selfonly:
                 if relation.CHILD_NO == specified_sampler_no:
-                    if child := loads_element(relation.CHILD_NO, config_components=config_components, cache=cache):
+                    if child := loads_element(relation.CHILD_NO):
                         children.append(child)
             # 非独立运行
             else:
@@ -208,9 +202,7 @@ def loads_children(
                     specified_group_no,
                     specified_sampler_no,
                     specified_selfonly,
-                    no_sampler=found,
-                    config_components=config_components,
-                    cache=cache
+                    no_sampler=found
                 ):
                     children.append(child)
                 if relation.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
@@ -221,9 +213,7 @@ def loads_children(
                 relation.CHILD_NO,
                 specified_group_no,
                 specified_sampler_no,
-                specified_selfonly,
-                config_components=config_components,
-                cache=cache
+                specified_selfonly
             ):
                 children.append(child)
 
@@ -257,11 +247,11 @@ def add_builtin_children(element_no, children: list):
             children.append(builtin)
 
 
-def add_snippets(sampler_property, children: list, config_components: Dict[str, list], cache: Dict[str, dict]):
+def add_snippets(sampler_property, children: list):
     snippet_no = sampler_property.get('snippetNo', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippet_collection = loads_element(snippet_no, config_components=config_components, cache=cache)
+    snippet_collection = loads_element(snippet_no)
     if not snippet_collection:
         return
     snippets = snippet_collection['children']

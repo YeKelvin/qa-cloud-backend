@@ -14,8 +14,7 @@ from app.signals import record_insert_signal
 from app.signals import record_update_signal
 from app.signals import restapi_log_signal
 from app.tools.cache import RULE_MAP
-from app.tools.identity import new_ulid
-from app.tools.locals import threadlocal
+from app.tools.localvars import get_trace_id
 from app.utils.json_util import to_json
 
 
@@ -56,7 +55,7 @@ def record_restapi_log(sender, method, uri, request, response, success, elapsed)
 def record_insert(sender, entity):
     """记录新增数据"""
     record = TSystemOperationLogContent()
-    record.LOG_NO = get_traceid()
+    record.LOG_NO = get_trace_id()
     record.OPERATION_TYPE = 'INSERT'
     record.TABLE_NAME = entity.__tablename__
     record.ROW_ID = entity.ID
@@ -83,7 +82,7 @@ def record_update(sender, entity, columnname, newvalue):
     if isinstance(newvalue, (dict, list)):
         newvalue = to_json(newvalue)
     record = TSystemOperationLogContent()
-    record.LOG_NO = get_traceid(),
+    record.LOG_NO = get_trace_id(),
     record.OPERATION_TYPE = 'UPDATE',
     record.TABLE_NAME = entity.__tablename__,
     record.ROW_ID = entity.ID
@@ -98,20 +97,9 @@ def record_update(sender, entity, columnname, newvalue):
 def record_delete(sender, entity):
     """记录删除数据"""
     record = TSystemOperationLogContent()
-    record.LOG_NO = get_traceid()
+    record.LOG_NO = get_trace_id()
     record.OPERATION_TYPE = 'DELETE'
     record.TABLE_NAME = entity.__tablename__
     record.ROW_ID = entity.ID
     db.session.add(record)
     db.session.flush()
-
-
-def get_traceid():
-    if hasattr(g, 'trace_id'):
-        return g.trace_id
-
-    trace_id = getattr(threadlocal, 'trace_id', None)
-    if not trace_id:
-        trace_id = new_ulid()
-        setattr(threadlocal, 'trace_id', trace_id)
-    return trace_id

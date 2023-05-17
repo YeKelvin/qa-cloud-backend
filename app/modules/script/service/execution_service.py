@@ -136,9 +136,9 @@ def execute_collection(req):
     # 新建线程执行脚本
     executor.submit(
         debug_pymeter_by_loader,
-        script_loader,
-        get_flask_app(),
-        req.socketId
+        loader=script_loader,
+        app=get_flask_app(),
+        sid=req.socketId
     )
 
 
@@ -192,9 +192,9 @@ def execute_group(req):
     # 新建线程执行脚本
     executor.submit(
         debug_pymeter_by_loader,
-        script_loader,
-        get_flask_app(),
-        req.socketId
+        loader=script_loader,
+        app=get_flask_app(),
+        sid=req.socketId
     )
 
 

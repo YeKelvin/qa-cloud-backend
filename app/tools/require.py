@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import wraps
 
 import jwt
+
 from flask import g
 from flask import request
 from loguru import logger
@@ -47,7 +48,7 @@ def require_login(func):
             user_no = payload['data']['id']
             issued_at = payload['iat']
             # 存储用户编号
-            localvars.set('user_no', user_no)
+            localvars.setg('user_no', user_no)
         except jwt.ExpiredSignatureError:
             return failed_response(ErrorCode.E401001, msg='token已失效')
         except jwt.InvalidTokenError:
@@ -78,7 +79,7 @@ def require_login(func):
             logger.bind(traceid=g.trace_id).info('token已失效')
             return failed_response(ErrorCode.E401001)
 
-        localvars.set('operator', user.USER_NAME)
+        localvars.setg('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -100,7 +101,7 @@ def require_permission(code):
 
             # 查询用户权限，判断权限是否存在且状态正常
             if exists_user_permission(user_no, code):
-                localvars.set('permission_code', code)  # 存储权限唯一代码
+                localvars.setg('permission_code', code)  # 存储权限唯一代码
                 return func(*args, **kwargs)
 
             # 超级管理员无需校验权限
@@ -141,7 +142,7 @@ def require_thirdparty_access(func):
             logger.bind(traceid=g.trace_id).info('第三方应用状态异常')
             return failed_response(ErrorCode.E401003)
         # 存储appno
-        localvars.set('thirdparty_app_no', appno)
+        localvars.setg('thirdparty_app_no', appno)
         return func(*args, **kwargs)
 
     return wrapper

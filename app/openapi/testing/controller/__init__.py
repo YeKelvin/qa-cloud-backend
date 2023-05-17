@@ -6,7 +6,7 @@
 from flask import Blueprint
 
 
-blueprint = Blueprint('scriptcenter', __name__, url_prefix='/testing')
+blueprint = Blueprint('testing', __name__, url_prefix='/testing')
 
 
 from . import testplan_controller  # noqa

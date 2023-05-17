@@ -16,7 +16,7 @@ from app.modules.schedule.enum import OperationType
 from app.modules.schedule.model import TScheduleJobLog
 from app.tools.identity import new_id
 from app.tools.identity import new_ulid
-from app.tools.locals import threadlocal
+from app.tools.localvars import traceid_var
 from app.utils.time_util import datetime_now_by_utc8
 
 
@@ -221,4 +221,4 @@ def handle_event_all(event):
     A catch-all mask that includes every event type
     """
     # 重置[ 线程/协程 ]的日志号
-    setattr(threadlocal, 'trace_id', new_ulid())
+    traceid_var.set(new_ulid())

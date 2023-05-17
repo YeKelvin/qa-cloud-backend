@@ -11,6 +11,8 @@ from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
+from app.modules.script.manager.element_context import loads_cache
+from app.modules.script.manager.element_context import loads_configurator
 from app.modules.script.model import TTestElement
 
 
@@ -122,7 +124,8 @@ def get_variables(dataset_nos: list, use_current_value: bool) -> Dict:
     return result
 
 
-def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[str, dict]):
+def add_http_header_manager(sampler: TTestElement, children: list):
+    cache = loads_cache.get()
     # 查询元素关联的请求头模板
     refs = httpheader_template_ref_dao.select_all_by_sampler(sampler.ELEMENT_NO)
 
@@ -165,10 +168,11 @@ def add_http_header_manager(sampler: TTestElement, children: list, cache: Dict[s
     })
 
 
-def add_database_engine(engine, config_components: dict):
-    engines = config_components.get(ElementClass.DATABASE_ENGINE.value, [])
+def add_database_engine(engine):
+    configurator = loads_configurator.get()
+    engines = configurator.get(ElementClass.DATABASE_ENGINE.value, [])
     if not engines:
-        config_components[ElementClass.DATABASE_ENGINE.value] = engines
+        configurator[ElementClass.DATABASE_ENGINE.value] = engines
     engines.append({
         'name': engine.CONFIG_NAME,
         'remark': engine.CONFIG_DESC,
