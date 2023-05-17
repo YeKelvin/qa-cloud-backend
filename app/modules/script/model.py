@@ -36,14 +36,14 @@ class TTestElement(DBModel, BaseColumn):
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
+    # SETTINGS = db.Column(JSONB, comment='元素设置')
+    # ATTRIBUTES = db.Column(JSONB, comment='元素属性')
     META_DATA = db.Column(db.String(512), comment='元数据')
 
 
 class TElementProperty(DBModel, BaseColumn):
     """元素属性表"""
     __tablename__ = 'ELEMENT_PROPERTY'
-    # TODO: ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
-    # TODO: PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.Text, comment='属性值')
@@ -54,6 +54,7 @@ class TElementProperty(DBModel, BaseColumn):
 
 class TElementOptions(DBModel, BaseColumn):
     """元素选项表"""
+    # TODO：del
     __tablename__ = 'ELEMENT_OPTIONS'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     OPTION_NAME = db.Column(db.String(256), nullable=False, comment='选项名称')
@@ -86,7 +87,9 @@ class TVariableDataset(DBModel, BaseColumn):
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     DATASET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量集编号')
     DATASET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
-    DATASET_TYPE = db.Column(db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)')
+    DATASET_TYPE = db.Column(
+        db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)'
+    )
     DATASET_DESC = db.Column(db.String(256), comment='变量集描述')
     WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
     UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_dataset')

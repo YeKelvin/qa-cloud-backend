@@ -64,9 +64,9 @@ def loads_tree(
     for configs in loads_configurator.get().values():
         for config in configs:
             script['children'].insert(0, config)
-    # 加载元素选项
-    collection_options = loads_options(element_no)
-    exclude_workspaces = collection_options.get('exclude_workspaces', False)
+    # 读取集合选项
+    options = loads_options(element_no)
+    exclude_workspaces = options.get('exclude_workspaces', False)
     if not exclude_workspaces:
         # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
         add_workspace_components(script, element_no)
@@ -319,8 +319,8 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
 
 
 def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
-    # 缓存
-    cache = {}
+    # 配置上下文变量，用于临时缓存
+    cache_token = loads_cache.set({})
     # 读取元素属性
     properties = loads_property(snippet_no)
     use_http_session = properties.get('useHTTPSession', 'false')
@@ -338,12 +338,14 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         })
     # 添加子代
     for relation in children_relations:
-        if child := loads_element(relation.CHILD_NO, cache=cache):
+        if child := loads_element(relation.CHILD_NO):
             children.append(child)
+    # 清空上下文变量
+    loads_cache.reset(cache_token)
     # 创建一个临时的 Group
     group = {
         'name': snippet_name,
-        'remark': snippet_remark,
+        'remark': '',
         'class': 'TestGroup',
         'enabled': True,
         'property': {
@@ -351,7 +353,8 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
             'TestGroup__number_groups': '1',
             'TestGroup__start_interval': '',
             'TestGroup__main_controller': {
-                'class': 'LoopController', 'property': {
+                'class': 'LoopController',
+                'property': {
                     'LoopController__loops': '1',
                     'LoopController__continue_forever': 'false'
                 }
@@ -382,6 +385,7 @@ def add_workspace_components(script: dict, element_no: str):
     components = []
     for workspace_component in workspace_components:
         if element := loads_element(workspace_component.COMPONENT_NO):
+            element['level'] = 0  # 给空间组件添加层级
             components.append(element)
     for component in components[::-1]:
         script['children'].insert(0, component)
@@ -423,6 +427,7 @@ def is_blank_python(element, properties):
             not properties.get('PythonAssertion__script').strip()
     ):
         return True
+
     return False
 
 
