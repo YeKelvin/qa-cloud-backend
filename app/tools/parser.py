@@ -21,7 +21,7 @@ class Argument:
     def __init__(
         self,
         name: str,
-        type: type = str,  # noqa
+        type: type = None,  # noqa
         default: any = None,
         required: bool = False,
         nullable: bool = False,
@@ -54,7 +54,8 @@ class Argument:
             return self.get_nullable_default()
 
         # 类型转换
-        value = self.convert_type(value)
+        if self.type:
+            value = self.convert_type(value)
 
         # 数据校验
         self.validate(value)
