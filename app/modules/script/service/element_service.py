@@ -15,7 +15,6 @@ from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
 from app.modules.script.dao import element_builtin_children_dao
 from app.modules.script.dao import element_children_dao
-from app.modules.script.dao import element_options_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import httpheader_template_dao
 from app.modules.script.dao import httpheader_template_ref_dao
@@ -38,7 +37,6 @@ from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementBuiltinChildren
 from app.modules.script.model import TElementChildren
-from app.modules.script.model import TElementOptions
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import THttpHeaderTemplateRef
 from app.modules.script.model import TTestElement
@@ -80,13 +78,18 @@ def query_element_list(req):
         conds.equal(TWorkspaceCollection.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
 
     # TTestElement，TWorkspace，TWorkspaceCollection连表查询
-    pagination = dbquery(
-        TTestElement.ELEMENT_NO,
-        TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_REMARK,
-        TTestElement.ELEMENT_TYPE,
-        TTestElement.ENABLED
-    ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        dbquery(
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_TYPE,
+            TTestElement.ENABLED
+        )
+        .filter(*conds)
+        .order_by(TTestElement.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
+    )
 
     data = [
         {
@@ -296,8 +299,6 @@ def query_element_info(req):
 
     # 查询元素属性
     properties = get_element_property(req.elementNo)
-    # 查询元素选项
-    options = get_element_options(req.elementNo)
 
     return {
         'elementNo': element.ELEMENT_NO,
@@ -307,7 +308,7 @@ def query_element_info(req):
         'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
         'property': properties,
-        'options': options
+        'attributes': element.ELEMENT_ATTRIBUTES
     }
 
 
@@ -321,15 +322,6 @@ def get_element_property(element_no):
         else:
             properties[prop.PROPERTY_NAME] = prop.PROPERTY_VALUE
     return properties
-
-
-def get_element_options(element_no):
-    """查询元素选项"""
-    opts = element_options_dao.select_all_by_element(element_no)
-    return {
-        opt.OPTION_NAME: opt.OPTION_VALUE
-        for opt in opts
-    }
 
 
 @http_service
@@ -404,7 +396,7 @@ def create_collection(req):
         element_type=req.elementType,
         element_class=req.elementClass,
         element_property=req.property,
-        element_options=req.options
+        element_attributes=req.attributes
     )
 
     # 新建内置元素
@@ -426,7 +418,7 @@ def add_element(
         element_type,
         element_class,
         element_property: dict = None,
-        element_options: dict = None
+        element_attributes: dict = None
 ):
     # 创建元素
     element_no = new_id()
@@ -436,41 +428,12 @@ def add_element(
         ELEMENT_REMARK=element_remark,
         ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
+        ELEMENT_ATTRIBUTES=element_attributes,
         ENABLED=ElementStatus.ENABLE.value
     )
     # 创建元素属性
     add_element_property(element_no, element_property)
-    # 创建元素选项
-    add_element_options(element_no, element_options)
     return element_no
-
-
-def add_element_options(element_no, element_options):
-    if element_options is None:
-        return
-    for name, value in element_options.items():
-        TElementOptions.insert(
-            ELEMENT_NO=element_no,
-            OPTION_NAME=name,
-            OPTION_VALUE=value
-        )
-
-
-def update_element_options(element_no, element_options):
-    if element_options is None:
-        return
-    # 遍历更新元素属性
-    for name, value in element_options.items():
-        if option := element_options_dao.select_by_element_and_name(element_no, name):
-            option.update(OPTION_VALUE=value)
-        else:
-            TElementOptions.insert(
-                ELEMENT_NO=element_no,
-                OPTION_NAME=name,
-                OPTION_VALUE=value
-            )
-    # 删除请求中没有的属性
-    element_options_dao.delete_all_by_element_and_notin_name(element_no, list(element_options.keys()))
 
 
 @http_service
@@ -499,7 +462,7 @@ def add_element_child(root_no, parent_no, child: dict):
         element_type=child.get('elementType'),
         element_class=child.get('elementClass'),
         element_property=child.get('property'),
-        element_options=child.get('options')
+        element_attributes=child.get('attributes')
     )
     # 建立父子关联
     TElementChildren.insert(
@@ -534,7 +497,7 @@ def modify_element(req):
         element_name=req.elementName,
         element_remark=req.elementRemark,
         element_property=req.property,
-        element_options=req.options
+        element_attributes=req.attributes
     )
     # 更新内置元素
     update_element_builtins(
@@ -548,7 +511,7 @@ def update_element(
         element_name,
         element_remark,
         element_property: dict = None,
-        element_options: dict = None
+        element_attributes: dict = None
 ):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
@@ -556,12 +519,11 @@ def update_element(
     # 更新元素
     element.update(
         ELEMENT_NAME=element_name,
-        ELEMENT_REMARK=element_remark
+        ELEMENT_REMARK=element_remark,
+        ELEMENT_ATTRIBUTES=element_attributes
     )
     # 更新元素属性
     update_element_property(element_no, element_property)
-    # 更新元素选项
-    update_element_options(element_no, element_options)
 
 
 @http_service
@@ -949,7 +911,8 @@ def clone_element(source: TTestElement, rename=False):
         ELEMENT_NAME=f'{source.ELEMENT_NAME} copy' if rename else source.ELEMENT_NAME,
         ELEMENT_REMARK=source.ELEMENT_REMARK,
         ELEMENT_TYPE=source.ELEMENT_TYPE,
-        ELEMENT_CLASS=source.ELEMENT_CLASS
+        ELEMENT_CLASS=source.ELEMENT_CLASS,
+        ELEMENT_ATTRIBUTES=source.ELEMENT_ATTRIBUTES
     )
     # 克隆元素属性
     props = element_property_dao.select_all_by_element(source.ELEMENT_NO)
@@ -959,14 +922,6 @@ def clone_element(source: TTestElement, rename=False):
             PROPERTY_NAME=prop.PROPERTY_NAME,
             PROPERTY_VALUE=prop.PROPERTY_VALUE,
             PROPERTY_TYPE=prop.PROPERTY_TYPE
-        )
-    # 克隆元素选项
-    opts = element_options_dao.select_all_by_element(source.ELEMENT_NO)
-    for opt in opts:
-        TElementOptions.insert(
-            ELEMENT_NO=cloned_no,
-            OPTION_NAME=opt.OPTION_NAME,
-            OPTION_VALUE=opt.OPTION_VALUE
         )
     # 如果是 HTTPSampler ，克隆请求头模板
     if is_http_sampler(source):

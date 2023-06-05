@@ -35,10 +35,9 @@ class TTestElement(DBModel, BaseColumn):
     ELEMENT_REMARK = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
+    ELEMENT_ATTRIBUTES = db.Column(JSONB, comment='元素属性')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
-    # SETTINGS = db.Column(JSONB, comment='元素设置')
-    # ATTRIBUTES = db.Column(JSONB, comment='元素属性')
-    META_DATA = db.Column(db.String(512), comment='元数据')
+    METADATA = db.Column(db.String(512), comment='元数据')
 
 
 class TElementProperty(DBModel, BaseColumn):
@@ -50,15 +49,6 @@ class TElementProperty(DBModel, BaseColumn):
     PROPERTY_TYPE = db.Column(db.String(32), nullable=False, default='STR', comment='属性类型')
     ENABLED = db.Column(db.Boolean, nullable=False, default=True, comment='是否启用')
     UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', 'DELETED', name='unique_element_property')
-
-
-class TElementOptions(DBModel, BaseColumn):
-    """元素选项表"""
-    # TODO：del
-    __tablename__ = 'ELEMENT_OPTIONS'
-    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
-    OPTION_NAME = db.Column(db.String(256), nullable=False, comment='选项名称')
-    OPTION_VALUE = db.Column(JSONB, comment='选项值')
 
 
 class TElementChildren(DBModel, BaseColumn):

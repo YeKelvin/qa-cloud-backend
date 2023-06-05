@@ -10,7 +10,6 @@ from loguru import logger
 from app.database import dbquery
 from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import element_children_dao
-from app.modules.script.dao import element_options_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
@@ -64,9 +63,10 @@ def loads_tree(
     for configs in loads_configurator.get().values():
         for config in configs:
             script['children'].insert(0, config)
-    # 读取集合选项
-    options = loads_options(element_no)
-    exclude_workspaces = options.get('exclude_workspaces', False)
+    # 查询集合配置
+    collection = test_element_dao.select_by_no(element_no)
+    attributes = collection.ELEMENT_ATTRIBUTES
+    exclude_workspaces = attributes.get('TestCollection__exclude_workspaces', False)
     if not exclude_workspaces:
         # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
         add_workspace_components(script, element_no)
@@ -164,15 +164,6 @@ def loads_property(element_no):
             continue
 
     return properties
-
-
-def loads_options(element_no):
-    # 查询元素选项
-    opts = element_options_dao.select_all_by_element(element_no)
-    return {
-        opt.OPTION_NAME: opt.OPTION_VALUE
-        for opt in opts
-    }
 
 
 def loads_children(
