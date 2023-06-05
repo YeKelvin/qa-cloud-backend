@@ -49,7 +49,7 @@ def query_task_list(req):
         TScheduleJob
         .filter(*conds)
         .order_by(TScheduleJob.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [
@@ -345,7 +345,7 @@ def query_task_history_list(req):
         .outerjoin(TUser, TScheduleJobLog.OPERATION_BY == TUser.USER_NO)
         .filter(*conds)
         .order_by(TScheduleJobLog.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

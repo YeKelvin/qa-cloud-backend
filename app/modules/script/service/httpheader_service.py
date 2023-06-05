@@ -33,7 +33,7 @@ def query_template_list(req):
         THttpHeaderTemplate
         .filter(*conds)
         .order_by(THttpHeaderTemplate.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

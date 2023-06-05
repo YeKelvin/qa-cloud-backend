@@ -34,7 +34,7 @@ def query_workspace_list(req):
         .filter(*conds)
         .group_by(TWorkspace.ID, TWorkspace.WORKSPACE_SCOPE)
         .order_by(TWorkspace.WORKSPACE_SCOPE.desc(), TWorkspace.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

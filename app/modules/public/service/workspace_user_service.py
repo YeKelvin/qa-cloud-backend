@@ -25,12 +25,17 @@ def query_workspace_user_list(req):
     conds.like(TWorkspaceUser.WORKSPACE_NO, req.workspaceNo)
 
     # TUser, TWorkspace, TWorkspaceUser 连表查询
-    pagination = dbquery(
-        TWorkspace.WORKSPACE_NO,
-        TWorkspace.WORKSPACE_NAME,
-        TUser.USER_NO,
-        TUser.USER_NAME
-    ).filter(*conds).order_by(TWorkspaceUser.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        dbquery(
+            TWorkspace.WORKSPACE_NO,
+            TWorkspace.WORKSPACE_NAME,
+            TUser.USER_NO,
+            TUser.USER_NAME
+        )
+        .filter(*conds)
+        .order_by(TWorkspaceUser.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
+    )
 
     data = [
         {

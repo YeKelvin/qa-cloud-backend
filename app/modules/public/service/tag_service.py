@@ -23,7 +23,7 @@ def query_tag_list(req):
         TTag
         .filter(*conds)
         .order_by(TTag.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
     data = [
         {

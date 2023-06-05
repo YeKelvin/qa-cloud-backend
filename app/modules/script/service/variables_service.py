@@ -39,7 +39,7 @@ def query_dataset_list(req):
         TVariableDataset
         .filter(*conds)
         .order_by(TVariableDataset.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

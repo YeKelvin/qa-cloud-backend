@@ -26,7 +26,12 @@ def query_role_list(req):
     conds.like(TRole.ROLE_TYPE, req.roleType)
     conds.like(TRole.STATE, req.state)
 
-    pagination = TRole.filter(*conds).order_by(TRole.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        TRole
+        .filter(*conds)
+        .order_by(TRole.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
+    )
 
     data = [
         {

@@ -214,15 +214,20 @@ def query_user_list(req):
     conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
 
     # 查询用户列表
-    pagination = dbquery(
-        TUser.USER_NO,
-        TUser.USER_NAME,
-        TUser.MOBILE_NO,
-        TUser.EMAIL,
-        TUser.STATE,
-        TUser.AVATAR,
-        TUserLoginInfo.LOGIN_NAME
-    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).paginate(page=req.page, per_page=req.pageSize)
+    pagination = (
+        dbquery(
+            TUser.USER_NO,
+            TUser.USER_NAME,
+            TUser.MOBILE_NO,
+            TUser.EMAIL,
+            TUser.STATE,
+            TUser.AVATAR,
+            TUserLoginInfo.LOGIN_NAME
+        )
+        .filter(*conds)
+        .order_by(TUser.CREATED_TIME.desc())
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
+    )
 
     data = []
     for user in pagination.items:

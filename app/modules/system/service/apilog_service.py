@@ -41,7 +41,7 @@ def query_restapi_log_list(req):
         )
         .filter(*conds)
         .order_by(TRestApiLog.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

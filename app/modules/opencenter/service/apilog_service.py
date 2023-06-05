@@ -41,7 +41,7 @@ def query_openapi_log_list(req):
         )
         .filter(*conds)
         .order_by(TOpenApiLog.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [

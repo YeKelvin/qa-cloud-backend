@@ -27,7 +27,7 @@ def query_application_list(req):
         TThirdPartyApplication
         .filter(*conds)
         .order_by(TThirdPartyApplication.CREATED_TIME.desc())
-        .paginate(page=req.page, per_page=req.pageSize)
+        .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
     data = [
