@@ -24,19 +24,19 @@ def execute_collection():
     return service.execute_collection(req)
 
 
-@blueprint.post('/group/execute')
+@blueprint.post('/worker/execute')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_group():
-    """运行测试案例"""
+def execute_worker():
+    """运行测试用例"""
     req = JsonParser(
-        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('groupNo', required=True, nullable=False, help='Group 编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='socketId不能为空'),
+        Argument('workerNo', required=True, nullable=False, help='workerNo不能为空'),
         Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False),
         Argument('selfonly', type=bool, default=False)
     ).parse()
-    return service.execute_group(req)
+    return service.execute_worker(req)
 
 
 @blueprint.post('/sampler/execute')

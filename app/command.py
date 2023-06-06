@@ -223,7 +223,7 @@ def init_permission_item():
     create_permission('SCRIPT', 'ELEMENT', '设置空间组件', 'SET_WORKSPACE_COMPONENT', 'SET')
     # execution
     create_permission('SCRIPT', 'ELEMENT', '运行脚本', 'RUN_ELEMENT', 'EXECUTE')
-    create_permission('SCRIPT', 'ELEMENT', '查询JSON脚本', 'QUERY_JSON_SCRIPT', 'QUERY')
+    create_permission('SCRIPT', 'ELEMENT', '查询脚本(JSON)', 'QUERY_SCRIPT_AS_JSON', 'QUERY')
     # variables
     create_permission('SCRIPT', 'VARIABLE', '查询变量集', 'QUERY_DATASET', 'QUERY')
     create_permission('SCRIPT', 'VARIABLE', '新增变量集', 'CREATE_DATASET', 'CREATE')

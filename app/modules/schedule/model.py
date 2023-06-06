@@ -16,7 +16,7 @@ class TScheduleJob(DBModel, BaseColumn):
     JOB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='作业编号')
     JOB_NAME = db.Column(db.String(128), nullable=False, comment='作业名称')
     JOB_DESC = db.Column(db.String(256), comment='作业描述')
-    JOB_TYPE = db.Column(db.String(32), nullable=False, comment='作业类型(TESTPLAN, COLLECTION, GROUP)')
+    JOB_TYPE = db.Column(db.String(32), nullable=False, comment='作业类型(TESTPLAN, COLLECTION, WORKER)')
     JOB_ARGS = db.Column(JSONB, nullable=False, comment='作业参数')
     TRIGGER_TYPE = db.Column(db.String(32), nullable=False, comment='触发器类型(DATE, INTERVAL, CRON)')
     TRIGGER_ARGS = db.Column(JSONB, nullable=False, comment='触发器参数')

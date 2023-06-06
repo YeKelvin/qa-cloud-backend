@@ -12,9 +12,9 @@ from app.tools.require import require_permission
 
 @blueprint.get('/collection/json')
 @require_login
-@require_permission('QUERY_JSON_SCRIPT')
+@require_permission('QUERY_SCRIPT_AS_JSON')
 def query_collection_json():
-    """查询测试集合的JSON脚本"""
+    """查询测试集合的脚本(JSON)"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
@@ -23,24 +23,24 @@ def query_collection_json():
     return service.query_collection_json(req)
 
 
-@blueprint.get('/group/json')
+@blueprint.get('/worker/json')
 @require_login
-@require_permission('QUERY_JSON_SCRIPT')
-def query_group_json():
-    """查询测试案例的JSON脚本"""
+@require_permission('QUERY_SCRIPT_AS_JSON')
+def query_worker_json():
+    """查询测试用例的脚本(JSON)"""
     req = JsonParser(
-        Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
+        Argument('workerNo', required=True, nullable=False, help='工作者编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.query_group_json(req)
+    return service.query_worker_json(req)
 
 
 @blueprint.get('/snippets/json')
 @require_login
-@require_permission('QUERY_JSON_SCRIPT')
+@require_permission('QUERY_SCRIPT_AS_JSON')
 def query_snippets_json():
-    """查询片段集合的JSON脚本"""
+    """查询片段集合的脚本(JSON)"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
         Argument('datasetNos', type=list, default=[]),

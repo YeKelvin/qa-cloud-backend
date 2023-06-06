@@ -2,11 +2,10 @@
 # @File    : report_service.py
 # @Time    : 2021/9/22 14:21
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 from app.modules.script.dao import test_collection_result_dao
-from app.modules.script.dao import test_group_result_dao
 from app.modules.script.dao import test_report_dao
 from app.modules.script.dao import test_sampler_result_dao
+from app.modules.script.dao import test_worker_result_dao
 from app.tools.service import http_service
 from app.tools.validator import check_exists
 from app.utils.time_util import microsecond_to_h_m_s
@@ -47,23 +46,23 @@ def query_report(req):
             'startTime': report.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if report.START_TIME else 0,
             'endTime': report.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if report.END_TIME else 0,
             'elapsedTime': microsecond_to_h_m_s(report.ELAPSED_TIME),
-            'successfulCollectionsTotal':
+            'successfulCollectionTotal':
                 test_collection_result_dao.count_by_report_and_success(report.REPORT_NO, True),
-            'successfulGroupsTotal':
-                test_group_result_dao.count_by_report_and_success(report.REPORT_NO, True),
-            'successfulSamplersTotal':
+            'successfulWorkerTotal':
+                test_worker_result_dao.count_by_report_and_success(report.REPORT_NO, True),
+            'successfulSamplerTotal':
                 test_sampler_result_dao.count_by_report_and_success(report.REPORT_NO, True),
-            'failedCollectionsTotal':
+            'failedCollectionTotal':
                 test_collection_result_dao.count_by_report_and_success(report.REPORT_NO, False),
-            'failedGroupsTotal':
-                test_group_result_dao.count_by_report_and_success(report.REPORT_NO, False),
-            'failedSamplersTotal':
+            'failedWorkerTotal':
+                test_worker_result_dao.count_by_report_and_success(report.REPORT_NO, False),
+            'failedSamplerTotal':
                 test_sampler_result_dao.count_by_report_and_success(report.REPORT_NO, False),
             'avgCollectionsElapsedTime': microsecond_to_m_s(
                 test_collection_result_dao.avg_elapsed_time_by_report(report.REPORT_NO)
             ),
-            'avgGroupsElapsedTime': microsecond_to_m_s(
-                test_group_result_dao.avg_elapsed_time_by_report(report.REPORT_NO)
+            'avgWorkersElapsedTime': microsecond_to_m_s(
+                test_worker_result_dao.avg_elapsed_time_by_report(report.REPORT_NO)
             ),
             'avgSamplersElapsedTime': f'{test_sampler_result_dao.avg_elapsed_time_by_report(report.REPORT_NO)}ms',
         },
@@ -86,34 +85,34 @@ def query_collection_result(req):
             'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
             'success': result.SUCCESS,
-            'successfulGroupsTotal': test_group_result_dao.count_by_collection_and_success(req.collectionId, True),
-            'successfulSamplersTotal': test_sampler_result_dao.count_by_collection_and_success(req.collectionId, True),
-            'failedGroupsTotal': test_group_result_dao.count_by_collection_and_success(req.collectionId, False),
-            'failedSamplersTotal': test_sampler_result_dao.count_by_collection_and_success(req.collectionId, False),
-            'avgGroupsElapsedTime': microsecond_to_m_s(
-                test_group_result_dao.avg_elapsed_time_by_collection(req.collectionId)
+            'successfulWorkerTotal': test_worker_result_dao.count_by_collection_and_success(req.collectionId, True),
+            'successfulSamplerTotal': test_sampler_result_dao.count_by_collection_and_success(req.collectionId, True),
+            'failedWorkerTotal': test_worker_result_dao.count_by_collection_and_success(req.collectionId, False),
+            'failedSamplerTotal': test_sampler_result_dao.count_by_collection_and_success(req.collectionId, False),
+            'avgWorkersElapsedTime': microsecond_to_m_s(
+                test_worker_result_dao.avg_elapsed_time_by_collection(req.collectionId)
             ),
             'avgSamplersElapsedTime': f'{test_sampler_result_dao.avg_elapsed_time_by_collection(req.collectionId)}ms'
         },
-        'children': get_group_result_list(req.collectionId)
+        'children': get_worker_result_list(req.collectionId)
     }
 
 
 @http_service
-def query_group_result(req):
-    result = test_group_result_dao.select_first_by_group(req.groupId)
-    check_exists(result, error_msg='GroupResult不存在')
+def query_worker_result(req):
+    result = test_worker_result_dao.select_first_by_worker(req.workerId)
+    check_exists(result, error_msg='WorkerResult不存在')
     return {
-        'groupId': result.GROUP_ID,
-        'groupName': result.GROUP_NAME,
-        'groupRemark': result.GROUP_REMARK,
+        'workerId': result.WORKER_ID,
+        'workerName': result.WORKER_NAME,
+        'workerRemark': result.WORKER_REMARK,
         'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S')if result.START_TIME else 0,
         'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
         'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
         'success': result.SUCCESS,
-        'successfulSamplersTotal': test_sampler_result_dao.count_by_group_and_success(req.groupId, True),
-        'failedSamplersTotal': test_sampler_result_dao.count_by_group_and_success(req.groupId, False),
-        'avgSamplersElapsedTime': f'{test_sampler_result_dao.avg_elapsed_time_by_group(req.groupId)}ms'
+        'successfulSamplerTotal': test_sampler_result_dao.count_by_worker_and_success(req.workerId, True),
+        'failedSamplerTotal': test_sampler_result_dao.count_by_worker_and_success(req.workerId, False),
+        'avgSamplersElapsedTime': f'{test_sampler_result_dao.avg_elapsed_time_by_worker(req.workerId)}ms'
     }
 
 
@@ -140,33 +139,37 @@ def query_sampler_result(req):
     }
 
 
-def get_group_result_list(collection_id):
-    group_result_list = test_group_result_dao.select_all_by_collection(collection_id)
+def get_worker_result_list(collection_id):
+    worker_result_list = test_worker_result_dao.select_all_by_collection(collection_id)
     return [
         {
             'collectionId': result.COLLECTION_ID,
-            'id': result.GROUP_ID,
-            'name': result.GROUP_NAME,
-            'remark': result.GROUP_REMARK,
-            'startTime': result.START_TIME.strftime('%H:%M:%S')
-            if result.START_TIME
-            else 0,
-            'endTime': result.END_TIME.strftime('%H:%M:%S')
-            if result.END_TIME
-            else 0,
+            'id': result.WORKER_ID,
+            'name': result.WORKER_NAME,
+            'remark': result.WORKER_REMARK,
+            'startTime': (
+                result.START_TIME.strftime('%H:%M:%S')
+                if result.START_TIME
+                else 0
+            ),
+            'endTime': (
+                result.END_TIME.strftime('%H:%M:%S')
+                if result.END_TIME
+                else 0
+            ),
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
             'success': result.SUCCESS,
-            'children': get_sampler_result_list(result.GROUP_ID),
+            'children': get_sampler_result_list(result.WORKER_ID),
         }
-        for result in group_result_list
+        for result in worker_result_list
     ]
 
 
-def get_sampler_result_list(group_id):
-    sampler_result_list = test_sampler_result_dao.select_all_summary_by_group(group_id)
+def get_sampler_result_list(worker_id):
+    sampler_result_list = test_sampler_result_dao.select_all_summary_by_worker(worker_id)
     return [
         {
-            'groupId': result.GROUP_ID,
+            'workerId': result.WORKER_ID,
             'parentId': None,
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,
@@ -190,7 +193,7 @@ def get_subsampler_result_list(parent_id):
     sub_sampler_result_list = test_sampler_result_dao.select_all_by_parent(parent_id)
     return [
         {
-            'groupId': result.GROUP_ID,
+            'workerId': result.WORKER_ID,
             'parentId': parent_id,
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,

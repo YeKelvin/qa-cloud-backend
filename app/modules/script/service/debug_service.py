@@ -2,7 +2,6 @@
 # @File    : debug_service.py
 # @Time    : 2023-05-16 16:29:44
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
@@ -29,20 +28,20 @@ def query_collection_json(req):
 
 
 @http_service
-def query_group_json(req):
+def query_worker_json(req):
     # 查询元素
-    group = test_element_dao.select_by_no(req.groupNo)
-    if not group.ENABLED:
+    worker = test_element_dao.select_by_no(req.workerNo)
+    if not worker.ENABLED:
         raise ServiceError('元素已禁用')
-    if group.ELEMENT_TYPE != ElementType.GROUP.value:
-        raise ServiceError('仅支持 Group 元素')
+    if worker.ELEMENT_TYPE != ElementType.WORKER.value:
+        raise ServiceError('仅支持 Worker 元素')
     # 获取 collectionNo
-    group_parent_relation = element_children_dao.select_by_child(req.groupNo)
-    if not group_parent_relation:
+    worker_parent_relation = element_children_dao.select_by_child(req.workerNo)
+    if not worker_parent_relation:
         raise ServiceError('元素父级关联不存在')
-    collection_no = group_parent_relation.PARENT_NO
+    collection_no = worker_parent_relation.PARENT_NO
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, specified_group_no=req.groupNo)
+    script = element_loader.loads_tree(collection_no, specified_worker_no=req.workerNo)
     # 添加变量组件
     add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script

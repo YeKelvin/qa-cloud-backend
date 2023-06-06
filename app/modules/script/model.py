@@ -259,7 +259,7 @@ class TTestCollectionResult(DBModel, BaseColumn):
     __tablename__ = 'TEST_COLLECTION_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    COLLECTION_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时集合的对象id')
+    COLLECTION_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='集合ID')
     COLLECTION_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     COLLECTION_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
@@ -268,14 +268,14 @@ class TTestCollectionResult(DBModel, BaseColumn):
     SUCCESS = db.Column(db.Boolean, comment='是否成功')
 
 
-class TTestGroupResult(DBModel, BaseColumn):
-    """测试分组结果表"""
-    __tablename__ = 'TEST_GROUP_RESULT'
+class TTestWorkerResult(DBModel, BaseColumn):
+    """测试工作者结果表"""
+    __tablename__ = 'TEST_WORKER_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
-    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时集合的对象id')
-    GROUP_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时分组的对象id')
-    GROUP_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
-    GROUP_REMARK = db.Column(db.String(512), comment='元素描述')
+    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='集合ID')
+    WORKER_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='工作者ID')
+    WORKER_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
+    WORKER_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
     ELAPSED_TIME = db.Column(db.Integer, comment='耗时')
@@ -286,9 +286,9 @@ class TTestSamplerResult(DBModel, BaseColumn):
     """测试取样器结果表"""
     __tablename__ = 'TEST_SAMPLER_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
-    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时集合的对象id')
-    GROUP_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时分组的对象id')
-    PARENT_ID = db.Column(db.String(32), index=True, comment='运行时子代取样器的父级的对象id')
+    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='集合ID')
+    WORKER_ID = db.Column(db.String(32), index=True, nullable=False, comment='工作者ID')
+    PARENT_ID = db.Column(db.String(32), index=True, comment='父级取样器ID')
     SAMPLER_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时取样器的对象id')
     SAMPLER_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     SAMPLER_REMARK = db.Column(db.String(512), comment='元素描述')

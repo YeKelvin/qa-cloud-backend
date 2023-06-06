@@ -107,7 +107,7 @@ def create_task(req):
     else:
         task = TScheduleJob.filter(
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
+            TScheduleJob.JOB_ARGS['workerNo'].as_string() == req.jobArgs['workerNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     check_not_exists(task, error_msg='相同内容的任务已存在')
@@ -198,7 +198,7 @@ def modify_task(req):
         existed_task = TScheduleJob.filter(
             TScheduleJob.ID != task.ID,
             TScheduleJob.WORKSPACE_NO == req.workspaceNo,
-            TScheduleJob.JOB_ARGS['groupNo'].as_string() == req.jobArgs['groupNo'],
+            TScheduleJob.JOB_ARGS['workerNo'].as_string() == req.jobArgs['workerNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
     check_not_exists(existed_task, error_msg='相同内容的任务已存在')

@@ -2,7 +2,6 @@
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 from typing import Dict
 
 from loguru import logger
@@ -16,14 +15,14 @@ from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
-from app.modules.script.enum import is_group
 from app.modules.script.enum import is_http_sampler
 from app.modules.script.enum import is_sampler
-from app.modules.script.enum import is_setup_group_debuger
+from app.modules.script.enum import is_setup_debuger
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_sql_sampler
-from app.modules.script.enum import is_teardown_group_debuger
+from app.modules.script.enum import is_teardown_debuger
 from app.modules.script.enum import is_test_collection
+from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_component import add_database_engine
 from app.modules.script.manager.element_component import add_http_header_manager
 from app.modules.script.manager.element_context import loads_cache
@@ -38,7 +37,7 @@ from app.utils.json_util import from_json
 
 def loads_tree(
         element_no,
-        specified_group_no=None,
+        specified_worker_no=None,
         specified_sampler_no=None,
         specified_selfonly=False,
         no_sampler=False,
@@ -51,7 +50,7 @@ def loads_tree(
     # 递归加载元素
     script = loads_element(
         element_no,
-        specified_group_no=specified_group_no,
+        specified_worker_no=specified_worker_no,
         specified_sampler_no=specified_sampler_no,
         specified_selfonly=specified_selfonly,
         no_sampler=no_sampler,
@@ -78,7 +77,7 @@ def loads_tree(
 
 def loads_element(
         element_no,
-        specified_group_no: str = None,
+        specified_worker_no: str = None,
         specified_sampler_no: str = None,
         specified_selfonly: bool = False,
         no_sampler: bool = False,
@@ -90,7 +89,7 @@ def loads_element(
     check_exists(element, error_msg='元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
-    if is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
+    if is_impassable(element, specified_worker_no, specified_selfonly, no_sampler, no_debuger):
         return None
 
     # 元素子代
@@ -119,7 +118,7 @@ def loads_element(
         add_database_engine(engine)
 
     # 添加内置元素
-    if is_test_collection(element) or is_group(element) or is_http_sampler(element):
+    if is_test_collection(element) or is_worker(element) or is_http_sampler(element):
         add_builtin_children(element_no, children)
 
     # 元素为常规 Sampler 时，添加子代
@@ -127,7 +126,7 @@ def loads_element(
         children.extend(
             loads_children(
                 element_no,
-                specified_group_no,
+                specified_worker_no,
                 specified_sampler_no,
                 specified_selfonly
             )
@@ -168,7 +167,7 @@ def loads_property(element_no):
 
 def loads_children(
         element_no,
-        specified_group_no,
+        specified_worker_no,
         specified_sampler_no,
         specified_selfonly
 ):
@@ -190,7 +189,7 @@ def loads_children(
             else:
                 if child := loads_element(
                     relation.CHILD_NO,
-                    specified_group_no,
+                    specified_worker_no,
                     specified_sampler_no,
                     specified_selfonly,
                     no_sampler=found
@@ -202,7 +201,7 @@ def loads_children(
         else:
             if child := loads_element(
                 relation.CHILD_NO,
-                specified_group_no,
+                specified_worker_no,
                 specified_sampler_no,
                 specified_selfonly
             ):
@@ -333,17 +332,17 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
             children.append(child)
     # 清空上下文变量
     loads_cache.reset(cache_token)
-    # 创建一个临时的 Group
-    group = {
+    # 创建一个临时的 Worker
+    worker = {
         'name': snippet_name,
         'remark': '',
-        'class': 'TestGroup',
+        'class': 'TestWorker',
         'enabled': True,
         'property': {
-            'TestGroup__on_sample_error': 'start_next_coroutine',
-            'TestGroup__number_groups': '1',
-            'TestGroup__start_interval': '',
-            'TestGroup__main_controller': {
+            'TestWorker__on_sample_error': 'start_next_thread',
+            'TestWorker__number_of_threads': '1',
+            'TestWorker__start_interval': '',
+            'TestWorker__main_controller': {
                 'class': 'LoopController',
                 'property': {
                     'LoopController__loops': '1',
@@ -360,10 +359,10 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
         'class': 'TestCollection',
         'enabled': True,
         'property': {
-            'TestCollection__serialize_groups': 'true',
+            'TestCollection__serialize_workers': 'true',
             'TestCollection__delay': '0'
         },
-        'children': [group]
+        'children': [worker]
     }
 
 
@@ -382,19 +381,19 @@ def add_workspace_components(script: dict, element_no: str):
         script['children'].insert(0, component)
 
 
-PASSABLE_ELEMENT_CLASS_LIST = ['SetupGroup', 'TeardownGroup']
+PASSABLE_ELEMENT_CLASS_LIST = ['SetupWorker', 'TeardownWorker']
 
 
-def is_specified_group(element, specified_no, self_only):
-    # 非 Group 时加载
-    if not is_group(element):
+def is_specified_worker(element, specified_no, self_only):
+    # 非 Worker 时加载
+    if not is_worker(element):
         return True  # pass
 
-    # 判断是否为指定的 Group
+    # 判断是否为指定的 Worker
     if element.ELEMENT_NO == specified_no:
         return True  # pass
 
-    # 非独立运行时，除指定的 Group 外，还需要加载前置和后置 Group）
+    # 非独立运行时，除指定的 Worker 外，还需要加载前置和后置 Worker
     if not self_only:
         if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
             return True
@@ -422,14 +421,14 @@ def is_blank_python(element, properties):
     return False
 
 
-def is_impassable(element, specified_group_no, specified_selfonly, no_sampler, no_debuger):
+def is_impassable(element, specified_worker_no, specified_selfonly, no_sampler, no_debuger):
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
         logger.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return True
 
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_group_no and not is_specified_group(element, specified_group_no, specified_selfonly):
+    if specified_worker_no and not is_specified_worker(element, specified_worker_no, specified_selfonly):
         return True
 
     # 不需要 Sampler 时返回 None
@@ -446,9 +445,9 @@ def is_impassable(element, specified_group_no, specified_selfonly, no_sampler, n
 def get_real_class(element):
     if is_snippet_sampler(element):
         return ElementClass.TRANSACTION_CONTROLLER.value
-    elif is_setup_group_debuger(element):
-        return ElementClass.SETUP_GROUP_DEBUGER.value
-    elif is_teardown_group_debuger(element):
-        return ElementClass.TEARDOWN_GROUP_DEBUGER.value
+    elif is_setup_debuger(element):
+        return ElementClass.SETUP_DEBUGER.value
+    elif is_teardown_debuger(element):
+        return ElementClass.TEARDOWN_DEBUGER.value
     else:
         return element.ELEMENT_CLASS

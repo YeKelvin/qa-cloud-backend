@@ -2,7 +2,6 @@
 # @File    : testplan_service.py
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import test_collection_result_dao
 from app.modules.script.dao import test_element_dao

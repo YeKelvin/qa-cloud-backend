@@ -23,24 +23,24 @@ def query_report():
 @require_login
 @require_permission('QUERY_TESTREPORT')
 def query_collection_result():
-    """根据集合编号查询集合结果列表和案例结果列表"""
+    """根据集合ID查询结果列表"""
     req = JsonParser(Argument('collectionId', required=True, nullable=False, help='collectionId不能为空')).parse()
     return service.query_collection_result(req)
 
 
-@blueprint.get('/report/group/result')
+@blueprint.get('/report/worker/result')
 @require_login
 @require_permission('QUERY_TESTREPORT')
-def query_group_result():
-    """根据案例编号查询案例结果列表"""
-    req = JsonParser(Argument('groupId', required=True, nullable=False, help='groupId不能为空')).parse()
-    return service.query_group_result(req)
+def query_worker_result():
+    """根据用例ID查询结果列表"""
+    req = JsonParser(Argument('workerId', required=True, nullable=False, help='workerId不能为空')).parse()
+    return service.query_worker_result(req)
 
 
 @blueprint.get('/report/sampler/result')
 @require_login
 @require_permission('QUERY_TESTREPORT')
 def query_sampler_result():
-    """根据取样器编号查询取样结果"""
+    """根据取样器ID查询结果"""
     req = JsonParser(Argument('samplerId', required=True, nullable=False, help='samplerId不能为空')).parse()
     return service.query_sampler_result(req)

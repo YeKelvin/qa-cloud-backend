@@ -2,7 +2,6 @@
 # @File    : task_function.py
 # @Time    : 2022-05-15 11:57:06
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 from loguru import logger
 from pymeter.runner import Runner
 
@@ -41,21 +40,21 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
             logger.exception('Exception Occurred')
 
 
-def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
+def execute_worker(workerNo, datasetNos, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
-        group = test_element_dao.select_by_no(groupNo)
-        if not group.ENABLED:
+        worker = test_element_dao.select_by_no(workerNo)
+        if not worker.ENABLED:
             raise ServiceError('元素已禁用')
-        if group.ELEMENT_TYPE != ElementType.GROUP.value:
-            raise ServiceError('仅支持运行 Group 元素')
+        if worker.ELEMENT_TYPE != ElementType.WORKER.value:
+            raise ServiceError('仅支持运行 Worker 元素')
         # 获取 collectionNo
-        group_parent_relation = element_children_dao.select_by_child(groupNo)
-        if not group_parent_relation:
+        worker_parent_relation = element_children_dao.select_by_child(workerNo)
+        if not worker_parent_relation:
             raise ServiceError('元素父级关联不存在')
         # 根据 collectionNo 递归加载脚本
-        collection_no = group_parent_relation.PARENT_NO
-        script = loads_tree(collection_no, specified_group_no=groupNo)
+        collection_no = worker_parent_relation.PARENT_NO
+        script = loads_tree(collection_no, specified_worker_no=workerNo)
         # 添加变量组件
         if datasetNos:
             add_variable_dataset(script, datasetNos, useCurrentValue)
@@ -69,5 +68,5 @@ def execute_group(groupNo, datasetNos, useCurrentValue):  # noqa
 TASK_FUNC = {
     'TESTPLAN': execute_testplan,
     'COLLECTION': execute_collection,
-    'GROUP': execute_group
+    'WORKER': execute_worker
 }

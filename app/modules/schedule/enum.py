@@ -20,10 +20,10 @@ class JobState(Enum):
 class JobType(Enum):
     # 测试计划
     TESTPLAN = 'TESTPLAN'
-    # 集合元素
+    # 测试集合
     COLLECTION = 'COLLECTION'
-    # 分组元素
-    GROUP = 'GROUP'
+    # 工作者
+    WORKER = 'WORKER'
 
 
 @unique

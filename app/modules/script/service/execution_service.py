@@ -2,7 +2,6 @@
 # @File    : execution_service.py
 # @Time    : 2020/3/20 15:00
 # @Author  : Kelvin.Ye
-# sourcery skip: dont-import-test-modules
 import time
 
 from loguru import logger
@@ -17,8 +16,8 @@ from app.modules.public.enum import RobotState
 from app.modules.public.enum import RobotType
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import test_group_result_dao
 from app.modules.script.dao import test_report_dao
+from app.modules.script.dao import test_worker_result_dao
 from app.modules.script.dao import testplan_dao
 from app.modules.script.dao import testplan_execution_dao
 from app.modules.script.dao import testplan_execution_items_dao
@@ -143,27 +142,27 @@ def execute_collection(req):
 
 
 @http_service
-def execute_group(req):
+def execute_worker(req):
     # 校验空间权限
     check_workspace_permission(
-        get_workspace_no(get_root_no(req.groupNo))
+        get_workspace_no(get_root_no(req.workerNo))
     )
 
     # 查询元素
-    group = test_element_dao.select_by_no(req.groupNo)
-    if not group.ENABLED:
+    worker = test_element_dao.select_by_no(req.workerNo)
+    if not worker.ENABLED:
         raise ServiceError('元素已禁用')
-    if group.ELEMENT_TYPE != ElementType.GROUP.value:
-        raise ServiceError('仅支持运行 Group 元素')
+    if worker.ELEMENT_TYPE != ElementType.WORKER.value:
+        raise ServiceError('仅支持运行 Worker 元素')
 
     # 获取 collectionNo
-    group_parent_relation = element_children_dao.select_by_child(req.groupNo)
-    if not group_parent_relation:
+    worker_parent_relation = element_children_dao.select_by_child(req.workerNo)
+    if not worker_parent_relation:
         raise ServiceError('元素父级关联不存在')
 
     # 临时存储变量
-    collection_no = group_parent_relation.PARENT_NO
-    group_name = group.ELEMENT_NAME
+    collection_no = worker_parent_relation.PARENT_NO
+    worker_name = worker.ELEMENT_NAME
 
     # 定义 loader 函数
     def script_loader(app, result_id):
@@ -171,7 +170,7 @@ def execute_group(req):
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
                 collection_no,
-                specified_group_no=req.groupNo,
+                specified_worker_no=req.workerNo,
                 specified_selfonly=req.selfonly
             )
             # 添加 socket 组件
@@ -179,7 +178,7 @@ def execute_group(req):
                 script,
                 sid=req.socketId,
                 result_id=result_id,
-                result_name=group_name
+                result_name=worker_name
             )
             # 添加变量组件
             add_variable_dataset(
@@ -212,17 +211,17 @@ def execute_sampler(req):
     if sampler.ELEMENT_TYPE != ElementType.SAMPLER.value:
         raise ServiceError('仅支持运行 Sampler 元素')
 
-    # 获取 collectionNo 和 groupNo
+    # 获取 collectionNo 和 workerNo
     sampler_parent_relation = element_children_dao.select_by_child(req.samplerNo)
     if not sampler_parent_relation:
         raise ServiceError('元素父级关联不存在')
 
     # 临时存储变量
     collection_no = sampler_parent_relation.ROOT_NO
-    group_no = sampler_parent_relation.PARENT_NO
+    worker_no = sampler_parent_relation.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, group_no, req.samplerNo, req.selfonly)
+    script = element_loader.loads_tree(collection_no, worker_no, req.samplerNo, req.selfonly)
 
     # 添加 socket 组件
     result_id = new_id()
@@ -521,8 +520,8 @@ def get_notification_message(execution, report):
     user = user_dao.select_by_no(execution.CREATED_BY)
     if report:
         elapsed_time = microsecond_to_h_m_s(report.ELAPSED_TIME)
-        success_count = test_group_result_dao.count_by_report_and_success(report.REPORT_NO, True)
-        failure_count = test_group_result_dao.count_by_report_and_success(report.REPORT_NO, False)
+        success_count = test_worker_result_dao.count_by_report_and_success(report.REPORT_NO, True)
+        failure_count = test_worker_result_dao.count_by_report_and_success(report.REPORT_NO, False)
         report_url = f'{CONFIG.BASE_URL}/script/report?reportNo={report.REPORT_NO}'
         return (
             f'测试计划执行完成\n'

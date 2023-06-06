@@ -14,8 +14,13 @@ packages = [
 
 [[tool.poetry.source]]
 name = "aliyun"
-url = "https://mirrors.aliyun.com/pypi/simple"
-default = true
+url = "https://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
 
 [tool.poetry.dependencies]
 python = "^3.8"

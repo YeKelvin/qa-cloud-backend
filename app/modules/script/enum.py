@@ -12,8 +12,8 @@ class ElementType(Enum):
     # 测试集合
     COLLECTION = 'COLLECTION'
 
-    # 测试组
-    GROUP = 'GROUP'
+    # 工作者
+    WORKER = 'WORKER'
 
     # 取样器
     SAMPLER = 'SAMPLER'
@@ -50,18 +50,18 @@ class ElementClass(Enum):
     # 片段集合
     SNIPPET_COLLECTION = 'SnippetCollection'
 
-    # 测试组
-    TEST_GROUP = 'TestGroup'
+    # 工作者
+    TEST_WORKER = 'TestWorker'
 
-    # 前置分组
-    SETUP_GROUP = 'SetupGroup'
-    # 前置调试分组
-    SETUP_GROUP_DEBUGER = 'SetupGroupDebuger'
+    # 前置工作者
+    SETUP_WORKER = 'SetupWorker'
+    # 前置调试者
+    SETUP_DEBUGER = 'SetupDebuger'
 
-    # 后置分组
-    TEARDOWN_GROUP = 'TeardownGroup'
-    # 后置调试分组
-    TEARDOWN_GROUP_DEBUGER = 'TeardownGroupDebuger'
+    # 后置工作者
+    TEARDOWN_WORKER = 'TeardownWorker'
+    # 后置调试者
+    TEARDOWN_DEBUGER = 'TeardownDebuger'
 
     # HTTP取样器
     HTTP_SAMPLER = 'HTTPSampler'
@@ -275,8 +275,8 @@ def is_collection(element):
     return element.ELEMENT_TYPE == ElementType.COLLECTION.value
 
 
-def is_group(element):
-    return element.ELEMENT_TYPE == ElementType.GROUP.value
+def is_worker(element):
+    return element.ELEMENT_TYPE == ElementType.WORKER.value
 
 
 def is_sampler(element):
@@ -319,8 +319,8 @@ def is_snippet_collection(element):
     return element.ELEMENT_CLASS == ElementClass.SNIPPET_COLLECTION.value
 
 
-def is_test_group(element):
-    return element.ELEMENT_CLASS == ElementClass.TEST_GROUP.value
+def is_test_worker(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_WORKER.value
 
 
 def is_http_sampler(element):
@@ -335,13 +335,13 @@ def is_snippet_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
 
 
-def is_setup_group_debuger(element):
-    return element.ELEMENT_CLASS == ElementClass.SETUP_GROUP_DEBUGER.value
+def is_setup_debuger(element):
+    return element.ELEMENT_CLASS == ElementClass.SETUP_DEBUGER.value
 
 
-def is_teardown_group_debuger(element):
-    return element.ELEMENT_CLASS == ElementClass.TEARDOWN_GROUP_DEBUGER.value
+def is_teardown_debuger(element):
+    return element.ELEMENT_CLASS == ElementClass.TEARDOWN_DEBUGER.value
 
 
 def is_debuger(element):
-    return is_setup_group_debuger(element) or is_teardown_group_debuger(element)
+    return is_setup_debuger(element) or is_teardown_debuger(element)
