@@ -33,8 +33,7 @@ def execute_worker():
         Argument('socketId', required=True, nullable=False, help='socketId不能为空'),
         Argument('workerNo', required=True, nullable=False, help='workerNo不能为空'),
         Argument('datasetNos', type=list, default=[]),
-        Argument('useCurrentValue', type=bool, default=False),
-        Argument('selfonly', type=bool, default=False)
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_worker(req)
 
@@ -48,8 +47,7 @@ def execute_sampler():
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
         Argument('datasetNos', type=list, default=[]),
-        Argument('useCurrentValue', type=bool, default=False),
-        Argument('selfonly', type=bool, default=False)
+        Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_sampler(req)
 

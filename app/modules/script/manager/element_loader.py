@@ -39,7 +39,6 @@ def loads_tree(
         element_no,
         specified_worker_no=None,
         specified_sampler_no=None,
-        specified_selfonly=False,
         no_sampler=False,
         no_debuger=False,
 ):
@@ -52,7 +51,6 @@ def loads_tree(
         element_no,
         specified_worker_no=specified_worker_no,
         specified_sampler_no=specified_sampler_no,
-        specified_selfonly=specified_selfonly,
         no_sampler=no_sampler,
         no_debuger=no_debuger
     )
@@ -79,7 +77,6 @@ def loads_element(
         element_no,
         specified_worker_no: str = None,
         specified_sampler_no: str = None,
-        specified_selfonly: bool = False,
         no_sampler: bool = False,
         no_debuger: bool = False
 ):
@@ -89,7 +86,7 @@ def loads_element(
     check_exists(element, error_msg='元素不存在')
 
     # 检查是否为允许加载的元素，不允许时直接返回 None
-    if is_impassable(element, specified_worker_no, specified_selfonly, no_sampler, no_debuger):
+    if is_impassable(element, specified_worker_no, no_sampler, no_debuger):
         return None
 
     # 元素子代
@@ -127,8 +124,7 @@ def loads_element(
             loads_children(
                 element_no,
                 specified_worker_no,
-                specified_sampler_no,
-                specified_selfonly
+                specified_sampler_no
             )
         )
     # 元素为 SnippetSampler 时，读取片段内容
@@ -165,12 +161,7 @@ def loads_property(element_no):
     return properties
 
 
-def loads_children(
-        element_no,
-        specified_worker_no,
-        specified_sampler_no,
-        specified_selfonly
-):
+def loads_children(element_no, specified_worker_no, specified_sampler_no):
     """TODO: 太多 if 逻辑，待优化"""
     # 递归查询子代，并根据序号正序排序
     children_relations = element_children_dao.select_all_by_parent(element_no)
@@ -180,30 +171,21 @@ def loads_children(
         found = False
         # 需要指定 Sampler
         if specified_sampler_no:
-            # 独立运行
-            if specified_selfonly:
-                if relation.CHILD_NO == specified_sampler_no:
-                    if child := loads_element(relation.CHILD_NO):
-                        children.append(child)
-            # 非独立运行
-            else:
-                if child := loads_element(
-                    relation.CHILD_NO,
-                    specified_worker_no,
-                    specified_sampler_no,
-                    specified_selfonly,
-                    no_sampler=found
-                ):
-                    children.append(child)
-                if relation.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
-                    found = True
+            if child := loads_element(
+                relation.CHILD_NO,
+                specified_worker_no,
+                specified_sampler_no,
+                no_sampler=found
+            ):
+                children.append(child)
+            if relation.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
+                found = True
         # 无需指定 Sampler
         else:
             if child := loads_element(
                 relation.CHILD_NO,
                 specified_worker_no,
-                specified_sampler_no,
-                specified_selfonly
+                specified_sampler_no
             ):
                 children.append(child)
 
@@ -384,7 +366,7 @@ def add_workspace_components(script: dict, element_no: str):
 PASSABLE_ELEMENT_CLASS_LIST = ['SetupWorker', 'TeardownWorker']
 
 
-def is_specified_worker(element, specified_no, self_only):
+def is_specified_worker(element, specified_no):
     # 非 Worker 时加载
     if not is_worker(element):
         return True  # pass
@@ -393,9 +375,8 @@ def is_specified_worker(element, specified_no, self_only):
     if element.ELEMENT_NO == specified_no:
         return True  # pass
 
-    # 非独立运行时，除指定的 Worker 外，还需要加载前置和后置 Worker
-    if not self_only:
-        if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
+    # 除指定的 Worker 外，还需要加载前置和后置 Worker
+    if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
             return True
 
     return False
@@ -421,14 +402,14 @@ def is_blank_python(element, properties):
     return False
 
 
-def is_impassable(element, specified_worker_no, specified_selfonly, no_sampler, no_debuger):
+def is_impassable(element, specified_worker_no, no_sampler, no_debuger):
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
         logger.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
         return True
 
     # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_worker_no and not is_specified_worker(element, specified_worker_no, specified_selfonly):
+    if specified_worker_no and not is_specified_worker(element, specified_worker_no):
         return True
 
     # 不需要 Sampler 时返回 None

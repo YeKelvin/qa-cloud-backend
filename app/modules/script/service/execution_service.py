@@ -170,8 +170,7 @@ def execute_worker(req):
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
                 collection_no,
-                specified_worker_no=req.workerNo,
-                specified_selfonly=req.selfonly
+                specified_worker_no=req.workerNo
             )
             # 添加 socket 组件
             add_flask_sio_result_collector(
@@ -221,7 +220,7 @@ def execute_sampler(req):
     worker_no = sampler_parent_relation.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, worker_no, req.samplerNo, req.selfonly)
+    script = element_loader.loads_tree(collection_no, worker_no, req.samplerNo)
 
     # 添加 socket 组件
     result_id = new_id()
