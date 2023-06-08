@@ -170,7 +170,7 @@ def execute_worker(req):
             # 根据 collectionNo 递归加载脚本
             script = element_loader.loads_tree(
                 collection_no,
-                specified_worker_no=req.workerNo
+                specify_worker_no=req.workerNo
             )
             # 添加 socket 组件
             add_flask_sio_result_collector(
@@ -563,7 +563,7 @@ def start_testplan_by_loop(
     scripts = {}
     for collection_no in collection_nos:
         # 加载脚本
-        collection = element_loader.loads_tree(collection_no, no_debuger=True)
+        collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
         if not collection:
             logger.warning(
                 f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
@@ -664,7 +664,7 @@ def start_testplan_by_report(
             )
             db.session.commit()  # 这里要实时更新
             # 加载脚本
-            collection = element_loader.loads_tree(collection_no, no_debuger=True)
+            collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
             if not collection:
                 logger.warning(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'

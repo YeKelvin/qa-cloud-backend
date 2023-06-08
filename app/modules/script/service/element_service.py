@@ -12,8 +12,8 @@ from app.modules.public.dao import workspace_dao
 from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
-from app.modules.script.dao import element_builtin_children_dao
 from app.modules.script.dao import element_children_dao
+from app.modules.script.dao import element_components_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import httpheader_template_dao
 from app.modules.script.dao import httpheader_template_ref_dao
@@ -34,8 +34,8 @@ from app.modules.script.enum import is_timer
 from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
-from app.modules.script.model import TElementBuiltinChildren
 from app.modules.script.model import TElementChildren
+from app.modules.script.model import TElementComponents
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import THttpHeaderTemplateRef
 from app.modules.script.model import TTestElement
@@ -398,11 +398,11 @@ def create_collection(req):
         element_attributes=req.attributes
     )
 
-    # 新建内置元素
-    add_element_builtins(
+    # 新建元素组件
+    add_element_components(
         root_no=element_no,
         parent_no=element_no,
-        builtins=req.builtins
+        components=req.componentList
     )
 
     # 新增空间元素关联
@@ -470,8 +470,8 @@ def add_element_child(root_no, parent_no, child: dict):
         CHILD_NO=element_no,
         SORT_NO=element_children_dao.next_serial_number_by_parent(parent_no)
     )
-    # 新建内置元素
-    add_element_builtins(root_no=root_no, parent_no=element_no, builtins=child.get('builtins'))
+    # 新建元素组件
+    add_element_components(root_no=root_no, parent_no=element_no, components=child.get('componentList'))
 
     return element_no
 
@@ -498,10 +498,10 @@ def modify_element(req):
         element_property=req.property,
         element_attributes=req.attributes
     )
-    # 更新内置元素
-    update_element_builtins(
+    # 更新元素组件
+    update_element_components(
         parent_no=req.elementNo,
-        builtins=req.builtins
+        components=req.componentList
     )
 
 
@@ -545,8 +545,8 @@ def delete_element(element_no):
     # 如果元素存在父级关联，则删除关联并重新排序子代元素
     delete_element_child(element_no)
 
-    # 如果存在内置元素，一并删除
-    delete_element_builtins_by_parent(element_no)
+    # 如果存在元素组件，一并删除
+    delete_element_components_by_parent(element_no)
 
     # 删除元素属性
     delete_element_property(element_no)
@@ -556,12 +556,12 @@ def delete_element(element_no):
 
 
 def delete_element_children(parent_no):
-    """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、子代内置元素和子代内置元素属性）"""
+    """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、元素组件和元素组件属性）"""
     # 查询所有子代关联列表
     children_relations = element_children_dao.select_all_by_parent(parent_no)
     for relation in children_relations:
-        # 如果子代存在内置元素，一并删除
-        delete_element_builtins_by_parent(relation.CHILD_NO)
+        # 如果子代存在元素组件，一并删除
+        delete_element_components_by_parent(relation.CHILD_NO)
         # 查询子代元素
         child = test_element_dao.select_by_no(relation.CHILD_NO)
         # 递归删除子代元素的子代和关联
@@ -887,14 +887,14 @@ def copy_element(source: TTestElement, rename=False):
             SORT_NO=source_relation.SORT_NO
         )
     # 遍历克隆内建元素
-    source_builtin_relations = element_builtin_children_dao.select_all_by_parent(source.ELEMENT_NO)
-    for source_relation in source_builtin_relations:
-        source_builtin = test_element_dao.select_by_no(source_relation.CHILD_NO)
-        copied_builtin_no = copy_element(source_builtin)
-        TElementBuiltinChildren.insert(
+    source_component_relations = element_components_dao.select_all_by_parent(source.ELEMENT_NO)
+    for source_relation in source_component_relations:
+        source_component = test_element_dao.select_by_no(source_relation.CHILD_NO)
+        copied_component_no = copy_element(source_component)
+        TElementComponents.insert(
             ROOT_NO=source_relation.ROOT_NO,
             PARENT_NO=copied_no,
-            CHILD_NO=copied_builtin_no,
+            CHILD_NO=copied_component_no,
             CHILD_TYPE=source_relation.CHILD_TYPE,
             SORT_NUMBER=source_relation.SORT_NUMBER,
             SORT_WEIGHT=source_relation.SORT_WEIGHT
@@ -996,24 +996,24 @@ def update_httpheader_template_refs(element_no, template_nos):
 
 
 @http_service
-def query_element_builtins(req):
+def query_element_components(req):
     result = []
 
-    # 查询元素的内置元素关联
-    builtin_relations = element_builtin_children_dao.select_all_by_parent(req.elementNo)
-    if not builtin_relations:
+    # 查询元素组件关联
+    relations = element_components_dao.select_all_by_parent(req.elementNo)
+    if not relations:
         return result
 
-    for relation in builtin_relations:
-        # 查询内置元素
-        if builtin := test_element_dao.select_by_no(relation.CHILD_NO):
+    for relation in relations:
+        # 查询元素组件
+        if component := test_element_dao.select_by_no(relation.CHILD_NO):
             result.append({
-                'elementNo': builtin.ELEMENT_NO,
-                'elementName': builtin.ELEMENT_NAME,
-                'elementType': builtin.ELEMENT_TYPE,
-                'elementClass': builtin.ELEMENT_CLASS,
-                'enabled': builtin.ENABLED,
-                'property': get_element_property(builtin.ELEMENT_NO),
+                'elementNo': component.ELEMENT_NO,
+                'elementName': component.ELEMENT_NAME,
+                'elementType': component.ELEMENT_TYPE,
+                'elementClass': component.ELEMENT_CLASS,
+                'enabled': component.ENABLED,
+                'property': get_element_property(component.ELEMENT_NO),
                 'sortNumber': relation.SORT_NUMBER,
             })
 
@@ -1021,143 +1021,143 @@ def query_element_builtins(req):
 
 
 @http_service
-def create_element_builtins(req):
+def create_element_components(req):
     # TODO: del
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
-    # 新增内置元素
-    return add_element_builtins(root_no=req.rootNo, parent_no=req.parentNo, builtins=req.children)
+    # 新增元素组件
+    return add_element_components(root_no=req.rootNo, parent_no=req.parentNo, components=req.children)
 
 
-def add_element_builtins(root_no, parent_no, builtins) -> List:
+def add_element_components(root_no, parent_no, components) -> List:
     result = []
-    if builtins is None:
+    if components is None:
         return result
-    for builtin in builtins:
-        builtin_no = add_element_builtin(root_no, parent_no, builtin)
-        result.append(builtin_no)
+    for component in components:
+        component_no = add_element_component(root_no, parent_no, component)
+        result.append(component_no)
     return result
 
 
-def add_element_builtin(root_no, parent_no, builtin):
-    # 创建内置元素
-    builtin_no = new_id()
+def add_element_component(root_no, parent_no, component):
+    # 创建元素
+    component_no = new_id()
     TTestElement.insert(
-        ELEMENT_NO=builtin_no,
-        ELEMENT_NAME=builtin.get('elementName'),
-        ELEMENT_REMARK=builtin.get('elementRemark', None),
-        ELEMENT_TYPE=builtin.get('elementType'),
-        ELEMENT_CLASS=builtin.get('elementClass'),
-        ENABLED=builtin.get('enabled', ElementStatus.ENABLE.value)
+        ELEMENT_NO=component_no,
+        ELEMENT_NAME=component.get('elementName'),
+        ELEMENT_REMARK=component.get('elementRemark', None),
+        ELEMENT_TYPE=component.get('elementType'),
+        ELEMENT_CLASS=component.get('elementClass'),
+        ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
     )
-    # 创建内置元素属性
-    add_element_property(builtin_no, builtin.get('property', None))
-    # 创建内置元素关联
-    TElementBuiltinChildren.insert(
+    # 创建元素属性
+    add_element_property(component_no, component.get('property', None))
+    # 创建元素关联
+    TElementComponents.insert(
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
-        CHILD_NO=builtin_no,
-        CHILD_TYPE=builtin.get('elementType'),
-        SORT_NUMBER=builtin.get('sortNumber', 0),
-        SORT_WEIGHT=ComponentSortWeight[builtin.get('elementType')].value
+        CHILD_NO=component_no,
+        CHILD_TYPE=component.get('elementType'),
+        SORT_NUMBER=component.get('sortNumber', 0),
+        SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
     )
-    return builtin_no
+    return component_no
 
 
 @http_service
-def modify_element_builtins(req):
+def modify_element_components(req):
     # TODO: 干掉
-    for builtin in req.elements:
+    for component in req.elements:
         # 校验空间权限
-        check_workspace_permission(get_workspace_no(get_root_no(builtin.elementNo)))
-        # 更新内置元素
-        update_element_builtin(
-            element_no=builtin.get('elementNo', None),
-            element_name=builtin.get('elementName'),
-            element_remark=builtin.get('elementRemark', None),
-            element_property=builtin.get('property', None),
-            enabled=builtin.get('enabled', None)
+        check_workspace_permission(get_workspace_no(get_root_no(component.elementNo)))
+        # 更新元素组件
+        update_element_component(
+            element_no=component.get('elementNo', None),
+            element_name=component.get('elementName'),
+            element_remark=component.get('elementRemark', None),
+            element_property=component.get('property', None),
+            enabled=component.get('enabled', None)
         )
 
 
-def update_element_builtin(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
-    # 查询内置元素
-    builtin = test_element_dao.select_by_no(element_no)
-    check_exists(builtin, error_msg='内置元素不存在')
-    # 更新内置元素
+def update_element_component(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
+    # 查询元素
+    component = test_element_dao.select_by_no(element_no)
+    check_exists(component, error_msg='元素不存在')
+    # 更新元素
     if enabled is not None:
-        builtin.update(
+        component.update(
             ELEMENT_NAME=element_name,
             ELEMENT_REMARK=element_remark,
             ENABLED=enabled
         )
     else:
-        builtin.update(
+        component.update(
             ELEMENT_NAME=element_name,
             ELEMENT_REMARK=element_remark
         )
-    # 更新内置元素属性
+    # 更新元素属性
     update_element_property(element_no, element_property)
 
 
-def update_element_builtins(parent_no: str, builtins: list):
-    # 临时存储内置元素编号，用于删除非请求中的内置元素
-    if builtins is None:
+def update_element_components(parent_no: str, components: list):
+    # 临时存储元素编号，用于删除非请求中的元素
+    if components is None:
         return
-    builtin_numbers = []
-    for builtin in builtins:
-        # 内置元素存在则更新
-        if element := test_element_dao.select_by_no(builtin.elementNo):
-            # 存储内置元素的编号
-            builtin_numbers.append(builtin.elementNo)
-            # 更新内置元素
+    component_numbers = []
+    for component in components:
+        # 元素存在则更新
+        if element := test_element_dao.select_by_no(component.elementNo):
+            # 存储元素的编号
+            component_numbers.append(component.elementNo)
+            # 更新元素
             element.update(
-                ELEMENT_NAME=builtin.elementName,
-                ELEMENT_REMARK=builtin.get('elementRemark', None),
-                ENABLED=builtin.enabled
+                ELEMENT_NAME=component.elementName,
+                ELEMENT_REMARK=component.get('elementRemark', None),
+                ENABLED=component.enabled
             )
-            # 更新内置元素属性
-            update_element_property(builtin.elementNo, builtin.get('property', None))
+            # 更新元素属性
+            update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
-            element_builtin = element_builtin_children_dao.select_by_child(builtin.elementNo)
-            element_builtin.update(SORT_NUMBER=builtin.sortNumber)
-        # 内置元素不存在则新增
+            relation = element_components_dao.select_by_child(component.elementNo)
+            relation.update(SORT_NUMBER=component.sortNumber)
+        # 元素不存在则新增
         else:
-            # 新增内置元素
-            builtin_no = add_element_builtin(get_root_no(parent_no), parent_no, builtin)
-            # 存储内置元素的编号
-            builtin_numbers.append(builtin_no)
+            # 新增元素组件
+            component_no = add_element_component(get_root_no(parent_no), parent_no, component)
+            # 存储元素组件的编号
+            component_numbers.append(component_no)
 
-    # 移除非请求中内置元素
-    TElementBuiltinChildren.deletes(
-        TElementBuiltinChildren.PARENT_NO == parent_no,
-        TElementBuiltinChildren.CHILD_TYPE.in_([
+    # 移除非请求中元素组件
+    TElementComponents.deletes(
+        TElementComponents.PARENT_NO == parent_no,
+        TElementComponents.CHILD_TYPE.in_([
             ElementType.CONFIG.value,
             ElementType.PRE_PROCESSOR.value,
             ElementType.POST_PROCESSOR.value,
             ElementType.ASSERTION.value
         ]),
-        TElementBuiltinChildren.CHILD_NO.notin_(builtin_numbers),
+        TElementComponents.CHILD_NO.notin_(component_numbers),
     )
 
 
-def delete_element_builtin(element_no):
-    # 查询内置元素
+def delete_element_component(element_no):
+    # 查询元素
     element = test_element_dao.select_by_no(element_no)
-    check_exists(element, error_msg='内置元素不存在')
-    # 删除内置元素属性
+    check_exists(element, error_msg='元素不存在')
+    # 删除元素属性
     delete_element_property(element_no)
-    # 删除内置元素
+    # 删除元素
     element.delete()
 
 
-def delete_element_builtins_by_parent(parent_no):
-    # 根据父级删除所有内置元素
-    if builtin_relations := element_builtin_children_dao.select_all_by_parent(parent_no):
-        for relation in builtin_relations:
-            # 删除内置元素
-            delete_element_builtin(relation.CHILD_NO)
-            # 删除内置元素关联
+def delete_element_components_by_parent(parent_no):
+    # 根据父级删除所有元素组件
+    if relations := element_components_dao.select_all_by_parent(parent_no):
+        for relation in relations:
+            # 删除元素组件
+            delete_element_component(relation.CHILD_NO)
+            # 删除元素组件关联
             relation.delete()
 
 
@@ -1207,7 +1207,7 @@ def create_http_sampler(req):
     # 新增元素
     element_no = add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
     # 建立请求头模板关联
-    add_httpheader_template_refs(element_no, req.child.headerTemplateNos)
+    add_httpheader_template_refs(element_no, req.child.headerTemplates)
     # 返回元素编号
     return {'elementNo': element_no}
 
@@ -1223,13 +1223,13 @@ def modify_http_sampler(req):
         element_remark=req.elementRemark,
         element_property=req.property
     )
-    # 更新内置元素
-    update_element_builtins(
+    # 更新元素组件
+    update_element_components(
         parent_no=req.elementNo,
-        builtins=req.builtins
+        components=req.componentList
     )
     # 更新请求头模板关联
-    update_httpheader_template_refs(req.elementNo, req.headerTemplateNos)
+    update_httpheader_template_refs(req.elementNo, req.headerTemplates)
 
 
 @http_service
@@ -1266,26 +1266,26 @@ def set_workspace_components(req):
     for component in req.components:
         # 组件元素存在则更新
         if element := test_element_dao.select_by_no(component.elementNo):
-            # 存储内置元素的编号
+            # 存储元素的编号
             component_nos.append(component.elementNo)
-            # 更新组件元素
+            # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
                 ELEMENT_REMARK=component.get('elementRemark', None),
                 ENABLED=component.enabled
             )
-            # 更新组件元素属性
+            # 更新元素属性
             update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
             workspace_component = workspace_component_dao.select_by_component(component.elementNo)
             workspace_component.update(SORT_NUMBER=component.sortNumber)
-        # 组件元素不存在则新增
+        # 元素不存在则新增
         else:
             component_no = add_workspace_component(req.workspaceNo, component)
-            # 存储内置元素的编号
+            # 存储元素的编号
             component_nos.append(component_no)
 
-    # 移除非请求中组件元素
+    # 移除非请求中元素
     TWorkspaceComponent.deletes(
         TWorkspaceComponent.WORKSPACE_NO == req.workspaceNo,
         TWorkspaceComponent.COMPONENT_NO.notin_(component_nos),
@@ -1303,9 +1303,9 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
         ELEMENT_CLASS=component.get('elementClass'),
         ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
     )
-    # 创建内置元素属性
+    # 创建元素属性
     add_element_property(component_no, component.get('property'))
-    # 创建内置元素关联
+    # 创建元素关联
     TWorkspaceComponent.insert(
         WORKSPACE_NO=workspace_no,
         COMPONENT_NO=component_no,

@@ -41,7 +41,7 @@ def query_worker_json(req):
         raise ServiceError('元素父级关联不存在')
     collection_no = worker_parent_relation.PARENT_NO
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, specified_worker_no=req.workerNo)
+    script = element_loader.loads_tree(collection_no, specify_worker_no=req.workerNo)
     # 添加变量组件
     add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
     return script

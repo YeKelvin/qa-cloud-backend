@@ -4,8 +4,6 @@
 # @Author  : Kelvin.Ye
 from typing import Dict
 
-from loguru import logger
-
 from app.database import dbquery
 from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import element_children_dao
@@ -16,12 +14,15 @@ from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
 from app.modules.script.enum import is_http_sampler
-from app.modules.script.enum import is_sampler
+from app.modules.script.enum import is_python_assertion
+from app.modules.script.enum import is_python_post_processor
+from app.modules.script.enum import is_python_pre_processor
 from app.modules.script.enum import is_setup_debuger
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_sql_sampler
 from app.modules.script.enum import is_teardown_debuger
 from app.modules.script.enum import is_test_collection
+from app.modules.script.enum import is_test_worker
 from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_component import add_database_engine
 from app.modules.script.manager.element_component import add_http_header_manager
@@ -29,7 +30,7 @@ from app.modules.script.manager.element_context import loads_cache
 from app.modules.script.manager.element_context import loads_configurator
 from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
-from app.modules.script.model import TElementBuiltinChildren
+from app.modules.script.model import TElementComponents
 from app.tools.exceptions import ServiceError
 from app.tools.validator import check_exists
 from app.utils.json_util import from_json
@@ -37,23 +38,16 @@ from app.utils.json_util import from_json
 
 def loads_tree(
         element_no,
-        specified_worker_no=None,
-        specified_sampler_no=None,
-        no_sampler=False,
-        no_debuger=False,
+        specify_worker_no=None,
+        specify_sampler_no=None,
+        exclude_debuger=False,
 ):
     """根据元素编号加载脚本"""
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
     configurator_token = loads_configurator.set({})
     # 递归加载元素
-    script = loads_element(
-        element_no,
-        specified_worker_no=specified_worker_no,
-        specified_sampler_no=specified_sampler_no,
-        no_sampler=no_sampler,
-        no_debuger=no_debuger
-    )
+    script = loads_element(element_no, specify_worker_no, specify_sampler_no, exclude_debuger)
     if not script:
         raise ServiceError('脚本异常，请重试')
     # 添加全局配置
@@ -62,11 +56,13 @@ def loads_tree(
             script['children'].insert(0, config)
     # 查询集合配置
     collection = test_element_dao.select_by_no(element_no)
-    attributes = collection.ELEMENT_ATTRIBUTES
-    exclude_workspaces = attributes.get('TestCollection__exclude_workspaces', False)
+    collection_attributes = collection.ELEMENT_ATTRIBUTES
+    exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
+    # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
     if not exclude_workspaces:
-        # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
-        add_workspace_components(script, element_no)
+        components = loads_workspace_components(script, element_no)
+        for component in components[::-1]:
+            script['children'].insert(0, component)
     # 清空上下文变量
     loads_cache.reset(cache_token)
     loads_configurator.reset(configurator_token)
@@ -75,23 +71,30 @@ def loads_tree(
 
 def loads_element(
         element_no,
-        specified_worker_no: str = None,
-        specified_sampler_no: str = None,
-        no_sampler: bool = False,
-        no_debuger: bool = False
+        specify_worker_no: str = None,
+        specify_sampler_no: str = None,
+        exclude_debuger: bool = False
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
 
-    # 检查是否为允许加载的元素，不允许时直接返回 None
-    if is_impassable(element, specified_worker_no, no_sampler, no_debuger):
+    # 元素为禁用状态时返回 None
+    if not element.ENABLED:
+        return None
+
+    # 排除 debuger
+    if  exclude_debuger and is_debuger(element):
+        return None
+
+    # 加载指定的 worker，如果当前元素非指定元素时返回 None
+    if specify_worker_no and not is_specified_worker(element, specify_worker_no):
         return None
 
     # 元素子代
     children = []
-    # 读取元素属性
+    # 元素属性
     properties = loads_property(element_no)
 
     # 过滤空代码的 Python 组件
@@ -114,20 +117,16 @@ def loads_element(
         # 添加数据库引擎配置组件
         add_database_engine(engine)
 
-    # 添加内置元素
+    # 添加元素组件
     if is_test_collection(element) or is_worker(element) or is_http_sampler(element):
-        add_builtin_children(element_no, children)
+        add_element_components(element_no, children)
 
-    # 元素为常规 Sampler 时，添加子代
+    # 元素为非 SnippetSampler 时，添加子代
     if not is_snippet_sampler(element):
         children.extend(
-            loads_children(
-                element_no,
-                specified_worker_no,
-                specified_sampler_no
-            )
+            loads_children(element_no, specify_worker_no, specify_sampler_no)
         )
-    # 元素为 SnippetSampler 时，读取片段内容
+    # 元素为 SnippetSampler 时，查询片段内容
     else:
         add_snippets(properties, children)
         properties = None  # SnippetSampler 的属性不需要添加至脚本中
@@ -161,62 +160,48 @@ def loads_property(element_no):
     return properties
 
 
-def loads_children(element_no, specified_worker_no, specified_sampler_no):
-    """TODO: 太多 if 逻辑，待优化"""
-    # 递归查询子代，并根据序号正序排序
-    children_relations = element_children_dao.select_all_by_parent(element_no)
+def loads_children(element_no, specify_worker_no, specify_sampler_no):
+    # TODO: 优化查询sql，查children时连表查询children和element
+    # 查询子代，并根据序号正序排序
+    relations = element_children_dao.select_all_by_parent(element_no)
     children = []
     # 添加子代
-    for relation in children_relations:
-        found = False
-        # 需要指定 Sampler
-        if specified_sampler_no:
-            if child := loads_element(
-                relation.CHILD_NO,
-                specified_worker_no,
-                specified_sampler_no,
-                no_sampler=found
-            ):
-                children.append(child)
-            if relation.CHILD_NO == specified_sampler_no:  # TODO: 这里有问题
-                found = True
-        # 无需指定 Sampler
-        else:
-            if child := loads_element(
-                relation.CHILD_NO,
-                specified_worker_no,
-                specified_sampler_no
-            ):
-                children.append(child)
+    for relation in relations:
+        # 加载子代元素
+        if child := loads_element(relation.CHILD_NO, specify_worker_no, specify_sampler_no):
+            children.append(child)
+        # 找到指定的 Sampler 就返回
+        if specify_sampler_no and relation.CHILD_NO == specify_sampler_no:
+            return children
 
     return children
 
 
-def add_builtin_children(element_no, children: list):
+def add_element_components(element_no, children: list):
     # TODO: 排序还是有问题
     relations = (
         dbquery(
-            TElementBuiltinChildren.SORT_NUMBER,
-            TElementBuiltinChildren.SORT_WEIGHT,
-            TElementBuiltinChildren.CHILD_TYPE,
-            TElementBuiltinChildren.CHILD_NO
+            TElementComponents.SORT_NUMBER,
+            TElementComponents.SORT_WEIGHT,
+            TElementComponents.CHILD_TYPE,
+            TElementComponents.CHILD_NO
         )
         .filter(
-            TElementBuiltinChildren.DELETED == 0,
-            TElementBuiltinChildren.PARENT_NO == element_no,
-            TElementBuiltinChildren.CHILD_TYPE.in_([
+            TElementComponents.DELETED == 0,
+            TElementComponents.PARENT_NO == element_no,
+            TElementComponents.CHILD_TYPE.in_([
                 ElementType.CONFIG.value,
                 ElementType.PRE_PROCESSOR.value,
                 ElementType.POST_PROCESSOR.value,
                 ElementType.ASSERTION.value
             ])
         )
-        .order_by(TElementBuiltinChildren.SORT_WEIGHT.desc(), TElementBuiltinChildren.SORT_NUMBER.asc())
+        .order_by(TElementComponents.SORT_WEIGHT.desc(), TElementComponents.SORT_NUMBER.asc())
         .all()
     )
     for relation in relations:
-        if builtin := loads_element(relation.CHILD_NO):
-            children.append(builtin)
+        if component := loads_element(relation.CHILD_NO):
+            children.append(component)
 
 
 def add_snippets(sampler_property, children: list):
@@ -249,7 +234,7 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
     # 添加 TransactionHTTPSessionManager 组件
     if use_http_session == 'true':
         snippet_children.insert(0, {
-            'name': 'Transaction HTTP SessionManager',
+            'name': '事务HTTP会话管理器',
             'remark': '',
             'class': 'TransactionHTTPSessionManager',
             'enabled': True,
@@ -259,28 +244,32 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
     if sampler_arguments or snippet_parameters:
         arguments = []
         if use_default:  # 使用片段集合的默认值
-            for param in snippet_parameters:
-                arguments.append({
+            arguments.extend(
+                {
                     'class': 'Argument',
                     'property': {
                         'Argument__name': param['name'],
-                        'Argument__value': param['default']
-                    }
-                })
+                        'Argument__value': param['default'],
+                    },
+                }
+                for param in snippet_parameters
+            )
         else:  # 使用自定义的参数值
             args = {arg['name']: arg['value'] for arg in sampler_arguments}
-            for param in snippet_parameters:
-                arguments.append({
+            arguments.extend(
+                {
                     'class': 'Argument',
                     'property': {
                         'Argument__name': param['name'],
-                        'Argument__value': args.get(param['name']) or param['default']
-                    }
-                })
-
+                        'Argument__value': args.get(param['name'])
+                        or param['default'],
+                    },
+                }
+                for param in snippet_parameters
+            )
         # 添加 TransactionParameter 组件
         snippet_children.insert(0, {
-            'name': 'Transaction Parameter',
+            'name': '事务参数',
             'remark': '',
             'class': 'TransactionParameter',
             'enabled': True,
@@ -302,7 +291,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     # 添加 HTTP Session 组件
     if use_http_session:
         children.append({
-            'name': 'HTTP Session Manager',
+            'name': 'HTTP会话管理器',
             'remark': '',
             'class': 'HTTPSessionManager',
             'enabled': True,
@@ -348,7 +337,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     }
 
 
-def add_workspace_components(script: dict, element_no: str):
+def loads_workspace_components(element_no):
     collection_no = get_root_no(element_no)
     workspace_no = get_workspace_no(collection_no)
     workspace_components = workspace_component_dao.select_all_by_workspace(workspace_no)
@@ -359,68 +348,18 @@ def add_workspace_components(script: dict, element_no: str):
         if element := loads_element(workspace_component.COMPONENT_NO):
             element['level'] = 0  # 给空间组件添加层级
             components.append(element)
-    for component in components[::-1]:
-        script['children'].insert(0, component)
 
 
-PASSABLE_ELEMENT_CLASS_LIST = ['SetupWorker', 'TeardownWorker']
-
-
-def is_specified_worker(element, specified_no):
-    # 非 Worker 时加载
-    if not is_worker(element):
-        return True  # pass
-
-    # 判断是否为指定的 Worker
-    if element.ELEMENT_NO == specified_no:
-        return True  # pass
-
-    # 除指定的 Worker 外，还需要加载前置和后置 Worker
-    if element.ELEMENT_CLASS in PASSABLE_ELEMENT_CLASS_LIST:
-            return True
-
-    return False
+def is_specified_worker(element, worker_no):
+    return is_test_worker(element) and element.ELEMENT_NO == worker_no
 
 
 def is_blank_python(element, properties):
-    if (
-            element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value and
-            not properties.get('PythonPreProcessor__script').strip()
-    ):
+    if is_python_pre_processor(element) and not properties.get('PythonPreProcessor__script').strip():
         return True
-    if (
-            element.ELEMENT_CLASS == ElementClass.PYTHON_POST_PROCESSOR.value and
-            not properties.get('PythonPostProcessor__script').strip()
-    ):
+    if is_python_post_processor(element) and not properties.get('PythonPostProcessor__script').strip():
         return True
-    if (
-            element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value and
-            not properties.get('PythonAssertion__script').strip()
-    ):
-        return True
-
-    return False
-
-
-def is_impassable(element, specified_worker_no, no_sampler, no_debuger):
-    # 元素为禁用状态时返回 None
-    if not element.ENABLED:
-        logger.info(f'元素:[ {element.ELEMENT_NAME} ] 已禁用，不需要添加至脚本')
-        return True
-
-    # 加载指定元素，如果当前元素非指定元素时返回空
-    if specified_worker_no and not is_specified_worker(element, specified_worker_no):
-        return True
-
-    # 不需要 Sampler 时返回 None
-    if no_sampler and is_sampler(element):
-        return True
-
-    # 不需要 Debuger 时返回 None
-    if no_debuger and is_debuger(element):
-        return True
-
-    return False
+    return is_python_assertion(element) and not properties.get('PythonAssertion__script').strip()
 
 
 def get_real_class(element):

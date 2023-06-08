@@ -345,3 +345,15 @@ def is_teardown_debuger(element):
 
 def is_debuger(element):
     return is_setup_debuger(element) or is_teardown_debuger(element)
+
+
+def is_python_pre_processor(element):
+    return element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value
+
+
+def is_python_post_processor(element):
+    return element.ELEMENT_CLASS == ElementClass.PYTHON_POST_PROCESSOR.value
+
+
+def is_python_assertion(element):
+    return element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value

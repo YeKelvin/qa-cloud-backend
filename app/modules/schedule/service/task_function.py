@@ -54,7 +54,7 @@ def execute_worker(workerNo, datasetNos, useCurrentValue):  # noqa
             raise ServiceError('元素父级关联不存在')
         # 根据 collectionNo 递归加载脚本
         collection_no = worker_parent_relation.PARENT_NO
-        script = loads_tree(collection_no, specified_worker_no=workerNo)
+        script = loads_tree(collection_no, specify_worker_no=workerNo)
         # 添加变量组件
         if datasetNos:
             add_variable_dataset(script, datasetNos, useCurrentValue)
