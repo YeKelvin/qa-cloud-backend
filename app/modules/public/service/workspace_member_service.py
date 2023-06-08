@@ -17,7 +17,7 @@ from app.utils.sqlalchemy_util import QueryCondition
 
 
 @http_service
-def query_workspace_user_list(req):
+def query_workspace_member_list(req):
     # 查询条件
     conds = QueryCondition(TUser, TWorkspace, TWorkspaceUser)
     conds.equal(TUser.USER_NO, TWorkspaceUser.USER_NO)
@@ -51,7 +51,7 @@ def query_workspace_user_list(req):
 
 
 @http_service
-def query_workspace_user_all(req):
+def query_workspace_member_all(req):
     # 查询条件
     conds = QueryCondition(TUser, TWorkspaceUser)
     conds.equal(TUser.USER_NO, TWorkspaceUser.USER_NO)
@@ -73,17 +73,17 @@ def query_workspace_user_all(req):
 
 
 @http_service
-def modify_workspace_user(req):
+def modify_workspace_member(req):
     # 查询元素
     workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 成员列表添加超级管理用户编号
-    user_nos = req.userNos
-    user_nos.append(get_super_admin_userno())
+    members = req.members
+    members.append(get_super_admin_userno())
 
     # 更新空间成员
-    for user_no in user_nos:
+    for user_no in members:
         # 查询空间成员
         workspace_user = workspace_user_dao.select_by_workspace_and_user(req.workspaceNo, user_no)
         if workspace_user:
@@ -93,7 +93,7 @@ def modify_workspace_user(req):
             TWorkspaceUser.insert(WORKSPACE_NO=req.workspaceNo, USER_NO=user_no)
 
     # 删除不在请求中的空间成员
-    workspace_user_dao.delete_all_by_workspace_and_notin_user(req.workspaceNo, user_nos)
+    workspace_user_dao.delete_all_by_workspace_and_notin_user(req.workspaceNo, members)
 
 
 def get_super_admin_userno():

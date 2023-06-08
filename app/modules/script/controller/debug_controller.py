@@ -17,7 +17,7 @@ def query_collection_json():
     """查询测试集合的脚本(JSON)"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_collection_json(req)
@@ -30,7 +30,7 @@ def query_worker_json():
     """查询测试用例的脚本(JSON)"""
     req = JsonParser(
         Argument('workerNo', required=True, nullable=False, help='工作者编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.query_worker_json(req)
@@ -43,7 +43,7 @@ def query_snippets_json():
     """查询片段集合的脚本(JSON)"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()

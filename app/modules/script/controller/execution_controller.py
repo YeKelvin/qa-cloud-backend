@@ -18,7 +18,7 @@ def execute_collection():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_collection(req)
@@ -32,7 +32,7 @@ def execute_worker():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='socketId不能为空'),
         Argument('workerNo', required=True, nullable=False, help='workerNo不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_worker(req)
@@ -46,7 +46,7 @@ def execute_sampler():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid不能为空'),
         Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_sampler(req)
@@ -60,7 +60,7 @@ def execute_snippets():
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
         Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
@@ -74,7 +74,7 @@ def execute_testplan():
     """运行测试计划"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('datasetNos', type=list, default=[]),
+        Argument('datasets', type=list, default=[]),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_testplan(req)

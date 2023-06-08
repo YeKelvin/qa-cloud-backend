@@ -409,7 +409,7 @@ def remove_httpheaders(req):
     # 校验空间权限
     check_workspace_permission(template.WORKSPACE_NO)
     # 批量删除请求头
-    http_header_dao.delete_in_no(req.headerNos)
+    http_header_dao.delete_in_no(req.headers)
 
 
 @http_service

@@ -54,7 +54,7 @@ def create_group():
     req = JsonParser(
         Argument('groupName', required=True, nullable=False, help='分组名称不能为空'),
         Argument('groupDesc'),
-        Argument('roleNos', type=list)
+        Argument('roles', type=list)
     ).parse()
     return service.create_group(req)
 
@@ -68,7 +68,7 @@ def modify_group():
         Argument('groupNo', required=True, nullable=False, help='分组编号不能为空'),
         Argument('groupName', required=True, nullable=False, help='分组名称不能为空'),
         Argument('groupDesc'),
-        Argument('roleNos', type=list)
+        Argument('roles', type=list)
     ).parse()
     return service.modify_group(req)
 

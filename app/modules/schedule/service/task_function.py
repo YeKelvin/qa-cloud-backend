@@ -15,12 +15,12 @@ from app.modules.script.service.execution_service import run_testplan
 from app.tools.exceptions import ServiceError
 
 
-def execute_testplan(planNo, datasetNos, useCurrentValue):  # noqa
+def execute_testplan(planNo, datasets, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
-        run_testplan(planNo, datasetNos, useCurrentValue, check_workspace=False)
+        run_testplan(planNo, datasets, useCurrentValue, check_workspace=False)
 
 
-def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
+def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
         collection = test_element_dao.select_by_no(collectionNo)
@@ -31,8 +31,8 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
         # 根据 collectionNo 递归加载脚本
         script = loads_tree(collectionNo)
         # 添加变量组件
-        if datasetNos:
-            add_variable_dataset(script, datasetNos, useCurrentValue)
+        if datasets:
+            add_variable_dataset(script, datasets, useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)
@@ -40,7 +40,7 @@ def execute_collection(collectionNo, datasetNos, useCurrentValue):  # noqa
             logger.exception('Exception Occurred')
 
 
-def execute_worker(workerNo, datasetNos, useCurrentValue):  # noqa
+def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
         # 查询元素
         worker = test_element_dao.select_by_no(workerNo)
@@ -56,8 +56,8 @@ def execute_worker(workerNo, datasetNos, useCurrentValue):  # noqa
         collection_no = worker_parent_relation.PARENT_NO
         script = loads_tree(collection_no, specify_worker_no=workerNo)
         # 添加变量组件
-        if datasetNos:
-            add_variable_dataset(script, datasetNos, useCurrentValue)
+        if datasets:
+            add_variable_dataset(script, datasets, useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)

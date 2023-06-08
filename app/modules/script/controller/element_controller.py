@@ -101,7 +101,7 @@ def query_element_children():
 def query_elements_children():
     """根据编号列表批量查询子代元素"""
     req = JsonParser(
-        Argument('elementNos', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
+        Argument('elements', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
     return service.query_elements_children(req)
@@ -291,7 +291,7 @@ def create_element_httpheader_template_refs():
     """新增HTTP请求头引用"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templates', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
     return service.create_element_httpheader_template_refs(req)
 
@@ -303,7 +303,7 @@ def modify_element_httpheader_template_refs():
     """修改HTTP请求头引用"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templateNos', type=list, required=True, nullable=False, help='模板编号列表不能为空')
+        Argument('templates', type=list, required=True, nullable=False, help='模板编号列表不能为空')
     ).parse()
     return service.modify_element_httpheader_template_refs(req)
 

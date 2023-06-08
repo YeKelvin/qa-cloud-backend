@@ -127,7 +127,7 @@ def execute_collection(req):
             # 添加变量组件
             add_variable_dataset(
                 script,
-                req.datasetNos,
+                req.datasets,
                 req.useCurrentValue
             )
             return script
@@ -182,7 +182,7 @@ def execute_worker(req):
             # 添加变量组件
             add_variable_dataset(
                 script,
-                req.datasetNos,
+                req.datasets,
                 req.useCurrentValue
             )
             return script
@@ -234,7 +234,7 @@ def execute_sampler(req):
     # 添加变量组件
     add_variable_dataset(
         script,
-        req.datasetNos,
+        req.datasets,
         req.useCurrentValue
     )
 
@@ -275,7 +275,7 @@ def execute_snippets(req):
     # 添加变量组件
     add_variable_dataset(
         script,
-        req.datasetNos,
+        req.datasets,
         req.useCurrentValue,
         req.variables
     )
@@ -286,7 +286,7 @@ def execute_snippets(req):
 
 @http_service
 def execute_testplan(req):
-    return run_testplan(req.planNo, req.datasetNos, req.useCurrentValue)
+    return run_testplan(req.planNo, req.datasets, req.useCurrentValue)
 
 
 def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):

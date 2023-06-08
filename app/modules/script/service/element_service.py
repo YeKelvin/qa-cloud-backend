@@ -331,7 +331,7 @@ def query_element_children(req):
 @http_service
 def query_elements_children(req):
     result = []
-    for element_no in req.elementNos:
+    for element_no in req.elements:
         element = test_element_dao.select_by_no(element_no)
         if not element:
             logger.warning(f'elementNo:[ {element_no} ] 元素不存在')
@@ -951,7 +951,7 @@ def create_element_httpheader_template_refs(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
     # 建立模板关联
-    add_httpheader_template_refs(req.elementNo, req.templateNos)
+    add_httpheader_template_refs(req.elementNo, req.templates)
 
 
 def add_httpheader_template_refs(element_no, template_nos):
@@ -970,7 +970,7 @@ def modify_element_httpheader_template_refs(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
     # 修改元素请求头模板
-    update_httpheader_template_refs(req.elementNo, req.templateNos)
+    update_httpheader_template_refs(req.elementNo, req.templates)
 
 
 def update_httpheader_template_refs(element_no, template_nos):

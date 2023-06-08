@@ -97,7 +97,7 @@ def query_testplan(req):
 
     # 查询测试计划关联的集合
     items = testplan_items_dao.select_all_by_plan(req.planNo)
-    collection_nos = [item.COLLECTION_NO for item in items]
+    collections = [item.COLLECTION_NO for item in items]
 
     return {
         'planNo': testplan.PLAN_NO,
@@ -111,7 +111,7 @@ def query_testplan(req):
         'saveOnError': settings.SAVE_ON_ERROR,
         'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
         'notificationRobotNos': settings.NOTIFICATION_ROBOT_LIST,
-        'collectionNos': collection_nos
+        'collections': collections
     }
 
 

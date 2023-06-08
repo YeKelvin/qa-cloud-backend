@@ -23,7 +23,7 @@ def query_collection_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
     # 添加变量组件
-    add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
+    add_variable_dataset(script, req.datasets, req.useCurrentValue)
     return script
 
 
@@ -43,7 +43,7 @@ def query_worker_json(req):
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specify_worker_no=req.workerNo)
     # 添加变量组件
-    add_variable_dataset(script, req.datasetNos, req.useCurrentValue)
+    add_variable_dataset(script, req.datasets, req.useCurrentValue)
     return script
 
 
@@ -62,5 +62,5 @@ def query_snippets_json(req):
         collection.ELEMENT_REMARK
     )
     # 添加变量组件
-    add_variable_dataset(script, req.datasetNos, req.useCurrentValue, req.variables)
+    add_variable_dataset(script, req.datasets, req.useCurrentValue, req.variables)
     return script
