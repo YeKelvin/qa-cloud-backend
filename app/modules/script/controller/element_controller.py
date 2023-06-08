@@ -120,7 +120,7 @@ def create_collection():
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
         Argument('attributes', type=dict),
-        Argument('builtins', type=list)  # TODO: builtinList
+        Argument('componentList', type=list)
     ).parse()
     return service.create_collection(req)
 
@@ -142,7 +142,7 @@ def create_element_child():
             "elementClass": "",
             "property": { ... },
             "attributes": { ... },
-            "builtins": [ ... ]
+            "componentList": [ ... ]
         }
     }
     """
@@ -172,7 +172,7 @@ def create_element_children():
                 "elementClass": "",
                 "property": { ... },
                 "attributes": { ... },
-                "builtins": [ ... ]
+                "componentList": [ ... ]
             }
             ...
         ]
@@ -198,7 +198,7 @@ def modify_element():
         Argument('enabled'),
         Argument('property'),
         Argument('attributes', type=dict),
-        Argument('builtins', type=list),
+        Argument('componentList', type=list),
     ).parse()
     return service.modify_element(req)
 
@@ -308,39 +308,39 @@ def modify_element_httpheader_template_refs():
     return service.modify_element_httpheader_template_refs(req)
 
 
-@blueprint.get('/element/builtins')
+@blueprint.get('/element/components')
 @require_login
 @require_permission('QUERY_ELEMENT')
-def query_element_builtins():
-    """查询内置元素"""
+def query_element_components():
+    """查询元素组件"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.query_element_builtins(req)
+    return service.query_element_components(req)
 
 
-@blueprint.post('/element/builtins')
+@blueprint.post('/element/components')
 @require_login
 @require_permission('CREATE_ELEMENT')
-def create_element_builtins():
-    """新增内置元素"""
+def create_element_components():
+    """新增元素组件"""
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
     ).parse()
-    return service.create_element_builtins(req)
+    return service.create_element_components(req)
 
 
-@blueprint.put('/element/builtins')
+@blueprint.put('/element/components')
 @require_login
 @require_permission('MODIFY_ELEMENT')
-def modify_element_builtins():
-    """修改内置元素"""
+def modify_element_components():
+    """修改元素组件"""
     req = JsonParser(
         Argument('elements', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.modify_element_builtins(req)
+    return service.modify_element_components(req)
 
 
 @blueprint.post('/element/collection/copy/to/workspace')
@@ -381,7 +381,8 @@ def create_http_sampler():
             "elementName": "",
             "elementRemark": "",
             "property": { ... },
-            "builtins": [
+            "headerTemplates": [ ... ],
+            "componentList": [
                     "elementNo": "",
                     "elementName": "",
                     "elementType": "",
@@ -390,8 +391,7 @@ def create_http_sampler():
                     "sortNumber": ""
                 }
                 ...
-            ],
-            "headerTemplateNos": [ ... ]
+            ]
         }
     }
     """
@@ -415,7 +415,8 @@ def modify_http_sampler():
         "elementName": "",
         "elementRemark": "",
         "property": { ... },
-        "builtins": [
+        "headerTemplates": [ ... ],
+        "componentList": [
             {
                 "elementNo": "",
                 "elementName": "",
@@ -425,8 +426,7 @@ def modify_http_sampler():
                 "sortNumber": ""
             }
             ...
-        ],
-        "headerTemplateNos": [ ... ]
+        ]
     }
     """
     req = JsonParser(
@@ -434,8 +434,8 @@ def modify_http_sampler():
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementRemark'),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('builtins', type=list),
-        Argument('headerTemplateNos', type=list)
+        Argument('componentList', type=list),
+        Argument('headerTemplates', type=list)
     ).parse()
     return service.modify_http_sampler(req)
 

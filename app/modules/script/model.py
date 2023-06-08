@@ -60,9 +60,9 @@ class TElementChildren(DBModel, BaseColumn):
     SORT_NO = db.Column(db.Integer, nullable=False, comment='子元素序号')
 
 
-class TElementBuiltinChildren(DBModel, BaseColumn):
-    """元素内置子代表"""
-    __tablename__ = 'ELEMENT_BUILTIN_CHILDREN'
+class TElementComponents(DBModel, BaseColumn):
+    """元素组件表"""
+    __tablename__ = 'ELEMENT_COMPONENTS'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
