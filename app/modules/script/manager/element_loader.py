@@ -60,7 +60,7 @@ def loads_tree(
     exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
     # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
     if not exclude_workspaces:
-        components = loads_workspace_components(script, element_no)
+        components = loads_workspace_components(element_no)
         for component in components[::-1]:
             script['children'].insert(0, component)
     # 清空上下文变量
@@ -88,8 +88,8 @@ def loads_element(
     if  exclude_debuger and is_debuger(element):
         return None
 
-    # 加载指定的 worker，如果当前元素非指定元素时返回 None
-    if specify_worker_no and not is_specified_worker(element, specify_worker_no):
+    # 加载指定的 ，如果当前元素非指定的worker时返回 None
+    if specify_worker_no and is_test_worker(element) and element.ELEMENT_NO != specify_worker_no:
         return None
 
     # 元素子代
@@ -348,6 +348,7 @@ def loads_workspace_components(element_no):
         if element := loads_element(workspace_component.COMPONENT_NO):
             element['level'] = 0  # 给空间组件添加层级
             components.append(element)
+    return components
 
 
 def is_specified_worker(element, worker_no):
