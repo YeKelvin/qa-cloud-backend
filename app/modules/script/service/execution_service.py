@@ -156,12 +156,12 @@ def execute_worker(req):
         raise ServiceError('仅支持运行 Worker 元素')
 
     # 获取 collectionNo
-    worker_parent_relation = element_children_dao.select_by_child(req.workerNo)
-    if not worker_parent_relation:
-        raise ServiceError('元素父级关联不存在')
+    worker_upper_relation = element_children_dao.select_by_child(req.workerNo)
+    if not worker_upper_relation:
+        raise ServiceError('元素上级关联不存在')
 
     # 临时存储变量
-    collection_no = worker_parent_relation.PARENT_NO
+    collection_no = worker_upper_relation.PARENT_NO
     worker_name = worker.ELEMENT_NAME
 
     # 定义 loader 函数
@@ -211,16 +211,20 @@ def execute_sampler(req):
         raise ServiceError('仅支持运行 Sampler 元素')
 
     # 获取 collectionNo 和 workerNo
-    sampler_parent_relation = element_children_dao.select_by_child(req.samplerNo)
-    if not sampler_parent_relation:
-        raise ServiceError('元素父级关联不存在')
+    sampler_upper_relation = element_children_dao.select_by_child(req.samplerNo)
+    if not sampler_upper_relation:
+        raise ServiceError('元素上级关联不存在')
 
     # 临时存储变量
-    collection_no = sampler_parent_relation.ROOT_NO
-    worker_no = sampler_parent_relation.PARENT_NO
+    collection_no = sampler_upper_relation.ROOT_NO
+    worker_no = sampler_upper_relation.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(collection_no, worker_no, req.samplerNo)
+    script = element_loader.loads_tree(
+        collection_no,
+        specify_worker_no=worker_no,
+        specify_sampler_no=req.samplerNo
+    )
 
     # 添加 socket 组件
     result_id = new_id()

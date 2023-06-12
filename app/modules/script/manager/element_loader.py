@@ -5,7 +5,6 @@
 from typing import Dict
 
 from app.database import dbquery
-from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
@@ -26,6 +25,9 @@ from app.modules.script.enum import is_test_worker
 from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_component import add_database_engine
 from app.modules.script.manager.element_component import add_http_header_manager
+from app.modules.script.manager.element_component import add_http_session_manager
+from app.modules.script.manager.element_component import create_test_collection
+from app.modules.script.manager.element_component import create_test_worker
 from app.modules.script.manager.element_context import loads_cache
 from app.modules.script.manager.element_context import loads_configurator
 from app.modules.script.manager.element_manager import get_root_no
@@ -96,46 +98,43 @@ def loads_element(
     children = []
     # 元素属性
     properties = loads_property(element_no)
+    attributes = element.ELEMENT_ATTRIBUTES or {}
+
+    # 添加HTTP会话管理器
+    if is_worker(element) and attributes.get('enable_http_session', False):
+        add_http_session_manager(attributes.get('clear_http_session_for_each_iteration', False), children)
 
     # 过滤空代码的 Python 组件
     if is_blank_python(element, properties):
         return None
 
-    # 元素为 HttpSampler 时，添加 HTTP 请求头管理器
+    # 添加HTTP请求头管理器
     if is_http_sampler(element):
         add_http_header_manager(element, children)
 
-    # 元素为 SQLSampler 时，添加全局的数据库引擎配置器
+    # 添加数据库引擎配置器
     if is_sql_sampler(element):
-        # 查询数据库引擎
-        engine = database_config_dao.select_by_no(properties.get('engineNo'))
-        check_exists(engine, error_msg='数据库引擎不存在')
-        # 删除引擎编号，PyMeter中不需要
-        properties.pop('engineNo')
-        # 实时将引擎变量名称写入元素属性中
-        properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
-        # 添加数据库引擎配置组件
-        add_database_engine(engine)
+        add_database_engine(attributes.get('engine_no'), properties)
 
     # 添加元素组件
     if is_test_collection(element) or is_worker(element) or is_http_sampler(element):
         add_element_components(element_no, children)
 
-    # 元素为非 SnippetSampler 时，添加子代
+    # 非片段请求时直接添加子代
     if not is_snippet_sampler(element):
         children.extend(
             loads_children(element_no, specify_worker_no, specify_sampler_no)
         )
-    # 元素为 SnippetSampler 时，查询片段内容
+    # 片段请求则查询片段内容
     else:
-        add_snippets(properties, children)
-        properties = None  # SnippetSampler 的属性不需要添加至脚本中
+        add_snippets(attributes, children)
 
     return {
         'name': element.ELEMENT_NAME,
         'remark': element.ELEMENT_REMARK,
         'class': get_real_class(element),
         'enabled': element.ENABLED,
+        'attributes': attributes,
         'property': properties,
         'children': children
     }
@@ -204,16 +203,30 @@ def add_element_components(element_no, children: list):
             children.append(component)
 
 
-def add_snippets(sampler_property, children: list):
-    snippet_no = sampler_property.get('snippetNo', None)
+def add_snippets(sampler_attrs, children: list):
+    # 根据片段编号加载片段集合（片段集合在脚本中其实是事务，这里做了一层转换）
+    snippet_no = sampler_attrs.get('snippet_no', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
-    snippet_collection = loads_element(snippet_no)
-    if not snippet_collection:
+    # 加载片段集合
+    transaction = loads_element(snippet_no)
+    if not transaction:
         return
-    snippets = snippet_collection['children']
-    configure_snippets(snippet_collection, snippets, sampler_property)
-    children.extend(snippets)
+    transaction_children = transaction.get('children')
+    if not transaction_children:
+        return
+    trans_attrs = transaction.get('attributes', {})
+    # 片段形参
+    parameters = trans_attrs.get('parameters', [])
+    # 是否使用HTTP会话
+    use_http_session = trans_attrs.get('use_http_session', False)
+    # 片段实参
+    arguments = sampler_attrs.get('arguments', [])
+    # 是否使用形参默认值
+    use_default = sampler_attrs.get('use_default', False)
+    # 配置片段
+    configure_snippets(transaction_children, parameters, arguments, use_http_session, use_default)
+    children.extend(transaction_children)
 
 
 def add_root_configs(script: dict, config_components: Dict[str, list]):
@@ -222,18 +235,10 @@ def add_root_configs(script: dict, config_components: Dict[str, list]):
             script['children'].insert(0, config)
 
 
-def configure_snippets(snippet_collection, snippet_children, sampler_property):
-    # SnippetCollection 属性
-    snippet_parameters = snippet_collection['property'].get('parameters', [])
-    use_http_session = snippet_collection['property'].get('useHTTPSession', 'false')
-
-    # SnippetSampler 属性
-    sampler_arguments = sampler_property.get('arguments', [])
-    use_default = sampler_property.get('useDefault', 'false') == 'true'
-
+def configure_snippets(children: list, parameters: list, arguments: list, use_http_session: bool, use_default: bool):
     # 添加 TransactionHTTPSessionManager 组件
-    if use_http_session == 'true':
-        snippet_children.insert(0, {
+    if use_http_session:
+        children.insert(0, {
             'name': '事务HTTP会话管理器',
             'remark': '',
             'class': 'TransactionHTTPSessionManager',
@@ -241,7 +246,7 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
             'property': {}
         })
 
-    if sampler_arguments or snippet_parameters:
+    if arguments or parameters:
         arguments = []
         if use_default:  # 使用片段集合的默认值
             arguments.extend(
@@ -252,10 +257,10 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
                         'Argument__value': param['default'],
                     },
                 }
-                for param in snippet_parameters
+                for param in parameters
             )
         else:  # 使用自定义的参数值
-            args = {arg['name']: arg['value'] for arg in sampler_arguments}
+            args = {arg['name']: arg['value'] for arg in arguments}
             arguments.extend(
                 {
                     'class': 'Argument',
@@ -265,10 +270,10 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
                         or param['default'],
                     },
                 }
-                for param in snippet_parameters
+                for param in parameters
             )
         # 添加 TransactionParameter 组件
-        snippet_children.insert(0, {
+        children.insert(0, {
             'name': '事务参数',
             'remark': '',
             'class': 'TransactionParameter',
@@ -282,11 +287,13 @@ def configure_snippets(snippet_collection, snippet_children, sampler_property):
 def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
-    # 读取元素属性
-    properties = loads_property(snippet_no)
-    use_http_session = properties.get('useHTTPSession', 'false')
+    # 查询元素
+    element = test_element_dao.select_by_no(snippet_no)
+    check_exists(element, error_msg='元素不存在')
+    attributes = element.ELEMENT_ATTRIBUTES or {}
+    use_http_session = attributes.get('use_http_session', False)
     # 递归查询子代，并根据序号正序排序
-    children_relations = element_children_dao.select_all_by_parent(snippet_no)
+    lower_relation_list = element_children_dao.select_all_by_parent(snippet_no)
     children = []
     # 添加 HTTP Session 组件
     if use_http_session:
@@ -298,43 +305,15 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
             'property': {}
         })
     # 添加子代
-    for relation in children_relations:
+    for relation in lower_relation_list:
         if child := loads_element(relation.CHILD_NO):
             children.append(child)
     # 清空上下文变量
     loads_cache.reset(cache_token)
     # 创建一个临时的 Worker
-    worker = {
-        'name': snippet_name,
-        'remark': '',
-        'class': 'TestWorker',
-        'enabled': True,
-        'property': {
-            'TestWorker__on_sample_error': 'start_next_thread',
-            'TestWorker__number_of_threads': '1',
-            'TestWorker__start_interval': '',
-            'TestWorker__main_controller': {
-                'class': 'LoopController',
-                'property': {
-                    'LoopController__loops': '1',
-                    'LoopController__continue_forever': 'false'
-                }
-            }
-        },
-        'children': children
-    }
+    worker = create_test_worker(name=snippet_name, children=children)
     # 创建一个临时的 Collection
-    return {
-        'name': snippet_name,
-        'remark': snippet_remark,
-        'class': 'TestCollection',
-        'enabled': True,
-        'property': {
-            'TestCollection__serialize_workers': 'true',
-            'TestCollection__delay': '0'
-        },
-        'children': [worker]
-    }
+    return create_test_collection(name=snippet_name, remark=snippet_remark, children=[worker])
 
 
 def loads_workspace_components(element_no):
