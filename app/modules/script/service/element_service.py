@@ -307,7 +307,7 @@ def query_element_info(req):
         'elementClass': element.ELEMENT_CLASS,
         'enabled': element.ENABLED,
         'property': properties,
-        'attributes': element.ELEMENT_ATTRIBUTES
+        'attributes': element.ELEMENT_ATTRIBUTES or {}
     }
 
 
