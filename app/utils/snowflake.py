@@ -8,10 +8,11 @@ import time
 
 """
 Snowflake是Twitter提出来的一个算法，其目的是生成一个64bit的整数:
--  1bit: 符号位，一般不做处理
-- 41bit: 时间戳位，可以记录69年
-- 10bit: 机器ID位，可以记录1024台机器，一般前5位代表数据中心，后面5位代表某个数据中心的机器ID
-- 12bit: 循环位，用来对同一毫秒之内产生不同的ID，12位最多可以记录4095个，也就是在同一个机器同一毫秒最多记录4095个，多余的需要进行等待下一毫秒
+-  1bit:符号位，一般不做处理
+- 41bit:时间戳位，可以记录69年
+- 10bit:机器ID位，可以记录1024台机器，一般前5位代表数据中心，后面5位代表某个数据中心的机器ID
+- 12bit:循环位，用来对同一毫秒之内产生不同的ID，12位最多可以记录4095个;
+        也就是在同一个机器同一毫秒最多记录4095个，多余的需要进行等待下一毫秒
 """
 
 """
@@ -50,13 +51,6 @@ class InvalidSystemClock(Exception):
 
 class IdWorker:
     def __init__(self, datacenter_id, worker_id, sequence=0):
-        """
-
-        Args:
-            datacenter_id:  数据中心ID
-            worker_id:      机器ID
-            sequence:       序号号
-        """
         # sanity check
         if worker_id > MAX_WORKER_ID or worker_id < 0:
             raise ValueError('worker_id值越界')
@@ -88,7 +82,12 @@ class IdWorker:
 
         self.last_timestamp = timestamp
 
-        return ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) | (self.datacenter_id << DATACENTER_ID_SHIFT) | (self.worker_id << WOKER_ID_SHIFT) | self.sequence
+        return (
+            ((timestamp - TWEPOCH) << TIMESTAMP_LEFT_SHIFT) |
+            (self.datacenter_id << DATACENTER_ID_SHIFT) |
+            (self.worker_id << WOKER_ID_SHIFT) |
+            self.sequence
+        )
 
     def __wait_until_next_millis(self):
         """等待到下一毫秒"""

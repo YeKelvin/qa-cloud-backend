@@ -13,7 +13,5 @@ def get_number(length: int, prefix: str = '', suffix: str = '') -> str:
     :param suffix:  后缀
     :return:        随机数
     """
-    number = []
-    for x in range(length):
-        number.append(str(randint(0, 9)))
+    number = [str(randint(0, 9)) for _ in range(length)]
     return prefix + ''.join(number) + suffix

@@ -42,9 +42,10 @@ class JWTAuth:
         """验证Token
 
         Args:
-            auth_token:
+            auth_token: 令牌
 
         Returns:
+            dict
 
         Raises:
             jwt.ExpiredSignatureError（token过期）
