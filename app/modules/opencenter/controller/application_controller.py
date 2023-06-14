@@ -13,7 +13,7 @@ from app.tools.require import require_permission
 
 @blueprint.get('/application/list')
 @require_login
-@require_permission('QUERY_THIRD_PARTY_APP')
+@require_permission('QUERY_APPLICATION')
 def query_application_list():
     """分页查询应用列表"""
     req = JsonParser(
@@ -30,7 +30,7 @@ def query_application_list():
 
 @blueprint.get('/application/info')
 @require_login
-@require_permission('QUERY_THIRD_PARTY_APP')
+@require_permission('QUERY_APPLICATION')
 def query_application_info():
     """查询应用信息"""
     req = JsonParser(
@@ -41,7 +41,7 @@ def query_application_info():
 
 @blueprint.post('/application')
 @require_login
-@require_permission('CREATE_THIRD_PARTY_APP')
+@require_permission('CREATE_APPLICATION')
 def create_application():
     """新增第三方应用"""
     req = JsonParser(
@@ -54,7 +54,7 @@ def create_application():
 
 @blueprint.put('/application')
 @require_login
-@require_permission('MODIFY_THIRD_PARTY_APP')
+@require_permission('MODIFY_APPLICATION')
 def modify_application():
     """更新应用信息"""
     req = JsonParser(
@@ -68,7 +68,7 @@ def modify_application():
 
 @blueprint.put('/application/state')
 @require_login
-@require_permission('MODIFY_THIRD_PARTY_APP')
+@require_permission('MODIFY_APPLICATION')
 def modify_application_state():
     """更新应用状态"""
     req = JsonParser(
@@ -80,7 +80,7 @@ def modify_application_state():
 
 @blueprint.post('/application/secret/reset')
 @require_login
-@require_permission('RESET_THIRD_PARTY_APP_SECRET')
+@require_permission('RESET_APPLICATION_SECRET')
 def reset_application_secret():
     """重置应用密钥"""
     req = JsonParser(
@@ -91,7 +91,7 @@ def reset_application_secret():
 
 @blueprint.delete('/application')
 @require_login
-@require_permission('REMOVE_THIRD_PARTY_APP')
+@require_permission('REMOVE_APPLICATION')
 def remove_application():
     """删除应用"""
     req = JsonParser(
