@@ -28,8 +28,8 @@ def set_workspace_restriction():
     """设置空间限制"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('permissionNumbers', type=list),
-        Argument('userNumbers', type=list),
-        Argument('groupNumbers', type=list)
+        Argument('permissions', type=list),
+        Argument('users', type=list),
+        Argument('groups', type=list)
     ).parse()
     return service.set_workspace_restriction(req)

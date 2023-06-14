@@ -15,8 +15,8 @@ def select_all_by_workspace(workspace_no) -> List[TWorkspaceRestriction]:
     return TWorkspaceRestriction.filter_by(WORKSPACE_NO=workspace_no).all()
 
 
-def delete_all_by_workspace_and_notin_permission(workspace_no, *permission_numbers):
+def delete_all_by_workspace_and_notin_permission(workspace_no, *permissions):
     TWorkspaceRestriction.deletes(
         TWorkspaceRestriction.WORKSPACE_NO == workspace_no,
-        TWorkspaceRestriction.PERMISSION_NO.notin_(*permission_numbers)
+        TWorkspaceRestriction.PERMISSION_NO.notin_(*permissions)
     )

@@ -49,7 +49,7 @@ def set_role_permissions(req):
     role = role_dao.select_by_no(req.roleNo)
     check_exists(role, error_msg='角色不存在')
 
-    for permission_no in req.permissionNumbers:
+    for permission_no in req.permissions:
         # 查询角色权限
         role_permission = role_permission_dao.select_by_role_and_permission(req.roleNo, permission_no)
         # 新增角色权限
@@ -57,4 +57,4 @@ def set_role_permissions(req):
             TRolePermission.insert(ROLE_NO=req.roleNo, PERMISSION_NO=permission_no)
 
     # 删除不在请求中的角色权限
-    role_permission_dao.delete_all_by_role_and_notin_permission(req.roleNo, req.permissionNumbers)
+    role_permission_dao.delete_all_by_role_and_notin_permission(req.roleNo, req.permissions)

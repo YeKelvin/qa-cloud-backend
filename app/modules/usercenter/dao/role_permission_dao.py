@@ -9,8 +9,8 @@ def select_by_role_and_permission(role_no, permission_no) -> TRolePermission:
     return TRolePermission.filter_by(ROLE_NO=role_no, PERMISSION_NO=permission_no).first()
 
 
-def delete_all_by_role_and_notin_permission(role_no, *permission_numbers):
+def delete_all_by_role_and_notin_permission(role_no, *permissions):
     TRolePermission.deletes(
         TRolePermission.ROLE_NO == role_no,
-        TRolePermission.PERMISSION_NO.notin_(*permission_numbers)
+        TRolePermission.PERMISSION_NO.notin_(*permissions)
     )

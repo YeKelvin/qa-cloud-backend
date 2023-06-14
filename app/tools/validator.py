@@ -37,11 +37,11 @@ def check_is_in_enum(string: str, enumeration: enum, error_msg: str = 'validatio
         raise ServiceError(error_msg, error)
 
 
-def get_user_workspace_numbers(user_no) -> list:
+def get_user_workspaces(user_no) -> list:
     return [entity.WORKSPACE_NO for entity in TWorkspaceUser.filter_by(USER_NO=user_no).all()]
 
 
-def get_user_group_numbers(user_no) -> list:
+def get_user_groups(user_no) -> list:
     return [entity.GROUP_NO for entity in TUserGroup.filter_by(USER_NO=user_no).all()]
 
 
@@ -69,10 +69,10 @@ def is_restriction_exemption_member(workspace_no, user_no):
     # 查询空间显示豁免
     exemption = TWorkspaceRestrictionExemption.filter_by(WORKSPACE_NO=workspace_no).first()
     # 校验用户是否为豁免成员
-    if user_no in exemption.USER_NUMBERS:
+    if user_no in exemption.USERS:
         return True
     # 校验用户所在分组是否为豁免分组
-    return any(group_no in exemption.GROUP_NUMBERS for group_no in get_user_group_numbers(user_no))
+    return any(group_no in exemption.GROUPS for group_no in get_user_groups(user_no))
 
 
 def check_workspace_permission(source_workspace_no) -> None:
@@ -82,8 +82,8 @@ def check_workspace_permission(source_workspace_no) -> None:
         raise ServiceError('空间权限校验失败，用户未登录')
 
     # 判断用户是否是操作空间的成员
-    user_workspace_numbers = get_user_workspace_numbers(user_no)
-    if source_workspace_no not in user_workspace_numbers:
+    user_workspaces = get_user_workspaces(user_no)
+    if source_workspace_no not in user_workspaces:
         if is_super_admin(user_no):
             return
         raise ServiceError('空间权限不足，用户非目标空间成员')

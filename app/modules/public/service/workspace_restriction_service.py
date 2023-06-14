@@ -22,8 +22,8 @@ def query_workspace_restriction(req):
 
     return {
         'permissionList': get_workspace_restriction_list(req.workspaceNo),
-        'userNumbers': exemption.USER_NUMBERS if exemption else [],
-        'groupNumbers': exemption.GROUP_NUMBERS if exemption else []
+        'users': exemption.USERS if exemption else [],
+        'groups': exemption.GROUPS if exemption else []
     }
 
 
@@ -34,10 +34,10 @@ def set_workspace_restriction(req):
     check_exists(workspace, error_msg='工作空间不存在')
 
     # 设置空间限制
-    set_workspace_permission(req.workspaceNo, req.permissionNumbers)
+    set_workspace_permission(req.workspaceNo, req.permissions)
 
     # 设置豁免成员和分组
-    set_workspace_exemption(req.workspaceNo, req.userNumbers, req.groupNumbers)
+    set_workspace_exemption(req.workspaceNo, req.users, req.groups)
 
 
 def get_workspace_restriction_list(workspace_no):
@@ -68,9 +68,9 @@ def get_workspace_restriction_list(workspace_no):
     ]
 
 
-def set_workspace_permission(workspace_no, permission_numbers):
+def set_workspace_permission(workspace_no, permissions):
     # 设置空间限制
-    for permission_no in permission_numbers:
+    for permission_no in permissions:
         # 查询空间限制
         workspace_restriction = (
             workspace_restriction_dao.select_by_workspace_and_permission(workspace_no, permission_no)
@@ -80,18 +80,18 @@ def set_workspace_permission(workspace_no, permission_numbers):
             TWorkspaceRestriction.insert(WORKSPACE_NO=workspace_no, PERMISSION_NO=permission_no)
 
     # 删除不在请求中的空间限制
-    workspace_restriction_dao.delete_all_by_workspace_and_notin_permission(workspace_no, permission_numbers)
+    workspace_restriction_dao.delete_all_by_workspace_and_notin_permission(workspace_no, permissions)
 
 
-def set_workspace_exemption(workspace_no, user_numbers, group_numbers):
+def set_workspace_exemption(workspace_no, users, groups):
     if exemption := workspace_restriction_exemption_dao.select_by_workspace(workspace_no):
-        if user_numbers is not None:
-            exemption.USER_NUMBERS = user_numbers
-        if group_numbers is not None:
-            exemption.GROUP_NUMBERS = group_numbers
+        if users is not None:
+            exemption.USERS = users
+        if groups is not None:
+            exemption.GROUPS = groups
     else:
         TWorkspaceRestrictionExemption.insert(
             WORKSPACE_NO=workspace_no,
-            USER_NUMBERS=user_numbers if group_numbers is not None else [],
-            GROUP_NUMBERS=group_numbers if group_numbers is not None else []
+            USERS=users if groups is not None else [],
+            GROUPS=groups if groups is not None else []
         )

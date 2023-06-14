@@ -162,7 +162,7 @@ def failed_response(error: ErrorCode, msg=None):
     return http_res
 
 
-def get_user_role_numbers(user_no):
+def get_user_roles(user_no):
     user_role_stmt = db.session.query(
         TRole.ROLE_NO
     ).filter(
@@ -195,7 +195,7 @@ def exists_user_permission(user_no, code):
         TPermission.STATE == 'ENABLE',
         TPermission.PERMISSION_CODE == code,
         TRolePermission.DELETED == 0,
-        TRolePermission.ROLE_NO.in_(get_user_role_numbers(user_no)),
+        TRolePermission.ROLE_NO.in_(get_user_roles(user_no)),
         TRolePermission.PERMISSION_NO == TPermission.PERMISSION_NO
     ]
     return db.session.query(TPermission.PERMISSION_NO).filter(*conds).first()

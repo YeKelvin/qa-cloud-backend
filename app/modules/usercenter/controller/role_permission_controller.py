@@ -28,6 +28,6 @@ def set_role_permissions():
     """设置角色权限"""
     req = JsonParser(
         Argument('roleNo', required=True, nullable=False, help='角色编号不能为空'),
-        Argument('permissionNumbers', type=list)
+        Argument('permissions', type=list)
     ).parse()
     return service.set_role_permissions(req)

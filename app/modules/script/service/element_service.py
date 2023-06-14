@@ -501,7 +501,7 @@ def modify_element(req):
     # 更新元素组件
     update_element_components(
         parent_no=req.elementNo,
-        components=req.componentList
+        component_list=req.componentList
     )
 
 
@@ -1100,16 +1100,16 @@ def update_element_component(element_no, element_name, element_remark, element_p
     update_element_property(element_no, element_property)
 
 
-def update_element_components(parent_no: str, components: list):
+def update_element_components(parent_no: str, component_list: list):
     # 临时存储元素编号，用于删除非请求中的元素
-    if components is None:
+    if component_list is None:
         return
-    component_numbers = []
-    for component in components:
+    components = []
+    for component in component_list:
         # 元素存在则更新
         if element := test_element_dao.select_by_no(component.elementNo):
             # 存储元素的编号
-            component_numbers.append(component.elementNo)
+            components.append(component.elementNo)
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
@@ -1126,7 +1126,7 @@ def update_element_components(parent_no: str, components: list):
             # 新增元素组件
             component_no = add_element_component(get_root_no(parent_no), parent_no, component)
             # 存储元素组件的编号
-            component_numbers.append(component_no)
+            components.append(component_no)
 
     # 移除非请求中元素组件
     TElementComponents.deletes(
@@ -1137,7 +1137,7 @@ def update_element_components(parent_no: str, components: list):
             ElementType.POST_PROCESSOR.value,
             ElementType.ASSERTION.value
         ]),
-        TElementComponents.CHILD_NO.notin_(component_numbers),
+        TElementComponents.CHILD_NO.notin_(components),
     )
 
 
@@ -1226,7 +1226,7 @@ def modify_http_sampler(req):
     # 更新元素组件
     update_element_components(
         parent_no=req.elementNo,
-        components=req.componentList
+        component_list=req.componentList
     )
     # 更新请求头模板关联
     update_httpheader_template_refs(req.elementNo, req.headerTemplates)

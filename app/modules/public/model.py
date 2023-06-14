@@ -39,8 +39,8 @@ class TWorkspaceRestrictionExemption(DBModel, BaseColumn):
     """空间限制豁免表"""
     __tablename__ = 'WORKSPACE_RESTRICTION_EXEMPTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    USER_NUMBERS = db.Column(JSONB, comment='豁免用户编号列表')
-    GROUP_NUMBERS = db.Column(JSONB, comment='豁免分组编号列表')
+    USERS = db.Column(JSONB, comment='豁免用户列表')
+    GROUPS = db.Column(JSONB, comment='豁免分组列表')
 
 
 class TTag(DBModel, BaseColumn):
