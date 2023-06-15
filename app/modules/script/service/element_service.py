@@ -685,25 +685,25 @@ def update_element_property(element_no, element_property: dict):
 
 @http_service
 def move_element(req):
-    # 查询 source 元素子代关联
-    source_relation = element_children_dao.select_by_child(req.sourceNo)
-    check_exists(source_relation, error_msg='source元素关联不存在')
+    # 查询 source 元素上级关联
+    source_upper_relation = element_children_dao.select_by_child(req.sourceNo)
+    check_exists(source_upper_relation, error_msg='source元素上级关联不存在')
 
     # 校验元素序号
     if req.targetSortNo < 0:
         raise ServiceError('target元素序号不能小于0')
 
     # source 父元素编号
-    source_parent_no = source_relation.PARENT_NO
+    source_parent_no = source_upper_relation.PARENT_NO
     # source 元素序号
-    source_sort_no = source_relation.SORT_NO
+    source_sort_no = source_upper_relation.SORT_NO
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
         # 校验空间权限
         check_workspace_permission(get_workspace_no(get_root_no(req.sourceNo)))
         # 序号相等时直接跳过
-        if req.targetSortNo == source_relation.SORT_NO:
+        if req.targetSortNo == source_upper_relation.SORT_NO:
             return
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_sort_no > req.targetSortNo else 'DOWN'
@@ -722,7 +722,7 @@ def move_element(req):
                 TElementChildren.SORT_NO <= req.targetSortNo,
             ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1})
         # 更新 target 元素序号
-        source_relation.update(SORT_NO=req.targetSortNo)
+        source_upper_relation.update(SORT_NO=req.targetSortNo)
     # source 元素移动至不同的父元素下
     else:
         # 校验空间权限
@@ -738,24 +738,38 @@ def move_element(req):
             TElementChildren.SORT_NO >= req.targetSortNo
         ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
         # 移动 source 元素至 target 位置
-        source_relation.update(
+        source_upper_relation.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
             SORT_NO=req.targetSortNo
         )
+        # 递归修改 source 子代元素的根元素编号
+        update_children_root(req.sourceNo, req.targetRootNo)
 
     # 校验 target 父级子代元素序号的连续性，避免埋坑
     target_children_relations = element_children_dao.select_all_by_parent(req.targetParentNo)
     for index, target_relation in enumerate(target_children_relations):
         if target_relation.SORT_NO != index + 1:
             logger.error(
-                f'parentNo:[ {req.targetParentNo} ] '
-                f'elementNo:[ {target_relation.CHILD_NO} ] '
-                f'sortNo:[ {target_relation.SORT_NO} ]'
+                f'父级编号:[ {req.targetParentNo} ] '
+                f'元素编号:[ {target_relation.CHILD_NO} ] '
+                f'序号:[ {target_relation.SORT_NO} ]'
                 f'序号连续性错误 '
             )
             raise ServiceError('Target 父级子代序号连续性有误')
 
+
+def update_children_root(parent_no, root_no):
+    """递归修改子代元素的根元素编号"""
+    # 查询子代关联
+    lower_relation_list = element_children_dao.select_all_by_parent(parent_no)
+    if not lower_relation_list:
+        return
+    # 遍历更新根元素编号
+    for relation in lower_relation_list:
+        relation.update(ROOT_NO=root_no)
+        # 递归修改
+        update_children_root(relation.CHILD_NO, root_no)
 
 @http_service
 def duplicate_element(req):
@@ -768,22 +782,22 @@ def duplicate_element(req):
 
     # 排除不支持复制的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
-        raise ServiceError('暂不支持复制 Collection 元素')
+        raise ServiceError('暂不支持复制集合')
 
     # 递归复制元素
-    copied_no = copy_element(source, rename=True)
+    copied_no = copy_element(source)
     # 下移 source 元素的下方的元素
-    source_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
+    source_upper_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
     TElementChildren.filter(
-        TElementChildren.PARENT_NO == source_relation.PARENT_NO,
-        TElementChildren.SORT_NO > source_relation.SORT_NO
+        TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
+        TElementChildren.SORT_NO > source_upper_relation.SORT_NO
     ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
     # 将 copy 元素插入 source 元素的下方
     TElementChildren.insert(
-        ROOT_NO=source_relation.ROOT_NO,
-        PARENT_NO=source_relation.PARENT_NO,
+        ROOT_NO=source_upper_relation.ROOT_NO,
+        PARENT_NO=source_upper_relation.PARENT_NO,
         CHILD_NO=copied_no,
-        SORT_NO=source_relation.SORT_NO + 1
+        SORT_NO=source_upper_relation.SORT_NO + 1
     )
     return {'elementNo': copied_no}
 
@@ -810,9 +824,10 @@ def paste_element(req):
 
     if req.pasteType == PasteType.COPY.value:
         paste_element_by_copy(source, target)
-    else:
+    elif req.pasteType == PasteType.CUT.value:
         paste_element_by_cut(source, target)
-
+    else:
+        raise ServiceError('剪贴类型非法')
 
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Wroup
@@ -838,12 +853,13 @@ def check_allow_to_paste(source: TTestElement, target: TTestElement):
 
 
 def paste_element_by_copy(source: TTestElement, target: TTestElement):
-    # 递归复制元素
-    copied_no = copy_element(source, rename=True)
-    # 将 copy 元素插入 target 元素的最后
     target_no = target.ELEMENT_NO
+    target_root_no = get_root_no(target_no)
+    # 递归复制元素
+    copied_no = copy_element(source, root_no=target_root_no)
+    # 将 copy 元素插入 target 元素的最后
     TElementChildren.insert(
-        ROOT_NO=get_root_no(target_no),
+        ROOT_NO=target_root_no,
         PARENT_NO=target_no,
         CHILD_NO=copied_no,
         SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
@@ -851,28 +867,29 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
 
 
 def paste_element_by_cut(source: TTestElement, target: TTestElement):
+    source_no = source.ELEMENT_NO
+    target_no = target.ELEMENT_NO
+    target_root_no = get_root_no(target_no)
     # 查询 source 元素与父级元素关联
-    source_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
+    source_upper_relation = element_children_dao.select_by_child(source_no)
     # 上移 source 元素下方的元素
     TElementChildren.filter(
-        TElementChildren.PARENT_NO == source_relation.PARENT_NO,
-        TElementChildren.SORT_NO > source_relation.SORT_NO
+        TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
+        TElementChildren.SORT_NO > source_upper_relation.SORT_NO
     ).update({
         TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1
     })
-    # 删除 source 父级关联
-    source_relation.delete()
-    # 将 source 元素插入 target 元素的最后
-    target_no = target.ELEMENT_NO
-    TElementChildren.insert(
-        ROOT_NO=get_root_no(target_no),
+    # 修改 source 上级关联
+    source_upper_relation.update(
+        ROOT_NO=target_root_no,
         PARENT_NO=target_no,
-        CHILD_NO=source.ELEMENT_NO,
         SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
     )
+    # 递归修改 source 子代元素的根元素编号
+    update_children_root(source_no, target_root_no)
 
 
-def copy_element(source: TTestElement, rename=False):
+def copy_element(source: TTestElement, rename=False, root_no=None):
     # 克隆元素和属性
     copied_no = clone_element(source, rename)
     # 遍历克隆元素子代
@@ -881,7 +898,7 @@ def copy_element(source: TTestElement, rename=False):
         source_child = test_element_dao.select_by_no(source_relation.CHILD_NO)
         copied_child_no = copy_element(source_child)
         TElementChildren.insert(
-            ROOT_NO=source_relation.ROOT_NO,
+            ROOT_NO=root_no or source_relation.ROOT_NO,
             PARENT_NO=copied_no,
             CHILD_NO=copied_child_no,
             SORT_NO=source_relation.SORT_NO
