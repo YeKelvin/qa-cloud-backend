@@ -4,6 +4,8 @@
 # @Author  : Kelvin.Ye
 from typing import Dict
 
+from loguru import logger
+
 from app.database import dbquery
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
@@ -45,6 +47,12 @@ def loads_tree(
         exclude_debuger=False,
 ):
     """根据元素编号加载脚本"""
+    logger.debug(
+        f'开始加载脚本, '
+        f'指定的工作者:[ {specify_worker_no} ], '
+        f'指定的取样器:[ {specify_sampler_no} ], '
+        f'排除调试器:[ {exclude_debuger} ]'
+    )
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
     configurator_token = loads_configurator.set({})
