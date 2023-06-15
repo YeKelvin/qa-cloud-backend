@@ -102,6 +102,10 @@ def loads_element(
 
     # 加载指定的 ，如果当前元素非指定的worker时返回 None
     if specify_worker_no and is_test_worker(element) and element.ELEMENT_NO != specify_worker_no:
+        logger.debug(f'{is_test_worker(element)=}')
+        logger.debug(f'{element.ELEMENT_NO=}')
+        logger.debug(f'{specify_worker_no=}')
+        logger.debug(f'{(element.ELEMENT_NO != specify_worker_no)=}')
         logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素为非指定的工作者, 无需加载')
         return None
 
