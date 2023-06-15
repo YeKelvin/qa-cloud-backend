@@ -48,9 +48,9 @@ def loads_tree(
 ):
     """根据元素编号加载脚本"""
     logger.debug(
-        f'开始加载脚本, '
-        f'指定的工作者:[ {specify_worker_no} ], '
-        f'指定的取样器:[ {specify_sampler_no} ], '
+        f'开始从数据库中加载脚本, '
+        f'指定的工作者编号:[ {specify_worker_no} ], '
+        f'指定的取样器编号:[ {specify_sampler_no} ], '
         f'排除调试器:[ {exclude_debuger} ]'
     )
     # 配置上下文变量，用于临时缓存
@@ -92,14 +92,17 @@ def loads_element(
 
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
+        logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素已禁用, 无需加载')
         return None
 
     # 排除 debuger
     if  exclude_debuger and is_debuger(element):
+        logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素为调试器, 无需加载')
         return None
 
     # 加载指定的 ，如果当前元素非指定的worker时返回 None
     if specify_worker_no and is_test_worker(element) and element.ELEMENT_NO != specify_worker_no:
+        logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素为非指定的工作者, 无需加载')
         return None
 
     # 元素子代
@@ -114,6 +117,7 @@ def loads_element(
 
     # 过滤空代码的 Python 组件
     if is_blank_python(element, properties):
+        logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素中的Python代码为空, 无需加载')
         return None
 
     # 添加HTTP请求头管理器
