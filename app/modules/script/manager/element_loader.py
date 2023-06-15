@@ -66,7 +66,7 @@ def loads_tree(
             script['children'].insert(0, config)
     # 查询集合配置
     collection = test_element_dao.select_by_no(element_no)
-    collection_attributes = collection.ELEMENT_ATTRIBUTES
+    collection_attributes = collection.ELEMENT_ATTRIBUTES or {}
     exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
     # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
     if not exclude_workspaces:
@@ -102,10 +102,6 @@ def loads_element(
 
     # 加载指定的 ，如果当前元素非指定的worker时返回 None
     if specify_worker_no and is_test_worker(element) and element.ELEMENT_NO != specify_worker_no:
-        logger.debug(f'{is_test_worker(element)=}')
-        logger.debug(f'{element.ELEMENT_NO=}')
-        logger.debug(f'{specify_worker_no=}')
-        logger.debug(f'{(element.ELEMENT_NO != specify_worker_no)=}')
         logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素为非指定的工作者, 无需加载')
         return None
 
