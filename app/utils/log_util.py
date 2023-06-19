@@ -26,12 +26,21 @@ class InterceptHandler(logging.Handler):
 
         # 过滤
         if (
-            ('werkzeug' in record.name or 'sqlalchemy' in record.name or 'apscheduler' in record.name) and
+            (
+                'werkzeug' in record.name or
+                'sqlalchemy' in record.name or
+                'apscheduler' in record.name
+            ) and
             record.levelno < logging.INFO
         ):
             return
         if (
-            ('httpx' in record.name or 'httpcore' in record.name or 'blinker' in record.name) and
+            (
+                'httpx' in record.name or
+                'httpcore' in record.name or
+                'blinker' in record.name or
+                'faker' in record.name
+            ) and
             record.levelno < logging.WARNING
         ):
             return
