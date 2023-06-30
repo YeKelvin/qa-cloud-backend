@@ -480,3 +480,26 @@ def set_workspace_components():
         Argument('components', type=list)
     ).parse()
     return service.set_workspace_components(req)
+
+
+@blueprint.get('/element/workspace/settings')
+@require_login
+@require_permission('QUERY_WORKSPACE_COMPONENT')
+def query_workspace_settings():
+    """查询空间组件设置"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
+    ).parse()
+    return service.query_workspace_settings(req)
+
+
+@blueprint.post('/element/workspace/settings')
+@require_login
+@require_permission('SET_WORKSPACE_COMPONENT')
+def set_workspace_settings():
+    """设置空间组件设置"""
+    req = JsonParser(
+        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
+        Argument('settings', type=dict)
+    ).parse()
+    return service.set_workspace_settings(req)

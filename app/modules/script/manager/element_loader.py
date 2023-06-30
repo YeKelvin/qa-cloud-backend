@@ -11,13 +11,14 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
+from app.modules.script.dao import workspace_settings_dao
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
 from app.modules.script.enum import is_http_sampler
 from app.modules.script.enum import is_python_assertion
 from app.modules.script.enum import is_python_post_processor
-from app.modules.script.enum import is_python_pre_processor
+from app.modules.script.enum import is_python_prev_processor
 from app.modules.script.enum import is_setup_debuger
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_sql_sampler
@@ -32,7 +33,6 @@ from app.modules.script.manager.element_component import create_test_collection
 from app.modules.script.manager.element_component import create_test_worker
 from app.modules.script.manager.element_context import loads_cache
 from app.modules.script.manager.element_context import loads_configurator
-from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementComponents
 from app.tools.exceptions import ServiceError
@@ -41,7 +41,7 @@ from app.utils.json_util import from_json
 
 
 def loads_tree(
-        element_no,
+        collection_no,
         specify_worker_no=None,
         specify_sampler_no=None,
         exclude_debuger=False,
@@ -57,26 +57,30 @@ def loads_tree(
     cache_token = loads_cache.set({})
     configurator_token = loads_configurator.set({})
     # 递归加载元素
-    script = loads_element(element_no, specify_worker_no, specify_sampler_no, exclude_debuger)
-    if not script:
-        raise ServiceError('脚本异常，请重试')
+    collection = loads_element(collection_no, specify_worker_no, specify_sampler_no, exclude_debuger)
+    if not collection:
+        raise ServiceError('脚本异常，请联系管理员')
     # 添加全局配置
     for configs in loads_configurator.get().values():
         for config in configs:
-            script['children'].insert(0, config)
-    # 查询集合配置
-    collection = test_element_dao.select_by_no(element_no)
-    collection_attributes = collection.ELEMENT_ATTRIBUTES or {}
+            collection['children'].insert(0, config)
+    collection_properties = collection.get('property')
+    collection_attributes = collection.get('attributes')
     exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
-    # 添加空间组件（配置器、前置处理器、后置处理器、断言器）
+    # 添加空间组件（配置器、前置处理器、后置处理器、测试断言器）
     if not exclude_workspaces:
-        components = loads_workspace_components(element_no)
+        workspace_no = get_workspace_no(collection_no)
+        # 加载空间组件
+        components = loads_workspace_components(workspace_no)
+        # 添加至脚本头部
         for component in components[::-1]:
-            script['children'].insert(0, component)
+            collection['children'].insert(0, component)
+        # 合并空间和集合的运行策略
+        merge_workspace_settings_to_collection(workspace_no, collection_properties)
     # 清空上下文变量
     loads_cache.reset(cache_token)
     loads_configurator.reset(configurator_token)
-    return script
+    return collection
 
 
 def loads_element(
@@ -202,7 +206,7 @@ def add_element_components(element_no, children: list):
             TElementComponents.PARENT_NO == element_no,
             TElementComponents.CHILD_TYPE.in_([
                 ElementType.CONFIG.value,
-                ElementType.PRE_PROCESSOR.value,
+                ElementType.PREV_PROCESSOR.value,
                 ElementType.POST_PROCESSOR.value,
                 ElementType.ASSERTION.value
             ])
@@ -328,9 +332,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     return create_test_collection(name=snippet_name, remark=snippet_remark, children=[worker])
 
 
-def loads_workspace_components(element_no):
-    collection_no = get_root_no(element_no)
-    workspace_no = get_workspace_no(collection_no)
+def loads_workspace_components(workspace_no):
     workspace_components = workspace_component_dao.select_all_by_workspace(workspace_no)
     if not workspace_components:
         return
@@ -347,7 +349,7 @@ def is_specified_worker(element, worker_no):
 
 
 def is_blank_python(element, properties):
-    if is_python_pre_processor(element) and not properties.get('PythonPreProcessor__script').strip():
+    if is_python_prev_processor(element) and not properties.get('PythonPrevProcessor__script').strip():
         return True
     if is_python_post_processor(element) and not properties.get('PythonPostProcessor__script').strip():
         return True
@@ -363,3 +365,22 @@ def get_real_class(element):
         return ElementClass.TEARDOWN_DEBUGER.value
     else:
         return element.ELEMENT_CLASS
+
+
+def merge_workspace_settings_to_collection(workspace_no, collection_properties):
+    # 查询集合运行策略
+    collection_running_strategy = collection_properties.get('TestCollection__running_strategy', {})
+    # 优先使用集合的运行策略
+    if collection_running_strategy.get('reverse', []):
+        return
+    # 查询空间设置
+    workspace_settings = workspace_settings_dao.select_by_workspace(workspace_no)
+    if not workspace_settings:
+        return
+    # 集合的运行策略没有设置时，合并空间的运行策略
+    workspace_running_strategy = workspace_settings.DATA.get('running_strategy', {})
+    if workspace_run_reverse := workspace_running_strategy.get('reverse', []):
+        collection_running_strategy['reverse'] = workspace_run_reverse
+        collection_properties['TestCollection__running_strategy'] = collection_running_strategy
+    else:
+        return

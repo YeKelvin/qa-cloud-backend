@@ -22,14 +22,13 @@ class ElementType(Enum):
     CONTROLLER = 'CONTROLLER'
 
     # 配置器
-    # TODO: Configurator
     CONFIG = 'CONFIG'
 
     # 时间控制器
     TIMER = 'TIMER'
 
     # 前置处理器
-    PRE_PROCESSOR = 'PRE_PROCESSOR'
+    PREV_PROCESSOR = 'PREV_PROCESSOR'
 
     # 后置处理器
     POST_PROCESSOR = 'POST_PROCESSOR'
@@ -84,13 +83,13 @@ class ElementClass(Enum):
     # 数据库引擎配置器
     DATABASE_ENGINE = 'DatabaseEngine'
 
-    # ForIn控制器
-    FOR_IN_CONTROLLER = 'ForInController'
+    # 遍历控制器
+    FOREACH_CONTROLLER = 'ForeachController'
 
-    # Loop控制器
+    # 循环控制器
     LOOP_CONTROLLER = 'LoopController'
 
-    # Retry控制器
+    # 重试控制器
     RETRY_CONTROLLER = 'RetryController'
 
     # If控制器
@@ -99,11 +98,11 @@ class ElementClass(Enum):
     # While控制器
     WHILE_CONTROLLER = 'WhileController'
 
-    # Transaction控制器
+    # 事务控制器
     TRANSACTION_CONTROLLER = 'TransactionController'
 
     # Python前置处理器
-    PYTHON_PRE_PROCESSOR = 'PythonPreProcessor'
+    PYTHON_PREV_PROCESSOR = 'PythonPrevProcessor'
 
     # Python后置处理器
     PYTHON_POST_PROCESSOR = 'PythonPostProcessor'
@@ -140,7 +139,7 @@ class ComponentSortWeight(Enum):
     CONFIG = 99
 
     # 前置处理器
-    PRE_PROCESSOR = 3
+    PREV_PROCESSOR = 3
 
     # 后置处理器
     POST_PROCESSOR = 2
@@ -295,8 +294,8 @@ def is_timer(element):
     return element.ELEMENT_TYPE == ElementType.TIMER.value
 
 
-def is_pre_processor(element):
-    return element.ELEMENT_TYPE == ElementType.PRE_PROCESSOR.value
+def is_prev_processor(element):
+    return element.ELEMENT_TYPE == ElementType.PREV_PROCESSOR.value
 
 
 def is_post_processor(element):
@@ -347,8 +346,8 @@ def is_debuger(element):
     return is_setup_debuger(element) or is_teardown_debuger(element)
 
 
-def is_python_pre_processor(element):
-    return element.ELEMENT_CLASS == ElementClass.PYTHON_PRE_PROCESSOR.value
+def is_python_prev_processor(element):
+    return element.ELEMENT_CLASS == ElementClass.PYTHON_PREV_PROCESSOR.value
 
 
 def is_python_post_processor(element):

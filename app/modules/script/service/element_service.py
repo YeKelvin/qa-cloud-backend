@@ -20,6 +20,7 @@ from app.modules.script.dao import httpheader_template_ref_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
+from app.modules.script.dao import workspace_settings_dao
 from app.modules.script.enum import ComponentSortWeight
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
@@ -41,6 +42,7 @@ from app.modules.script.model import THttpHeaderTemplateRef
 from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
+from app.modules.script.model import TWorkspaceComponentSettings
 from app.tools import localvars
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
@@ -1150,7 +1152,7 @@ def update_element_components(parent_no: str, component_list: list):
         TElementComponents.PARENT_NO == parent_no,
         TElementComponents.CHILD_TYPE.in_([
             ElementType.CONFIG.value,
-            ElementType.PRE_PROCESSOR.value,
+            ElementType.PREV_PROCESSOR.value,
             ElementType.POST_PROCESSOR.value,
             ElementType.ASSERTION.value
         ]),
@@ -1331,3 +1333,25 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
         SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
     )
     return component_no
+
+
+@http_service
+def query_workspace_settings(req):
+    # 查询空间设置
+    settings = workspace_settings_dao.select_by_workspace(req.workspaceNo)
+    # 没有配置时返回空字典
+    return settings.DATA if settings else {}
+
+
+@http_service
+def set_workspace_settings(req):
+    # 校验空间权限
+    check_workspace_permission(req.workspaceNo)
+    # 更新或新增空间设置
+    if settings:=workspace_settings_dao.select_by_workspace(req.workspaceNo):
+        settings.update(DATA=req.settings)
+    else:
+        TWorkspaceComponentSettings.insert(
+            WORKSPACE_NO=req.workspaceNo,
+            DATA=req.settings
+        )
