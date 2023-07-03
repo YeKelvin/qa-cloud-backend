@@ -335,7 +335,8 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
 def loads_workspace_components(workspace_no):
     workspace_components = workspace_component_dao.select_all_by_workspace(workspace_no)
     if not workspace_components:
-        return
+        return []
+
     components = []
     for workspace_component in workspace_components:
         if element := loads_element(workspace_component.COMPONENT_NO):

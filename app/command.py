@@ -106,7 +106,6 @@ def init_role():
     click.echo('创建角色成功')
 
 
-@click.command()
 @with_appcontext
 def init_permission():
     init_permission_module()
