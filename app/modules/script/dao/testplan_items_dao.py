@@ -15,8 +15,8 @@ def select_all_by_plan(plan_no) -> List[TTestplanItems]:
     return TTestplanItems.filter_by(PLAN_NO=plan_no).order_by(TTestplanItems.SORT_NO).all()
 
 
-def delete_all_by_plan_and_not_in_collection(plan_no, *collection_nos):
+def delete_all_by_plan_and_not_in_collection(plan_no, *collections):
     TTestplanItems.deletes(
         TTestplanItems.PLAN_NO == plan_no,
-        TTestplanItems.COLLECTION_NO.notin_(*collection_nos)
+        TTestplanItems.COLLECTION_NO.notin_(*collections)
     )

@@ -169,10 +169,11 @@ class TTestplan(DBModel, BaseColumn):
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
-    PRODUCT_REQUIREMENTS_VERSION = db.Column(db.String(128), comment='需求版本号')
+    SCRUM_SPRINT = db.Column(db.String(128), comment='迭代')
+    SCRUM_VERSION = db.Column(db.String(128), comment='版本')
     COLLECTION_TOTAL = db.Column(db.Integer, nullable=False, default=0, comment='脚本总数')
-    TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
+    TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
     END_TIME = db.Column(db.DateTime, comment='结束时间')
 
@@ -186,9 +187,9 @@ class TTestplanSettings(DBModel, BaseColumn):
     DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
     SAVE = db.Column(db.Boolean, nullable=False, default=True, comment='是否保存数据至报告中')
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
-    STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
+    STOP_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='累计指定的错误数量后停止运行')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-    NOTIFICATION_ROBOT_LIST = db.Column(JSONB, comment='通知机器人列表')
+    NOTIFICATION_ROBOTS = db.Column(JSONB, comment='通知机器人列表')
 
 
 class TTestplanItems(DBModel, BaseColumn):
@@ -226,10 +227,10 @@ class TTestplanExecutionSettings(DBModel, BaseColumn):
     DELAY = db.Column(db.Integer, nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
     SAVE = db.Column(db.Boolean, nullable=False, default=True, comment='是否保存数据至报告中')
     SAVE_ON_ERROR = db.Column(db.Boolean, nullable=False, default=True, comment='是否只保存失败的数据至报告中')
-    STOP_TEST_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='错误指定的错误后停止测试计划')
-    VARIABLE_DATASET_LIST = db.Column(JSONB, comment='变量集列表')
+    STOP_ON_ERROR_COUNT = db.Column(db.Integer, default=0, comment='累计指定的错误数量后停止运行')
+    VARIABLE_DATASETS = db.Column(JSONB, comment='变量集列表')
     USE_CURRENT_VALUE = db.Column(db.Boolean, nullable=False, default=False, comment='是否使用变量的当前值')
-    NOTIFICATION_ROBOT_LIST = db.Column(JSONB, comment='通知机器人列表')
+    NOTIFICATION_ROBOTS = db.Column(JSONB, comment='通知机器人列表')
 
 
 class TTestplanExecutionItems(DBModel, BaseColumn):

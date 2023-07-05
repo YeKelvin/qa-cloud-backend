@@ -293,7 +293,7 @@ def execute_testplan(req):
     return run_testplan(req.planNo, req.datasets, req.useCurrentValue)
 
 
-def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
+def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(plan_no)
     check_exists(testplan, error_msg='测试计划不存在')
@@ -318,13 +318,13 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
 
     # 根据序号排序
     items.sort(key=lambda k: k.SORT_NO)
-    collection_nos = [item.COLLECTION_NO for item in items]
+    collections = [item.COLLECTION_NO for item in items]
 
     # 创建执行编号
     execution_no = new_id()
     # 创建执行记录与数据集关联
     environment = None
-    for dataset_no in dataset_nos:
+    for dataset_no in datasets:
         dataset = variable_dataset_dao.select_by_no(dataset_no)
         if dataset.DATASET_TYPE == VariableDatasetType.ENVIRONMENT.value:
             environment = dataset.DATASET_NAME
@@ -338,7 +338,6 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
         record=False
     )
     # 创建计划执行设置
-    # TODO: rename VARIABLE_DATASET_LIST, NOTIFICATION_ROBOT_LIST
     TTestplanExecutionSettings.insert(
         EXECUTION_NO=execution_no,
         CONCURRENCY=settings.CONCURRENCY,
@@ -346,10 +345,10 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
         DELAY=settings.DELAY,
         SAVE=settings.SAVE,
         SAVE_ON_ERROR=settings.SAVE_ON_ERROR,
-        STOP_TEST_ON_ERROR_COUNT=settings.STOP_TEST_ON_ERROR_COUNT,
-        VARIABLE_DATASET_LIST=dataset_nos,
+        STOP_ON_ERROR_COUNT=settings.STOP_ON_ERROR_COUNT,
+        VARIABLE_DATASETS=datasets,
         USE_CURRENT_VALUE=use_current_value,
-        NOTIFICATION_ROBOT_LIST=settings.NOTIFICATION_ROBOT_LIST,
+        NOTIFICATION_ROBOTS=settings.NOTIFICATION_ROBOTS,
         record=False
     )
     # 创建计划执行项目明细
@@ -379,7 +378,7 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
     delay = settings.DELAY
     save = settings.SAVE
     save_on_error = settings.SAVE_ON_ERROR
-    notification_robot_nos = settings.NOTIFICATION_ROBOT_LIST
+    notification_robots = settings.NOTIFICATION_ROBOTS
 
     # 异步函数
     def start(app):
@@ -387,8 +386,8 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
             with app.app_context():
                 start_testplan(
                     app,
-                    collection_nos,
-                    dataset_nos,
+                    collections,
+                    datasets,
                     use_current_value,
                     execution_no,
                     report_no,
@@ -396,7 +395,7 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
                     delay,
                     save,
                     save_on_error,
-                    notification_robot_nos
+                    notification_robots
                 )
         except Exception:
             logger.exception(f'执行编号:[ {execution_no} ] 执行异常')
@@ -416,8 +415,8 @@ def run_testplan(plan_no, dataset_nos, use_current_value, check_workspace=True):
 
 def start_testplan(
         app,
-        collection_nos,
-        dataset_nos,
+        collections,
+        datasets,
         use_current_value,
         execution_no,
         report_no,
@@ -425,7 +424,7 @@ def start_testplan(
         delay,
         save,
         save_on_error,
-        notification_robot_nos
+        notification_robots
 ):
     logger.info(f'执行编号:[ {execution_no} ] 开始执行测试计划')
     # 记录开始时间
@@ -444,8 +443,8 @@ def start_testplan(
         if save_on_error:
             start_testplan_by_error_report(
                 app,
-                collection_nos,
-                dataset_nos,
+                collections,
+                datasets,
                 use_current_value,
                 execution_no,
                 report_no
@@ -453,8 +452,8 @@ def start_testplan(
         else:
             start_testplan_by_report(
                 app,
-                collection_nos,
-                dataset_nos,
+                collections,
+                datasets,
                 use_current_value,
                 execution_no,
                 report_no
@@ -462,8 +461,8 @@ def start_testplan(
     else:
         start_testplan_by_loop(
             app,
-            collection_nos,
-            dataset_nos,
+            collections,
+            datasets,
             use_current_value,
             execution_no,
             iterations,
@@ -500,9 +499,9 @@ def start_testplan(
         db.session.commit()  # 这里要实时更新
 
     # 结果通知
-    if notification_robot_nos:
+    if notification_robots:
         logger.info(f'执行编号:[ {execution_no} ] 发送执行结果消息')
-        for robot_no in notification_robot_nos:
+        for robot_no in notification_robots:
             robot = notification_robot_dao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
                 logger.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 消息机器人状态已禁用')
@@ -554,8 +553,8 @@ def get_notification_message(execution, report):
 
 def start_testplan_by_loop(
         app,
-        collection_nos,
-        dataset_nos,
+        collections,
+        datasets,
         use_current_value,
         execution_no,
         iterations,
@@ -565,7 +564,7 @@ def start_testplan_by_loop(
     # 批量解析脚本并临时存储
     logger.info(f'执行编号:[ {execution_no} ] 开始批量解析脚本')
     scripts = {}
-    for collection_no in collection_nos:
+    for collection_no in collections:
         # 加载脚本
         collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
         if not collection:
@@ -574,7 +573,7 @@ def start_testplan_by_loop(
             )
             continue
         # 添加自定义变量组件
-        add_variable_dataset(collection, dataset_nos, use_current_value)
+        add_variable_dataset(collection, datasets, use_current_value)
         # 添加迭代记录器组件
         add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
@@ -645,8 +644,8 @@ def start_testplan_by_loop(
 
 def start_testplan_by_report(
         app,
-        collection_nos,
-        dataset_nos,
+        collections,
+        datasets,
         use_current_value,
         execution_no,
         report_no
@@ -654,7 +653,7 @@ def start_testplan_by_report(
     """运行测试计划并保存测试结果"""
     try:
         # 顺序执行脚本
-        for collection_no in collection_nos:
+        for collection_no in collections:
             # 检查是否需要中断执行
             execution = testplan_execution_dao.select_by_no(execution_no)
             if execution.INTERRUPT:
@@ -674,7 +673,7 @@ def start_testplan_by_report(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
                 )
             # 添加自定义变量组件
-            add_variable_dataset(collection, dataset_nos, use_current_value)
+            add_variable_dataset(collection, datasets, use_current_value)
             # 添加报告存储器组件
             add_flask_db_result_storage(collection, report_no, collection_no)
 
@@ -715,8 +714,8 @@ def start_testplan_by_report(
 
 def start_testplan_by_error_report(
         app,
-        collection_nos,
-        dataset_nos,
+        collections,
+        datasets,
         use_current_value,
         execution_no,
         report_no

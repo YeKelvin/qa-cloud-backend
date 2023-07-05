@@ -21,7 +21,8 @@ def query_testplan_list():
         Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
         Argument('planNo'),
         Argument('planName'),
-        Argument('productRequirementsVersion'),
+        Argument('scrumVersion'),
+        Argument('scrumSprint'),
         Argument('testPhase'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
@@ -60,15 +61,16 @@ def create_testplan():
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
         Argument('planDesc'),
-        Argument('productRequirementsVersion'),
+        Argument('scrumVersion'),
+        Argument('scrumSprint'),
         Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
         Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('saveOnError', default=False),
-        Argument('stopTestOnErrorCount', default=3),
-        Argument('notificationRobotNos', type=list),
+        Argument('stopOnErrorCount', default=3),
+        Argument('notificationRobots', type=list),
     ).parse()
     return service.create_testplan(req)
 
@@ -82,14 +84,15 @@ def modify_testplan():
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
         Argument('planName', required=True, nullable=False, help='计划名称不能为空'),
         Argument('planDesc'),
-        Argument('productRequirementsVersion'),
+        Argument('scrumVersion'),
+        Argument('scrumSprint'),
         Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
         Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('saveOnError', default=False),
-        Argument('stopTestOnErrorCount', default=3)
+        Argument('stopOnErrorCount', default=3)
     ).parse()
     return service.modify_testplan(req)
 

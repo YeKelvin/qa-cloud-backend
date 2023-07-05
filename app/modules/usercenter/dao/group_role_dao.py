@@ -27,8 +27,8 @@ def delete_all_by_group(group_no):
     TGroupRole.deletes_by(GROUP_NO=group_no)
 
 
-def delete_all_by_group_and_notin_role(group_no, *role_nos) -> None:
+def delete_all_by_group_and_notin_role(group_no, *roles) -> None:
     TGroupRole.deletes(
         TGroupRole.GROUP_NO == group_no,
-        TGroupRole.ROLE_NO.notin_(*role_nos)
+        TGroupRole.ROLE_NO.notin_(*roles)
     )

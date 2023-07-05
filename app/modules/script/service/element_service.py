@@ -973,8 +973,8 @@ def create_element_httpheader_template_refs(req):
     add_httpheader_template_refs(req.elementNo, req.templates)
 
 
-def add_httpheader_template_refs(element_no, template_nos):
-    for template_no in template_nos:
+def add_httpheader_template_refs(element_no, templates):
+    for template_no in templates:
         # 模板存在才添加
         if httpheader_template_dao.select_by_no(template_no):
             # 添加模板关联
@@ -992,10 +992,10 @@ def modify_element_httpheader_template_refs(req):
     update_httpheader_template_refs(req.elementNo, req.templates)
 
 
-def update_httpheader_template_refs(element_no, template_nos):
-    if template_nos is None:
+def update_httpheader_template_refs(element_no, templates):
+    if templates is None:
         return
-    for template_no in template_nos:
+    for template_no in templates:
         # 模板不存在则跳过
         template = httpheader_template_dao.select_by_no(template_no)
         if not template:
@@ -1011,7 +1011,7 @@ def update_httpheader_template_refs(element_no, template_nos):
             )
 
     # 删除不在请求中的模板
-    httpheader_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, template_nos)
+    httpheader_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, templates)
 
 
 @http_service
@@ -1281,12 +1281,12 @@ def set_workspace_components(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
     # 遍历处理组件
-    component_nos = []
+    components = []
     for component in req.components:
         # 组件元素存在则更新
         if element := test_element_dao.select_by_no(component.elementNo):
             # 存储元素的编号
-            component_nos.append(component.elementNo)
+            components.append(component.elementNo)
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
@@ -1302,12 +1302,12 @@ def set_workspace_components(req):
         else:
             component_no = add_workspace_component(req.workspaceNo, component)
             # 存储元素的编号
-            component_nos.append(component_no)
+            components.append(component_no)
 
     # 移除非请求中元素
     TWorkspaceComponent.deletes(
         TWorkspaceComponent.WORKSPACE_NO == req.workspaceNo,
-        TWorkspaceComponent.COMPONENT_NO.notin_(component_nos),
+        TWorkspaceComponent.COMPONENT_NO.notin_(components),
     )
 
 

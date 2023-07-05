@@ -61,13 +61,13 @@ def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
     })
 
 
-def add_variable_dataset(script: dict, dataset_nos: list, use_current_value: bool, additional: dict = None):
+def add_variable_dataset(script: dict, datasets: list, use_current_value: bool, additional: dict = None):
     # 不存在变量集就忽略了
-    if not dataset_nos:
+    if not datasets:
         return
 
     # 获取变量集
-    variables = get_variables(dataset_nos, use_current_value)
+    variables = get_variables(datasets, use_current_value)
 
     # 添加额外的变量
     if additional:
@@ -103,10 +103,10 @@ def add_variable_dataset(script: dict, dataset_nos: list, use_current_value: boo
     })
 
 
-def get_variables(dataset_nos: list, use_current_value: bool) -> Dict:
+def get_variables(datasets: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = variable_dataset_dao.select_list_in_set_orderby_weight(*dataset_nos)
+    dataset_list = variable_dataset_dao.select_list_in_set_orderby_weight(*datasets)
     if not dataset_list:
         return result
 

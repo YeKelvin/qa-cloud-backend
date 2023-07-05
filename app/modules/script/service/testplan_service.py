@@ -2,6 +2,7 @@
 # @File    : testplan_service.py
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
+from app.database import dbquery
 from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import test_collection_result_dao
 from app.modules.script.dao import test_element_dao
@@ -18,6 +19,7 @@ from app.modules.script.enum import TestplanState
 from app.modules.script.model import TTestplan
 from app.modules.script.model import TTestplanItems
 from app.modules.script.model import TTestplanSettings
+from app.modules.usercenter.model import TUser
 from app.tools.identity import new_id
 from app.tools.service import http_service
 from app.tools.validator import check_exists
@@ -30,33 +32,54 @@ from app.utils.time_util import microsecond_to_m_s
 @http_service
 def query_testplan_list(req):
     # 查询条件
-    conds = QueryCondition(TTestplan)
+    conds = QueryCondition(TTestplan, TUser)
     conds.like(TTestplan.WORKSPACE_NO, req.workspaceNo)
     conds.like(TTestplan.PLAN_NO, req.planNo)
     conds.like(TTestplan.PLAN_NAME, req.planName)
-    conds.like(TTestplan.PRODUCT_REQUIREMENTS_VERSION, req.productRequirementsVersion)
-    conds.like(TTestplan.STATE, req.state)
+    conds.like(TTestplan.SCRUM_VERSION, req.scrumVersion)
+    conds.like(TTestplan.SCRUM_SPRINT, req.scrumSprint)
     conds.like(TTestplan.TEST_PHASE, req.testPhase)
+    conds.like(TTestplan.STATE, req.state)
 
     # 分页查询
     pagination = (
-        TTestplan
+        dbquery(
+            TTestplan.PLAN_NO,
+            TTestplan.PLAN_NAME,
+            TTestplan.PLAN_DESC,
+            TTestplan.COLLECTION_TOTAL,
+            TTestplan.SCRUM_VERSION,
+            TTestplan.SCRUM_SPRINT,
+            TTestplan.TEST_PHASE,
+            TTestplan.STATE,
+            TTestplan.START_TIME,
+            TTestplan.END_TIME,
+            TTestplan.CREATED_BY,
+            TTestplan.CREATED_TIME,
+            TUser.USER_NAME
+        )
+        .outerjoin(TUser, TTestplan.CREATED_BY == TUser.USER_NO)
         .filter(*conds)
         .order_by(TTestplan.CREATED_TIME.desc())
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
+    for item in pagination.items:
+        print(item)
 
     data = [
         {
             'planNo': item.PLAN_NO,
             'planName': item.PLAN_NAME,
             'planDesc': item.PLAN_DESC,
-            'productRequirementsVersion': item.PRODUCT_REQUIREMENTS_VERSION,
             'collectionTotal': item.COLLECTION_TOTAL,
+            'scrumVersion': item.SCRUM_VERSION,
+            'scrumSprint': item.SCRUM_SPRINT,
             'testPhase': item.TEST_PHASE,
             'state': item.STATE,
             'startTime': item.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.START_TIME else None,
-            'endTime': item.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.END_TIME else None
+            'endTime': item.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if item.END_TIME else None,
+            'createdBy': item.USER_NAME,
+            'createdTime':item.CREATED_TIME.strftime('%Y-%m-%d %H:%M:%S')
         }
         for item in pagination.items
     ]
@@ -76,10 +99,11 @@ def query_testplan_all(req):
             'planNo': testplan.PLAN_NO,
             'planName': testplan.PLAN_NAME,
             'planDesc': testplan.PLAN_DESC,
-            'productRequirementsVersion': testplan.PRODUCT_REQUIREMENTS_VERSION,
+            'scrumSprint': testplan.SCRUM_SPRINT,
+            'scrumVersion': testplan.SCRUM_VERSION,
             'collectionTotal': testplan.COLLECTION_TOTAL,
-            'testPhase': testplan.TEST_PHASE,
             'state': testplan.STATE,
+            'testPhase': testplan.TEST_PHASE
         }
         for testplan in testplans
     ]
@@ -103,14 +127,15 @@ def query_testplan(req):
         'planNo': testplan.PLAN_NO,
         'planName': testplan.PLAN_NAME,
         'planDesc': testplan.PLAN_DESC,
-        'productRequirementsVersion': testplan.PRODUCT_REQUIREMENTS_VERSION,
+        'scrumVersion': testplan.SCRUM_VERSION,
+        'scrumSprint': testplan.SCRUM_SPRINT,
         'concurrency': settings.CONCURRENCY,
         'iterations': settings.ITERATIONS,
         'delay': settings.DELAY,
         'save': settings.SAVE,
         'saveOnError': settings.SAVE_ON_ERROR,
-        'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
-        'notificationRobotNos': settings.NOTIFICATION_ROBOT_LIST,
+        'stopOnErrorCount': settings.STOP_ON_ERROR_COUNT,
+        'notificationRobots': settings.NOTIFICATION_ROBOTS,
         'collections': collections
     }
 
@@ -135,16 +160,16 @@ def create_testplan(req):
         DELAY=req.delay,
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount,
-        NOTIFICATION_ROBOT_LIST=req.notificationRobotNos
+        NOTIFICATION_ROBOTS=req.notificationRobots,
+        STOP_ON_ERROR_COUNT=req.stopOnErrorCount
     )
 
     # 新增测试计划项目明细
     for collection in req.collectionList:
         TTestplanItems.insert(
             PLAN_NO=plan_no,
-            COLLECTION_NO=collection.elementNo,
-            SORT_NO=collection.sortNo
+            SORT_NO=collection.sortNo,
+            COLLECTION_NO=collection.elementNo
         )
 
     # 新增测试计划
@@ -153,7 +178,8 @@ def create_testplan(req):
         PLAN_NO=plan_no,
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
-        PRODUCT_REQUIREMENTS_VERSION=req.productRequirementsVersion,
+        SCRUM_SPRINT=req.scrumSprint,
+        SCRUM_VERSION=req.scrumVersion,
         COLLECTION_TOTAL=len(req.collectionList),
         STATE=TestplanState.INITIAL.value
     )
@@ -175,9 +201,9 @@ def modify_testplan(req):
     check_exists(settings, error_msg='计划设置不存在')
 
     # 修改测试计划项目明细
-    collection_nos = []
+    collections = []
     for collection in req.collectionList:
-        collection_nos.append(collection.elementNo)
+        collections.append(collection.elementNo)
         # 查询测试计划关联的集合
         if item := testplan_items_dao.select_by_plan_and_collection(req.planNo, collection.elementNo):
             item.update(SORT_NO=collection.sortNo)
@@ -188,13 +214,14 @@ def modify_testplan(req):
                 SORT_NO=collection.sortNo
             )
     # 删除不在请求中的集合
-    testplan_items_dao.delete_all_by_plan_and_not_in_collection(req.planNo, collection_nos)
+    testplan_items_dao.delete_all_by_plan_and_not_in_collection(req.planNo, collections)
 
     # 修改测试计划
     testplan.update(
         PLAN_NAME=req.planName,
         PLAN_DESC=req.planDesc,
-        PRODUCT_REQUIREMENTS_VERSION=req.productRequirementsVersion,
+        SCRUM_SPRINT=req.scrumSprint,
+        SCRUM_VERSION=req.scrumVersion,
         COLLECTION_TOTAL=len(req.collectionList)
     )
 
@@ -205,7 +232,7 @@ def modify_testplan(req):
         DELAY=req.delay,
         SAVE=req.save,
         SAVE_ON_ERROR=req.saveOnError,
-        STOP_TEST_ON_ERROR_COUNT=req.stopTestOnErrorCount
+        STOP_ON_ERROR_COUNT=req.stopOnErrorCount
     )
 
 
@@ -305,8 +332,8 @@ def query_testplan_execution_details(req):
 
     # 查询执行记录关联的变量集
     variable_dataset_list = []
-    if settings.VARIABLE_DATASET_LIST:
-        for dataset_no in settings.VARIABLE_DATASET_LIST:
+    if settings.VARIABLE_DATASETS:
+        for dataset_no in settings.VARIABLE_DATASETS:
             dataset = variable_dataset_dao.select_by_number_with_deleted(dataset_no)
             dataset and variable_dataset_list.append({
                 'datasetNo': dataset.DATASET_NO,
@@ -321,7 +348,7 @@ def query_testplan_execution_details(req):
         'delay': settings.DELAY,
         'save': settings.SAVE,
         'saveOnError': settings.SAVE_ON_ERROR,
-        'stopTestOnErrorCount': settings.STOP_TEST_ON_ERROR_COUNT,
+        'stopOnErrorCount': settings.STOP_ON_ERROR_COUNT,
         'useCurrentValue': settings.USE_CURRENT_VALUE,
         'iterationCount': execution.ITERATION_COUNT,
         'interrupt': execution.INTERRUPT,
