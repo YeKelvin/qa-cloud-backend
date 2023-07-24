@@ -267,7 +267,7 @@ class TTestCollectionResult(DBModel, BaseColumn):
     __tablename__ = 'TEST_COLLECTION_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    COLLECTION_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='集合ID')
+    COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='集合ID')
     COLLECTION_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     COLLECTION_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
@@ -281,7 +281,7 @@ class TTestWorkerResult(DBModel, BaseColumn):
     __tablename__ = 'TEST_WORKER_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
     COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='集合ID')
-    WORKER_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='工作者ID')
+    WORKER_ID = db.Column(db.String(32), index=True, nullable=False, comment='工作者ID')
     WORKER_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     WORKER_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')
@@ -297,7 +297,7 @@ class TTestSamplerResult(DBModel, BaseColumn):
     COLLECTION_ID = db.Column(db.String(32), index=True, nullable=False, comment='集合ID')
     WORKER_ID = db.Column(db.String(32), index=True, nullable=False, comment='工作者ID')
     PARENT_ID = db.Column(db.String(32), index=True, comment='父级取样器ID')
-    SAMPLER_ID = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='运行时取样器的对象id')
+    SAMPLER_ID = db.Column(db.String(32), index=True, nullable=False, comment='运行时取样器的对象id')
     SAMPLER_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     SAMPLER_REMARK = db.Column(db.String(512), comment='元素描述')
     START_TIME = db.Column(db.DateTime, comment='开始时间')

@@ -355,18 +355,18 @@ def query_elements_children(req):
 def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
-    # 查询元素所有子代关系
-    children_relations = element_children_dao.select_all_by_parent(parent_no)
-    if not children_relations:
+    # 查询元素所有子代
+    relations = element_children_dao.select_all_by_parent(parent_no)
+    if not relations:
         return result
 
     # 根据序号排序
-    children_relations.sort(key=lambda k: k.SORT_NO)
-    for relation in children_relations:
+    relations.sort(key=lambda k: k.SORT_NO)
+    for relation in relations:
         # 查询子代元素
         if element := test_element_dao.select_by_no(relation.CHILD_NO):
             # 递归查询子代
-            children = depth and get_element_children(relation.CHILD_NO, depth) or []
+            grandchildren = depth and get_element_children(element.ELEMENT_NO, depth) or []
             result.append({
                 'rootNo': relation.ROOT_NO,
                 'elementNo': element.ELEMENT_NO,
@@ -375,7 +375,7 @@ def get_element_children(parent_no, depth):
                 'elementClass': element.ELEMENT_CLASS,
                 'enabled': element.ENABLED,
                 'sortNo': relation.SORT_NO,
-                'children': children
+                'children': grandchildren
             })
 
     return result

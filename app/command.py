@@ -97,11 +97,14 @@ def init_user():
 @with_appcontext
 def init_role():
     """初始化角色"""
-    create_role(name='超级管理员', code='SUPER_ADMIN', rank='9999')
-    create_role(name='系统管理员', code='ADMIN', rank='9000')
-    create_role(name='空间管理员', code='WORKSPACE', rank='2000')
+    create_role(name='超级管理员', code='SUPER_ADMIN', rank='9999') # TODO: ADMIN
+    create_role(name='系统管理员', code='ADMIN', rank='9000') # TODO: SYSTEM
+    create_role(name='空间管理员', code='WORKSPACE', rank='8000')
+    create_role(name='领导', code='LEADER', rank='4000')
+    create_role(name='部门负责人', code='DEPARTMENT', rank='1000')
+    create_role(name='团队负责人', code='TEAM', rank='2000')
     create_role(name='组长', code='GROUP', rank='1000')
-    create_role(name='用户', code='GENERAL', rank='1')
+    create_role(name='用户', code='DEFAULT', rank='1')
 
     click.echo('创建角色成功')
 

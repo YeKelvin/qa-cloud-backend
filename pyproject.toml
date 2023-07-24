@@ -37,7 +37,7 @@ blinker = "1.6.2"
 # id
 ulid-py = "1.1.0"
 # encryption
-pyjwt = "2.7.0"
+pyjwt = "2.8.0"
 # Environment
 python-dotenv = "1.0.0"
 environs = "9.5.0"
