@@ -43,17 +43,17 @@ def initdb():
 
 
 @click.command()
-@click.option('-m', '--confirm', help='删除所有表，删除前需要输入确认信息，注意：该命令仅用于开发环境！！！')
+@click.option('-m', '--confirm', help='删除库表前需要输入确认信息，注意：该命令仅用于开发环境！！！')
 @with_appcontext
 def dropdb(confirm):
     if not confirm:
-        click.echo('请输入删除表格的确认信息')
+        click.echo('请输入确认信息')
         return
-    if confirm != 'only use on development!!!':
+    if confirm != 'confirmed':
         click.echo('确认信息不正确，请重试')
         return
     db.drop_all()
-    click.echo('删除所有数据库表成功')
+    click.echo('删除所有库表成功')
 
 
 @click.command()

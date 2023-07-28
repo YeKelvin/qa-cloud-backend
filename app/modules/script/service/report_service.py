@@ -124,17 +124,19 @@ def query_sampler_result(req):
         'samplerId': result.SAMPLER_ID,
         'samplerName': result.SAMPLER_NAME,
         'samplerRemark': result.SAMPLER_REMARK,
-        'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.START_TIME else 0,
-        'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
+        'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if result.START_TIME else 0,
+        'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if result.END_TIME else 0,
         'elapsedTime': f'{result.ELAPSED_TIME}ms',
         'success': result.SUCCESS,
         'retrying': result.RETRYING,
         'requestUrl': result.REQUEST_URL,
         'requestHeaders': result.REQUEST_HEADERS,
         'requestData': result.REQUEST_DATA,
+        'requestDecoded': result.REQUEST_DECODED,
         'responseCode': result.RESPONSE_CODE,
         'responseHeaders': result.RESPONSE_HEADERS,
         'responseData': result.RESPONSE_DATA,
+        'responseDecoded': result.RESPONSE_DECODED,
         'failedAssertion': result.FAILED_ASSERTION
     }
 
@@ -174,12 +176,16 @@ def get_sampler_result_list(worker_id):
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,
             'remark': result.SAMPLER_REMARK,
-            'startTime': result.START_TIME.strftime('%H:%M:%S')
-            if result.START_TIME
-            else 0,
-            'endTime': result.END_TIME.strftime('%H:%M:%S')
-            if result.END_TIME
-            else 0,
+            'startTime': (
+                result.START_TIME.strftime('%H:%M:%S.%f')
+                if result.START_TIME
+                else 0
+            ),
+            'endTime': (
+                result.END_TIME.strftime('%H:%M:%S.%f')
+                if result.END_TIME
+                else 0
+            ),
             'elapsedTime': f'{result.ELAPSED_TIME}ms',
             'success': result.SUCCESS,
             'retrying': result.RETRYING,
@@ -198,12 +204,16 @@ def get_subsampler_result_list(parent_id):
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,
             'remark': result.SAMPLER_REMARK,
-            'startTime': result.START_TIME.strftime('%H:%M:%S')
-            if result.START_TIME
-            else 0,
-            'endTime': result.END_TIME.strftime('%H:%M:%S')
-            if result.END_TIME
-            else 0,
+            'startTime': (
+                result.START_TIME.strftime('%H:%M:%S.%f')
+                if result.START_TIME
+                else 0
+            ),
+            'endTime': (
+                result.END_TIME.strftime('%H:%M:%S.%f')
+                if result.END_TIME
+                else 0
+            ),
             'elapsedTime': f'{result.ELAPSED_TIME}ms',
             'success': result.SUCCESS,
             'retrying': result.RETRYING,
