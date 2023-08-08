@@ -170,31 +170,27 @@ def socket_service(func):
         # 更新logger的record，使其指向被装饰的函数
         log = logger.patch(lambda r: r.update(module=func.__module__, function=func.__name__))
         # 获取接收数据
+        event = request.event['message']
         data = args[0] if args else None
-        sid = request.get('sid')
-        event = request.get('event').get('message')
-        namespace = request.get('namespace')
-        # 注入traceid
-        with logger.contextualize(traceid=g.trace_id):
+        sid = request.sid
+        ns = request.namespace
+        # 输出event日志
+        log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] received:[ {data} ]')
+        result = None
+        try:
+            # 调用service
+            result = func(*args, **kwargs)
+        except ServiceError as ex:
+            log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] error:[ {str(ex)} ]')
+            socketio.emit('service:error', str(ex))
+        except Exception as ex:
+            log.exception(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ]')
+            socketio.emit('exception', str(ex))
+        finally:
+            # 记录接口耗时
+            elapsed_time = timestamp_as_ms() - starttime
             # 输出event日志
-            log.info(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] received:[ {data} ]')
-            result = None
-            try:
-                # 调用service
-                result = func(*args, **kwargs)
-            except ServiceError as ex:
-                log.info(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] error:[ {str(ex)} ]')
-                socketio.emit('service:error', str(ex))
-            except Exception as ex:
-                log.exception(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ]')
-                socketio.emit('exception', str(ex))
-            finally:
-                # 记录接口耗时
-                elapsed_time = timestamp_as_ms() - starttime
-                # 输出event日志
-                log.info(
-                    f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] elapsed:[ {elapsed_time}ms ]'
-                )
-                return result
+            log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] elapsed:[ {elapsed_time}ms ]')
+            return result
 
     return wrapper
