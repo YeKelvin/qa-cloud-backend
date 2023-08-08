@@ -6,3 +6,7 @@
 
 # 路由描述字典
 RULE_MAP = {}
+
+
+# 运行中的pymeter的缓存，用于中断执行
+EXECUTING_PYMETER_STORE = {}

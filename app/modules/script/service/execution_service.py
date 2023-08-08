@@ -4,6 +4,7 @@
 # @Author  : Kelvin.Ye
 import time
 
+from gevent.event import Event
 from loguru import logger
 from pymeter.runner import Runner as PyMeterRunner
 
@@ -40,9 +41,11 @@ from app.modules.script.model import TTestplanExecutionItems
 from app.modules.script.model import TTestplanExecutionSettings
 from app.modules.script.model import TTestReport
 from app.modules.usercenter.dao import user_dao
+from app.tools.cache import EXECUTING_PYMETER_STORE
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
 from app.tools.identity import new_id
+from app.tools.identity import new_ulid
 from app.tools.localvars import get_user_no
 from app.tools.service import http_service
 from app.tools.validator import check_exists
@@ -55,44 +58,60 @@ from app.utils.time_util import timestamp_now
 from app.utils.time_util import timestamp_to_utc8_datetime
 
 
-def debug_pymeter(script, sid):
+def create_stop_event(socket_id, result_id):
+    stop_event = Event()
+    EXECUTING_PYMETER_STORE[socket_id] = {'result_id': result_id, 'stop_event': stop_event}
+    return stop_event
+
+
+def remove_stop_event(socket_id):
+    EXECUTING_PYMETER_STORE.pop(socket_id)
+
+
+def debug_pymeter(script, socket_id, result_id):
     try:
         PyMeterRunner.start(
             [script],
+            extra={'sio': socketio, 'sid': socket_id},
             throw_ex=True,
-            extra={'sio': socketio, 'sid': sid}
+            stop_event=create_stop_event(socket_id, result_id)
         )
-        socketio.emit('pymeter_completed', namespace='/', to=sid)
+        socketio.emit('pymeter:completed', namespace='/', to=socket_id)
     except Exception:
         logger.exception('Exception Occurred')
-        socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
+        socketio.emit('pymeter:error', '脚本执行异常', namespace='/', to=socket_id)
+    finally:
+        remove_stop_event(socket_id)
 
 
-def debug_pymeter_by_loader(loader, app, sid):
-    result_id = new_id()
+def debug_pymeter_by_loader(loader, app, socket_id):
+    result_id = new_ulid()
     try:
         socketio.emit(
-            'pymeter_start',
+            'pymeter:start',
             {'id': result_id, 'name': '加载中', 'loading': True, 'running': True},
             namespace='/',
-            to=sid
+            to=socket_id
         )
         script = loader(app, result_id)
         PyMeterRunner.start(
             [script],
+            extra={'sio': socketio, 'sid': socket_id},
             throw_ex=True,
-            extra={'sio': socketio, 'sid': sid}
+            stop_event=create_stop_event(socket_id, result_id)
         )
-        socketio.emit('pymeter_completed', namespace='/', to=sid)
+        socketio.emit('pymeter:completed', namespace='/', to=socket_id)
     except Exception:
         logger.exception('Exception Occurred')
         socketio.emit(
-            'pymeter_result_summary',
+            'pymeter:result_summary',
             {'resultId': result_id, 'result': {'name': 'error', 'loading': False, 'running': False}},
             namespace='/',
-            to=sid
+            to=socket_id
         )
-        socketio.emit('pymeter_error', '脚本执行异常', namespace='/', to=sid)
+        socketio.emit('pymeter:error', '脚本执行异常', namespace='/', to=socket_id)
+    finally:
+        remove_stop_event(socket_id)
 
 
 @http_service
@@ -120,15 +139,15 @@ def execute_collection(req):
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
-                sid=req.socketId,
+                socket_id=req.socketId,
                 result_id=result_id,
                 result_name=collection_name
             )
             # 添加变量组件
             add_variable_dataset(
                 script,
-                req.datasets,
-                req.useCurrentValue
+                datasets=req.datasets,
+                use_current_value=req.useCurrentValue
             )
             return script
 
@@ -137,7 +156,7 @@ def execute_collection(req):
         debug_pymeter_by_loader,
         loader=script_loader,
         app=get_flask_app(),
-        sid=req.socketId
+        socket_id=req.socketId
     )
 
 
@@ -175,15 +194,15 @@ def execute_worker(req):
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
-                sid=req.socketId,
+                socket_id=req.socketId,
                 result_id=result_id,
                 result_name=worker_name
             )
             # 添加变量组件
             add_variable_dataset(
                 script,
-                req.datasets,
-                req.useCurrentValue
+                datasets=req.datasets,
+                use_current_value=req.useCurrentValue
             )
             return script
 
@@ -192,7 +211,7 @@ def execute_worker(req):
         debug_pymeter_by_loader,
         loader=script_loader,
         app=get_flask_app(),
-        sid=req.socketId
+        socket_id=req.socketId
     )
 
 
@@ -227,10 +246,10 @@ def execute_sampler(req):
     )
 
     # 添加 socket 组件
-    result_id = new_id()
+    result_id = new_ulid()
     add_flask_sio_result_collector(
         script,
-        sid=req.socketId,
+        socket_id=req.socketId,
         result_id=result_id,
         result_name=sampler.ELEMENT_NAME
     )
@@ -238,12 +257,12 @@ def execute_sampler(req):
     # 添加变量组件
     add_variable_dataset(
         script,
-        req.datasets,
-        req.useCurrentValue
+        datasets=req.datasets,
+        use_current_value=req.useCurrentValue
     )
 
     # 新建线程执行脚本
-    executor.submit(debug_pymeter, script, req.socketId)
+    executor.submit(debug_pymeter, script, req.socketId, result_id)
 
 
 @http_service
@@ -268,10 +287,10 @@ def execute_snippets(req):
     )
 
     # 添加 socket 组件
-    result_id = new_id()
+    result_id = new_ulid()
     add_flask_sio_result_collector(
         script,
-        sid=req.socketId,
+        socket_id=req.socketId,
         result_id=result_id,
         result_name=collection.ELEMENT_NAME
     )
@@ -279,13 +298,13 @@ def execute_snippets(req):
     # 添加变量组件
     add_variable_dataset(
         script,
-        req.datasets,
-        req.useCurrentValue,
-        req.variables
+        datasets=req.datasets,
+        use_current_value=req.useCurrentValue,
+        additional=req.variables
     )
 
     # 新建线程执行脚本
-    executor.submit(debug_pymeter, script, req.socketId)
+    executor.submit(debug_pymeter, script, req.socketId, result_id)
 
 
 @http_service

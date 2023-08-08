@@ -9,6 +9,7 @@ from flask import request
 from loguru import logger
 
 from app.extension import db
+from app.extension import socketio
 from app.signals import openapi_log_signal
 from app.signals import restapi_log_signal
 from app.tools.exceptions import ErrorCode
@@ -20,7 +21,7 @@ from app.utils.time_util import timestamp_as_ms
 
 
 def http_service(func):
-    """HTTP service层装饰器，主要用于记录日志、耗时、捕获异常和事务控制"""
+    """HTTP Service层装饰器，主要用于记录日志、耗时、捕获异常和事务控制"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -90,7 +91,7 @@ def http_service(func):
 
 
 def open_service(func):
-    """OpenAPI service层装饰器，主要用于记录日志、耗时、捕获异常和事务控制"""
+    """OpenAPI Service层装饰器，主要用于记录日志、耗时、捕获异常和事务控制"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -155,5 +156,45 @@ def open_service(func):
                     f'uri:[ {uri} ] header:[ {dict(http_res.headers)}] response:[ {res} ] elapsed:[ {elapsed_time}ms ]'
                 )
                 return http_res
+
+    return wrapper
+
+
+def socket_service(func):
+    """Socket Service层装饰器，主要用于记录日志、耗时、捕获异常和事务控制"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 记录开始时间
+        starttime = timestamp_as_ms()
+        # 更新logger的record，使其指向被装饰的函数
+        log = logger.patch(lambda r: r.update(module=func.__module__, function=func.__name__))
+        # 获取接收数据
+        data = args[0] if args else None
+        sid = request.get('sid')
+        event = request.get('event').get('message')
+        namespace = request.get('namespace')
+        # 注入traceid
+        with logger.contextualize(traceid=g.trace_id):
+            # 输出event日志
+            log.info(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] received:[ {data} ]')
+            result = None
+            try:
+                # 调用service
+                result = func(*args, **kwargs)
+            except ServiceError as ex:
+                log.info(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] error:[ {str(ex)} ]')
+                socketio.emit('service:error', str(ex))
+            except Exception as ex:
+                log.exception(f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ]')
+                socketio.emit('exception', str(ex))
+            finally:
+                # 记录接口耗时
+                elapsed_time = timestamp_as_ms() - starttime
+                # 输出event日志
+                log.info(
+                    f'socketid:[ {sid} ] namespace:[ {namespace} ] event:[ {event} ] elapsed:[ {elapsed_time}ms ]'
+                )
+                return result
 
     return wrapper

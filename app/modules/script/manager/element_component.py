@@ -18,7 +18,7 @@ from app.modules.script.model import TTestElement
 from app.tools.validator import check_exists
 
 
-def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, result_name: str):
+def add_flask_sio_result_collector(script: dict, socket_id: str, result_id: str, result_name: str):
     # 添加 FlaskSIOResultCollector 组件
     script['children'].insert(0, {
         'name': 'Flask实时结果收集器',
@@ -26,14 +26,14 @@ def add_flask_sio_result_collector(script: dict, sid: str, result_id: str, resul
         'class': 'FlaskSIOResultCollector',
         'enabled': True,
         'property': {
-            'FlaskSIOResultCollector__target_sid': sid,
+            'FlaskSIOResultCollector__socket_id': socket_id,
             'FlaskSIOResultCollector__result_id': result_id,
             'FlaskSIOResultCollector__result_name': result_name,
         }
     })
 
 
-def add_flask_db_result_storage(script: dict, report_no, collection_no):
+def add_flask_db_result_storage(script: dict, report_no: str, collection_no: str):
     # 添加 FlaskDBResultStorage 组件
     script['children'].insert(0, {
         'name': 'Flask数据库结果存储器',
@@ -47,7 +47,7 @@ def add_flask_db_result_storage(script: dict, report_no, collection_no):
     })
 
 
-def add_flask_db_iteration_storage(script: dict, execution_no, collection_no):
+def add_flask_db_iteration_storage(script: dict, execution_no: str, collection_no: str):
     # 添加 FlaskDBIterationStorage 组件
     script['children'].insert(0, {
         'name': 'Flask数据库迭代存储器',
