@@ -175,22 +175,22 @@ def socket_service(func):
         sid = request.sid
         ns = request.namespace
         # 输出event日志
-        log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] received:[ {data} ]')
+        log.info(f'namespace:[ {ns} ] socketid:[ {sid} ] event:[ {event} ] received:[ {data} ]')
         result = None
         try:
             # 调用service
             result = func(*args, **kwargs)
         except ServiceError as ex:
-            log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] error:[ {str(ex)} ]')
+            log.info(f'namespace:[ {ns} ] socketid:[ {sid} ] event:[ {event} ] error:[ {str(ex)} ]')
             socketio.emit('service:error', str(ex))
         except Exception as ex:
-            log.exception(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ]')
+            log.exception(f'namespace:[ {ns} ] socketid:[ {sid} ] event:[ {event} ]')
             socketio.emit('exception', str(ex))
         finally:
             # 记录接口耗时
             elapsed_time = timestamp_as_ms() - starttime
             # 输出event日志
-            log.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] elapsed:[ {elapsed_time}ms ]')
+            log.info(f'namespace:[ {ns} ] socketid:[ {sid} ] event:[ {event} ] elapsed:[ {elapsed_time}ms ]')
             return result
 
     return wrapper

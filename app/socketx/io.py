@@ -12,5 +12,5 @@ def emit(event, *args, **kwargs):
     data = args[0] if args else kwargs.get('data')
     sid = kwargs.get('to', request.sid)
     ns = kwargs.get('namespace', '/')
-    logger.info(f'socketid:[ {sid} ] namespace:[ {ns} ] event:[ {event} ] data:[ {data} ]')
+    logger.info(f'namespace:[ {ns} ] socketid:[ {sid} ] event:[ {event} ] emit:[ {data} ]')
     socketio.emit(event, data, to=sid, namespace=ns)
