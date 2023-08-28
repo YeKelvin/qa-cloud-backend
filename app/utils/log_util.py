@@ -8,6 +8,10 @@ import sys
 from loguru import logger
 
 
+def is_filtered_module(record, level:int , modules: list):
+    return any(bool(module in record.name and record.levelno < level) for module in modules)
+
+
 class InterceptHandler(logging.Handler):
     """logging转loguru的handler"""
 
@@ -48,18 +52,25 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
+def trace_id(record):
+    return '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
+
+
 def console_formatter(record):
     name = str(record['name'])
     if 'werkzeug' in name:
         return '{message}\n{exception}'
     elif 'sqlalchemy' in name or 'apscheduler' in name:
-        return '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] {message}</level>\n{exception}'
-    else:
-        traceid = '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
         return (
-            '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> <level>[{level}] [{module}:{function}:{line}] ' +
-            traceid +
-            '{message}</level>\n{exception}'
+            '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> '
+            '<level>[{level}] ' + trace_id(record) + '{message}</level>\n'
+            '{exception}'
+        )
+    else:
+        return (
+            '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> '
+            '<level>[{level}] [{module}:{function}:{line}] ' + trace_id(record) + '{message}</level>\n'
+            '{exception}'
         )
 
 
@@ -68,11 +79,9 @@ def file_formatter(record):
     if 'werkzeug' in name:
         return '{message}\n{exception}'
     elif 'sqlalchemy' in name or 'apscheduler' in name:
-        return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] {message}\n{exception}'
+        return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] ' + trace_id(record) + '{message}\n{exception}'
     else:
-        traceid = '[traceid:{extra[traceid]}] ' if record['extra'].get('traceid') else ''
         return (
-            '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}:{function}:{line}] ' +
-            traceid +
-            '{message}\n{exception}'
+            '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}:{function}:{line}] ' + trace_id(record) + '{message}\n'
+            '{exception}'
         )

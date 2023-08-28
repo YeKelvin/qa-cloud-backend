@@ -21,14 +21,14 @@ class Argument:
     def __init__(
         self,
         name: str,
-        type: type = None,  # noqa
+        type: type = None,
         default: any = None,
         required: bool = False,
         nullable: bool = False,
-        min: int = None,  # noqa
-        max: int = None,  # noqa
+        min: int = None,
+        max: int = None,
         enum: Type[Enum] = None,
-        help: str = None  # noqa
+        help: str = None
     ):
         self.name = name            # 参数名称
         self.type = type            # 参数类型
@@ -41,7 +41,7 @@ class Argument:
         self.help = help            # 参数不符合要求时的提示语
 
         if not isinstance(self.name, str):
-            raise TypeError('argument name must be string')
+            raise TypeError('Argument name must be string')
 
     def parse(self, has_key, value):
         """解析HTTP参数"""
@@ -99,21 +99,21 @@ class Argument:
             # bool
             elif self.type == bool:
                 value = str(value).lower()
-                assert value in {'true', 'false'}
+                assert value in {'true', 'false'}, '布尔值错误'
                 value = value == 'true'
             # list
             elif self.type == list:
                 # body传递数组
                 if not isinstance(value, list):
                     value = from_json(value)
-                    assert isinstance(value, list)
+                    assert isinstance(value, list), '参数值非列表'
                 # 转换为attribute对象
                 value = transform(value)
             # dict
             elif self.type == dict:
                 if not isinstance(value, dict):
                     value = from_json(value)
-                    assert isinstance(value, dict)
+                    assert isinstance(value, dict), '参数值非字典'
                 # 转换为attribute对象
                 value = transform(value)
             else:

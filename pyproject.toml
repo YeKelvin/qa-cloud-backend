@@ -25,13 +25,13 @@ priority = "primary"
 [tool.poetry.dependencies]
 python = "^3.8"
 # flask
-flask = "2.3.2"
+flask = "2.3.3"
 flask-sqlalchemy = "3.0.5"
 flask-socketio = "5.3.5"
 flask-migrate = "4.0.4"
 flask-apscheduler = "1.12.4"
 # job
-apscheduler = "3.10.1"
+apscheduler = "3.10.4"
 # signal
 blinker = "1.6.2"
 # id
