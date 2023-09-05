@@ -19,7 +19,7 @@ from app.modules.usercenter.model import TUserLoginInfo  # noqa
 from app.modules.usercenter.model import TUserPassword  # noqa
 from app.modules.usercenter.model import TUserRole  # noqa
 from app.tools.identity import new_id
-from app.utils.security import encrypt_password
+from app.tools.security import encrypt_password
 
 
 from app.modules.opencenter.model import *  # noqa isort:skip

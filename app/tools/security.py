@@ -1,5 +1,5 @@
 #!/usr/bin/ python3
-# @File    : security
+# @File    : security.py
 # @Time    : 2020/6/30 15:01
 # @Author  : Kelvin.Ye
 import hashlib
@@ -14,7 +14,7 @@ def encrypt_password(login_name, password):
     return generate_password_hash(pwd_md5)
 
 
-def check_password(login_name, source_pwd, in_pwd):
-    prefix_md5 = login_name + hashlib.md5(in_pwd.encode('utf-8')).hexdigest()
+def check_password(login_name, source_pwd, target_pwd):
+    prefix_md5 = login_name + hashlib.md5(target_pwd.encode('utf-8')).hexdigest()
     pwd_md5 = hashlib.md5(prefix_md5.encode('utf-8')).hexdigest()
     return check_password_hash(source_pwd, pwd_md5)
