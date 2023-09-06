@@ -14,10 +14,11 @@ class TUser(DBModel, BaseColumn):
     __tablename__ = 'USER'
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
     USER_NAME = db.Column(db.String(128), nullable=False, comment='用户名称')
-    MOBILE_NO = db.Column(db.String(16), comment='手机号')
-    EMAIL = db.Column(db.String(128), comment='邮箱')
     AVATAR = db.Column(db.String(256), comment='头像URL')
+    MOBILE = db.Column(db.String(16), unique=True, comment='手机号')
+    EMAIL = db.Column(db.String(128), unique=True, comment='邮箱')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='用户状态(ENABLE:启用, DISABLE:禁用)')
+    SSO = db.Column(db.Boolean, nullable=False, default=False, comment='是否通过SSO创建的用户')
     LOGGED_IN = db.Column(db.Boolean, nullable=False, default=False, comment='是否已登录')
 
 
@@ -68,6 +69,7 @@ class TPermission(DBModel, BaseColumn):
 
 
 class TPermissionModule(DBModel, BaseColumn):
+    # TODO: del
     """权限模块表"""
     __tablename__ = 'PERMISSION_MODULE'
     MODULE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模块编号')
@@ -77,6 +79,7 @@ class TPermissionModule(DBModel, BaseColumn):
 
 
 class TPermissionObject(DBModel, BaseColumn):
+    # TODO: del
     """权限对象表"""
     __tablename__ = 'PERMISSION_OBJECT'
     OBJECT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='对象编号')
@@ -86,6 +89,7 @@ class TPermissionObject(DBModel, BaseColumn):
 
 
 class TUserGroup(DBModel, BaseColumn):
+    # TODO: rename
     __tablename__ = 'USER_GROUP'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
@@ -102,7 +106,7 @@ class TUserLoginInfo(DBModel, BaseColumn):
     """用户登陆号表"""
     __tablename__ = 'USER_LOGIN_INFO'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    LOGIN_NAME = db.Column(db.String(64), index=True, nullable=False, comment='登录账号')
+    LOGIN_NAME = db.Column(db.String(64), index=True, unique=True, nullable=False, comment='登录账号')
     LOGIN_TYPE = db.Column(db.String(32), nullable=False, comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
 
 
@@ -111,18 +115,19 @@ class TUserLoginLog(DBModel, BaseColumn):
     __tablename__ = 'USER_LOGIN_LOG'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     LOGIN_NAME = db.Column(db.String(64), nullable=False, comment='登录账号')
-    LOGIN_TYPE = db.Column(db.String(32), comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
-    IP = db.Column(db.String(256), comment='IP地址')
+    LOGIN_TYPE = db.Column(db.String(32), comment='登录类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
+    LOGIN_METHOD = db.Column(db.String(32), comment='登录方式(PASSWORD:密码认证, ENTERPRISE:企业认证)')
+    LOGIN_IP = db.Column(db.String(256), comment='登录IP')
 
 
 class TUserPassword(DBModel, BaseColumn):
     """用户密码表"""
     __tablename__ = 'USER_PASSWORD'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-    PASSWORD = db.Column(db.String(256), nullable=False, comment='密码')
+    PASSWORD = db.Column(db.String(256), nullable=False, comment='密码密文')
     PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
-    LAST_SUCCESS_TIME = db.Column(db.DateTime, comment='最后一次密码校验成功时间')
-    LAST_ERROR_TIME = db.Column(db.DateTime, comment='最后一次密码校验错误时间')
+    LAST_FAILURE_TIME = db.Column(db.DateTime, comment='最后一次认证错误时间')
+    LAST_SUCCESS_TIME = db.Column(db.DateTime, comment='最后一次认证成功时间')
     ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
     UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOM:客户设置, SYSTEM:系统生成)')

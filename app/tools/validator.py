@@ -47,7 +47,7 @@ def get_user_groups(user_no) -> list:
 
 def is_super_admin(user_no):
     conds = QueryCondition(TUser, TRole, TUserRole)
-    conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
+    conds.equal(TRole.ROLE_CODE, 'ADMIN')
     conds.equal(TUserRole.USER_NO, user_no)
     conds.equal(TUserRole.USER_NO, TUser.USER_NO)
     conds.equal(TUserRole.ROLE_NO, TRole.ROLE_NO)

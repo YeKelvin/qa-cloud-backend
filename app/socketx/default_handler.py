@@ -56,7 +56,7 @@ def check_login():
         user_no = payload['data']['id']
         issued_at = payload['iat']
         # 存储用户编号
-        localvars.setg('user_no', user_no)
+        localvars.set('user_no', user_no)
     except jwt.ExpiredSignatureError:
         logger.info(f'socketid:[ {request.sid} ] token已失效')
         socketio.disconnect()
@@ -96,4 +96,4 @@ def check_login():
         socketio.disconnect()
         return
 
-    localvars.setg('operator', user.USER_NAME)
+    localvars.set('operator', user.USER_NAME)

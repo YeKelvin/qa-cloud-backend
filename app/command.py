@@ -97,14 +97,14 @@ def init_user():
 @with_appcontext
 def init_role():
     """初始化角色"""
-    create_role(name='超级管理员', code='SUPER_ADMIN', rank='9999') # TODO: ADMIN
-    create_role(name='系统管理员', code='ADMIN', rank='9000') # TODO: SYSTEM
+    create_role(name='超级管理员', code='ADMIN', rank='9999')
+    create_role(name='系统管理员', code='SYSTEM', rank='9000')
     create_role(name='空间管理员', code='WORKSPACE', rank='8000')
     create_role(name='领导', code='LEADER', rank='4000')
-    create_role(name='部门负责人', code='DEPARTMENT', rank='1000')
-    create_role(name='团队负责人', code='TEAM', rank='2000')
+    create_role(name='部门主管', code='DEPARTMENT', rank='3000')
+    create_role(name='团队主管', code='TEAM', rank='2000')
     create_role(name='组长', code='GROUP', rank='1000')
-    create_role(name='用户', code='DEFAULT', rank='1')
+    create_role(name='默认', code='DEFAULT', rank='1')
 
     click.echo('创建角色成功')
 
@@ -270,7 +270,7 @@ def init_permission_item():
 def init_user_role():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
-    role = TRole.filter_by(ROLE_NAME='超级管理员', ROLE_CODE='SUPER_ADMIN').first()
+    role = TRole.filter_by(ROLE_CODE='ADMIN').first()
     TUserRole.insert_without_record(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
 

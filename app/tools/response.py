@@ -37,7 +37,7 @@ class ResponseDTO:
             self.errorMsg = errorMsg
         if error or errorCode or errorMsg:
             self.success = False
-        self.responseTm = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')
+        self.timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')
 
     def __repr__(self):
         return str(self.__dict__)

@@ -6,7 +6,9 @@ from datetime import datetime
 from datetime import timezone
 
 from flask import request
+from loguru import logger
 
+from app import config as CONFIG
 from app.database import dbquery
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
@@ -15,7 +17,6 @@ from app.modules.usercenter.dao import role_dao
 from app.modules.usercenter.dao import user_dao
 from app.modules.usercenter.dao import user_group_dao
 from app.modules.usercenter.dao import user_login_info_dao
-from app.modules.usercenter.dao import user_login_log_dao
 from app.modules.usercenter.dao import user_password_dao
 from app.modules.usercenter.dao import user_role_dao
 from app.modules.usercenter.dao import user_secret_key_dao
@@ -31,6 +32,7 @@ from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserPassword
 from app.modules.usercenter.model import TUserRole
 from app.modules.usercenter.model import TUserSettings
+from app.tools import http_client
 from app.tools import localvars
 from app.tools.auth import JWTAuth
 from app.tools.exceptions import ServiceError
@@ -51,12 +53,16 @@ def login(req):
     try:
         # 查询用户登录信息
         login_info = user_login_info_dao.select_by_loginname(req.loginName)
-        check_exists(login_info, error_msg='账号或密码不正确')
+        if not login_info:
+            logger.info('用户登录信息不存在')
+            raise ServiceError('账号或密码不正确')
 
         # 查询用户
         user = user_dao.select_by_no(login_info.USER_NO)
-        check_exists(user, error_msg='账号或密码不正确')
-        localvars.setg('user_no', user.USER_NO)
+        if not user:
+            logger.info('用户信息不存在')
+            raise ServiceError('账号或密码不正确')
+        localvars.set('user_no', user.USER_NO)
 
         # 校验用户状态
         if user.STATE != UserState.ENABLE.value:
@@ -64,19 +70,24 @@ def login(req):
 
         # 查询用户密码
         user_password = user_password_dao.select_loginpwd_by_user(user.USER_NO)
-        check_exists(user_password, error_msg='账号或密码不正确')
+        if not user_password:
+            logger.info('用户登录密码不存在')
+            raise ServiceError('账号或密码不正确')
 
         # 密码RSA解密
         secret_key = user_secret_key_dao.select_by_index(req.index)
-        ras_decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
+        check_exists(secret_key, error_msg='加密因子不存在')
+        decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
 
         # 校验密码是否正确
-        pwd_success = check_password(req.loginName, user_password.PASSWORD, ras_decrypted_password)
+        password_success = check_password(req.loginName, user_password.PASSWORD, decrypted_password)
 
         # 密码校验失败
-        if not pwd_success:
-            user_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
+        if not password_success:
+            logger.info('密码错误')
+            user_password.LAST_FAILURE_TIME = datetime.now(timezone.utc)
             if user_password.ERROR_TIMES < 3:
+                logger.info('密码错误次数+1')
                 user_password.ERROR_TIMES += 1
             raise ServiceError('账号或密码不正确')
 
@@ -96,7 +107,8 @@ def login(req):
             USER_NO=login_info.USER_NO,
             LOGIN_NAME=login_info.LOGIN_NAME,
             LOGIN_TYPE=login_info.LOGIN_TYPE,
-            IP=remote_addr()
+            LOGIN_METHOD='PASSWORD',
+            LOGIN_IP=remote_addr()
         )
 
         # 更新用户登录状态
@@ -108,6 +120,62 @@ def login(req):
         user_secret_key_dao.delete_by_index(req.index)
 
     return {'accessToken': token}
+
+
+@http_service
+def login_by_enterprise(req):
+    if not CONFIG.SSO_ENTERPRISE_URL:
+        raise ServiceError('暂未启用企业账号登录')
+    # 密码RSA解密
+    secret_key = user_secret_key_dao.select_by_index(req.index)
+    check_exists(secret_key, error_msg='加密因子不存在')
+    decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
+    # 企业登录认证
+    res = http_client.post(
+        url=CONFIG.SSO_ENTERPRISE_URL,
+        json={
+            'email': req.email,
+            'password': decrypted_password
+        }
+    )
+    if not res['success']:
+        logger.info(f'企业账号:[ {req.email} ] 企业账号认证请求失败')
+        raise ServiceError(res['message'])
+    # 登录成功
+    logger.info(f'企业账号:[ {req.email} ] 企业账号认证成功')
+    sso_result = res['result']
+    # 查询用户信息
+    user = user_dao.select_by_email(req.email)
+    user_no = user.USER_NO if user else new_id()
+    # 用户不存在时新增
+    if not user:
+        logger.info(f'企业账号:[ {req.email} ] 平台用户信息不存在，创建用户并绑定默认角色')
+        # 创建用户
+        TUser.insert(
+            USER_NO=user_no,
+            USER_NAME=sso_result['userName'],
+            MOBILE=sso_result['mobile'],
+            EMAIL=sso_result['email'],
+            STATE='ENABLE',
+            SSO=True,
+            LOGGED_IN=True
+        )
+        # 绑定默认角色
+        role = role_dao.select_by_code('DEFAULT')
+        TUserRole.insert(
+            USER_NO=user_no,
+            ROLE_NO=role.ROLE_NO
+        )
+    # 记录用户登录日志
+    TUserLoginLog.insert(
+        USER_NO=user_no,
+        LOGIN_NAME=req.email,
+        LOGIN_TYPE='EMAIL',
+        LOGIN_METHOD='ENTERPRISE',
+        LOGIN_IP=remote_addr()
+    )
+    # 生成access-token
+    return {'accessToken': JWTAuth.encode_token(user_no, timestamp_now())}
 
 
 def remote_addr():
@@ -134,7 +202,7 @@ def register(req):
     check_not_exists(login_info, error_msg='登录账号已存在')
 
     # 查询用户
-    user = user_dao.select_first(USER_NAME=req.userName, MOBILE_NO=req.mobileNo, EMAIL=req.email)
+    user = user_dao.select_first(USER_NAME=req.userName, MOBILE=req.mobile, EMAIL=req.email)
     check_not_exists(user, error_msg='用户已存在')
 
     # 创建用户
@@ -142,7 +210,7 @@ def register(req):
     TUser.insert(
         USER_NO=user_no,
         USER_NAME=req.userName,
-        MOBILE_NO=req.mobileNo,
+        MOBILE=req.mobile,
         EMAIL=req.email,
         STATE='ENABLE'
     )
@@ -206,7 +274,7 @@ def query_user_list(req):
     conds = QueryCondition(TUser, TUserLoginInfo)
     conds.like(TUser.USER_NO, req.userNo)
     conds.like(TUser.USER_NAME, req.userName)
-    conds.like(TUser.MOBILE_NO, req.mobileNo)
+    conds.like(TUser.MOBILE, req.mobile)
     conds.like(TUser.EMAIL, req.email)
     conds.like(TUser.STATE, req.state)
     conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
@@ -218,7 +286,7 @@ def query_user_list(req):
         dbquery(
             TUser.USER_NO,
             TUser.USER_NAME,
-            TUser.MOBILE_NO,
+            TUser.MOBILE,
             TUser.EMAIL,
             TUser.STATE,
             TUser.AVATAR,
@@ -257,10 +325,11 @@ def query_user_list(req):
             'userNo': user.USER_NO,
             'userName': user.USER_NAME,
             'loginName': user.LOGIN_NAME,
-            'mobileNo': user.MOBILE_NO,
-            'email': user.EMAIL,
             'avatar': user.AVATAR,
+            'mobile': user.MOBILE,
+            'email': user.EMAIL,
             'state': user.STATE,
+            'sso': user.SSO,
             'roles': roles,
             'groups': groups
         })
@@ -322,9 +391,10 @@ def query_user_info():
     return {
         'userNo': user_no,
         'userName': user.USER_NAME,
-        'mobileNo': user.MOBILE_NO,
-        'email': user.EMAIL,
         'avatar': user.AVATAR,
+        'mobile': user.MOBILE,
+        'email': user.EMAIL,
+        'sso': user.SSO,
         'roles': roles,
         'settings': settings.DATA if settings else {}
     }
@@ -336,12 +406,70 @@ def modify_user_info(req):
     user_no = localvars.get_user_no()
     # 查询用户
     user = user_dao.select_by_no(user_no)
+    check_exists(user, error_msg='用户不存在')
+    # 更新用户登录信息
+    update_user_mobile_login_info(user_no, user.MOBILE, req.mobile)
+    update_user_email_login_info(user_no, user.EMAIL, req.email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
-        MOBILE_NO=req.mobileNo,
+        MOBILE=req.mobile,
         EMAIL=req.email
     )
+
+
+def update_user_mobile_login_info(user_no, old_mobile, new_mobile):
+    # 新手机号为空时无需处理
+    if new_mobile is None:
+        return
+    # 查询旧手机号登录信息
+    old_login_info = user_login_info_dao.select_by_loginname(old_mobile)
+    if new_mobile:
+        # 新旧手机号一致时无需处理
+        if new_mobile == old_mobile:
+            return
+        # 判断新手机号是否存在
+        new_login_info = user_login_info_dao.select_by_loginname(new_mobile)
+        check_not_exists(new_login_info, error_msg='手机号已存在')
+        # 更新或插入手机号登录方式
+        if old_login_info:
+            old_login_info.update(LOGIN_NAME=new_mobile)
+        else:
+            TUserLoginInfo.insert(
+                USER_NO=user_no,
+                LOGIN_NAME=new_mobile,
+                LOGIN_TYPE='MOBILE'
+            )
+    else:
+        # 新手机号为空时删除手机号登录方式
+        old_login_info and old_login_info.delete()
+
+
+def update_user_email_login_info(user_no, old_email, new_email):
+    # 新邮箱为空时无需处理
+    if new_email is None:
+        return
+    # 查询旧邮箱登录信息
+    old_login_info = user_login_info_dao.select_by_loginname(old_email)
+    if new_email:
+        # 新旧邮箱一致时无需处理
+        if new_email == old_email:
+            return
+        # 判断新邮箱是否存在
+        new_login_info = user_login_info_dao.select_by_loginname(new_email)
+        check_not_exists(new_login_info, error_msg='邮箱已存在')
+        # 更新或插入邮箱登录方式
+        if old_login_info:
+            old_login_info.update(LOGIN_NAME=new_email)
+        else:
+            TUserLoginInfo.insert(
+                USER_NO=user_no,
+                LOGIN_NAME=new_email,
+                LOGIN_TYPE='EMAIL'
+            )
+    else:
+        # 新邮箱为空时删除邮箱登录方式
+        old_login_info and old_login_info.delete()
 
 
 @http_service
@@ -364,25 +492,29 @@ def modify_user_password(req):
         user_no = localvars.get_user_no()
         # 查询用户登录信息
         login_info = user_login_info_dao.select_by_user(user_no)
+        check_exists(login_info, error_msg='用户登录信息不存在')
         # 查询用户密码
         login_password = user_password_dao.select_loginpwd_by_user(user_no)
         check_exists(login_password, error_msg='账号或密码不正确')
         # 查询密钥
         secret_key = user_secret_key_dao.select_by_index(req.index)
+        check_exists(secret_key, error_msg='加密因子不存在')
         # 解密旧密码
-        decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key.DATA)
+        old_decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key.DATA)
         # 校验密码是否正确
-        check_pass = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, decrypted_password)
+        password_success = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, old_decrypted_password)
         # 密码校验失败
-        if not check_pass:
-            login_password.LAST_ERROR_TIME = datetime.now(timezone.utc)
+        if not password_success:
+            logger.info('密码校验失败')
+            login_password.LAST_FAILURE_TIME = datetime.now(timezone.utc)
             if login_password.ERROR_TIMES < 3:
+                logger.info('密码错误次数+1')
                 login_password.ERROR_TIMES += 1
             raise ServiceError('账号或密码不正确')
         # 解密新密码
-        decrypted_new_password = decrypt_by_rsa_private_key(req.newPassword, secret_key.DATA)
+        new_decrypted_password = decrypt_by_rsa_private_key(req.newPassword, secret_key.DATA)
         # 更新用户登录密码
-        login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, decrypted_new_password))
+        login_password.update(PASSWORD=encrypt_password(login_info.LOGIN_NAME, new_decrypted_password))
         # 查询用户
         user = user_dao.select_by_no(user_no)
         # 登出
@@ -399,35 +531,47 @@ def modify_user(req):
     # 查询用户
     user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
-
+    # 更新用户登录信息
+    update_user_mobile_login_info(req.userNo, user.MOBILE, req.mobile)
+    update_user_email_login_info(req.userNo, user.EMAIL, req.email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
-        MOBILE_NO=req.mobileNo,
+        MOBILE=req.mobile,
         EMAIL=req.email
     )
-
     # 绑定用户角色
-    if req.roles is not None:
-        for role_no in req.roles:
-            # 查询用户角色
-            user_role = user_role_dao.select_by_user_and_role(req.userNo, role_no)
-            if not user_role:
-                TUserRole.insert(USER_NO=req.userNo, ROLE_NO=role_no)
-
-        # 删除不在请求中的角色
-        user_role_dao.delete_all_by_user_and_notin_role(req.userNo, req.roles)
-
+    update_user_roles(req.userNo, req.roles)
     # 绑定用户分组
-    if req.groups is not None:
-        for group_no in req.groups:
-            # 查询用户分组
-            group_user = user_group_dao.select_by_user_and_group(req.userNo, group_no)
-            if not group_user:
-                TUserGroup.insert(USER_NO=req.userNo, GROUP_NO=group_no)
+    update_user_groups(req.userNo, req.groups)
 
-        # 解绑不在请求中的分组
-        user_group_dao.delete_all_by_user_and_notin_group(req.userNo, req.groups)
+
+def update_user_roles(user_no, roles):
+    if roles is None:
+        return
+    # 批量绑定用户角色
+    for role_no in roles:
+        # 查询用户角色
+        user_role = user_role_dao.select_by_user_and_role(user_no, role_no)
+        if not user_role:
+            TUserRole.insert(USER_NO=user_no, ROLE_NO=role_no)
+
+    # 删除不在请求中的角色
+    user_role_dao.delete_all_by_user_and_notin_role(user_no, roles)
+
+
+def update_user_groups(user_no, groups):
+    if groups is None:
+        return
+    # 批量绑定用户分组
+    for group_no in groups:
+        # 查询用户分组
+        group_user = user_group_dao.select_by_user_and_group(user_no, group_no)
+        if not group_user:
+            TUserGroup.insert(USER_NO=user_no, GROUP_NO=group_no)
+
+    # 解绑不在请求中的分组
+    user_group_dao.delete_all_by_user_and_notin_group(user_no, groups)
 
 
 def get_private_workspace_by_user(user_no):
@@ -465,9 +609,6 @@ def remove_user(req):
 
     # 删除用户密码
     user_password_dao.delete_all_by_user(req.userNo)
-
-    # 删除用户登录历史记录
-    user_login_log_dao.delete_all_by_user(req.userNo)
 
     # 删除用户登录账号
     user_login_info_dao.delete_all_by_user(req.userNo)

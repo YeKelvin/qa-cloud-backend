@@ -159,7 +159,7 @@ def get_super_admin_userno():
     conds = QueryCondition(TUser, TRole, TUserRole)
     conds.equal(TUser.USER_NO, TUserRole.USER_NO)
     conds.equal(TRole.ROLE_NO, TUserRole.ROLE_NO)
-    conds.equal(TRole.ROLE_CODE, 'SUPER_ADMIN')
+    conds.equal(TRole.ROLE_CODE, 'ADMIN')
 
     # 查询超级管理员的用户编号
     if result := dbquery(TUser.USER_NO).filter(*conds).first():

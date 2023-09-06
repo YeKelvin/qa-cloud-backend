@@ -5,7 +5,7 @@ create table "USER"
     "ID"           serial       primary key,
     "USER_NO"      varchar(32)  not null   UNIQUE,
     "USER_NAME"    varchar(128) not null,
-    "MOBILE_NO"    varchar(16),
+    "MOBILE"    varchar(16),
     "EMAIL"        varchar(128),
     "AVATAR"       varchar(256),
     "STATE"        varchar(16)  not null,
@@ -21,7 +21,7 @@ create table "USER"
 comment on column "USER"."ID" is '主键';
 comment on column "USER"."USER_NO" is '用户编号';
 comment on column "USER"."USER_NAME" is '用户名称';
-comment on column "USER"."MOBILE_NO" is '手机号';
+comment on column "USER"."MOBILE" is '手机号';
 comment on column "USER"."EMAIL" is '邮箱';
 comment on column "USER"."AVATAR" is '头像URL';
 comment on column "USER"."STATE" is '用户状态（ENABLE:启用, DISABLE:禁用）';
@@ -133,7 +133,7 @@ create table "USER_PASSWORD"
     "PASSWORD"          varchar(256) not null,
     "PASSWORD_TYPE"     varchar(16)  not null,
     "LAST_SUCCESS_TIME" timestamp(6),
-    "LAST_ERROR_TIME"   timestamp(6),
+    "LAST_FAILURE_TIME"   timestamp(6),
     "ERROR_TIMES"       integer,
     "UNLOCK_TIME"       timestamp(6),
     "CREATE_TYPE"       varchar(16)  not null,
@@ -150,7 +150,7 @@ comment on column "USER_PASSWORD"."USER_NO" is '用户编号';
 comment on column "USER_PASSWORD"."PASSWORD" is '密码';
 comment on column "USER_PASSWORD"."PASSWORD_TYPE" is '密码类型（LOGIN:登录密码）';
 comment on column "USER_PASSWORD"."LAST_SUCCESS_TIME" is '最后一次密码校验成功时间';
-comment on column "USER_PASSWORD"."LAST_ERROR_TIME" is '最后一次密码校验错误时间';
+comment on column "USER_PASSWORD"."LAST_FAILURE_TIME" is '最后一次密码校验错误时间';
 comment on column "USER_PASSWORD"."ERROR_TIMES" is '密码错误次数';
 comment on column "USER_PASSWORD"."UNLOCK_TIME" is '解锁时间';
 comment on column "USER_PASSWORD"."CREATE_TYPE" is '密码创建类型（CUSTOM:用户自定义, SYSTEM:系统生成）';

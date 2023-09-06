@@ -48,7 +48,7 @@ def require_login(func):
             user_no = payload['data']['id']
             issued_at = payload['iat']
             # 存储用户编号
-            localvars.setg('user_no', user_no)
+            localvars.set('user_no', user_no)
         except jwt.ExpiredSignatureError:
             return failed_response(ErrorCode.E401001, msg='token已失效')
         except jwt.InvalidTokenError:
@@ -75,11 +75,12 @@ def require_login(func):
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
         user_password = TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
-        if datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
+        # 非平台用户不校验最后成功登录时间和签发时间
+        if user_password and datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
             logger.bind(traceid=g.trace_id).info('token已失效')
             return failed_response(ErrorCode.E401001)
 
-        localvars.setg('operator', user.USER_NAME)
+        localvars.set('operator', user.USER_NAME)
         return func(*args, **kwargs)
 
     return wrapper
@@ -101,7 +102,7 @@ def require_permission(code):
 
             # 查询用户权限，判断权限是否存在且状态正常
             if exists_user_permission(user_no, code):
-                localvars.setg('permission_code', code)  # 存储权限唯一代码
+                localvars.set('permission_code', code)  # 存储权限唯一代码
                 return func(*args, **kwargs)
 
             # 超级管理员无需校验权限
@@ -142,7 +143,7 @@ def require_thirdparty_access(func):
             logger.bind(traceid=g.trace_id).info('第三方应用状态异常')
             return failed_response(ErrorCode.E401003)
         # 存储appno
-        localvars.setg('thirdparty_app_no', appno)
+        localvars.set('thirdparty_app_no', appno)
         return func(*args, **kwargs)
 
     return wrapper
@@ -207,7 +208,7 @@ def is_super_admin(user_no):
     ).filter(
         TRole.DELETED == 0,
         TRole.STATE == 'ENABLE',
-        TRole.ROLE_CODE == 'SUPER_ADMIN',
+        TRole.ROLE_CODE == 'ADMIN',
         TUserRole.DELETED == 0,
         TUserRole.USER_NO == user_no,
         TUserRole.ROLE_NO == TRole.ROLE_NO

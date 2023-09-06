@@ -43,7 +43,7 @@ def query_role_list(req):
             'roleRank': role.ROLE_RANK,
             'state': role.STATE
         }
-        for role in pagination.items if role.ROLE_CODE != 'SUPER_ADMIN'
+        for role in pagination.items if role.ROLE_CODE != 'ADMIN'
     ]
 
     return {'data': data, 'total': pagination.total}
@@ -62,7 +62,7 @@ def query_role_all():
             'roleRank': role.ROLE_RANK,
             'state': role.STATE
         }
-        for role in roles if role.ROLE_CODE != 'SUPER_ADMIN'
+        for role in roles if role.ROLE_CODE != 'ADMIN'
     ]
 
 

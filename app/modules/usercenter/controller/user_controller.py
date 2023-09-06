@@ -15,11 +15,22 @@ from app.tools.require import require_permission
 def login():
     """用户登录"""
     req = JsonParser(
-        Argument('loginName', required=True, nullable=False, help='登录账号或密码不能为空'),
-        Argument('password', required=True, nullable=False, help='登录账号或密码不能为空'),
+        Argument('loginName', required=True, nullable=False, help='账号或密码不能为空'),
+        Argument('password', required=True, nullable=False, help='账号或密码不能为空'),
         Argument('index', required=True, nullable=False, help='密钥索引不能为空')
     ).parse()
     return service.login(req)
+
+
+@blueprint.post('/user/login/by/enterprise')
+def login_by_enterprise():
+    """企业登录"""
+    req = JsonParser(
+        Argument('email', required=True, nullable=False, help='邮箱或密码不能为空'),
+        Argument('password', required=True, nullable=False, help='邮箱或密码不能为空'),
+        Argument('index', required=True, nullable=False, help='密钥索引不能为空')
+    ).parse()
+    return service.login_by_enterprise(req)
 
 
 @blueprint.post('/user/logout')
@@ -42,7 +53,7 @@ def modify_user_info():
     """更新用户信息"""
     req = JsonParser(
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('mobileNo'),
+        Argument('mobile'),
         Argument('email')
     ).parse()
     return service.modify_user_info(req)
@@ -79,7 +90,7 @@ def register():
         Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
         Argument('password', required=True, nullable=False, help='用户密码不能为空'),
-        Argument('mobileNo'),
+        Argument('mobile'),
         Argument('email'),
         Argument('roles', type=list),
         Argument('groups', type=list)
@@ -107,7 +118,7 @@ def query_user_list():
         Argument('userNo'),
         Argument('userName'),
         Argument('loginName'),
-        Argument('mobileNo'),
+        Argument('mobile'),
         Argument('email'),
         Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
@@ -132,7 +143,7 @@ def modify_user():
     req = JsonParser(
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
         Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('mobileNo'),
+        Argument('mobile'),
         Argument('email'),
         Argument('roles', type=list),
         Argument('groups', type=list)

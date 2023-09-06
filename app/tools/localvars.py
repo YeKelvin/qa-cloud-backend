@@ -32,5 +32,5 @@ def get_issued_at():
     return getattr(g, 'issued_at', None)
 
 
-def setg(key, value):  # noqa
+def set(key, value):
     g.setdefault(key, value)

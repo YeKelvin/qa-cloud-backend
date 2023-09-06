@@ -9,5 +9,9 @@ def select_by_no(user_no) -> TUser:
     return TUser.filter_by(USER_NO=user_no).first()
 
 
+def select_by_email(email) -> TUser:
+    return TUser.filter_by(EMAIL=email).first()
+
+
 def select_first(**kwargs) -> TUser:
     return TUser.filter_by(**kwargs).first()
