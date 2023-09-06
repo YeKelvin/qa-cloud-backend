@@ -166,6 +166,14 @@ def login_by_enterprise(req):
             USER_NO=user_no,
             ROLE_NO=role.ROLE_NO
         )
+        # 创建个人空间
+        worksapce_no = new_id()
+        TWorkspace.insert(
+            WORKSPACE_NO=worksapce_no,
+            WORKSPACE_NAME='个人空间',
+            WORKSPACE_SCOPE='PRIVATE'
+        )
+        TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
     # 记录用户登录日志
     TUserLoginLog.insert(
         USER_NO=user_no,

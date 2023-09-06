@@ -10,6 +10,7 @@ blueprint = Blueprint('usercenter', __name__, url_prefix='/usercenter')
 
 from . import auth_controller               # noqa
 from . import group_controller              # noqa
+from . import login_log_controller          # noqa
 from . import permission_controller         # noqa
 from . import role_controller               # noqa
 from . import role_permission_controller    # noqa
