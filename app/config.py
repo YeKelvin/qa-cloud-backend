@@ -2,52 +2,57 @@
 # @File    : config.py
 # @Time    : 2021-11-03 22:45:55
 # @Author  : Kelvin.Ye
-import configparser
 import os
+
+
+try:
+    import tomllib  # noqa
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 
 # 项目路径
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 # 配置文件路径
 if 'APP_CONFIG_FILE' not in os.environ:
-    APP_CONFIG_FILE = os.path.join(PROJECT_PATH, 'config.ini')
+    APP_CONFIG_FILE = os.path.join(PROJECT_PATH, 'config.toml')
     os.environ['APP_CONFIG_FILE'] = APP_CONFIG_FILE
 else:
     APP_CONFIG_FILE = os.environ.get('APP_CONFIG_FILE')
 
 
-# 配置对象
-__config__ = configparser.ConfigParser()
-__config__.read(APP_CONFIG_FILE)
+# 读取配置文件
+with open(APP_CONFIG_FILE, encoding='utf-8') as f:
+    CONFIGS = tomllib.loads(''.join(f.readlines()))
 
 
 # 配置项
 # 服务相关配置
-SERVICE_HTTP_PROTOCOL = __config__.get('service', 'http.protocol')
-SERVICE_HTTP_HOST = __config__.get('service', 'http.host')
-SERVICE_HTTP_PORT = __config__.get('service', 'http.port')
-BASE_URL = __config__.get('service', 'baseurl')
+BASE_URL = CONFIGS['service']['baseurl']
 
 # 日志相关配置
-LOG_FILE = __config__.get('log', 'file')
-LOG_LEVEL = __config__.get('log', 'level')
+LOG_FILE = CONFIGS['log']['file'].replace('.log', '')
+LOG_LEVEL = CONFIGS['log']['level']
 
 # 数据库相关配置
-DB_TYPE = __config__.get('db', 'type')
-DB_URL = __config__.get('db', 'url')
+DB_TYPE = CONFIGS['db']['type']
+DB_URL = CONFIGS['db']['url']
 
 # JWT相关配置
-JWT_ISSUER = __config__.get('jwt', 'issuer')
-JWT_SECRET_KEY = __config__.get('jwt', 'secret.key')
-JWT_EXPIRE_TIME = __config__.get('jwt', 'expire.time')
+JWT_ISSUER = CONFIGS['jwt']['issuer']
+JWT_SECRET_KEY = CONFIGS['jwt']['secret_key']
+JWT_EXPIRE_TIME = CONFIGS['jwt']['expire_time']
 
 # 雪花算法相关配置
-SNOWFLAKE_DATACENTER_ID = __config__.get('snowflake', 'datacenter.id')
-SNOWFLAKE_WORKER_ID = __config__.get('snowflake', 'worker.id')
-SNOWFLAKE_SEQUENCE = __config__.get('snowflake', 'sequence')
+SNOWFLAKE_DATACENTER_ID = CONFIGS['snowflake']['datacenter_id']
+SNOWFLAKE_WORKER_ID = CONFIGS['snowflake']['worker_id']
+SNOWFLAKE_SEQUENCE = CONFIGS['snowflake']['sequence']
 
 # 线程相关配置
-THREAD_EXECUTOR_WORKERS_MAX = int(__config__.get('thread', 'executor.workers.max'))
+THREAD_EXECUTOR_WORKERS_MAX = int(CONFIGS['thread']['executor']['max_workers'])
 
 # 定时任务相关配置
-SCHEDULE_JOB_INSTANCES_MAX = __config__.get('schedule', 'job.instances.max')
+SCHEDULE_JOB_INSTANCES_MAX = CONFIGS['schedule']['job']['max_instances']
+
+# 企业登录API
+SSO_ENTERPRISE_URL = CONFIGS['sso']['enterprise']['url']

@@ -1,0 +1,29 @@
+[service]
+baseurl = 'http://127.0.0.1:5000'
+
+[log]
+file = 'app.log'
+level = 'DEBUG'
+
+[db]
+type = 'postgresql'
+url = 'postgresql+psycopg2://postgres:postgres@localhost/postgres?client_encoding=utf8&options=-c%20TimeZone%3DAsia%2FShanghai'
+
+[jwt]
+issuer = 'dev'
+secret_key = 'dev'
+expire_time = '604800'  # 7天有效
+
+[snowflake]
+datacenter_id = '0'
+worker_id = '0'
+sequence = '0'
+
+[thread]
+executor.max_workers = 10
+
+[schedule]
+job.max_instances = 10
+
+[sso]
+enterprise.url = ''
