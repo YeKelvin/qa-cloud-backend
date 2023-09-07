@@ -10,6 +10,7 @@ from app.tools.exceptions import ServiceError
 
 
 def _request(method, url, **kwargs) -> httpx.Response:
+    kwargs['timeout'] = 10
     try:
         res = httpx.request(method, url, **kwargs)
         if not res.is_success:

@@ -7,6 +7,7 @@ from datetime import timezone
 
 from flask import request
 from loguru import logger
+from sqlalchemy import or_
 
 from app import config as CONFIG
 from app.database import dbquery
@@ -108,7 +109,8 @@ def login(req):
             LOGIN_NAME=login_info.LOGIN_NAME,
             LOGIN_TYPE=login_info.LOGIN_TYPE,
             LOGIN_METHOD='PASSWORD',
-            LOGIN_IP=remote_addr()
+            LOGIN_IP=remote_addr(),
+            LOGIN_TIME=timestamp_to_utc8_datetime(issued_at)
         )
 
         # 更新用户登录状态
@@ -126,36 +128,39 @@ def login(req):
 def login_by_enterprise(req):
     if not CONFIG.SSO_ENTERPRISE_URL:
         raise ServiceError('暂未启用企业账号登录')
+
     # 密码RSA解密
     secret_key = user_secret_key_dao.select_by_index(req.index)
     check_exists(secret_key, error_msg='加密因子不存在')
     decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
+
     # 企业登录认证
-    res = http_client.post(
+    sso_res = http_client.post(
         url=CONFIG.SSO_ENTERPRISE_URL,
         json={
             'email': req.email,
             'password': decrypted_password
         }
     )
-    if not res['success']:
+    if sso_res['code'] != 200:
         logger.info(f'企业账号:[ {req.email} ] 企业账号认证请求失败')
-        raise ServiceError(res['message'])
-    # 登录成功
+        raise ServiceError(sso_res['message'])
     logger.info(f'企业账号:[ {req.email} ] 企业账号认证成功')
-    sso_result = res['result']
+
     # 查询用户信息
     user = user_dao.select_by_email(req.email)
     user_no = user.USER_NO if user else new_id()
+
     # 用户不存在时新增
+    sso_res_data = sso_res['data']
     if not user:
         logger.info(f'企业账号:[ {req.email} ] 平台用户信息不存在，创建用户并绑定默认角色')
         # 创建用户
         TUser.insert(
             USER_NO=user_no,
-            USER_NAME=sso_result['userName'],
-            MOBILE=sso_result['mobile'],
-            EMAIL=sso_result['email'],
+            USER_NAME=sso_res_data['username'],
+            MOBILE=sso_res_data['mobile'],
+            EMAIL=sso_res_data['email'],
             STATE='ENABLE',
             SSO=True,
             LOGGED_IN=True
@@ -174,16 +179,32 @@ def login_by_enterprise(req):
             WORKSPACE_SCOPE='PRIVATE'
         )
         TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    else:
+        # 更新用户信息和登录状态
+        kwargs = {'LOGGED_IN': True}
+        if user.USER_NAME != sso_res_data['username']:
+            kwargs['USER_NAME'] = sso_res_data['username']
+        if user.MOBILE != sso_res_data['mobile']:
+            kwargs['MOBILE'] = sso_res_data['mobile']
+        if user.SSO is not True:
+            kwargs['SSO'] = True
+        user.update(**kwargs)
+
+    # token签发时间
+    issued_at = timestamp_now()
+
     # 记录用户登录日志
     TUserLoginLog.insert(
         USER_NO=user_no,
         LOGIN_NAME=req.email,
         LOGIN_TYPE='EMAIL',
         LOGIN_METHOD='ENTERPRISE',
-        LOGIN_IP=remote_addr()
+        LOGIN_IP=remote_addr(),
+        LOGIN_TIME=timestamp_to_utc8_datetime(issued_at)
     )
+
     # 生成access-token
-    return {'accessToken': JWTAuth.encode_token(user_no, timestamp_now())}
+    return {'accessToken': JWTAuth.encode_token(user_no, issued_at)}
 
 
 def remote_addr():
@@ -279,14 +300,16 @@ def reset_login_password(req):
 @http_service
 def query_user_list(req):
     # 查询条件
-    conds = QueryCondition(TUser, TUserLoginInfo)
+    conds = QueryCondition()
+    conds.add(TUser.DELETED == 0)
+    conds.add(or_(TUserLoginInfo.DELETED == 0, TUserLoginInfo.DELETED.is_(None)))
+    conds.add(or_(TUserLoginInfo.LOGIN_TYPE == 'ACCOUNT', TUserLoginInfo.LOGIN_TYPE.is_(None)))
+    conds.notequal(TUser.USER_NO, '9999')
     conds.like(TUser.USER_NO, req.userNo)
     conds.like(TUser.USER_NAME, req.userName)
     conds.like(TUser.MOBILE, req.mobile)
     conds.like(TUser.EMAIL, req.email)
     conds.like(TUser.STATE, req.state)
-    conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
-    conds.equal(TUserLoginInfo.LOGIN_TYPE, 'ACCOUNT')
     conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
 
     # 查询用户列表
@@ -298,8 +321,10 @@ def query_user_list(req):
             TUser.EMAIL,
             TUser.STATE,
             TUser.AVATAR,
+            TUser.SSO,
             TUserLoginInfo.LOGIN_NAME
         )
+        .outerjoin(TUserLoginInfo, TUserLoginInfo.USER_NO == TUser.USER_NO)
         .filter(*conds)
         .order_by(TUser.CREATED_TIME.desc())
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
@@ -347,16 +372,25 @@ def query_user_list(req):
 @http_service
 def query_user_all():
     # 查询条件
-    conds = QueryCondition(TUser, TUserLoginInfo)
-    conds.equal(TUser.USER_NO, TUserLoginInfo.USER_NO)
+    conds = QueryCondition()
+    conds.add(TUser.DELETED == 0)
+    conds.add(or_(TUserLoginInfo.DELETED == 0, TUserLoginInfo.DELETED.is_(None)))
+    conds.add(or_(TUserLoginInfo.LOGIN_TYPE == 'ACCOUNT', TUserLoginInfo.LOGIN_TYPE.is_(None)))
+    conds.notequal(TUser.USER_NO, '9999')
 
     # 查询用户列表
-    users = dbquery(
-        TUser.USER_NO,
-        TUser.USER_NAME,
-        TUser.STATE,
-        TUserLoginInfo.LOGIN_NAME
-    ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
+    users = (
+        dbquery(
+            TUser.USER_NO,
+            TUser.USER_NAME,
+            TUser.STATE,
+            TUserLoginInfo.LOGIN_NAME
+        )
+        .outerjoin(TUserLoginInfo, TUserLoginInfo.USER_NO == TUser.USER_NO)
+        .filter(*conds)
+        .order_by(TUser.CREATED_TIME.desc())
+        .all()
+    )
 
     return [
         {

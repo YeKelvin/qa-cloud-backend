@@ -20,8 +20,8 @@ def query_login_log_list(req):
     conds.equal(TUserLoginLog.LOGIN_TYPE, req.loginType)
     conds.equal(TUserLoginLog.LOGIN_METHOD, req.loginMethod)
     conds.equal(TUserLoginLog.USER_NO, TUser.USER_NO)
-    conds.ge(TUserLoginLog.CREATED_TIME, req.startTime)
-    conds.le(TUserLoginLog.CREATED_TIME, req.endTime)
+    conds.ge(TUserLoginLog.LOGIN_TIME, req.startTime)
+    conds.le(TUserLoginLog.LOGIN_TIME, req.endTime)
 
     # 查询日志列表
     pagination = (
@@ -31,10 +31,10 @@ def query_login_log_list(req):
             TUserLoginLog.LOGIN_TYPE,
             TUserLoginLog.LOGIN_METHOD,
             TUserLoginLog.LOGIN_IP,
-            TUserLoginLog.CREATED_TIME
+            TUserLoginLog.LOGIN_TIME
         )
         .filter(*conds)
-        .order_by(TUserLoginLog.CREATED_TIME.desc())
+        .order_by(TUserLoginLog.LOGIN_TIME.desc())
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
@@ -45,7 +45,7 @@ def query_login_log_list(req):
             'loginType': item.LOGIN_TYPE,
             'loginMethod': item.LOGIN_METHOD,
             'loginIp': item.LOGIN_IP,
-            'loginTime': item.CREATED_TIME.strftime(TIMEFMT)
+            'loginTime': item.LOGIN_TIME.strftime(TIMEFMT)
         }
         for item in pagination.items
     ]

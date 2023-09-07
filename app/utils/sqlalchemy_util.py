@@ -2,6 +2,7 @@
 # @File    : sqlalchemy_util.py
 # @Time    : 2020/1/6 17:07
 # @Author  : Kelvin.Ye
+from sqlalchemy import or_
 
 
 def paginate(page, page_size):
@@ -20,6 +21,9 @@ class QueryCondition(list):
     def add_table(self, table):
         if table:
             self.append(table.DELETED == 0)
+
+    def add(self, condition):
+        self.append(condition)
 
     def like(self, column, value):
         """模糊匹配"""
@@ -63,3 +67,6 @@ class QueryCondition(list):
     def notin_(self, column, *args):
         if args := [arg for arg in args if arg]:
             self.append(column.notin_(*args))
+
+    def or_(self, *args):
+        self.append(or_(*args))

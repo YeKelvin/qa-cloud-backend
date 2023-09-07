@@ -20,7 +20,7 @@ from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TRolePermission
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserGroup
-from app.modules.usercenter.model import TUserPassword
+from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserRole
 from app.tools import localvars
 from app.tools.auth import JWTAuth
@@ -74,9 +74,8 @@ def require_login(func):
             return failed_response(ErrorCode.E401001)
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
-        user_password = TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
-        # 非平台用户不校验最后成功登录时间和签发时间
-        if user_password and datetime.fromtimestamp(issued_at) != user_password.LAST_SUCCESS_TIME:
+        user_login_log = TUserLoginLog.filter_by(USER_NO=user_no).order_by(TUserLoginLog.CREATED_TIME.desc()).first()
+        if user_login_log.LOGIN_TIME != datetime.fromtimestamp(issued_at):
             logger.bind(traceid=g.trace_id).info('token已失效')
             return failed_response(ErrorCode.E401001)
 
@@ -152,7 +151,7 @@ def require_thirdparty_access(func):
 def failed_response(error: ErrorCode, msg=None):
     logger.bind(traceid=g.trace_id).info(
         f'uri:[ {request.method} {request.path} ] '
-        f'header:[ {dict(request.headers)} ] request:[ {request.values} ]'
+        f'header:[ {dict(request.headers)} ] request:[ {dict(request.values)} ]'
     )
     res = ResponseDTO(error=error, errorMsg=msg)
     http_res = http_response(res)

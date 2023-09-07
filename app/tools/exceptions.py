@@ -6,32 +6,9 @@ from enum import Enum
 from enum import unique
 
 
-class ServiceError(Exception):
-    """业务异常类"""
-
-    def __init__(self, msg: str = None, code: str = None, error: 'ErrorCode' = None):
-        super().__init__(self)
-        if error is None:
-            self.message = msg
-            self.code = code
-        else:
-            self.message = error.value  # type: str
-            self.code = error.name  # type: str
-
-
-class ParseError(Exception):
-    """请求参数解析异常类"""
-
-    def __init__(self, msg=None):
-        self.message = msg
-
-
-class TestplanInterruptError(Exception):
-    ...
-
-
 @unique
 class ErrorCode(Enum):
+    # TODO: 错误码改造
     """业务错误码枚举
 
     错误码命名规范：E前缀+后三位数，后三位数从000开始递增
@@ -74,3 +51,27 @@ class ErrorCode(Enum):
 
     # 500
     E500000 = '内部错误'
+
+
+class ServiceError(Exception):
+    """业务异常类"""
+
+    def __init__(self, msg: str = None, code: str = None, error: ErrorCode = None):
+        super().__init__(self)
+        if error is None:
+            self.message = msg
+            self.code = code
+        else:
+            self.message = error.value  # type: str
+            self.code = error.name  # type: str
+
+
+class ParseError(Exception):
+    """请求参数解析异常类"""
+
+    def __init__(self, msg=None):
+        self.message = msg
+
+
+class TestplanInterruptError(Exception):
+    ...

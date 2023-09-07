@@ -118,6 +118,7 @@ class TUserLoginLog(DBModel, BaseColumn):
     LOGIN_TYPE = db.Column(db.String(32), comment='登录类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
     LOGIN_METHOD = db.Column(db.String(32), comment='登录方式(PASSWORD:密码认证, ENTERPRISE:企业认证)')
     LOGIN_IP = db.Column(db.String(256), comment='登录IP')
+    LOGIN_TIME = db.Column(db.DateTime, comment='登录时间')
 
 
 class TUserPassword(DBModel, BaseColumn):

@@ -29,27 +29,18 @@ class InterceptHandler(logging.Handler):
             depth += 1
 
         # 过滤
-        if (
-            (
-                'werkzeug' in record.name or
-                'sqlalchemy' in record.name or
-                'apscheduler' in record.name
-            ) and
-            record.levelno < logging.INFO
-        ):
+        if is_filtered_modules(record, logging.INFO, modules=['werkzeug', 'sqlalchemy', 'apscheduler']):
             return
-        if (
-            (
-                'httpx' in record.name or
-                'httpcore' in record.name or
-                'blinker' in record.name or
-                'faker' in record.name
-            ) and
-            record.levelno < logging.WARNING
-        ):
+        if is_filtered_modules(record, logging.WARNING, modules=['httpx', 'httpcore', 'blinker', 'faker']):
             return
 
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+def is_filtered_modules(record, logging_level, modules: list):
+    for module in modules:
+        if module in record.name and record.levelno < logging_level:
+            return True
 
 
 def trace_id(record):
@@ -69,7 +60,7 @@ def console_formatter(record):
     else:
         return (
             '<green>[{time:%Y-%m-%d %H:%M:%S.%f}]</green> '
-            '<level>[{level}] [{module}:{function}:{line}] ' + trace_id(record) + '{message}</level>\n'
+            '<level>[{level}] [{module}.{function}:{line}] ' + trace_id(record) + '{message}</level>\n'
             '{exception}'
         )
 
@@ -82,6 +73,6 @@ def file_formatter(record):
         return '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] ' + trace_id(record) + '{message}\n{exception}'
     else:
         return (
-            '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}:{function}:{line}] ' + trace_id(record) + '{message}\n'
+            '[{time:%Y-%m-%d %H:%M:%S.%f}] [{level}] [{module}.{function}:{line}] ' + trace_id(record) + '{message}\n'
             '{exception}'
         )
