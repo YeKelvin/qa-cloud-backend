@@ -8,4 +8,5 @@ from flask import Blueprint
 blueprint = Blueprint('system', __name__, url_prefix='/system')
 
 
-from . import apilog_controller  # noqa
+from . import apilog_controller     # noqa
+from . import platform_controller   # noqa
