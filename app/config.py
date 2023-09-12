@@ -16,7 +16,6 @@ PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 # 配置文件路径
 if 'APP_CONFIG_FILE' not in os.environ:
     APP_CONFIG_FILE = os.path.join(PROJECT_PATH, 'config.toml')
-    os.environ['APP_CONFIG_FILE'] = APP_CONFIG_FILE
 else:
     APP_CONFIG_FILE = os.environ.get('APP_CONFIG_FILE')
 
@@ -35,8 +34,8 @@ LOG_FILE = CONFIGS['log']['file'].replace('.log', '')
 LOG_LEVEL = CONFIGS['log']['level']
 
 # 数据库相关配置
-DB_TYPE = CONFIGS['db']['type']
-DB_URL = CONFIGS['db']['url']
+DB_TYPE = CONFIGS['database']['type']
+DB_URL = CONFIGS['database']['url']
 
 # JWT相关配置
 JWT_ISSUER = CONFIGS['jwt']['issuer']
@@ -52,7 +51,7 @@ SNOWFLAKE_SEQUENCE = CONFIGS['snowflake']['sequence']
 THREAD_EXECUTOR_WORKERS_MAX = int(CONFIGS['thread']['executor']['max_workers'])
 
 # 定时任务相关配置
-SCHEDULE_JOB_INSTANCES_MAX = CONFIGS['schedule']['job']['max_instances']
+SCHEDULE_JOB_INSTANCES_MAX = int(CONFIGS['schedule']['job']['max_instances'])
 
 # 企业登录API
 SSO_ENTERPRISE_URL = CONFIGS['sso']['enterprise']['url']

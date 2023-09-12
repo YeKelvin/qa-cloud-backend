@@ -6,6 +6,8 @@ import os
 
 from concurrent.futures import ThreadPoolExecutor
 
+import sqlalchemy
+
 from apscheduler.schedulers.gevent import GeventScheduler
 from flask_apscheduler.scheduler import APScheduler
 from flask_migrate import Migrate
@@ -21,7 +23,7 @@ sio_opts = {}
 if FLASK_DEBUG:
     sio_opts['cors_allowed_origins'] = '*'
 
-db = SQLAlchemy()
+db: sqlalchemy = SQLAlchemy()
 migrate = Migrate()
 socketio = SocketIO(**sio_opts)
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)

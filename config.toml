@@ -1,11 +1,11 @@
 [service]
-baseurl = 'http://127.0.0.1:5000'
+baseurl = 'http://127.0.0.1'
 
 [log]
 file = 'app.log'
 level = 'DEBUG'
 
-[db]
+[database]
 type = 'postgresql'
 url = 'postgresql+psycopg2://postgres:postgres@localhost/postgres?client_encoding=utf8&options=-c%20TimeZone%3DAsia%2FShanghai'
 

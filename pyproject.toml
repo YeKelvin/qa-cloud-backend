@@ -26,7 +26,7 @@ priority = "primary"
 python = "^3.8"
 # flask
 flask = "2.3.3"
-flask-sqlalchemy = "3.0.5"
+flask-sqlalchemy = "3.1.1"
 flask-socketio = "5.3.6"
 flask-migrate = "4.0.4"
 flask-apscheduler = "1.12.4"
