@@ -41,7 +41,7 @@ from app.modules.script.model import TTestplanExecutionItems
 from app.modules.script.model import TTestplanExecutionSettings
 from app.modules.script.model import TTestReport
 from app.modules.usercenter.dao import user_dao
-from app.tools.cache import EXECUTING_PYMETER_STORE
+from app.tools.cache import executing_pymeters
 from app.tools.exceptions import ServiceError
 from app.tools.exceptions import TestplanInterruptError
 from app.tools.identity import new_id
@@ -60,12 +60,12 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 
 def create_stop_event(socket_id, result_id):
     stop_event = Event()
-    EXECUTING_PYMETER_STORE[socket_id] = {'result_id': result_id, 'stop_event': stop_event}
+    executing_pymeters[socket_id] = {'result_id': result_id, 'stop_event': stop_event}
     return stop_event
 
 
 def remove_stop_event(socket_id):
-    EXECUTING_PYMETER_STORE.pop(socket_id)
+    executing_pymeters.pop(socket_id)
 
 
 def debug_pymeter(script, socket_id, result_id):

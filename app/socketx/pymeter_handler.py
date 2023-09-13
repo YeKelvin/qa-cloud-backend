@@ -6,7 +6,7 @@ from flask import request
 
 from app.extension import socketio
 from app.socketx.io import emit
-from app.tools.cache import EXECUTING_PYMETER_STORE
+from app.tools.cache import executing_pymeters
 from app.tools.service import socket_service
 
 
@@ -15,7 +15,7 @@ from app.tools.service import socket_service
 def cancel_execution():
     """用户中断调试"""
     socket_id = request.sid
-    if socket_id not in EXECUTING_PYMETER_STORE:
+    if socket_id not in executing_pymeters:
         return
     running = get_running_pymeter(socket_id)
     stop_event = running.get('stop_event')
@@ -29,4 +29,4 @@ def cancel_execution():
 
 
 def get_running_pymeter(socket_id):
-    return EXECUTING_PYMETER_STORE[socket_id]
+    return executing_pymeters[socket_id]

@@ -139,11 +139,3 @@ class TUserSettings(DBModel, BaseColumn):
     __tablename__ = 'USER_SETTINGS'
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
     DATA = db.Column(JSONB, comment='用户设置')
-
-
-class TUserSecretKey(DBModel, BaseColumn):
-    """用户密钥表"""
-    # TODO: 单机读内存，集群读redis
-    __tablename__ = 'USER_SECRET_KEY'
-    INDEX = db.Column(db.String(128), index=True, nullable=False, comment='索引编号')
-    DATA = db.Column(db.Text, nullable=False, comment='密钥')

@@ -9,4 +9,8 @@ RULE_MAP = {}
 
 
 # 运行中的pymeter的缓存，用于中断执行
-EXECUTING_PYMETER_STORE = {}
+executing_pymeters = {}
+
+
+# 加密因子缓存
+encryption_factors = {}

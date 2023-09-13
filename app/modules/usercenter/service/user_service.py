@@ -20,7 +20,6 @@ from app.modules.usercenter.dao import user_group_dao
 from app.modules.usercenter.dao import user_login_info_dao
 from app.modules.usercenter.dao import user_password_dao
 from app.modules.usercenter.dao import user_role_dao
-from app.modules.usercenter.dao import user_secret_key_dao
 from app.modules.usercenter.dao import user_settings_dao
 from app.modules.usercenter.enum import UserState
 from app.modules.usercenter.model import TGroup
@@ -33,6 +32,7 @@ from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserPassword
 from app.modules.usercenter.model import TUserRole
 from app.modules.usercenter.model import TUserSettings
+from app.tools import cache
 from app.tools import http_client
 from app.tools import localvars
 from app.tools.auth import JWTAuth
@@ -76,9 +76,10 @@ def login(req):
             raise ServiceError('账号或密码不正确')
 
         # 密码RSA解密
-        secret_key = user_secret_key_dao.select_by_index(req.index)
-        check_exists(secret_key, error_msg='加密因子不存在')
-        decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
+        secret_key = cache.encryption_factors.get(req.index)
+        if not secret_key:
+            raise ServiceError('加密因子不存在')
+        decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key)
 
         # 校验密码是否正确
         password_success = check_password(req.loginName, user_password.PASSWORD, decrypted_password)
@@ -119,7 +120,7 @@ def login(req):
         raise
     finally:
         # 删除密钥索引
-        user_secret_key_dao.delete_by_index(req.index)
+        cache.encryption_factors.pop(req.index)
 
     return {'accessToken': token}
 
@@ -130,9 +131,10 @@ def login_by_enterprise(req):
         raise ServiceError('暂未启用企业账号登录')
 
     # 密码RSA解密
-    secret_key = user_secret_key_dao.select_by_index(req.index)
-    check_exists(secret_key, error_msg='加密因子不存在')
-    decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key.DATA)
+    secret_key = cache.encryption_factors.get(req.index)
+    if not secret_key:
+        raise ServiceError('加密因子不存在')
+    decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key)
 
     # 企业登录认证
     sso_res = http_client.post(
@@ -539,10 +541,11 @@ def modify_user_password(req):
         login_password = user_password_dao.select_loginpwd_by_user(user_no)
         check_exists(login_password, error_msg='账号或密码不正确')
         # 查询密钥
-        secret_key = user_secret_key_dao.select_by_index(req.index)
-        check_exists(secret_key, error_msg='加密因子不存在')
+        secret_key = cache.encryption_factors.get(req.index)
+        if not secret_key:
+            raise ServiceError('加密因子不存在')
         # 解密旧密码
-        old_decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key.DATA)
+        old_decrypted_password = decrypt_by_rsa_private_key(req.oldPassword, secret_key)
         # 校验密码是否正确
         password_success = check_password(login_info.LOGIN_NAME, login_password.PASSWORD, old_decrypted_password)
         # 密码校验失败
@@ -565,7 +568,7 @@ def modify_user_password(req):
         raise
     finally:
         # 删除密钥索引
-        user_secret_key_dao.delete_by_index(req.index)
+        cache.encryption_factors.pop(req.index)
 
 
 @http_service

@@ -14,7 +14,7 @@ from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserPassword
 from app.tools import localvars
 from app.tools.auth import JWTAuth
-from app.tools.cache import EXECUTING_PYMETER_STORE
+from app.tools.cache import executing_pymeters
 
 
 @socketio.on('connect')
@@ -28,7 +28,7 @@ def connect():
 def disconnect():
     """socket关闭"""
     logger.info(f'socketid:[ {request.sid} ] namespace:[ {request.namespace} ] event:[ disconnect ]')
-    if running := EXECUTING_PYMETER_STORE.get('request.sid'):
+    if running := executing_pymeters.get('request.sid'):
         stop_event = running.get('stop_event')
         stop_event.set()
 

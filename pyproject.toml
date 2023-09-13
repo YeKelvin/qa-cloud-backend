@@ -108,3 +108,22 @@ dedent_closing_brackets = true
 join_multiple_lines = true
 spaces_before_comment = 2
 split_before_dot = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--color=auto",
+    "--capture=tee-sys",
+    "--code-highlight=yes",
+    "--disable-warnings",
+    "--html=report.html",
+    "--self-contained-html"
+]
+log_cli = true
+log_level = "INFO"
+log_format = "[%(asctime)s][%(levelname)s][%(name)s.%(funcName)s:%(lineno)d] %(message)s"
+python_files = ["*_test.py", "*_example.py"]
+python_classes = "*TestSuite"
+python_functions = "test_*"
+filterwarnings = ["error", "ignore::DeprecationWarning"]
+required_plugins = ["pytest-html"]
