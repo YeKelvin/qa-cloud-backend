@@ -84,13 +84,21 @@ def init_user():
         CREATE_TYPE='CUSTOMER'
     )
     # 创建管理员空间
-    worksapce_no = new_id()
+    workspace_no = new_id()
     TWorkspace.insert_without_record(
-        WORKSPACE_NO=worksapce_no,
+        WORKSPACE_NO=workspace_no,
         WORKSPACE_NAME='个人空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
-    TWorkspaceUser.insert_without_record(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    TWorkspaceUser.insert_without_record(WORKSPACE_NO=workspace_no, USER_NO=user_no)
+    # 创建空间变量
+    TVariableDataset.insert(
+        WORKSPACE_NO=workspace_no,
+        DATASET_NO=new_id(),
+        DATASET_NAME='空间变量',
+        DATASET_TYPE='WORKSPACE',
+        DATASET_WEIGHT=2
+    )
     click.echo('创建初始用户成功')
 
 
@@ -165,10 +173,10 @@ def init_permission_item():
         print(rule)
     """
     # user
-    create_permission('USERCENTER', 'USER', '用户注册', 'REGISTER', 'CREATE')
-    create_permission('USERCENTER', 'USER', '重置密码', 'RESET_PASSWORD', 'MODIFY')
     create_permission('USERCENTER', 'USER', '查询用户', 'QUERY_USER', 'QUERY')
+    create_permission('USERCENTER', 'USER', '新增用户', 'CREATE_USER', 'CREATE')
     create_permission('USERCENTER', 'USER', '修改用户', 'MODIFY_USER', 'MODIFY')
+    create_permission('USERCENTER', 'USER', '重置密码', 'RESET_PASSWORD', 'MODIFY')
     create_permission('USERCENTER', 'USER', '删除用户', 'REMOVE_USER', 'REMOVE')
     # group
     create_permission('USERCENTER', 'GROUP', '查询分组', 'QUERY_GROUP', 'QUERY')
@@ -277,7 +285,12 @@ def init_user_role():
 
 @with_appcontext
 def init_global_variable_dataset():
-    TVariableDataset.insert_without_record(DATASET_NO=new_id(), DATASET_NAME='public', DATASET_TYPE='GLOBAL', WEIGHT=1)
+    TVariableDataset.insert_without_record(
+        DATASET_NO=new_id(),
+        DATASET_NAME='public',
+        DATASET_TYPE='GLOBAL',
+        DATASET_WEIGHT=1
+    )
     click.echo('初始化PyMeter全局变量成功')
 
 

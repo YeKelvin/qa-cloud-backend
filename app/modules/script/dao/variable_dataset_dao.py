@@ -19,5 +19,10 @@ def select_first(**kwargs) -> TVariableDataset:
     return TVariableDataset.filter_by(**kwargs).first()
 
 
-def select_list_in_set_orderby_weight(*set_no) -> List[TVariableDataset]:
-    return TVariableDataset.filter(TVariableDataset.DATASET_NO.in_(set_no)).order_by(TVariableDataset.WEIGHT.asc()).all()
+def select_list_in_no(*dataset_no) -> List[TVariableDataset]:
+    return (
+        TVariableDataset
+        .filter(TVariableDataset.DATASET_NO.in_(dataset_no))
+        .order_by(TVariableDataset.DATASET_WEIGHT.asc())
+        .all()
+    )

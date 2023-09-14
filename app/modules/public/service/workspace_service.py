@@ -10,6 +10,8 @@ from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceRestriction
 from app.modules.public.model import TWorkspaceRestrictionExemption
 from app.modules.public.model import TWorkspaceUser
+from app.modules.script.enum import VariableDatasetWeight
+from app.modules.script.model import TVariableDataset
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
@@ -107,6 +109,15 @@ def create_workspace(req):
         WORKSPACE_NAME=req.workspaceName,
         WORKSPACE_SCOPE=req.workspaceScope,
         WORKSPACE_DESC=req.workspaceDesc
+    )
+
+    # 创建空间变量
+    TVariableDataset.insert(
+        WORKSPACE_NO=workspace_no,
+        DATASET_NO=new_id(),
+        DATASET_NAME='空间变量',
+        DATASET_TYPE=VariableDatasetWeight.WORKSPACE.name,
+        DATASET_WEIGHT=VariableDatasetWeight.WORKSPACE.value
     )
 
     # 管理员自动加入团队空间

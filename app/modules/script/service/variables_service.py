@@ -185,7 +185,7 @@ def create_dataset(req):
         DATASET_NAME=req.datasetName,
         DATASET_TYPE=req.datasetType,
         DATASET_DESC=req.datasetDesc,
-        WEIGHT=VariableDatasetWeight[req.datasetType].value
+        DATASET_WEIGHT=VariableDatasetWeight[req.datasetType].value
     )
 
     return {'datasetNo': dataset_no}
@@ -488,7 +488,7 @@ def duplicate_dataset(req):
         DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
-        WEIGHT=dataset.WEIGHT
+        DATASET_WEIGHT=dataset.DATASET_WEIGHT
     )
 
     # 复制变量
@@ -524,7 +524,7 @@ def copy_dataset_to_workspace(req):
         DATASET_NAME=f'{dataset.DATASET_NAME} copy',
         DATASET_TYPE=dataset.DATASET_TYPE,
         DATASET_DESC=dataset.DATASET_DESC,
-        WEIGHT=dataset.WEIGHT
+        DATASET_WEIGHT=dataset.DATASET_WEIGHT
     )
 
     # 复制变量

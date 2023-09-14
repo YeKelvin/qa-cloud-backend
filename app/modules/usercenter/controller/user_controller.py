@@ -47,6 +47,77 @@ def query_user_info():
     return service.query_user_info()
 
 
+@blueprint.get('/user/list')
+@require_login
+@require_permission('QUERY_USER')
+def query_user_list():
+    """分页查询用户列表"""
+    req = JsonParser(
+        Argument('userNo'),
+        Argument('userName'),
+        Argument('loginName'),
+        Argument('mobile'),
+        Argument('email'),
+        Argument('state'),
+        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
+        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
+    ).parse()
+    return service.query_user_list(req)
+
+
+@blueprint.get('/user/all')
+@require_login
+@require_permission('QUERY_USER')
+def query_user_all():
+    """查询全部用户"""
+    return service.query_user_all()
+
+
+@blueprint.post('/user')
+@require_login
+@require_permission('CREATE_USER')
+def create_user():
+    """用户注册"""
+    req = JsonParser(
+        Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
+        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('password', required=True, nullable=False, help='用户密码不能为空'),
+        Argument('mobile'),
+        Argument('email'),
+        Argument('roles', type=list),
+        Argument('groups', type=list)
+    ).parse()
+    return service.create_user(req)
+
+
+@blueprint.put('/user')
+@require_login
+@require_permission('MODIFY_USER')
+def modify_user():
+    """更新用户信息"""
+    req = JsonParser(
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
+        Argument('mobile'),
+        Argument('email'),
+        Argument('roles', type=list),
+        Argument('groups', type=list)
+    ).parse()
+    return service.modify_user(req)
+
+
+@blueprint.put('/user/state')
+@require_login
+@require_permission('MODIFY_USER')
+def modify_user_state():
+    """更新用户状态"""
+    req = JsonParser(
+        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
+        Argument('state', required=True, nullable=False, enum=UserState, help='用户状态不能为空')
+    ).parse()
+    return service.modify_user_state(req)
+
+
 @blueprint.put('/user/info')
 @require_login
 def modify_user_info():
@@ -81,23 +152,6 @@ def modify_user_password():
     return service.modify_user_password(req)
 
 
-@blueprint.post('/user/register')
-@require_login
-@require_permission('REGISTER')
-def register():
-    """用户注册"""
-    req = JsonParser(
-        Argument('loginName', required=True, nullable=False, help='登录账号不能为空'),
-        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('password', required=True, nullable=False, help='用户密码不能为空'),
-        Argument('mobile'),
-        Argument('email'),
-        Argument('roles', type=list),
-        Argument('groups', type=list)
-    ).parse()
-    return service.register(req)
-
-
 @blueprint.put('/user/password/reset')
 @require_login
 @require_permission('RESET_PASSWORD')
@@ -107,60 +161,6 @@ def reset_password():
         Argument('userNo', required=True, nullable=False, help='用户编号不能为空')
     ).parse()
     return service.reset_login_password(req)
-
-
-@blueprint.get('/user/list')
-@require_login
-@require_permission('QUERY_USER')
-def query_user_list():
-    """分页查询用户列表"""
-    req = JsonParser(
-        Argument('userNo'),
-        Argument('userName'),
-        Argument('loginName'),
-        Argument('mobile'),
-        Argument('email'),
-        Argument('state'),
-        Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
-        Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
-    ).parse()
-    return service.query_user_list(req)
-
-
-@blueprint.get('/user/all')
-@require_login
-@require_permission('QUERY_USER')
-def query_user_all():
-    """查询全部用户"""
-    return service.query_user_all()
-
-
-@blueprint.put('/user')
-@require_login
-@require_permission('MODIFY_USER')
-def modify_user():
-    """更新用户信息"""
-    req = JsonParser(
-        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
-        Argument('userName', required=True, nullable=False, help='用户名称不能为空'),
-        Argument('mobile'),
-        Argument('email'),
-        Argument('roles', type=list),
-        Argument('groups', type=list)
-    ).parse()
-    return service.modify_user(req)
-
-
-@blueprint.put('/user/state')
-@require_login
-@require_permission('MODIFY_USER')
-def modify_user_state():
-    """更新用户状态"""
-    req = JsonParser(
-        Argument('userNo', required=True, nullable=False, help='用户编号不能为空'),
-        Argument('state', required=True, nullable=False, enum=UserState, help='用户状态不能为空')
-    ).parse()
-    return service.modify_user_state(req)
 
 
 @blueprint.delete('/user')

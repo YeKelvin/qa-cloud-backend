@@ -13,6 +13,8 @@ from app import config as CONFIG
 from app.database import dbquery
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
+from app.modules.script.enum import VariableDatasetWeight
+from app.modules.script.model import TVariableDataset
 from app.modules.usercenter.dao import group_dao
 from app.modules.usercenter.dao import role_dao
 from app.modules.usercenter.dao import user_dao
@@ -174,13 +176,21 @@ def login_by_enterprise(req):
             ROLE_NO=role.ROLE_NO
         )
         # 创建个人空间
-        worksapce_no = new_id()
+        workspace_no = new_id()
         TWorkspace.insert(
-            WORKSPACE_NO=worksapce_no,
+            WORKSPACE_NO=workspace_no,
             WORKSPACE_NAME='个人空间',
             WORKSPACE_SCOPE='PRIVATE'
         )
-        TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+        TWorkspaceUser.insert(WORKSPACE_NO=workspace_no, USER_NO=user_no)
+        # 创建空间变量
+        TVariableDataset.insert(
+            WORKSPACE_NO=workspace_no,
+            DATASET_NO=new_id(),
+            DATASET_NAME='空间变量',
+            DATASET_TYPE=VariableDatasetWeight.WORKSPACE.name,
+            DATASET_WEIGHT=VariableDatasetWeight.WORKSPACE.value
+        )
     else:
         # 更新用户信息和登录状态
         kwargs = {'LOGGED_IN': True}
@@ -228,6 +238,11 @@ def logout():
 
 @http_service
 def register(req):
+    ...
+
+
+@http_service
+def create_user(req):
     # 查询用户登录信息
     login_info = user_login_info_dao.select_by_loginname(req.loginName)
     check_not_exists(login_info, error_msg='登录账号已存在')
@@ -262,13 +277,22 @@ def register(req):
     )
 
     # 创建个人空间
-    worksapce_no = new_id()
+    workspace_no = new_id()
     TWorkspace.insert(
-        WORKSPACE_NO=worksapce_no,
+        WORKSPACE_NO=workspace_no,
         WORKSPACE_NAME='个人空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
-    TWorkspaceUser.insert(WORKSPACE_NO=worksapce_no, USER_NO=user_no)
+    TWorkspaceUser.insert(WORKSPACE_NO=workspace_no, USER_NO=user_no)
+
+    # 创建空间变量
+    TVariableDataset.insert(
+        WORKSPACE_NO=workspace_no,
+        DATASET_NO=new_id(),
+        DATASET_NAME='空间变量',
+        DATASET_TYPE=VariableDatasetWeight.WORKSPACE.name,
+        DATASET_WEIGHT=VariableDatasetWeight.WORKSPACE.value
+    )
 
     # 绑定用户角色
     if req.roles:
