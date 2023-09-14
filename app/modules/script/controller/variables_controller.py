@@ -40,17 +40,6 @@ def query_dataset_all():
     return service.query_dataset_all(req)
 
 
-@blueprint.get('/variable/dataset/all/in/private')
-@require_login
-@require_permission('QUERY_DATASET')
-def query_dataset_all_in_private():
-    """根据用户空间查询全部变量集"""
-    req = JsonParser(
-        Argument('datasetType')
-    ).parse()
-    return service.query_dataset_all_in_private(req)
-
-
 @blueprint.post('/variable/dataset')
 @require_login
 @require_permission('CREATE_DATASET')

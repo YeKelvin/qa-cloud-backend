@@ -177,11 +177,14 @@ class VariableDatasetWeight(Enum):
     # 全局变量
     GLOBAL = 1
 
+    # 空间变量
+    WORKSPACE = 2
+
     # 环境变量
-    ENVIRONMENT = 2
+    ENVIRONMENT = 3
 
     # 自定义变量
-    CUSTOM = 3
+    CUSTOM = 4
 
 
 @unique

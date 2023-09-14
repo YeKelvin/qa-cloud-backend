@@ -85,10 +85,12 @@ class TVariableDataset(DBModel, BaseColumn):
     DATASET_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量集编号')
     DATASET_NAME = db.Column(db.String(128), nullable=False, comment='变量集名称')
     DATASET_TYPE = db.Column(
-        db.String(128), nullable=False, comment='变量集类型: GLOBAL(全局), ENVIRONMENT(环境), CUSTOM(自定义)'
+        db.String(128), nullable=False, comment=(
+            '变量集类型: GLOBAL(全局), WORKSPACE(空间), ENVIRONMENT(环境), CUSTOM(自定义)'
+        )
     )
     DATASET_DESC = db.Column(db.String(256), comment='变量集描述')
-    WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
+    DATASET_WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
     UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_dataset')
 
 
@@ -136,22 +138,22 @@ class THttpHeader(DBModel, BaseColumn):
 
 
 class TDatabaseConfig(DBModel, BaseColumn):
-    """SQL配置表"""
+    """数据库配置表"""
     __tablename__ = 'DATABASE_CONFIG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
-    CONFIG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='配置编号')
-    CONFIG_NAME = db.Column(db.String(256), nullable=False, comment='配置名称')
-    CONFIG_DESC = db.Column(db.String(256), comment='配置描述')
-    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='变量名称')
-    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
+    DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='数据库编号')
+    DB_NAME = db.Column(db.String(256), nullable=False, comment='数据库名称')
+    DB_DESC = db.Column(db.String(256), comment='数据库描述')
+    DB_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
     USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
     HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
     PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
     QUERY = db.Column(db.String(256), comment='数据库主机地址')
-    DATABASE = db.Column(db.String(256), nullable=False, comment='数据库名称')
+    DATABASE = db.Column(db.String(256), nullable=False, comment='数据库库名')
+    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='存储数据库对象的变量名称')
     CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
-    UniqueConstraint('WORKSPACE_NO', 'CONFIG_NAME', 'DATABASE_TYPE', 'DELETED', name='unique_workspace_db')
+    UniqueConstraint('WORKSPACE_NO', 'DB_NAME', 'DB_TYPE', 'DELETED', name='unique_workspace_db')
 
 
 class TElementTag(DBModel, BaseColumn):

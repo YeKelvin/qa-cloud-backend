@@ -106,7 +106,7 @@ def add_variable_dataset(script: dict, datasets: list, use_current_value: bool, 
 def get_variables(datasets: list, use_current_value: bool) -> Dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = variable_dataset_dao.select_list_in_set_orderby_weight(*datasets)
+    dataset_list = variable_dataset_dao.select_list_in_no(*datasets)
     if not dataset_list:
         return result
 
@@ -182,14 +182,14 @@ def add_database_engine(engine_no, properties: dict):
     if not engines:
         configurator[ElementClass.DATABASE_ENGINE.value] = engines
     engines.append({
-        'name': engine.CONFIG_NAME,
-        'remark': engine.CONFIG_DESC,
+        'name': engine.DB_NAME,
+        'remark': engine.DB_DESC,
         'class': 'DatabaseEngine',
         'enabled': True,
         'property': {
             'DatabaseEngine__variable_name': engine.VARIABLE_NAME,
-            'DatabaseEngine__database_type': DatabaseType[engine.DATABASE_TYPE].value,
-            'DatabaseEngine__driver': DatabaseDriver[engine.DATABASE_TYPE].value,
+            'DatabaseEngine__database_type': DatabaseType[engine.DB_TYPE].value,
+            'DatabaseEngine__driver': DatabaseDriver[engine.DB_TYPE].value,
             'DatabaseEngine__username': engine.USERNAME,
             'DatabaseEngine__password': engine.PASSWORD,
             'DatabaseEngine__host': engine.HOST,

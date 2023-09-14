@@ -37,14 +37,6 @@ def query_template_all():
     return service.query_template_all(req)
 
 
-@blueprint.get('/httpheader/template/all/in/private')
-@require_login
-@require_permission('QUERY_HTTPHEADER_TEMPLATE')
-def query_template_all_in_private():
-    """根据用户空间查询全部请求头模板"""
-    return service.query_template_all_in_private()
-
-
 @blueprint.post('/httpheader/template')
 @require_login
 @require_permission('CREATE_HTTPHEADER_TEMPLATE')

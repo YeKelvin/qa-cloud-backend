@@ -9,9 +9,7 @@ from loguru import logger
 
 from app.database import dbquery
 from app.modules.public.dao import workspace_dao
-from app.modules.public.enum import WorkspaceScope
 from app.modules.public.model import TWorkspace
-from app.modules.public.model import TWorkspaceUser
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_components_dao
 from app.modules.script.dao import element_property_dao
@@ -43,7 +41,6 @@ from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
 from app.modules.script.model import TWorkspaceComponentSettings
-from app.tools import localvars
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -127,101 +124,6 @@ def query_element_all(req):
 
     return [
         {
-            'elementNo': item.ELEMENT_NO,
-            'elementName': item.ELEMENT_NAME,
-            'elementType': item.ELEMENT_TYPE,
-            'elementClass': item.ELEMENT_CLASS,
-            'enabled': item.ENABLED
-        }
-        for item in items
-    ]
-
-
-@http_service
-def query_element_all_in_private(req):
-    # 公共空间条件查询
-    public_conds = QueryCondition(TWorkspaceCollection, TWorkspace, TTestElement)
-    public_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    public_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
-    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
-    public_conds.equal(TTestElement.ENABLED, req.enabled)
-    public_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
-    public_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
-    public_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TTestElement.ELEMENT_NO,
-            TTestElement.ELEMENT_NAME,
-            TTestElement.ELEMENT_REMARK,
-            TTestElement.ELEMENT_TYPE,
-            TTestElement.ELEMENT_CLASS,
-            TTestElement.ENABLED
-        )
-        .filter(*public_conds)
-    )
-
-    # 保护空间条件查询
-    protected_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
-    protected_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    protected_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
-    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
-    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
-    protected_conds.equal(TTestElement.ENABLED, req.enabled)
-    protected_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
-    protected_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
-    protected_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TTestElement.ELEMENT_NO,
-            TTestElement.ELEMENT_NAME,
-            TTestElement.ELEMENT_REMARK,
-            TTestElement.ELEMENT_TYPE,
-            TTestElement.ELEMENT_CLASS,
-            TTestElement.ENABLED
-        )
-        .filter(*protected_conds)
-    )
-
-    # 私人空间条件查询
-    private_conds = QueryCondition(TWorkspaceCollection, TWorkspaceUser, TWorkspace, TTestElement)
-    private_conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    private_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
-    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceCollection.WORKSPACE_NO)
-    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
-    private_conds.equal(TTestElement.ENABLED, req.enabled)
-    private_conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
-    private_conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
-    private_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TTestElement.ELEMENT_NO,
-            TTestElement.ELEMENT_NAME,
-            TTestElement.ELEMENT_REMARK,
-            TTestElement.ELEMENT_TYPE,
-            TTestElement.ELEMENT_CLASS,
-            TTestElement.ENABLED
-        )
-        .filter(*private_conds)
-    )
-
-    items = (
-        public_filter
-        .union(protected_filter)
-        .union(private_filter)
-        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
-        .all()
-    )
-
-    return [
-        {
-            'workspaceNo': item.WORKSPACE_NO,
-            'workspaceName': item.WORKSPACE_NAME,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
             'elementType': item.ELEMENT_TYPE,

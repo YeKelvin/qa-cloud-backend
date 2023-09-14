@@ -4,17 +4,12 @@
 # @Author  : Kelvin.Ye
 from sqlalchemy import and_
 
-from app.database import dbquery
-from app.modules.public.enum import WorkspaceScope
-from app.modules.public.model import TWorkspace
-from app.modules.public.model import TWorkspaceUser
 from app.modules.script.dao import variable_dao
 from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import VariableDatasetType
 from app.modules.script.enum import VariableDatasetWeight
 from app.modules.script.model import TVariable
 from app.modules.script.model import TVariableDataset
-from app.tools import localvars
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -77,86 +72,6 @@ def query_dataset_all(req):
             'datasetDesc': item.DATASET_DESC
         }
         for item in results
-    ]
-
-
-@http_service
-def query_dataset_all_in_private(req):
-    # 公共空间条件查询
-    public_conds = QueryCondition(TWorkspace, TVariableDataset)
-    public_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
-    public_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PUBLIC.value)
-    public_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
-    public_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TVariableDataset.DATASET_NO,
-            TVariableDataset.DATASET_NAME,
-            TVariableDataset.DATASET_TYPE,
-            TVariableDataset.DATASET_DESC
-        )
-        .filter(and_(*public_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
-    )
-
-    # 保护空间条件查询
-    protected_conds = QueryCondition(TWorkspace, TWorkspaceUser, TVariableDataset)
-    protected_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
-    protected_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
-    protected_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PROTECTED.value)
-    protected_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
-    protected_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
-    protected_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TVariableDataset.DATASET_NO,
-            TVariableDataset.DATASET_NAME,
-            TVariableDataset.DATASET_TYPE,
-            TVariableDataset.DATASET_DESC
-        )
-        .filter(and_(*protected_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
-    )
-
-    # 私人空间条件查询
-    private_conds = QueryCondition(TWorkspace, TWorkspaceUser, TVariableDataset)
-    private_conds.equal(TWorkspace.WORKSPACE_NO, TWorkspaceUser.WORKSPACE_NO)
-    private_conds.equal(TWorkspace.WORKSPACE_NO, TVariableDataset.WORKSPACE_NO)
-    private_conds.equal(TWorkspace.WORKSPACE_SCOPE, WorkspaceScope.PRIVATE.value)
-    private_conds.equal(TWorkspaceUser.USER_NO, localvars.get_user_no())
-    private_conds.equal(TVariableDataset.DATASET_TYPE, req.datasetType)
-    private_filter = (
-        dbquery(
-            TWorkspace.WORKSPACE_NO,
-            TWorkspace.WORKSPACE_NAME,
-            TWorkspace.WORKSPACE_SCOPE,
-            TVariableDataset.DATASET_NO,
-            TVariableDataset.DATASET_NAME,
-            TVariableDataset.DATASET_TYPE,
-            TVariableDataset.DATASET_DESC
-        )
-        .filter(and_(*private_conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
-    )
-
-    items = (
-        public_filter
-        .union(protected_filter)
-        .union(private_filter)
-        .order_by(TWorkspace.WORKSPACE_SCOPE.desc())
-        .all()
-    )
-
-    return [
-        {
-            'workspaceNo': item.WORKSPACE_NO,
-            'workspaceName': item.WORKSPACE_NAME,
-            'templateNo': item.TEMPLATE_NO,
-            'templateName': item.TEMPLATE_NAME,
-            'templateDesc': item.TEMPLATE_DESC
-        }
-        for item in items
     ]
 
 

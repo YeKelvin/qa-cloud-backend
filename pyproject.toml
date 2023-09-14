@@ -82,10 +82,8 @@ ignore = [
     "D415"
 ]
 exclude = [
-    "__pycache__/",
-    ".cache/",
-    ".git/",
-    "*.log"
+    "__pycache__",
+    ".cache"
 ]
 
 [tool.ruff.pydocstyle]
