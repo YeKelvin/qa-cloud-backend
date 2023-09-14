@@ -38,7 +38,8 @@ def http_service(func):
         # 注入traceid
         with logger.contextualize(traceid=g.trace_id):
             # 输出http请求日志
-            wlogger.info(f'uri:[ {uri} ] header:[ {dict(request.headers)} ] request:[ {req} ]')
+            req_headers = {name: value for name, value in request.headers.items() if name.lower() != 'access-token'}
+            wlogger.info(f'uri:[ {uri} ] header:[ {req_headers} ] request:[ {req} ]')
             res = None
             try:
                 # 判断request参数解析是否有异常
