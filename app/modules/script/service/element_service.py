@@ -2,8 +2,7 @@
 # @File    : element_service.py
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from typing import Iterable
-from typing import List
+from collections.abc import Iterable
 
 from loguru import logger
 
@@ -380,7 +379,7 @@ def add_element_child(root_no, parent_no, child: dict):
     return element_no
 
 
-def add_element_children(root_no, parent_no, children: Iterable[dict]) -> List:
+def add_element_children(root_no, parent_no, children: Iterable[dict]) -> list:
     """添加元素子代"""
     result = []
     for child in children:
@@ -950,7 +949,7 @@ def create_element_components(req):
     return add_element_components(root_no=req.rootNo, parent_no=req.parentNo, components=req.children)
 
 
-def add_element_components(root_no, parent_no, components) -> List:
+def add_element_components(root_no, parent_no, components) -> list:
     result = []
     if components is None:
         return result

@@ -11,6 +11,9 @@ report.html
 # flask-migrate
 migrations/
 
+# build
+*.egg-info/
+
 *.lock
 *.db
 *.log

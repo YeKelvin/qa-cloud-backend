@@ -2,8 +2,6 @@
 # @File    : testplan_execution_dao.py
 # @Time    : 2021-09-09 19:58:39
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.database import setter
 from app.database import where_by
 from app.modules.script.enum import RunningState
@@ -18,7 +16,7 @@ def select_running_by_plan(plan_no) -> TTestplanExecution:
     return TTestplanExecution.filter_by(PLAN_NO=plan_no, RUNNING_STATE=RunningState.RUNNING.value).first()
 
 
-def select_all_by_plan(plan_no) -> List[TTestplanExecution]:
+def select_all_by_plan(plan_no) -> list[TTestplanExecution]:
     return TTestplanExecution.filter_by(PLAN_NO=plan_no).order_by(TTestplanExecution.CREATED_TIME.desc()).all()
 
 

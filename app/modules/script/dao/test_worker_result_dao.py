@@ -2,8 +2,6 @@
 # @File    : test_worker_result_dao.py
 # @Time    : 2021-09-17 11:23:15
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.script.model import TTestWorkerResult
 
 
@@ -11,7 +9,7 @@ def select_first_by_worker(worker_id) -> TTestWorkerResult:
     return TTestWorkerResult.filter_by(WORKER_ID=worker_id).first()
 
 
-def select_all_by_collection(collection_id) -> List[TTestWorkerResult]:
+def select_all_by_collection(collection_id) -> list[TTestWorkerResult]:
     return TTestWorkerResult.filter_by(COLLECTION_ID=collection_id).all()
 
 

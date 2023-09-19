@@ -2,8 +2,6 @@
 # @File    : variable_dataset_dao.py
 # @Time    : 2021-07-15 16:22:34
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.script.model import TVariableDataset
 
 
@@ -19,7 +17,7 @@ def select_first(**kwargs) -> TVariableDataset:
     return TVariableDataset.filter_by(**kwargs).first()
 
 
-def select_list_in_no(*dataset_no) -> List[TVariableDataset]:
+def select_list_in_no(*dataset_no) -> list[TVariableDataset]:
     return (
         TVariableDataset
         .filter(TVariableDataset.DATASET_NO.in_(dataset_no))

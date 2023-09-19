@@ -2,8 +2,6 @@
 # @File    : user_group_dao.py
 # @Time    : 2022/4/25 10:30
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.usercenter.model import TUserGroup
 
 
@@ -19,11 +17,11 @@ def select_by_group_and_user(group_no, user_no) -> TUserGroup:
     return TUserGroup.filter_by(GROUP_NO=group_no, USER_NO=user_no).first()
 
 
-def select_all_by_user(user_no) -> List[TUserGroup]:
+def select_all_by_user(user_no) -> list[TUserGroup]:
     return TUserGroup.filter_by(USER_NO=user_no).all()
 
 
-def select_all_by_group(group_no) -> List[TUserGroup]:
+def select_all_by_group(group_no) -> list[TUserGroup]:
     return TUserGroup.filter_by(GROUP_NO=group_no).all()
 
 

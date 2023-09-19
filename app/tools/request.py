@@ -2,8 +2,7 @@
 # @File    : request.py
 # @Time    : 2019/11/13 16:26
 # @Author  : Kelvin.Ye
-from typing import Iterable
-from typing import Type
+from collections.abc import Iterable
 
 
 class AttributeDict(dict):
@@ -41,7 +40,7 @@ class RequestDTO:
 
     BUILT_IN = ['__type__', '__attrs__', '__error__']
 
-    def __init__(self, data_type: Type = dict) -> None:
+    def __init__(self, data_type: type = dict) -> None:
         self.__type__ = data_type
         self.__attrs__ = {}
         self.__error__ = None
@@ -85,13 +84,13 @@ def transform(value: list or dict):
     if isinstance(value, list):
         attrs = []
         for item in value:
-            if isinstance(item, (dict, list)):
+            if isinstance(item, dict | list):
                 attrs.append(transform(item))
             else:
                 attrs.append(item)
         return attrs
     elif isinstance(value, dict):
-        attrs = {key: transform(val) if isinstance(val, (dict, list)) else val for key, val in value.items()}
+        attrs = {key: transform(val) if isinstance(val, dict | list) else val for key, val in value.items()}
 
         return AttributeDict(attrs)
     else:

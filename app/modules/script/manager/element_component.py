@@ -2,8 +2,6 @@
 # @File    : element_component.py
 # @Time    : 2022/9/9 21:50
 # @Author  : Kelvin.Ye
-from typing import Dict
-
 from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import http_header_dao
 from app.modules.script.dao import httpheader_template_ref_dao
@@ -103,7 +101,7 @@ def add_variable_dataset(script: dict, datasets: list, use_current_value: bool, 
     })
 
 
-def get_variables(datasets: list, use_current_value: bool) -> Dict:
+def get_variables(datasets: list, use_current_value: bool) -> dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
     dataset_list = variable_dataset_dao.select_list_in_no(*datasets)

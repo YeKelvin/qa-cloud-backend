@@ -5,12 +5,13 @@
 ```bash
 cd qa-cloud-backend/
 poetry install
+pre-commit install
 ```
 
 ### 虚拟环境添加pth
 
 ```bash
-cd venv/Lib/site-packages
+cd venv/lib/site-packages
 touch myproject.pth
 
 # 将项目绝对路径添加至pth文件中

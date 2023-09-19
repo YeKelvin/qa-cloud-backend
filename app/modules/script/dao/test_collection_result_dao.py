@@ -2,9 +2,6 @@
 # @File    : test_collection_result_dao.py
 # @Time    : 2021-09-17 11:23:15
 # @Author  : Kelvin.Ye
-import decimal
-from typing import List
-
 from app.modules.script.model import TTestCollectionResult
 
 
@@ -16,7 +13,7 @@ def select_first_by_collectionid(collection_id) -> TTestCollectionResult:
     return TTestCollectionResult.filter_by(COLLECTION_ID=collection_id).first()
 
 
-def select_all_by_report(report_no) -> List[TTestCollectionResult]:
+def select_all_by_report(report_no) -> list[TTestCollectionResult]:
     return TTestCollectionResult.filter_by(REPORT_NO=report_no).all()
 
 

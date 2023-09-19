@@ -2,8 +2,6 @@
 # @File    : workspace_user_dao.py
 # @Time    : 2021/6/5 23:27
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.public.model import TWorkspaceUser
 
 
@@ -15,7 +13,7 @@ def count_by_workspace(workspace_no) -> int:
     return TWorkspaceUser.count_by(WORKSPACE_NO=workspace_no)
 
 
-def select_all_by_user(user_no) -> List[TWorkspaceUser]:
+def select_all_by_user(user_no) -> list[TWorkspaceUser]:
     return TWorkspaceUser.filter_by(USER_NO=user_no).all()
 
 

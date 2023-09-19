@@ -2,8 +2,6 @@
 # @File    : workspace_restriction_dao.py
 # @Time    : 2022/4/22 15:50
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.public.model import TWorkspaceRestriction
 
 
@@ -11,7 +9,7 @@ def select_by_workspace_and_permission(workspace_no, permission_no) -> TWorkspac
     return TWorkspaceRestriction.filter_by(WORKSPACE_NO=workspace_no, PERMISSION_NO=permission_no).first()
 
 
-def select_all_by_workspace(workspace_no) -> List[TWorkspaceRestriction]:
+def select_all_by_workspace(workspace_no) -> list[TWorkspaceRestriction]:
     return TWorkspaceRestriction.filter_by(WORKSPACE_NO=workspace_no).all()
 
 

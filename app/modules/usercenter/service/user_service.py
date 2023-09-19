@@ -2,8 +2,8 @@
 # @File    : user_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 
 from flask import request
 from loguru import logger
@@ -89,7 +89,7 @@ def login(req):
         # 密码校验失败
         if not password_success:
             logger.info('密码错误')
-            user_password.LAST_FAILURE_TIME = datetime.now(timezone.utc)
+            user_password.LAST_FAILURE_TIME = datetime.now(UTC)
             if user_password.ERROR_TIMES < 3:
                 logger.info('密码错误次数+1')
                 user_password.ERROR_TIMES += 1
@@ -575,7 +575,7 @@ def modify_user_password(req):
         # 密码校验失败
         if not password_success:
             logger.info('密码校验失败')
-            login_password.LAST_FAILURE_TIME = datetime.now(timezone.utc)
+            login_password.LAST_FAILURE_TIME = datetime.now(UTC)
             if login_password.ERROR_TIMES < 3:
                 logger.info('密码错误次数+1')
                 login_password.ERROR_TIMES += 1

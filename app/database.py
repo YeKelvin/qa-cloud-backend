@@ -4,8 +4,6 @@
 # @Author  : Kelvin.Ye
 import decimal
 
-from typing import Type
-
 from sqlalchemy import func
 
 from app.extension import db
@@ -16,7 +14,7 @@ from app.tools.localvars import get_userno_or_default
 from app.utils.time_util import datetime_now_by_utc8
 
 
-MODEL = Type[db.Model]
+MODEL = type[db.Model]
 
 
 def dbquery(*args, **kwargs):

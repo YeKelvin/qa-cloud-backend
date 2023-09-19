@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/python:3.8-slim-buster
+FROM public.ecr.aws/docker/library/python:3.11-slim-buster
 RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list \
     && apt-get update \
     && apt-get install --no-install-recommends -y build-essential gcc git libpq-dev libssl-dev unixodbc-dev \
@@ -13,6 +13,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
-ENV APP_CONFIG_FILE=/app/config.ini
+ENV APP_CONFIG_FILE=/app/config.toml
 EXPOSE 5000
 CMD ["uwsgi", "--ini", "uwsgi.ini"]

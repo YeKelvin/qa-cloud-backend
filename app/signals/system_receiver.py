@@ -77,9 +77,9 @@ def record_update(sender, entity, columnname, newvalue):
     oldvalue = getattr(entity, columnname, None)
     if oldvalue is None:
         return
-    if isinstance(oldvalue, (dict, list)):
+    if isinstance(oldvalue, dict | list):
         oldvalue = to_json(oldvalue)
-    if isinstance(newvalue, (dict, list)):
+    if isinstance(newvalue, dict | list):
         newvalue = to_json(newvalue)
     record = TSystemOperationLogContent()
     record.LOG_NO = get_trace_id(),

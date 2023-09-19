@@ -2,8 +2,6 @@
 # @File    : element_children_dao.py
 # @Time    : 2021/6/5 11:28
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.script.model import TElementChildren
 
 
@@ -31,5 +29,5 @@ def next_serial_number_by_parent(parent_no) -> int:
     return TElementChildren.count_by(PARENT_NO=parent_no) + 1
 
 
-def select_all_by_parent(parent_no) -> List[TElementChildren]:
+def select_all_by_parent(parent_no) -> list[TElementChildren]:
     return TElementChildren.filter_by(PARENT_NO=parent_no).order_by(TElementChildren.SORT_NO).all()

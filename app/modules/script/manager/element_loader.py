@@ -2,8 +2,6 @@
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
-from typing import Dict
-
 from loguru import logger
 
 from app.database import dbquery
@@ -245,7 +243,7 @@ def add_snippets(sampler_attrs, children: list):
     children.extend(transaction_children)
 
 
-def add_root_configs(script: dict, config_components: Dict[str, list]):
+def add_root_configs(script: dict, config_components: dict[str, list]):
     for configs in config_components.values():
         for config in configs:
             script['children'].insert(0, config)

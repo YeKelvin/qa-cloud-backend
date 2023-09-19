@@ -2,8 +2,6 @@
 # @File    : http_header_dao.py
 # @Time    : 2021-08-20 13:16:20
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.script.model import THttpHeader
 
 
@@ -19,7 +17,7 @@ def select_by_template_and_name(template_no, header_name) -> THttpHeader:
     return THttpHeader.filter_by(TEMPLATE_NO=template_no, HEADER_NAME=header_name).first()
 
 
-def select_all_by_template(template_no) -> List[THttpHeader]:
+def select_all_by_template(template_no) -> list[THttpHeader]:
     return THttpHeader.filter_by(TEMPLATE_NO=template_no).all()
 
 

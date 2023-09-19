@@ -2,8 +2,6 @@
 # @File    : user_password_dao.py
 # @Time    : 2021/6/2 18:05
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.usercenter.model import TUserPassword
 
 
@@ -11,7 +9,7 @@ def select_loginpwd_by_user(user_no) -> TUserPassword:
     return TUserPassword.filter_by(USER_NO=user_no, PASSWORD_TYPE='LOGIN').first()
 
 
-def select_all_by_user(user_no) -> List[TUserPassword]:
+def select_all_by_user(user_no) -> list[TUserPassword]:
     return TUserPassword.filter_by(USER_NO=user_no).all()
 
 

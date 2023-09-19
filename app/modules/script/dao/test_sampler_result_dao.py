@@ -2,8 +2,6 @@
 # @File    : test_sampler_result_dao.py
 # @Time    : 2021-09-17 11:20:24
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.database import dbquery
 from app.modules.script.model import TTestSamplerResult
 
@@ -12,7 +10,7 @@ def select_first_by_sampler(sampler_id) -> TTestSamplerResult:
     return TTestSamplerResult.filter_by(SAMPLER_ID=sampler_id).first()
 
 
-def select_all_summary_by_worker(worker_id) -> List[TTestSamplerResult]:
+def select_all_summary_by_worker(worker_id) -> list[TTestSamplerResult]:
     return (
         dbquery(
             TTestSamplerResult.WORKER_ID,
@@ -30,11 +28,11 @@ def select_all_summary_by_worker(worker_id) -> List[TTestSamplerResult]:
     )
 
 
-def select_all_by_worker(worker_id) -> List[TTestSamplerResult]:
+def select_all_by_worker(worker_id) -> list[TTestSamplerResult]:
     return TTestSamplerResult.filter_by(WORKER_ID=worker_id).all()
 
 
-def select_all_by_parent(parent_id) -> List[TTestSamplerResult]:
+def select_all_by_parent(parent_id) -> list[TTestSamplerResult]:
     return TTestSamplerResult.filter_by(PARENT_ID=parent_id).all()
 
 

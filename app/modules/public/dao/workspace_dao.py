@@ -2,8 +2,6 @@
 # @File    : workspace_dao.py
 # @Time    : 2021/6/5 23:28
 # @Author  : Kelvin.Ye
-from typing import List
-
 from app.modules.public.model import TWorkspace
 
 
@@ -15,5 +13,5 @@ def select_by_name(workspace_name) -> TWorkspace:
     return TWorkspace.filter_by(WORKSPACE_NAME=workspace_name).first()
 
 
-def select_all() -> List[TWorkspace]:
+def select_all() -> list[TWorkspace]:
     return TWorkspace.filter_by().order_by(TWorkspace.CREATED_TIME.desc()).all()

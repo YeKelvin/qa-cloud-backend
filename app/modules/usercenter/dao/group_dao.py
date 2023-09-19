@@ -2,8 +2,6 @@
 # @File    : group_dao.py
 # @Time    : 2021-09-23 23:48:02
 # @Author  : Kelvin.Ye
-from typing import List
-
 from flask_sqlalchemy.pagination import Pagination
 
 from app.modules.usercenter.model import TGroup
@@ -18,7 +16,7 @@ def select_by_name(group_name) -> TGroup:
     return TGroup.filter_by(GROUP_NAME=group_name).first()
 
 
-def select_all() -> List[TGroup]:
+def select_all() -> list[TGroup]:
     return TGroup.filter_by().order_by(TGroup.CREATED_TIME.desc()).all()
 
 

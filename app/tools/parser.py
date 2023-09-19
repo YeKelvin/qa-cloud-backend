@@ -3,9 +3,6 @@
 # @Time    : 2019/11/7 15:30
 # @Author  : Kelvin.Ye
 from enum import Enum
-from typing import List
-from typing import Tuple
-from typing import Type
 
 from flask import request
 from loguru import logger
@@ -27,7 +24,7 @@ class Argument:
         nullable: bool = False,
         min: int = None,
         max: int = None,
-        enum: Type[Enum] = None,
+        enum: type[Enum] = None,
         help: str = None
     ):
         self.name = name            # 参数名称
@@ -146,9 +143,9 @@ class JsonParser:
 
     def __init__(self, *args):
         self.data = None
-        self.args: List[Argument] = args
+        self.args: list[Argument] = args
 
-    def get(self, key, argtype) -> Tuple[bool, any]:
+    def get(self, key, argtype) -> tuple[bool, any]:
         """通过key获取value"""
         if request.method == 'GET' and argtype == list:
             value = request.args.getlist(key)

@@ -2,8 +2,8 @@
 # @File    : response.py
 # @Time    : 2019/11/7 11:52
 # @Author  : Kelvin.Ye
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from enum import Enum
 
 from flask import make_response
@@ -37,7 +37,7 @@ class ResponseDTO:
             self.errorMsg = errorMsg
         if error or errorCode or errorMsg:
             self.success = False
-        self.timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')
+        self.timestamp = datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')
 
     def __repr__(self):
         return str(self.__dict__)

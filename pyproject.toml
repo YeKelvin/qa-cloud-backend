@@ -1,16 +1,23 @@
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "qa-cloud-backend"
 version = "0.1.0"
 description = ""
-authors = ["Kelvin.Ye <testmankelvin@163.com>"]
-packages = [
-    {include = "app"}
+readme = "README.md"
+authors = [
+    "Kelvin.Ye <testmankelvin@163.com>"
 ]
-
-# https://pypi.org/classifiers/
-#classifiers = [
-#    ""
-#]
+packages = [
+    { include = "app" }
+]
+classifiers = [
+    # https://pypi.org/classifiers/
+    "Programming Language :: Python"
+]
 
 [[tool.poetry.source]]
 name = "aliyun"
@@ -23,44 +30,46 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 priority = "primary"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 # flask
 flask = "2.3.3"
 flask-sqlalchemy = "3.1.1"
 flask-socketio = "5.3.6"
 flask-migrate = "4.0.5"
-flask-apscheduler = "1.12.4"
+flask-apscheduler = "1.13.0"
 # job
 apscheduler = "3.10.4"
 # signal
 blinker = "1.6.2"
-# id
-ulid-py = "1.1.0"
-# encryption
-pyjwt = "2.8.0"
-# Environment
-python-dotenv = "1.0.0"
-environs = "9.5.0"
 # config
 tomli = "2.0.1"
+# encryption
+pyjwt = "2.8.0"
+# environment
+environs = "9.5.0"
+python-dotenv = "1.0.0"
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
+# 以下依赖的版本在pymeter项目中控制
+ulid-py = "*"
+arrow = "*"
+httpx = "*"
+json5 = "*"
+loguru = "*"
+gevent = "*"
+orjson = "*"
+pycryptodome = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-html = "*"
-types-orjson = "*"
 ruff = "*"
 yapf = "*"
 black = "*"
 pre-commit = "*"
 
-[build-system]
-requires = ["poetry_core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.ruff]
-target-version = "py38"
+target-version = "py311"
 line-length = 120
 src = ["app"]
 select = [
