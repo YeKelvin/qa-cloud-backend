@@ -2,7 +2,7 @@
 # @File    : testplan_service.py
 # @Time    : 2020/3/17 14:32
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import test_collection_result_dao
 from app.modules.script.dao import test_element_dao
@@ -43,7 +43,7 @@ def query_testplan_list(req):
 
     # 分页查询
     pagination = (
-        dbquery(
+        db_query(
             TTestplan.PLAN_NO,
             TTestplan.PLAN_NAME,
             TTestplan.PLAN_DESC,

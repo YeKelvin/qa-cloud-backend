@@ -2,7 +2,7 @@
 # @File    : login_log_service.py
 # @Time    : 2023-09-06 16:13:57
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserLoginLog
 from app.tools.service import http_service
@@ -25,7 +25,7 @@ def query_login_log_list(req):
 
     # 查询日志列表
     pagination = (
-        dbquery(
+        db_query(
             TUser.USER_NAME,
             TUserLoginLog.LOGIN_NAME,
             TUserLoginLog.LOGIN_TYPE,

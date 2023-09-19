@@ -2,7 +2,7 @@
 # @File    : apilog_service.py
 # @Time    : 2023-04-21 09:07:58
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.opencenter.model import TOpenApiLog
 from app.modules.opencenter.model import TThirdPartyApplication
 from app.tools.service import http_service
@@ -26,7 +26,7 @@ def query_openapi_log_list(req):
 
     # 查询日志列表
     pagination = (
-        dbquery(
+        db_query(
             TThirdPartyApplication.APP_NAME,
             TOpenApiLog.LOG_NO,
             TOpenApiLog.DESC,

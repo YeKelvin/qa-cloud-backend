@@ -2,7 +2,7 @@
 # @File    : log_service.py
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.system.model import TRestApiLog
 from app.modules.usercenter.model import TUser
 from app.tools.service import http_service
@@ -26,7 +26,7 @@ def query_restapi_log_list(req):
 
     # 查询日志列表
     pagination = (
-        dbquery(
+        db_query(
             TUser.USER_NAME,
             TRestApiLog.LOG_NO,
             TRestApiLog.IP,

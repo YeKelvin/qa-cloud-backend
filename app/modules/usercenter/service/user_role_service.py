@@ -2,7 +2,7 @@
 # @File    : user_role_service.py
 # @Time    : 2020/7/3 15:17
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
@@ -24,7 +24,7 @@ def query_user_role_list(req):
 
     # TUser，TRole，TUserRole连表查询
     pagination = (
-        dbquery(
+        db_query(
             TUser.USER_NAME,
             TRole.ROLE_NAME,
             TRole.ROLE_CODE,
@@ -65,7 +65,7 @@ def query_user_role_all(req):
 
     # TUser，TRole，TUserRole连表查询
     entities = (
-        dbquery(
+        db_query(
             TUser.USER_NAME,
             TRole.ROLE_NAME,
             TRole.ROLE_CODE,

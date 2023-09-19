@@ -2,8 +2,6 @@
 # @File    : testplan_execution_dao.py
 # @Time    : 2021-09-09 19:58:39
 # @Author  : Kelvin.Ye
-from app.database import setter
-from app.database import where_by
 from app.modules.script.enum import RunningState
 from app.modules.script.model import TTestplanExecution
 
@@ -21,8 +19,7 @@ def select_all_by_plan(plan_no) -> list[TTestplanExecution]:
 
 
 def update_running_state_by_no(execution_no, val):
-    TTestplanExecution.updates_by(
-        setter(RUNNING_STATE=val),
-        where_by(EXECUTION_NO=execution_no),
-        record=False
+    TTestplanExecution.no_record_updates_by(
+        setter=dict(RUNNING_STATE=val),
+        where=dict(EXECUTION_NO=execution_no)
     )

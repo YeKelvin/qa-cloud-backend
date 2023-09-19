@@ -2,7 +2,7 @@
 # @File    : permission_service.py
 # @Time    : 2020/3/17 15:37
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TPermissionModule
 from app.modules.usercenter.model import TPermissionObject
@@ -19,7 +19,7 @@ def query_permission_all(req):
     conds.in_(TPermissionObject.OBJECT_CODE, req.objectCodes)
     conds.notin_(TPermission.PERMISSION_ACT, req.actExcludes)
     resutls = (
-        dbquery(
+        db_query(
             TPermissionModule.MODULE_NO,
             TPermissionModule.MODULE_NAME,
             TPermissionModule.MODULE_CODE,

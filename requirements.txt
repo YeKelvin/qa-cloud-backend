@@ -5,7 +5,6 @@ flask-migrate==4.0.5
 flask-apscheduler==1.13.0
 apscheduler==3.10.4
 blinker==1.6.2
-tomli==2.0.1
 pyjwt[crypto]==2.8.0
 environs==9.5.0
 python-dotenv==1.0.0

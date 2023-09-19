@@ -17,20 +17,8 @@ from app.utils.time_util import datetime_now_by_utc8
 MODEL = type[db.Model]
 
 
-def dbquery(*args, **kwargs):
+def db_query(*args, **kwargs):
     return db.session.query(*args, **kwargs)
-
-
-class setter(dict):  # noqa  TODO: 干掉
-    ...
-
-
-class where(list):  # noqa  TODO: 干掉
-    ...
-
-
-class where_by(dict):  # noqa  TODO: 干掉
-    ...
 
 
 class CRUDMixin:
@@ -44,7 +32,7 @@ class CRUDMixin:
         record and record_insert_signal.send(entity=entity)
 
     @classmethod
-    def insert_without_record(cls: MODEL, **kwargs):
+    def no_record_insert(cls: MODEL, **kwargs):
         kwargs['record'] = False
         cls.insert(**kwargs)
 
@@ -61,52 +49,48 @@ class CRUDMixin:
         return cls.query.session.query(func.count(cls.ID)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
-    def sum_by(cls: MODEL, field, cons: dict) -> decimal.Decimal:
+    def sum_by(cls: MODEL, field, where: dict) -> decimal.Decimal:
         """e.g.:
 
-        from app.database import where_by
-
-        Table.sum_by(setter(), where_by())
+        Table.sum_by(field=xxx, where=dict(xxx=xxx))
         """
-        return cls.query.session.query(func.sum(field)).filter_by(DELETED=0, **cons).scalar() or 0
+        return cls.query.session.query(func.sum(field)).filter_by(DELETED=0, **where).scalar() or 0
 
     @classmethod
     def avg_by(cls: MODEL, field, **kwargs) -> decimal.Decimal:
         return cls.query.session.query(func.avg(field)).filter_by(DELETED=0, **kwargs).scalar() or 0
 
     @classmethod
-    def updates(cls: MODEL, setter: dict, cons: list, record=True):
+    def updates(cls: MODEL, setter: dict, where: list, record=True):
         """e.g.:
 
-        from app.database import setter
-        from app.database import where
-
-        Table.updates(setter(), where())
+        Table.updates(sette=dict(xxx=xxx), where=[])
         """
         if record:
-            entities = cls.filter(*cons).all()
+            entities = cls.filter(*where).all()
             for entity in entities:
                 entity.update(**setter)
         else:
-            cls.filter(*cons).update({getattr(cls, attr): value for attr, value in setter.items()})
+            cls.filter(*where).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
 
     @classmethod
-    def updates_by(cls: MODEL, setter: dict, cons: dict, record=True):
+    def updates_by(cls: MODEL, setter: dict, where: dict, record=True):
         """e.g.:
 
-        from app.database import setter
-        from app.database import where_by
-
-        Table.updates(setter(), where_by())
+        Table.updates(setter=dict(xxx=xxx), where=dict(xxx=xxx))
         """
         if record:
-            entities = cls.filter_by(**cons).all()
+            entities = cls.filter_by(**where).all()
             for entity in entities:
                 entity.update(**setter)
         else:
-            cls.filter_by(**cons).update({getattr(cls, attr): value for attr, value in setter.items()})
+            cls.filter_by(**where).update({getattr(cls, attr): value for attr, value in setter.items()})
         db.session.flush()
+
+    @classmethod
+    def no_record_updates_by(cls: MODEL, setter: dict, where: dict):
+        cls.updates_by(setter, where, record=False)
 
     @classmethod
     def deletes(cls: MODEL, *args, record=True):

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 from loguru import logger
 
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.public.model import TWorkspace
 from app.modules.script.dao import element_children_dao
@@ -76,7 +76,7 @@ def query_element_list(req):
 
     # TTestElement，TWorkspace，TWorkspaceCollection连表查询
     pagination = (
-        dbquery(
+        db_query(
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_REMARK,
@@ -112,7 +112,7 @@ def query_element_all(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
-    items = dbquery(
+    items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_REMARK,
@@ -144,7 +144,7 @@ def query_element_all_with_children(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     # TTestElement，TWorkspaceCollection连表查询
-    items = dbquery(
+    items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_REMARK,
@@ -162,7 +162,7 @@ def query_element_all_with_children(req):
         childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         childconds.equal(TTestElement.ENABLED, req.enabled)
-        children = dbquery(
+        children = db_query(
             TElementChildren.SORT_NO,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,

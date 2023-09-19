@@ -4,7 +4,7 @@
 # @Author  : Kelvin.Ye
 from loguru import logger
 
-from app.database import dbquery
+from app.database import db_query
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
@@ -193,7 +193,7 @@ def loads_children(element_no, specify_worker_no, specify_sampler_no):
 def add_element_components(element_no, children: list):
     # TODO: 排序还是有问题
     relations = (
-        dbquery(
+        db_query(
             TElementComponents.SORT_NUMBER,
             TElementComponents.SORT_WEIGHT,
             TElementComponents.CHILD_TYPE,

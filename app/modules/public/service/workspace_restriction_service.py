@@ -2,7 +2,7 @@
 # @File    : workspace_restriction_service.py
 # @Time    : 2022/4/22 16:11
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.public.dao import workspace_restriction_dao
 from app.modules.public.dao import workspace_restriction_exemption_dao
@@ -48,7 +48,7 @@ def get_workspace_restriction_list(workspace_no):
     conds.equal(TPermission.OBJECT_NO, TPermissionObject.OBJECT_NO)
 
     resutls = (
-        dbquery(
+        db_query(
             TPermissionModule.MODULE_CODE,
             TPermissionObject.OBJECT_CODE,
             TPermission.PERMISSION_NO,

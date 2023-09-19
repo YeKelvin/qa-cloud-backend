@@ -2,7 +2,7 @@
 # @File    : test_sampler_result_dao.py
 # @Time    : 2021-09-17 11:20:24
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.script.model import TTestSamplerResult
 
 
@@ -12,7 +12,7 @@ def select_first_by_sampler(sampler_id) -> TTestSamplerResult:
 
 def select_all_summary_by_worker(worker_id) -> list[TTestSamplerResult]:
     return (
-        dbquery(
+        db_query(
             TTestSamplerResult.WORKER_ID,
             TTestSamplerResult.SAMPLER_ID,
             TTestSamplerResult.SAMPLER_NAME,

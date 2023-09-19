@@ -6,7 +6,7 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
 from loguru import logger
 
-from app.database import dbquery
+from app.database import db_query
 from app.extension import apscheduler
 from app.modules.schedule.dao import schedule_job_dao
 
@@ -335,7 +335,7 @@ def query_task_history_list(req):
 
     # 查询日志列表
     pagination = (
-        dbquery(
+        db_query(
             TScheduleJobLog.JOB_NO,
             TScheduleJobLog.OPERATION_TYPE,
             TScheduleJobLog.OPERATION_TIME,

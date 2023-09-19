@@ -2,8 +2,6 @@
 # @File    : testplan_execution_items_dao.py
 # @Time    : 2021-09-09 19:59:21
 # @Author  : Kelvin.Ye
-from app.database import setter
-from app.database import where_by
 from app.modules.script.model import TTestplanExecutionItems
 
 
@@ -17,21 +15,20 @@ def select_all_by_execution(execution_no) -> list[TTestplanExecutionItems]:
 
 def sum_success_count_by_execution(execution_no):
     return TTestplanExecutionItems.sum_by(
-        TTestplanExecutionItems.SUCCESS_COUNT,
-        where_by(EXECUTION_NO=execution_no)
+        field=TTestplanExecutionItems.SUCCESS_COUNT,
+        where=dict(EXECUTION_NO=execution_no)
     )
 
 
 def sum_failure_count_by_execution(execution_no):
     return TTestplanExecutionItems.sum_by(
-        TTestplanExecutionItems.FAILURE_COUNT,
-        where_by(EXECUTION_NO=execution_no)
+        field=TTestplanExecutionItems.FAILURE_COUNT,
+        where=dict(EXECUTION_NO=execution_no)
     )
 
 
-def update_running_state_by_execution(execution_no, state) -> None:
-    TTestplanExecutionItems.updates_by(
-        setter(RUNNING_STATE=state),
-        where_by(EXECUTION_NO=execution_no),
-        record=False
+def update_running_state_by_execution(execution_no, state):
+    TTestplanExecutionItems.no_record_updates_by(
+        setter=dict(RUNNING_STATE=state),
+        where=dict(EXECUTION_NO=execution_no)
     )

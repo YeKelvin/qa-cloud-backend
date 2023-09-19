@@ -2,7 +2,7 @@
 # @File    : role_permission_service.py
 # @Time    : 2020/7/3 15:15
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.usercenter.dao import role_dao
 from app.modules.usercenter.dao import role_permission_dao
 from app.modules.usercenter.model import TPermission
@@ -23,7 +23,7 @@ def query_role_permissions(req):
     conds.equal(TPermission.OBJECT_NO, TPermissionObject.OBJECT_NO)
 
     resutls = (
-        dbquery(
+        db_query(
             TPermissionModule.MODULE_CODE,
             TPermissionObject.OBJECT_CODE,
             TPermission.PERMISSION_NO,

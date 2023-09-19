@@ -2,7 +2,7 @@
 # @File    : workspace_user_service.py
 # @Time    : 2021/6/5 23:39
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.public.dao import workspace_user_dao
 from app.modules.public.model import TWorkspace
@@ -26,7 +26,7 @@ def query_workspace_member_list(req):
 
     # TUser, TWorkspace, TWorkspaceUser 连表查询
     pagination = (
-        dbquery(
+        db_query(
             TWorkspace.WORKSPACE_NO,
             TWorkspace.WORKSPACE_NAME,
             TUser.USER_NO,
@@ -58,7 +58,7 @@ def query_workspace_member_all(req):
     conds.equal(TWorkspaceUser.WORKSPACE_NO, req.workspaceNo)
 
     # 查询全部空间成员
-    workspace_user_list = dbquery(
+    workspace_user_list = db_query(
         TUser.USER_NO,
         TUser.USER_NAME
     ).filter(*conds).order_by(TUser.CREATED_TIME.desc()).all()
@@ -104,7 +104,7 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'ADMIN')
 
     # 查询超级管理员的用户编号
-    if result := dbquery(TUser.USER_NO).filter(*conds).first():
+    if result := db_query(TUser.USER_NO).filter(*conds).first():
         return result[0]
     else:
         raise ServiceError('查询超级管理员用户失败')

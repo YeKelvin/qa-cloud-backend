@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy import or_
 
 from app import config as CONFIG
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
 from app.modules.script.enum import VariableDatasetWeight
@@ -340,7 +340,7 @@ def query_user_list(req):
 
     # 查询用户列表
     pagination = (
-        dbquery(
+        db_query(
             TUser.USER_NO,
             TUser.USER_NAME,
             TUser.MOBILE,
@@ -406,7 +406,7 @@ def query_user_all():
 
     # 查询用户列表
     users = (
-        dbquery(
+        db_query(
             TUser.USER_NO,
             TUser.USER_NAME,
             TUser.STATE,
@@ -433,14 +433,14 @@ def get_user_roles(user_no):
     user_role_conds = QueryCondition(TRole, TUserRole)
     user_role_conds.equal(TUserRole.USER_NO, user_no)
     user_role_conds.equal(TUserRole.ROLE_NO, TRole.ROLE_NO)
-    user_role_stmt = dbquery(TRole.ROLE_CODE).filter(*user_role_conds)
+    user_role_stmt = db_query(TRole.ROLE_CODE).filter(*user_role_conds)
     # 分组角色
     group_role_conds = QueryCondition(TGroup, TRole, TUserGroup, TGroupRole)
     group_role_conds.equal(TUserGroup.USER_NO, user_no)
     group_role_conds.equal(TUserGroup.GROUP_NO, TGroup.GROUP_NO)
     group_role_conds.equal(TGroupRole.ROLE_NO, TRole.ROLE_NO)
     group_role_conds.equal(TGroupRole.GROUP_NO, TUserGroup.GROUP_NO)
-    group_role_stmt = dbquery(TRole.ROLE_CODE).filter(*group_role_conds)
+    group_role_stmt = db_query(TRole.ROLE_CODE).filter(*group_role_conds)
     # 连表查询
     return user_role_stmt.union(group_role_stmt).all()
 
@@ -651,7 +651,7 @@ def get_private_workspace_by_user(user_no):
     conds.equal(TWorkspaceUser.USER_NO, user_no)
 
     # 查询私人空间
-    return dbquery(TWorkspace).filter(*conds).first()
+    return db_query(TWorkspace).filter(*conds).first()
 
 
 @http_service

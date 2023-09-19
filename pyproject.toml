@@ -41,8 +41,6 @@ flask-apscheduler = "1.13.0"
 apscheduler = "3.10.4"
 # signal
 blinker = "1.6.2"
-# config
-tomli = "2.0.1"
 # encryption
 pyjwt = "2.8.0"
 # environment

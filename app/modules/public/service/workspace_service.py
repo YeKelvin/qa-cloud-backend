@@ -2,7 +2,7 @@
 # @File    : workspace_service.py
 # @Time    : 2019/11/14 9:51
 # @Author  : Kelvin.Ye
-from app.database import dbquery
+from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.public.dao import workspace_user_dao
 from app.modules.public.enum import WorkspaceScope
@@ -173,7 +173,7 @@ def get_super_admin_userno():
     conds.equal(TRole.ROLE_CODE, 'ADMIN')
 
     # 查询超级管理员的用户编号
-    if result := dbquery(TUser.USER_NO).filter(*conds).first():
+    if result := db_query(TUser.USER_NO).filter(*conds).first():
         return result[0]
     else:
         raise ServiceError('查询超级管理员用户失败')

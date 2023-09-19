@@ -3,12 +3,7 @@
 # @Time    : 2021-11-03 22:45:55
 # @Author  : Kelvin.Ye
 import os
-
-
-try:
-    import tomllib  # noqa
-except ModuleNotFoundError:
-    import tomli as tomllib
+import tomllib
 
 
 # 项目路径
