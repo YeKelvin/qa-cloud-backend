@@ -49,7 +49,8 @@ def create_dataset():
         Argument('workspaceNo'),
         Argument('datasetName', required=True, nullable=False, help='变量集名称不能为空'),
         Argument('datasetType', required=True, nullable=False, enum=VariableDatasetType, help='变量集类型不能为空'),
-        Argument('datasetDesc')
+        Argument('datasetDesc'),
+        Argument('datasetBinding')
     ).parse()
     return service.create_dataset(req)
 
@@ -62,7 +63,8 @@ def modify_dataset():
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
         Argument('datasetName', required=True, nullable=False, help='变量集名称不能为空'),
-        Argument('datasetDesc')
+        Argument('datasetDesc'),
+        Argument('datasetBinding')
     ).parse()
     return service.modify_dataset(req)
 

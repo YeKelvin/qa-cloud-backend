@@ -91,6 +91,7 @@ class TVariableDataset(DBModel, BaseColumn):
     )
     DATASET_DESC = db.Column(db.String(256), comment='变量集描述')
     DATASET_WEIGHT = db.Column(db.Integer, nullable=False, comment='权重')
+    DATASET_BINDING = db.Column(db.String(32), comment='环境绑定，用于限制自定义变量')
     UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_dataset')
 
 

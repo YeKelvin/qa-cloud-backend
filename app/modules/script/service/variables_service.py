@@ -42,7 +42,8 @@ def query_dataset_list(req):
             'datasetNo': item.DATASET_NO,
             'datasetName': item.DATASET_NAME,
             'datasetType': item.DATASET_TYPE,
-            'datasetDesc': item.DATASET_DESC
+            'datasetDesc': item.DATASET_DESC,
+            'datasetBinding': item.DATASET_BINDING
         }
         for item in pagination.items
     ]
@@ -69,7 +70,8 @@ def query_dataset_all(req):
             'datasetNo': item.DATASET_NO,
             'datasetName': item.DATASET_NAME,
             'datasetType': item.DATASET_TYPE,
-            'datasetDesc': item.DATASET_DESC
+            'datasetDesc': item.DATASET_DESC,
+            'datasetBinding': item.DATASET_BINDING
         }
         for item in results
     ]
@@ -100,7 +102,8 @@ def create_dataset(req):
         DATASET_NAME=req.datasetName,
         DATASET_TYPE=req.datasetType,
         DATASET_DESC=req.datasetDesc,
-        DATASET_WEIGHT=VariableDatasetWeight[req.datasetType].value
+        DATASET_WEIGHT=VariableDatasetWeight[req.datasetType].value,
+        DATASET_BINDING=req.datasetBinding
     )
 
     return {'datasetNo': dataset_no}
@@ -118,7 +121,8 @@ def modify_dataset(req):
     # 更新变量集信息
     dataset.update(
         DATASET_NAME=req.datasetName,
-        DATASET_DESC=req.datasetDesc
+        DATASET_DESC=req.datasetDesc,
+        DATASET_BINDING=req.datasetBinding
     )
 
 
