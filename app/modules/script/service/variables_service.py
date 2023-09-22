@@ -33,7 +33,7 @@ def query_dataset_list(req):
     pagination = (
         TVariableDataset
         .filter(*conds)
-        .order_by(TVariableDataset.CREATED_TIME.desc())
+        .order_by(TVariableDataset.DATASET_WEIGHT.desc(), TVariableDataset.CREATED_TIME.desc())
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
@@ -61,7 +61,7 @@ def query_dataset_all(req):
     results = (
         TVariableDataset
         .filter(and_(*conds) | (TVariableDataset.DATASET_TYPE == VariableDatasetType.GLOBAL.value))
-        .order_by(TVariableDataset.CREATED_TIME.desc())
+        .order_by(TVariableDataset.DATASET_WEIGHT.desc(), TVariableDataset.CREATED_TIME.desc())
         .all()
     )
 

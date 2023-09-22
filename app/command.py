@@ -287,7 +287,7 @@ def init_user_role():
 def init_global_variable_dataset():
     TVariableDataset.no_record_insert(
         DATASET_NO=new_id(),
-        DATASET_NAME='public',
+        DATASET_NAME='全局变量',
         DATASET_TYPE='GLOBAL',
         DATASET_WEIGHT=1
     )
