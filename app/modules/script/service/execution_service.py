@@ -12,7 +12,7 @@ from app import config as CONFIG
 from app.extension import db
 from app.extension import executor
 from app.extension import socketio
-from app.modules.public.dao import notification_robot_dao
+from app.modules.public.dao import notice_robot_dao
 from app.modules.public.enum import RobotState
 from app.modules.public.enum import RobotType
 from app.modules.script.dao import element_children_dao
@@ -521,7 +521,7 @@ def start_testplan(
     if notification_robots:
         logger.info(f'执行编号:[ {execution_no} ] 发送执行结果消息')
         for robot_no in notification_robots:
-            robot = notification_robot_dao.select_by_no(robot_no)
+            robot = notice_robot_dao.select_by_no(robot_no)
             if robot.STATE == RobotState.DISABLE.value:
                 logger.info(f'执行编号:[ {execution_no} ] 消息机器人:[ {robot.ROBOT_NAME} ] 消息机器人状态已禁用')
                 continue

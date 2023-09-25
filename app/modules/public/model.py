@@ -52,9 +52,9 @@ class TTag(DBModel, BaseColumn):
     UniqueConstraint('TAG_NAME', 'DELETED', name='unique_tagname')
 
 
-class TNotificationRobot(DBModel, BaseColumn):
+class TNoticeRobot(DBModel, BaseColumn):
     """通知机器人表"""
-    __tablename__ = 'NOTIFICATION_ROBOT'
+    __tablename__ = 'NOTICE_ROBOT'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     ROBOT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='机器人编号')
     ROBOT_NAME = db.Column(db.String(128), nullable=False, comment='机器人名称')

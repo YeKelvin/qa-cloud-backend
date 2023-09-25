@@ -2,9 +2,9 @@
 # @File    : message_service.py
 # @Time    : 2022-05-07 22:32:17
 # @Author  : Kelvin.Ye
-from app.modules.public.dao import notification_robot_dao
+from app.modules.public.dao import notice_robot_dao
 from app.modules.public.enum import RobotState
-from app.modules.public.model import TNotificationRobot
+from app.modules.public.model import TNoticeRobot
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -17,18 +17,18 @@ from app.utils.sqlalchemy_util import QueryCondition
 def query_notice_robot_list(req):
     # 查询条件
     conds = QueryCondition()
-    conds.like(TNotificationRobot.WORKSPACE_NO, req.workspaceNo)
-    conds.like(TNotificationRobot.ROBOT_NO, req.robotNo)
-    conds.like(TNotificationRobot.ROBOT_NAME, req.robotName)
-    conds.like(TNotificationRobot.ROBOT_DESC, req.robotDesc)
-    conds.like(TNotificationRobot.ROBOT_TYPE, req.robotType)
-    conds.like(TNotificationRobot.STATE, req.state)
+    conds.like(TNoticeRobot.WORKSPACE_NO, req.workspaceNo)
+    conds.like(TNoticeRobot.ROBOT_NO, req.robotNo)
+    conds.like(TNoticeRobot.ROBOT_NAME, req.robotName)
+    conds.like(TNoticeRobot.ROBOT_DESC, req.robotDesc)
+    conds.like(TNoticeRobot.ROBOT_TYPE, req.robotType)
+    conds.like(TNoticeRobot.STATE, req.state)
 
     # 查询机器人列表
     pagination = (
-        TNotificationRobot
+        TNoticeRobot
         .filter(*conds)
-        .order_by(TNotificationRobot.CREATED_TIME.desc())
+        .order_by(TNoticeRobot.CREATED_TIME.desc())
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
@@ -50,8 +50,8 @@ def query_notice_robot_list(req):
 def query_notice_robot_all(req):
     # 查询所有机器人
     conds = QueryCondition()
-    conds.equal(TNotificationRobot.WORKSPACE_NO, req.workspaceNo)
-    robots = TNotificationRobot.filter(*conds).order_by(TNotificationRobot.CREATED_TIME.desc()).all()
+    conds.equal(TNoticeRobot.WORKSPACE_NO, req.workspaceNo)
+    robots = TNoticeRobot.filter(*conds).order_by(TNoticeRobot.CREATED_TIME.desc()).all()
 
     return [
         {
@@ -68,7 +68,7 @@ def query_notice_robot_all(req):
 @http_service
 def query_notice_robot(req):
     # 查询机器人
-    robot = notification_robot_dao.select_by_no(req.robotNo)
+    robot = notice_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     return {
@@ -89,7 +89,7 @@ def create_notice_robot(req):
         raise ServiceError('空间编号不能为空')
 
     # 查询机器人
-    robot = notification_robot_dao.select_first(
+    robot = notice_robot_dao.select_first(
         WORKSPACE_NO=req.workspaceNo,
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=req.robotType
@@ -98,7 +98,7 @@ def create_notice_robot(req):
 
     # 新增机器人
     robot_no = new_id()
-    TNotificationRobot.insert(
+    TNoticeRobot.insert(
         WORKSPACE_NO=req.workspaceNo,
         ROBOT_NO=robot_no,
         ROBOT_NAME=req.robotName,
@@ -114,11 +114,11 @@ def create_notice_robot(req):
 @http_service
 def modify_notice_robot(req):
     # 查询机器人
-    robot = notification_robot_dao.select_by_no(req.robotNo)
+    robot = notice_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 唯一性校验
-    if robot.ROBOT_NAME != req.robotName and notification_robot_dao.select_first(
+    if robot.ROBOT_NAME != req.robotName and notice_robot_dao.select_first(
         WORKSPACE_NO=robot.WORKSPACE_NO,
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=robot.ROBOT_TYPE
@@ -136,7 +136,7 @@ def modify_notice_robot(req):
 @http_service
 def modify_notice_robot_state(req):
     # 查询机器人
-    robot = notification_robot_dao.select_by_no(req.robotNo)
+    robot = notice_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 更新机器人状态
@@ -146,7 +146,7 @@ def modify_notice_robot_state(req):
 @http_service
 def remove_notice_robot(req):
     # 查询机器人
-    robot = notification_robot_dao.select_by_no(req.robotNo)
+    robot = notice_robot_dao.select_by_no(req.robotNo)
     check_exists(robot, error_msg='机器人不存在')
 
     # 删除机器人
