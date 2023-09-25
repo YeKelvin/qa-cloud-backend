@@ -15,10 +15,10 @@ class TRestApiLog(DBModel, BaseColumn):
     IP = db.Column(db.String(32), comment='请求IP')
     URI = db.Column(db.String(256), comment='请求路径')
     METHOD = db.Column(db.String(128), comment='请求方法')
-    REQUEST = db.Column(db.Text, comment='请求数据')
-    RESPONSE = db.Column(db.Text, comment='响应数据')
-    SUCCESS = db.Column(db.Boolean, comment='是否成功')
-    ELAPSED_TIME = db.Column(db.Integer, comment='服务耗时')
+    REQUEST = db.Column(db.Text(), comment='请求数据')
+    RESPONSE = db.Column(db.Text(), comment='响应数据')
+    SUCCESS = db.Column(db.Boolean(), comment='是否成功')
+    ELAPSED_TIME = db.Column(db.Integer(), comment='服务耗时')
 
 
 class TSystemDataLog(DBModel, BaseColumn):

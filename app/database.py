@@ -21,8 +21,16 @@ def db_query(*args, **kwargs):
     return db.session.query(*args, **kwargs)
 
 
+def db_execute(*args, **kwargs):
+    return db.session.scalars(*args, **kwargs)
+
+
 class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
+
+    @classmethod
+    def exclude_delete(cls):
+        return cls.DELETED == 0
 
     @classmethod
     def insert(cls: MODEL, **kwargs):
