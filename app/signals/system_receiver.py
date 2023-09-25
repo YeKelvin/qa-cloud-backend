@@ -25,30 +25,33 @@ URI_EXCLUDE = ['/execute']
 @restapi_log_signal.connect
 def record_restapi_log(sender, method, uri, request, response, success, elapsed):
     """记录restapi调用日志（POST、PUT、DELETE）"""
-    # 仅记录POST、PUT或DELETE的请求
-    if method not in ['POST', 'PUT', 'DELETE']:
-        return
-    # 过滤指定路径的请求
-    for path in URI_EXCLUDE:
-        if path in uri:
+    try:
+        # 仅记录POST、PUT或DELETE的请求
+        if method not in ['POST', 'PUT', 'DELETE']:
             return
-    # 获取接口描述
-    desc = RULE_MAP.get(f'{method} {uri}')
-    if not desc:
-        logger.warning(f'uri:[ {method} {uri} ] 缺失接口描述')
-    # 记录日志
-    record = TRestApiLog()
-    record.LOG_NO=g.trace_id,
-    record.DESC=desc
-    record.IP=g.ip,
-    record.URI=uri,
-    record.METHOD=method,
-    record.REQUEST=to_json(request),
-    record.RESPONSE=to_json(response),
-    record.SUCCESS=success
-    record.ELAPSED_TIME=elapsed
-    db.session.add(record)
-    db.session.flush()
+        # 过滤指定路径的请求
+        for path in URI_EXCLUDE:
+            if path in uri:
+                return
+        # 获取接口描述
+        desc = RULE_MAP.get(f'{method} {uri}')
+        if not desc:
+            logger.warning(f'uri:[ {method} {uri} ] 缺失接口描述')
+        # 记录日志
+        record = TRestApiLog()
+        record.LOG_NO=g.trace_id,
+        record.DESC=desc
+        record.IP=g.ip,
+        record.URI=uri,
+        record.METHOD=method,
+        record.REQUEST=to_json(request),
+        record.RESPONSE=to_json(response),
+        record.SUCCESS=success
+        record.ELAPSED_TIME=elapsed
+        db.session.add(record)
+        db.session.commit()
+    except Exception as e:
+        logger.exception(str(e))
 
 
 @record_insert_signal.connect
