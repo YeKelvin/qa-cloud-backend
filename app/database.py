@@ -156,8 +156,14 @@ class BaseColumn:
     CREATED_BY = db.Column(db.String(64), default=get_userno_or_default, comment='创建人')
     CREATED_TIME = db.Column(db.DateTime, default=datetime_now_by_utc8, comment='创建时间')
     UPDATED_BY = db.Column(
-        db.String(64), default=get_userno_or_default, onupdate=get_userno_or_default, comment='更新人'
+        db.String(64),
+        default=get_userno_or_default,
+        onupdate=get_userno_or_default,
+        comment='更新人'
     )
     UPDATED_TIME = db.Column(
-        db.DateTime, default=datetime_now_by_utc8, onupdate=datetime_now_by_utc8, comment='更新时间'
+        db.DateTime,
+        default=datetime_now_by_utc8,
+        onupdate=datetime_now_by_utc8,
+        comment='更新时间'
     )

@@ -8,7 +8,7 @@ from loguru import logger
 
 from app.extension import db
 from app.modules.system.model import TRestApiLog
-from app.modules.system.model import TSystemOperationLogContent
+from app.modules.system.model import TSystemDataLog
 from app.signals import record_delete_signal
 from app.signals import record_insert_signal
 from app.signals import record_update_signal
@@ -54,11 +54,11 @@ def record_restapi_log(sender, method, uri, request, response, success, elapsed)
 @record_insert_signal.connect
 def record_insert(sender, entity):
     """记录新增数据"""
-    record = TSystemOperationLogContent()
+    record = TSystemDataLog()
     record.LOG_NO = get_trace_id()
-    record.OPERATION_TYPE = 'INSERT'
-    record.TABLE_NAME = entity.__tablename__
-    record.ROW_ID = entity.ID
+    record.ACTION = 'INSERT'
+    record.TABLE = entity.__tablename__
+    record.ROWID = entity.ID
     db.session.add(record)
     db.session.flush()
 
@@ -81,12 +81,12 @@ def record_update(sender, entity, columnname, newvalue):
         oldvalue = to_json(oldvalue)
     if isinstance(newvalue, dict | list):
         newvalue = to_json(newvalue)
-    record = TSystemOperationLogContent()
+    record = TSystemDataLog()
     record.LOG_NO = get_trace_id(),
-    record.OPERATION_TYPE = 'UPDATE',
-    record.TABLE_NAME = entity.__tablename__,
-    record.ROW_ID = entity.ID
-    record.COLUMN_NAME = columnname,
+    record.ACTION = 'UPDATE',
+    record.TABLE = entity.__tablename__,
+    record.ROWID = entity.ID
+    record.FIELD = columnname,
     record.OLD_VALUE = oldvalue
     record.NEW_VALUE = newvalue
     db.session.add(record)
@@ -96,10 +96,10 @@ def record_update(sender, entity, columnname, newvalue):
 @record_delete_signal.connect
 def record_delete(sender, entity):
     """记录删除数据"""
-    record = TSystemOperationLogContent()
+    record = TSystemDataLog()
     record.LOG_NO = get_trace_id()
-    record.OPERATION_TYPE = 'DELETE'
-    record.TABLE_NAME = entity.__tablename__
-    record.ROW_ID = entity.ID
+    record.ACTION = 'DELETE'
+    record.TABLE = entity.__tablename__
+    record.ROWID = entity.ID
     db.session.add(record)
     db.session.flush()

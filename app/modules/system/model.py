@@ -21,14 +21,13 @@ class TRestApiLog(DBModel, BaseColumn):
     ELAPSED_TIME = db.Column(db.Integer, comment='服务耗时')
 
 
-class TSystemOperationLogContent(DBModel, BaseColumn):
-    # TODO: SYSTEM_DATA_CHANGE_LOG
-    """数据变更日志表"""
-    __tablename__ = 'SYSTEM_OPERATION_LOG_CONTENT'
+class TSystemDataLog(DBModel, BaseColumn):
+    """数据日志表"""
+    __tablename__ = 'SYSTEM_DATA_LOG'
     LOG_NO = db.Column(db.String(64), index=True, nullable=False, comment='日志编号')
-    OPERATION_TYPE = db.Column(db.String(32), nullable=False, comment='操作类型(INSERT:新增, UPDATE:修改, DELETE:删除)')
-    TABLE_NAME = db.Column(db.String(128), comment='表名')
-    ROW_ID = db.Column(db.Integer, comment='数据ID')
-    COLUMN_NAME = db.Column(db.String(128), comment='列名')
+    ACTION = db.Column(db.String(32), nullable=False, comment='动作(INSERT:新增, UPDATE:修改, DELETE:删除)')
+    TABLE = db.Column(db.String(128), comment='表名')
+    ROWID = db.Column(db.Integer, comment='行ID')
+    FIELD = db.Column(db.String(128), comment='字段名')
     OLD_VALUE = db.Column(db.Text, comment='旧值')
     NEW_VALUE = db.Column(db.Text, comment='新值')
