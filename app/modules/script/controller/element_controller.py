@@ -117,26 +117,16 @@ def create_collection():
 @require_permission('CREATE_ELEMENT')
 def create_element_child():
     """新增子代元素"""
-    """
-    request:
-    {
-        "rootNo": "",
-        "parentNo": "",
-        "child": {
-            "elementName": "",
-            "elementRemark": "",
-            "elementType": "",
-            "elementClass": "",
-            "property": { ... },
-            "attributes": { ... },
-            "componentList": [ ... ]
-        }
-    }
-    """
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('child', type=dict, required=True, nullable=False, help='子元素不能为空')
+        Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
+        Argument('elementRemark'),
+        Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
+        Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
+        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
+        Argument('attributes', type=dict),
+        Argument('componentList', type=list)
     ).parse()
     return service.create_element_child(req)
 
@@ -146,6 +136,7 @@ def create_element_child():
 @require_permission('CREATE_ELEMENT')
 def create_element_children():
     """根据列表新增子代元素"""
+    # TODO: del
     """
     request:
     {
@@ -182,10 +173,9 @@ def modify_element():
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('elementName'),
         Argument('elementRemark'),
-        Argument('enabled'),
         Argument('property'),
         Argument('attributes', type=dict),
-        Argument('componentList', type=list),
+        Argument('componentList', type=list)
     ).parse()
     return service.modify_element(req)
 
@@ -195,7 +185,9 @@ def modify_element():
 @require_permission('REMOVE_ELEMENT')
 def remove_element():
     """删除元素"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.remove_element(req)
 
 
@@ -204,7 +196,9 @@ def remove_element():
 @require_permission('MODIFY_ELEMENT')
 def enable_element():
     """启用元素"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.enable_element(req)
 
 
@@ -213,7 +207,9 @@ def enable_element():
 @require_permission('MODIFY_ELEMENT')
 def disable_element():
     """禁用元素"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.disable_element(req)
 
 
@@ -222,7 +218,9 @@ def disable_element():
 @require_permission('MODIFY_ELEMENT')
 def toggle_element_state():
     """切换元素状态"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.toggle_element_state(req)
 
 
@@ -262,39 +260,6 @@ def paste_element():
     return service.paste_element(req)
 
 
-@blueprint.get('/element/httpheader/template/refs')
-@require_login
-@require_permission('QUERY_ELEMENT')
-def query_element_httpheader_template_refs():
-    """查询HTTP请求头引用"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
-    return service.query_element_httpheader_template_refs(req)
-
-
-@blueprint.post('/element/httpheader/template/refs')
-@require_login
-@require_permission('CREATE_ELEMENT')
-def create_element_httpheader_template_refs():
-    """新增HTTP请求头引用"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templates', type=list, required=True, nullable=False, help='模板编号列表不能为空')
-    ).parse()
-    return service.create_element_httpheader_template_refs(req)
-
-
-@blueprint.put('/element/httpheader/template/refs')
-@require_login
-@require_permission('MODIFY_ELEMENT')
-def modify_element_httpheader_template_refs():
-    """修改HTTP请求头引用"""
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('templates', type=list, required=True, nullable=False, help='模板编号列表不能为空')
-    ).parse()
-    return service.modify_element_httpheader_template_refs(req)
-
-
 @blueprint.get('/element/components')
 @require_login
 @require_permission('QUERY_ELEMENT')
@@ -304,30 +269,6 @@ def query_element_components():
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
     return service.query_element_components(req)
-
-
-@blueprint.post('/element/components')
-@require_login
-@require_permission('CREATE_ELEMENT')
-def create_element_components():
-    """新增元素组件"""
-    req = JsonParser(
-        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
-    ).parse()
-    return service.create_element_components(req)
-
-
-@blueprint.put('/element/components')
-@require_login
-@require_permission('MODIFY_ELEMENT')
-def modify_element_components():
-    """修改元素组件"""
-    req = JsonParser(
-        Argument('elements', required=True, nullable=False, help='元素编号不能为空')
-    ).parse()
-    return service.modify_element_components(req)
 
 
 @blueprint.post('/element/collection/copy/to/workspace')
@@ -354,79 +295,6 @@ def move_collection_to_workspace():
     return service.move_collection_to_workspace(req)
 
 
-@blueprint.post('/element/http/sampler')
-@require_login
-@require_permission('CREATE_ELEMENT')
-def create_http_sampler():
-    """新增HTTP取样器"""
-    """
-    request:
-    {
-        "rootNo": "",
-        "parentNo": "",
-        "child": {
-            "elementName": "",
-            "elementRemark": "",
-            "property": { ... },
-            "headerTemplates": [ ... ],
-            "componentList": [
-                    "elementNo": "",
-                    "elementName": "",
-                    "elementType": "",
-                    "elementClass": "",
-                    "property": { ... },
-                    "sortNumber": ""
-                }
-                ...
-            ]
-        }
-    }
-    """
-    req = JsonParser(
-        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('child', type=dict, required=True, nullable=False, help='元素信息不能为空')
-    ).parse()
-    return service.create_http_sampler(req)
-
-
-@blueprint.put('/element/http/sampler')
-@require_login
-@require_permission('MODIFY_ELEMENT')
-def modify_http_sampler():
-    """修改HTTP取样器"""
-    """
-    request:
-    {
-        "elementNo": "",
-        "elementName": "",
-        "elementRemark": "",
-        "property": { ... },
-        "headerTemplates": [ ... ],
-        "componentList": [
-            {
-                "elementNo": "",
-                "elementName": "",
-                "elementType": "",
-                "elementClass": "",
-                "property": { ... },
-                "sortNumber": ""
-            }
-            ...
-        ]
-    }
-    """
-    req = JsonParser(
-        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
-        Argument('elementRemark'),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('componentList', type=list),
-        Argument('headerTemplates', type=list)
-    ).parse()
-    return service.modify_http_sampler(req)
-
-
 @blueprint.get('/element/workspace/components')
 @require_login
 @require_permission('QUERY_WORKSPACE_COMPONENT')
@@ -448,7 +316,6 @@ def set_workspace_components():
     {
         "workspaceNo": "",
         "components": [
-
             {
                 "elementNo": "",
                 "elementName": "",

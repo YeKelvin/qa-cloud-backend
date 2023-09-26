@@ -4,7 +4,6 @@
 # @Author  : Kelvin.Ye
 from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import http_header_dao
-from app.modules.script.dao import httpheader_template_ref_dao
 from app.modules.script.dao import variable_dao
 from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import DatabaseDriver
@@ -127,7 +126,8 @@ def get_variables(datasets: list, use_current_value: bool) -> dict:
 def add_http_header_manager(sampler: TTestElement, children: list):
     cache = loads_cache.get()
     # 查询元素关联的请求头模板
-    refs = httpheader_template_ref_dao.select_all_by_sampler(sampler.ELEMENT_NO)
+    attrs = sampler.ELEMENT_ATTRIBUTES
+    refs = attrs.get('header_template_refs', [])
 
     # 没有关联模板时直接跳过
     if not refs:

@@ -89,10 +89,10 @@ class TPermissionObject(DBModel, BaseColumn):
 
 
 class TUserGroup(DBModel, BaseColumn):
-    # TODO: rename
+    # TODO: rename GROUP_MEMBER
     __tablename__ = 'USER_GROUP'
-    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
 
 
 class TUserRole(DBModel, BaseColumn):

@@ -12,8 +12,6 @@ from app.modules.public.model import TWorkspace
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_components_dao
 from app.modules.script.dao import element_property_dao
-from app.modules.script.dao import httpheader_template_dao
-from app.modules.script.dao import httpheader_template_ref_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
@@ -24,7 +22,6 @@ from app.modules.script.enum import ElementType
 from app.modules.script.enum import PasteType
 from app.modules.script.enum import is_collection
 from app.modules.script.enum import is_controller
-from app.modules.script.enum import is_http_sampler
 from app.modules.script.enum import is_sampler
 from app.modules.script.enum import is_snippet_collection
 from app.modules.script.enum import is_test_collection
@@ -35,7 +32,6 @@ from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementChildren
 from app.modules.script.model import TElementComponents
 from app.modules.script.model import TElementProperty
-from app.modules.script.model import THttpHeaderTemplateRef
 from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
@@ -343,7 +339,23 @@ def create_element_child(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(req.rootNo))
     # 新增元素
-    element_no = add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
+    element_no = add_element(
+        element_name=req.elementName,
+        element_remark=req.elementRemark,
+        element_type=req.elementType,
+        element_class=req.elementClass,
+        element_property=req.property,
+        element_attributes=req.attributes
+    )
+    # 建立父子关联
+    TElementChildren.insert(
+        ROOT_NO=req.rootNo,
+        PARENT_NO=req.parentNo,
+        CHILD_NO=element_no,
+        SORT_NO=element_children_dao.next_serial_number_by_parent(req.parentNo)
+    )
+    # 新建元素组件
+    add_element_components(root_no=req.rootNo, parent_no=element_no, components=req.componentList)
     # 返回元素编号
     return {'elementNo': element_no}
 
@@ -842,77 +854,8 @@ def clone_element(source: TTestElement, rename=False):
             PROPERTY_VALUE=prop.PROPERTY_VALUE,
             PROPERTY_TYPE=prop.PROPERTY_TYPE
         )
-    # 如果是 HTTPSampler ，克隆请求头模板
-    if is_http_sampler(source):
-        refs = httpheader_template_ref_dao.select_all_by_sampler(source.ELEMENT_NO)
-        for ref in refs:
-            THttpHeaderTemplateRef.insert(SAMPLER_NO=cloned_no, TEMPLATE_NO=ref.TEMPLATE_NO)
 
     return cloned_no
-
-
-@http_service
-def query_element_httpheader_template_refs(req):
-    # 查询元素
-    element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
-
-    # 查询所有关联的模板
-    refs = httpheader_template_ref_dao.select_all_by_sampler(req.elementNo)
-
-    return [ref.TEMPLATE_NO for ref in refs]
-
-
-@http_service
-def create_element_httpheader_template_refs(req):
-    # 查询元素
-    element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
-    # 建立模板关联
-    add_httpheader_template_refs(req.elementNo, req.templates)
-
-
-def add_httpheader_template_refs(element_no, templates):
-    for template_no in templates:
-        # 模板存在才添加
-        if httpheader_template_dao.select_by_no(template_no):
-            # 添加模板关联
-            THttpHeaderTemplateRef.insert(SAMPLER_NO=element_no, TEMPLATE_NO=template_no)
-
-
-@http_service
-def modify_element_httpheader_template_refs(req):
-    # 查询元素
-    element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
-    # 修改元素请求头模板
-    update_httpheader_template_refs(req.elementNo, req.templates)
-
-
-def update_httpheader_template_refs(element_no, templates):
-    if templates is None:
-        return
-    for template_no in templates:
-        # 模板不存在则跳过
-        template = httpheader_template_dao.select_by_no(template_no)
-        if not template:
-            continue
-
-        # 查询元素请求头模板
-        ref = httpheader_template_ref_dao.select_by_sampler_and_template(element_no, template_no)
-        if not ref:
-            # 添加模板关联
-            THttpHeaderTemplateRef.insert(
-                SAMPLER_NO=element_no,
-                TEMPLATE_NO=template_no
-            )
-
-    # 删除不在请求中的模板
-    httpheader_template_ref_dao.delete_all_by_sampler_and_notin_template(element_no, templates)
 
 
 @http_service
@@ -938,15 +881,6 @@ def query_element_components(req):
             })
 
     return result
-
-
-@http_service
-def create_element_components(req):
-    # TODO: del
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(req.rootNo))
-    # 新增元素组件
-    return add_element_components(root_no=req.rootNo, parent_no=req.parentNo, components=req.children)
 
 
 def add_element_components(root_no, parent_no, components) -> list:
@@ -982,22 +916,6 @@ def add_element_component(root_no, parent_no, component):
         SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
     )
     return component_no
-
-
-@http_service
-def modify_element_components(req):
-    # TODO: 干掉
-    for component in req.elements:
-        # 校验空间权限
-        check_workspace_permission(get_workspace_no(get_root_no(component.elementNo)))
-        # 更新元素组件
-        update_element_component(
-            element_no=component.get('elementNo', None),
-            element_name=component.get('elementName'),
-            element_remark=component.get('elementRemark', None),
-            element_property=component.get('property', None),
-            enabled=component.get('enabled', None)
-        )
 
 
 def update_element_component(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
@@ -1118,38 +1036,6 @@ def move_collection_to_workspace(req):
         workspace_collection.update(WORKSPACE_NO=req.workspaceNo)
     else:
         raise ServiceError('集合没有指定空间')
-
-
-@http_service
-def create_http_sampler(req):
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(req.rootNo))
-    # 新增元素
-    element_no = add_element_child(root_no=req.rootNo, parent_no=req.parentNo, child=req.child)
-    # 建立请求头模板关联
-    add_httpheader_template_refs(element_no, req.child.headerTemplates)
-    # 返回元素编号
-    return {'elementNo': element_no}
-
-
-@http_service
-def modify_http_sampler(req):
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
-    # 更新元素
-    update_element(
-        element_no=req.elementNo,
-        element_name=req.elementName,
-        element_remark=req.elementRemark,
-        element_property=req.property
-    )
-    # 更新元素组件
-    update_element_components(
-        parent_no=req.elementNo,
-        component_list=req.componentList
-    )
-    # 更新请求头模板关联
-    update_httpheader_template_refs(req.elementNo, req.headerTemplates)
 
 
 @http_service
