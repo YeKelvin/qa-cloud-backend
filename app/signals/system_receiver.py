@@ -66,8 +66,8 @@ def record_insert(sender, entity):
     db.session.flush()
 
 
-# 数据更新排除列名
-UPDATE_COLUMN_EXCLUDE = [
+# 需要排除的更新列名
+EXCLUDED_UPDATE_COLUMNS = [
     'ID', 'VERSION', 'DELETED', 'REMARK', 'CREATED_BY', 'CREATED_TIME', 'UPDATED_BY', 'UPDATED_TIME'
 ]
 
@@ -75,15 +75,15 @@ UPDATE_COLUMN_EXCLUDE = [
 @record_update_signal.connect
 def record_update(sender, entity, columnname, newvalue):
     """记录更新数据"""
-    if columnname in UPDATE_COLUMN_EXCLUDE:
+    if columnname in EXCLUDED_UPDATE_COLUMNS:
         return
     oldvalue = getattr(entity, columnname, None)
-    if oldvalue is None:
-        return
     if isinstance(oldvalue, dict | list):
         oldvalue = to_json(oldvalue)
     if isinstance(newvalue, dict | list):
         newvalue = to_json(newvalue)
+    if oldvalue == newvalue:
+        return
     record = TSystemDataChangelog()
     record.LOG_NO = get_trace_id(),
     record.ACTION = 'UPDATE',
