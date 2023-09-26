@@ -21,9 +21,9 @@ class TRestApiLog(DBModel, BaseColumn):
     ELAPSED_TIME = db.Column(db.Integer(), comment='服务耗时')
 
 
-class TSystemDataLog(DBModel, BaseColumn):
-    """数据日志表"""
-    __tablename__ = 'SYSTEM_DATA_LOG'
+class TSystemDataChangelog(DBModel, BaseColumn):
+    """系统数据变更日志表"""
+    __tablename__ = 'SYSTEM_DATA_CHANGELOG'
     LOG_NO = db.Column(db.String(64), index=True, nullable=False, comment='日志编号')
     ACTION = db.Column(db.String(32), nullable=False, comment='动作(INSERT:新增, UPDATE:修改, DELETE:删除)')
     TABLE = db.Column(db.String(128), comment='表名')

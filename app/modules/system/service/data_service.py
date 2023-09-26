@@ -5,17 +5,17 @@
 from sqlalchemy import select
 
 from app.database import db_execute
-from app.modules.system.model import TSystemDataLog
+from app.modules.system.model import TSystemDataChangelog
 from app.tools.service import http_service
 
 
 @http_service
 def query_data_log(req):
-    logs = db_execute(
-        select(TSystemDataLog)
+    changelogs = db_execute(
+        select(TSystemDataChangelog)
         .where(
-            TSystemDataLog.exclude_delete(),
-            TSystemDataLog.LOG_NO == req.logNo
+            TSystemDataChangelog.exclude_delete(),
+            TSystemDataChangelog.LOG_NO == req.logNo
         )
     ).all()
 
@@ -29,7 +29,7 @@ def query_data_log(req):
             'oldValue': log.OLD_VALUE,
             'newValue': log.NEW_VALUE
         }
-        for log in logs
+        for log in changelogs
     ]
 
 

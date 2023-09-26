@@ -8,7 +8,7 @@ from loguru import logger
 
 from app.extension import db
 from app.modules.system.model import TRestApiLog
-from app.modules.system.model import TSystemDataLog
+from app.modules.system.model import TSystemDataChangelog
 from app.signals import record_delete_signal
 from app.signals import record_insert_signal
 from app.signals import record_update_signal
@@ -57,7 +57,7 @@ def record_restapi_log(sender, method, uri, request, response, success, elapsed)
 @record_insert_signal.connect
 def record_insert(sender, entity):
     """记录新增数据"""
-    record = TSystemDataLog()
+    record = TSystemDataChangelog()
     record.LOG_NO = get_trace_id()
     record.ACTION = 'INSERT'
     record.TABLE = entity.__tablename__
@@ -84,7 +84,7 @@ def record_update(sender, entity, columnname, newvalue):
         oldvalue = to_json(oldvalue)
     if isinstance(newvalue, dict | list):
         newvalue = to_json(newvalue)
-    record = TSystemDataLog()
+    record = TSystemDataChangelog()
     record.LOG_NO = get_trace_id(),
     record.ACTION = 'UPDATE',
     record.TABLE = entity.__tablename__,
@@ -99,7 +99,7 @@ def record_update(sender, entity, columnname, newvalue):
 @record_delete_signal.connect
 def record_delete(sender, entity):
     """记录删除数据"""
-    record = TSystemDataLog()
+    record = TSystemDataChangelog()
     record.LOG_NO = get_trace_id()
     record.ACTION = 'DELETE'
     record.TABLE = entity.__tablename__
