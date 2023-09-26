@@ -131,39 +131,6 @@ def create_element_child():
     return service.create_element_child(req)
 
 
-@blueprint.post('/element/children')
-@require_login
-@require_permission('CREATE_ELEMENT')
-def create_element_children():
-    """根据列表新增子代元素"""
-    # TODO: del
-    """
-    request:
-    {
-        "rootNo": "",
-        "parentNo": "",
-        "children": [
-            {
-                "elementName": "",
-                "elementRemark": "",
-                "elementType": "",
-                "elementClass": "",
-                "property": { ... },
-                "attributes": { ... },
-                "componentList": [ ... ]
-            }
-            ...
-        ]
-    }
-    """
-    req = JsonParser(
-        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
-        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
-        Argument('children', type=list, required=True, nullable=False, help='子元素列表不能为空')
-    ).parse()
-    return service.create_element_children(req)
-
-
 @blueprint.put('/element')
 @require_login
 @require_permission('MODIFY_ELEMENT')

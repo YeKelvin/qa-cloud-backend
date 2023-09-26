@@ -2,8 +2,6 @@
 # @File    : element_service.py
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
-from collections.abc import Iterable
-
 from loguru import logger
 
 from app.database import db_query
@@ -358,47 +356,6 @@ def create_element_child(req):
     add_element_components(root_no=req.rootNo, parent_no=element_no, components=req.componentList)
     # 返回元素编号
     return {'elementNo': element_no}
-
-
-@http_service
-def create_element_children(req):
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(req.rootNo))
-    # 新增元素
-    return add_element_children(root_no=req.rootNo, parent_no=req.parentNo, children=req.children)
-
-
-def add_element_child(root_no, parent_no, child: dict):
-    # 新建子代元素
-    element_no = add_element(
-        element_name=child.get('elementName'),
-        element_remark=child.get('elementRemark'),
-        element_type=child.get('elementType'),
-        element_class=child.get('elementClass'),
-        element_property=child.get('property'),
-        element_attributes=child.get('attributes')
-    )
-    # 建立父子关联
-    TElementChildren.insert(
-        ROOT_NO=root_no,
-        PARENT_NO=parent_no,
-        CHILD_NO=element_no,
-        SORT_NO=element_children_dao.next_serial_number_by_parent(parent_no)
-    )
-    # 新建元素组件
-    add_element_components(root_no=root_no, parent_no=element_no, components=child.get('componentList'))
-
-    return element_no
-
-
-def add_element_children(root_no, parent_no, children: Iterable[dict]) -> list:
-    """添加元素子代"""
-    result = []
-    for child in children:
-        # 新建子代元素
-        child_no = add_element_child(root_no, parent_no, child)
-        result.append(child_no)
-    return result
 
 
 @http_service
