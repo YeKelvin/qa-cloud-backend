@@ -16,24 +16,22 @@ from app.modules.public.model import TWorkspaceUser
 from app.modules.script.enum import VariableDatasetWeight
 from app.modules.script.model import TVariableDataset
 from app.modules.usercenter.dao import group_dao
+from app.modules.usercenter.dao import group_member_dao
 from app.modules.usercenter.dao import role_dao
 from app.modules.usercenter.dao import user_dao
-from app.modules.usercenter.dao import user_group_dao
 from app.modules.usercenter.dao import user_login_info_dao
 from app.modules.usercenter.dao import user_password_dao
 from app.modules.usercenter.dao import user_role_dao
-from app.modules.usercenter.dao import user_settings_dao
 from app.modules.usercenter.enum import UserState
 from app.modules.usercenter.model import TGroup
+from app.modules.usercenter.model import TGroupMember
 from app.modules.usercenter.model import TGroupRole
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
-from app.modules.usercenter.model import TUserGroup
 from app.modules.usercenter.model import TUserLoginInfo
 from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserPassword
 from app.modules.usercenter.model import TUserRole
-from app.modules.usercenter.model import TUserSettings
 from app.tools import cache
 from app.tools import http_client
 from app.tools import localvars
@@ -302,7 +300,7 @@ def create_user(req):
     # 绑定用户分组
     if req.groups:
         for group_no in req.groups:
-            TUserGroup.insert(USER_NO=user_no, GROUP_NO=group_no)
+            TGroupMember.insert(USER_NO=user_no, GROUP_NO=group_no)
 
 
 @http_service
@@ -372,7 +370,7 @@ def query_user_list(req):
                 })
         # 查询用户分组列表
         groups = []
-        user_groups = user_group_dao.select_all_by_user(user.USER_NO)
+        user_groups = group_member_dao.select_all_by_user(user.USER_NO)
         for user_group in user_groups:
             if group := group_dao.select_by_no(user_group.GROUP_NO):
                 groups.append({
@@ -435,11 +433,11 @@ def get_user_roles(user_no):
     user_role_conds.equal(TUserRole.ROLE_NO, TRole.ROLE_NO)
     user_role_stmt = db_query(TRole.ROLE_CODE).filter(*user_role_conds)
     # 分组角色
-    group_role_conds = QueryCondition(TGroup, TRole, TUserGroup, TGroupRole)
-    group_role_conds.equal(TUserGroup.USER_NO, user_no)
-    group_role_conds.equal(TUserGroup.GROUP_NO, TGroup.GROUP_NO)
+    group_role_conds = QueryCondition(TGroup, TRole, TGroupMember, TGroupRole)
+    group_role_conds.equal(TGroupMember.USER_NO, user_no)
+    group_role_conds.equal(TGroupMember.GROUP_NO, TGroup.GROUP_NO)
     group_role_conds.equal(TGroupRole.ROLE_NO, TRole.ROLE_NO)
-    group_role_conds.equal(TGroupRole.GROUP_NO, TUserGroup.GROUP_NO)
+    group_role_conds.equal(TGroupRole.GROUP_NO, TGroupMember.GROUP_NO)
     group_role_stmt = db_query(TRole.ROLE_CODE).filter(*group_role_conds)
     # 连表查询
     return user_role_stmt.union(group_role_stmt).all()
@@ -453,8 +451,6 @@ def query_user_info():
     user = user_dao.select_by_no(user_no)
     # 查询用户角色
     roles = [role.ROLE_CODE for role in get_user_roles(user_no)]
-    # 查询用户设置
-    settings = user_settings_dao.select_by_user(user_no)
 
     return {
         'userNo': user_no,
@@ -464,7 +460,7 @@ def query_user_info():
         'email': user.EMAIL,
         'sso': user.SSO,
         'roles': roles,
-        'settings': settings.DATA if settings else {}
+        'settings': user.SETTINGS or {}
     }
 
 
@@ -544,13 +540,11 @@ def update_user_email_login_info(user_no, old_email, new_email):
 def modify_user_settings(req):
     # 获取用户编号
     user_no = localvars.get_user_no()
-    if settings := user_settings_dao.select_by_user(user_no):
-        settings.update(DATA=req.data)
-    else:
-        TUserSettings.insert(
-            USER_NO=user_no,
-            DATA=req.data
-        )
+    # 查询用户
+    user = user_dao.select_by_no(user_no)
+    check_exists(user, error_msg='用户不存在')
+    # 更新用户设置
+    user.update(SETTINGS=req.data)
 
 
 @http_service
@@ -635,12 +629,12 @@ def update_user_groups(user_no, groups):
     # 批量绑定用户分组
     for group_no in groups:
         # 查询用户分组
-        group_user = user_group_dao.select_by_user_and_group(user_no, group_no)
+        group_user = group_member_dao.select_by_user_and_group(user_no, group_no)
         if not group_user:
-            TUserGroup.insert(USER_NO=user_no, GROUP_NO=group_no)
+            TGroupMember.insert(USER_NO=user_no, GROUP_NO=group_no)
 
     # 解绑不在请求中的分组
-    user_group_dao.delete_all_by_user_and_notin_group(user_no, groups)
+    group_member_dao.delete_all_by_user_and_notin_group(user_no, groups)
 
 
 def get_private_workspace_by_user(user_no):
@@ -674,7 +668,7 @@ def remove_user(req):
     user_role_dao.delete_all_by_user(req.userNo)
 
     # 删除用户分组
-    user_group_dao.delete_all_by_user(req.userNo)
+    group_member_dao.delete_all_by_user(req.userNo)
 
     # 删除用户密码
     user_password_dao.delete_all_by_user(req.userNo)

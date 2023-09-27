@@ -3,9 +3,9 @@
 # @Time    : 2022/4/25 9:37
 # @Author  : Kelvin.Ye
 from app.modules.usercenter.dao import group_dao
+from app.modules.usercenter.dao import group_member_dao
 from app.modules.usercenter.dao import group_role_dao
 from app.modules.usercenter.dao import role_dao
-from app.modules.usercenter.dao import user_group_dao
 from app.modules.usercenter.enum import GroupState
 from app.modules.usercenter.model import TGroup
 from app.modules.usercenter.model import TGroupRole
@@ -146,7 +146,7 @@ def remove_group(req):
     check_exists(group, error_msg='分组不存在')
 
     # 删除分组用户
-    user_group_dao.delete_all_by_group(req.groupNo)
+    group_member_dao.delete_all_by_group(req.groupNo)
 
     # 删除分组角色
     group_role_dao.delete_all_by_group(req.groupNo)

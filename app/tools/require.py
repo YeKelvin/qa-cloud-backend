@@ -14,12 +14,12 @@ from loguru import logger
 from app.extension import db
 from app.modules.opencenter.model import TThirdPartyApplication
 from app.modules.usercenter.model import TGroup
+from app.modules.usercenter.model import TGroupMember
 from app.modules.usercenter.model import TGroupRole
 from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TRolePermission
 from app.modules.usercenter.model import TUser
-from app.modules.usercenter.model import TUserGroup
 from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserRole
 from app.tools import localvars
@@ -179,12 +179,12 @@ def get_user_roles(user_no):
         TGroup.STATE == 'ENABLE',
         TRole.DELETED == 0,
         TRole.STATE == 'ENABLE',
-        TUserGroup.DELETED == 0,
-        TUserGroup.USER_NO == user_no,
-        TUserGroup.GROUP_NO == TGroup.GROUP_NO,
+        TGroupMember.DELETED == 0,
+        TGroupMember.USER_NO == user_no,
+        TGroupMember.GROUP_NO == TGroup.GROUP_NO,
         TGroupRole.DELETED == 0,
         TGroupRole.ROLE_NO == TRole.ROLE_NO,
-        TGroupRole.GROUP_NO == TUserGroup.GROUP_NO,
+        TGroupRole.GROUP_NO == TGroupMember.GROUP_NO,
     )
     return [entity.ROLE_NO for entity in user_role_stmt.union(group_role_stmt).all()]
 

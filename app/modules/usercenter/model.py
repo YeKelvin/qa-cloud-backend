@@ -18,11 +18,13 @@ class TUser(DBModel, BaseColumn):
     MOBILE = db.Column(db.String(16), unique=True, comment='手机号')
     EMAIL = db.Column(db.String(128), unique=True, comment='邮箱')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='用户状态(ENABLE:启用, DISABLE:禁用)')
-    SSO = db.Column(db.Boolean, nullable=False, default=False, comment='是否通过SSO创建的用户')
-    LOGGED_IN = db.Column(db.Boolean, nullable=False, default=False, comment='是否已登录')
+    SSO = db.Column(db.Boolean(), nullable=False, default=False, comment='是否通过SSO创建的用户')
+    LOGGED_IN = db.Column(db.Boolean(), nullable=False, default=False, comment='是否已登录')
+    SETTINGS = db.Column(JSONB, comment='用户设置')
 
 
 class TGroup(DBModel, BaseColumn):
+    """分组表"""
     __tablename__ = 'GROUP'
     GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
     GROUP_NAME = db.Column(db.String(128), nullable=False, comment='分组名称')
@@ -30,7 +32,15 @@ class TGroup(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
 
 
+class TGroupMember(DBModel, BaseColumn):
+    """分组成员表"""
+    __tablename__ = 'GROUP_MEMBER'
+    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
+    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
+
+
 class TGroupRole(DBModel, BaseColumn):
+    """分组角色表"""
     __tablename__ = 'GROUP_ROLE'
     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
@@ -43,7 +53,7 @@ class TRole(DBModel, BaseColumn):
     ROLE_NAME = db.Column(db.String(128), nullable=False, comment='角色名称')
     ROLE_DESC = db.Column(db.String(256), comment='角色描述')
     ROLE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='角色代码')
-    ROLE_RANK = db.Column(db.Integer, nullable=False, default=1, comment='角色等级')
+    ROLE_RANK = db.Column(db.Integer(), nullable=False, default=1, comment='角色等级')
     ROLE_TYPE = db.Column(db.String(64), comment='角色类型(SYSTEM:系统内置, CUSTOM:自定义)')
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, DISABLE:禁用)')
 
@@ -88,13 +98,6 @@ class TPermissionObject(DBModel, BaseColumn):
     OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')
 
 
-class TUserGroup(DBModel, BaseColumn):
-    # TODO: rename GROUP_MEMBER
-    __tablename__ = 'USER_GROUP'
-    GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
-    USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
-
-
 class TUserRole(DBModel, BaseColumn):
     """用户角色关联表"""
     __tablename__ = 'USER_ROLE'
@@ -118,7 +121,7 @@ class TUserLoginLog(DBModel, BaseColumn):
     LOGIN_TYPE = db.Column(db.String(32), comment='登录类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
     LOGIN_METHOD = db.Column(db.String(32), comment='登录方式(PASSWORD:密码认证, ENTERPRISE:企业认证)')
     LOGIN_IP = db.Column(db.String(256), comment='登录IP')
-    LOGIN_TIME = db.Column(db.DateTime, comment='登录时间')
+    LOGIN_TIME = db.Column(db.DateTime(), comment='登录时间')
 
 
 class TUserPassword(DBModel, BaseColumn):
@@ -127,15 +130,8 @@ class TUserPassword(DBModel, BaseColumn):
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='密码密文')
     PASSWORD_TYPE = db.Column(db.String(16), nullable=False, comment='密码类型(LOGIN:登录密码)')
-    LAST_FAILURE_TIME = db.Column(db.DateTime, comment='最后一次认证错误时间')
-    LAST_SUCCESS_TIME = db.Column(db.DateTime, comment='最后一次认证成功时间')
-    ERROR_TIMES = db.Column(db.Integer, default=0, comment='密码错误次数')
-    UNLOCK_TIME = db.Column(db.DateTime, comment='解锁时间')
+    LAST_FAILURE_TIME = db.Column(db.DateTime(), comment='最后一次认证错误时间')
+    LAST_SUCCESS_TIME = db.Column(db.DateTime(), comment='最后一次认证成功时间')
+    ERROR_TIMES = db.Column(db.Integer(), default=0, comment='密码错误次数')
+    UNLOCK_TIME = db.Column(db.DateTime(), comment='解锁时间')
     CREATE_TYPE = db.Column(db.String(16), nullable=False, comment='密码创建类型(CUSTOM:客户设置, SYSTEM:系统生成)')
-
-
-class TUserSettings(DBModel, BaseColumn):
-    """用户设置表"""
-    __tablename__ = 'USER_SETTINGS'
-    USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
-    DATA = db.Column(JSONB, comment='用户设置')

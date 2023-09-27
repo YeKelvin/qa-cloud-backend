@@ -9,10 +9,10 @@ from flask import g
 from app.modules.public.model import TWorkspaceRestriction
 from app.modules.public.model import TWorkspaceRestrictionExemption
 from app.modules.public.model import TWorkspaceUser
+from app.modules.usercenter.model import TGroupMember
 from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
-from app.modules.usercenter.model import TUserGroup
 from app.modules.usercenter.model import TUserRole
 from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
@@ -42,7 +42,7 @@ def get_user_workspaces(user_no) -> list:
 
 
 def get_user_groups(user_no) -> list:
-    return [entity.GROUP_NO for entity in TUserGroup.filter_by(USER_NO=user_no).all()]
+    return [entity.GROUP_NO for entity in TGroupMember.filter_by(USER_NO=user_no).all()]
 
 
 def is_super_admin(user_no):
