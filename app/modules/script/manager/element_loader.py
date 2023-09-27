@@ -5,11 +5,11 @@
 from loguru import logger
 
 from app.database import db_query
+from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
-from app.modules.script.dao import workspace_settings_dao
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
@@ -371,11 +371,11 @@ def merge_workspace_settings_to_collection(workspace_no, collection_properties):
     if collection_running_strategy.get('reverse'):
         return
     # 查询空间设置
-    workspace_settings = workspace_settings_dao.select_by_workspace(workspace_no)
-    if not workspace_settings:
+    workspace = workspace_dao.select_by_no(workspace_no)
+    if not workspace or not workspace.COMPONENT_SETTINGS:
         return
     # 集合的运行策略没有设置时，合并空间的运行策略
-    workspace_running_strategy = workspace_settings.DATA.get('running_strategy', {})
+    workspace_running_strategy = workspace.COMPONENT_SETTINGS.get('running_strategy', {})
     if workspace_run_reverse := workspace_running_strategy.get('reverse', []):
         collection_running_strategy['reverse'] = workspace_run_reverse
         collection_properties['TestCollection__running_strategy'] = collection_running_strategy

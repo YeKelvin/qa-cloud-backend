@@ -15,8 +15,9 @@ class TWorkspace(DBModel, BaseColumn):
     __tablename__ = 'WORKSPACE'
     WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='空间编号')
     WORKSPACE_NAME = db.Column(db.String(128), nullable=False, comment='空间名称')
-    WORKSPACE_SCOPE = db.Column(db.String(128), nullable=False, comment='空间作用域')
     WORKSPACE_DESC = db.Column(db.String(256), comment='空间描述')
+    WORKSPACE_SCOPE = db.Column(db.String(128), nullable=False, comment='空间作用域')
+    COMPONENT_SETTINGS = db.Column(JSONB, comment='组件设置')
     UniqueConstraint('WORKSPACE_NAME', 'WORKSPACE_SCOPE', 'DELETED', name='unique_name_type_scope')
 
 

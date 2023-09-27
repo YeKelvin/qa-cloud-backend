@@ -13,7 +13,6 @@ from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
-from app.modules.script.dao import workspace_settings_dao
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import PasteType
@@ -32,7 +31,6 @@ from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
-from app.modules.script.model import TWorkspaceComponentSettings
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -1077,21 +1075,19 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
 
 @http_service
 def query_workspace_settings(req):
-    # 查询空间设置
-    settings = workspace_settings_dao.select_by_workspace(req.workspaceNo)
+    # 查询空间
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
+    check_exists(workspace, error_msg='空间不存在')
     # 没有配置时返回空字典
-    return settings.DATA if settings else {}
+    return workspace.COMPONENT_SETTINGS or {}
 
 
 @http_service
 def set_workspace_settings(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
-    # 更新或新增空间设置
-    if settings:=workspace_settings_dao.select_by_workspace(req.workspaceNo):
-        settings.update(DATA=req.settings)
-    else:
-        TWorkspaceComponentSettings.insert(
-            WORKSPACE_NO=req.workspaceNo,
-            DATA=req.settings
-        )
+    # 查询空间
+    workspace = workspace_dao.select_by_no(req.workspaceNo)
+    check_exists(workspace, error_msg='空间不存在')
+    # 更新组件设置
+    workspace.update(COMPONENT_SETTINGS=req.settings)

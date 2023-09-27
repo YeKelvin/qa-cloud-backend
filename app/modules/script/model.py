@@ -26,13 +26,6 @@ class TWorkspaceComponent(DBModel, BaseColumn):
     COMPONENT_SORT = db.Column(db.Integer(), nullable=False, comment='组件序号')
 
 
-class TWorkspaceComponentSettings(DBModel, BaseColumn):
-    """空间组件设置表"""
-    __tablename__ = 'WORKSPACE_COMPONENT_SETTINGS'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    DATA = db.Column(JSONB, comment='组件设置')
-
-
 class TTestElement(DBModel, BaseColumn):
     """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
