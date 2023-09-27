@@ -191,11 +191,9 @@ def loads_children(element_no, specify_worker_no, specify_sampler_no):
 
 
 def add_element_components(element_no, children: list):
-    # TODO: 排序还是有问题
     relations = (
         db_query(
-            TElementComponents.SORT_NUMBER,
-            TElementComponents.SORT_WEIGHT,
+            TElementComponents.CHILD_SORT,
             TElementComponents.CHILD_TYPE,
             TElementComponents.CHILD_NO
         )
@@ -209,7 +207,7 @@ def add_element_components(element_no, children: list):
                 ElementType.ASSERTION.value
             ])
         )
-        .order_by(TElementComponents.SORT_WEIGHT.desc(), TElementComponents.SORT_NUMBER.asc())
+        .order_by(TElementComponents.CHILD_TYPE.desc(), TElementComponents.CHILD_SORT.asc())
         .all()
     )
     for relation in relations:

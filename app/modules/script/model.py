@@ -23,8 +23,7 @@ class TWorkspaceComponent(DBModel, BaseColumn):
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     COMPONENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='组件编号')
     COMPONENT_TYPE = db.Column(db.String(64), nullable=False, comment='组件类型')
-    SORT_NUMBER = db.Column(db.Integer(), nullable=False, comment='排序号') # TODO: rename COMPONENT_SORT
-    SORT_WEIGHT = db.Column(db.Integer(), nullable=False, comment='排序权重') # TODO: delete
+    COMPONENT_SORT = db.Column(db.Integer(), nullable=False, comment='组件序号')
 
 
 class TWorkspaceComponentSettings(DBModel, BaseColumn):
@@ -64,7 +63,7 @@ class TElementChildren(DBModel, BaseColumn):
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    SORT_NO = db.Column(db.Integer(), nullable=False, comment='子元素序号') # TODO: rename CHILD_SORT
+    CHILD_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
 class TElementComponents(DBModel, BaseColumn):
@@ -74,8 +73,7 @@ class TElementComponents(DBModel, BaseColumn):
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
     CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
-    SORT_NUMBER = db.Column(db.Integer(), nullable=False, comment='排序号') # TODO: rename CHILD_SORT
-    SORT_WEIGHT = db.Column(db.Integer(), nullable=False, comment='排序权重') # TODO: 好像没什么用
+    CHILD_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
 class TElementChangelog(DBModel, BaseColumn):
@@ -85,7 +83,7 @@ class TElementChangelog(DBModel, BaseColumn):
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
-    # PROP_NAME: 属性名称，TestElement__name,TestElement__remark,TestElement__attributes
+    # PROP_NAME: 属性名称，TestElement__name,TestElement__desc,TestElement__attrs
     # ATTR_NAME
     # OLD_VALUE
     # NEW_VALUE
@@ -209,7 +207,7 @@ class TTestplanItems(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_ITEMS'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    SORT_NO = db.Column(db.Integer(), nullable=False, comment='序号')
+    COLLECTION_SORT = db.Column(db.Integer(), nullable=False, comment='集合序号')
     UniqueConstraint('PLAN_NO', 'COLLECTION_NO', 'DELETED', name='unique_plan_collection')
 
 
@@ -250,7 +248,7 @@ class TTestplanExecutionItems(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_EXECUTION_ITEMS'
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    SORT_NO = db.Column(db.Integer(), nullable=False, comment='序号')
+    COLLECTION_SORT = db.Column(db.Integer(), nullable=False, comment='集合序号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
     ITERATION_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='迭代次数')
     SUCCESS_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='成功次数')

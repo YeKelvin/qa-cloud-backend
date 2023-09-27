@@ -17,6 +17,6 @@ def select_all_by_workspace(workspace_no) -> list[TWorkspaceComponent]:
     return (
         TWorkspaceComponent
         .filter_by(WORKSPACE_NO=workspace_no)
-        .order_by(TWorkspaceComponent.SORT_WEIGHT.desc(), TWorkspaceComponent.SORT_NUMBER.asc())
+        .order_by(TWorkspaceComponent.COMPONENT_TYPE.desc(), TWorkspaceComponent.COMPONENT_SORT.asc())
         .all()
     )

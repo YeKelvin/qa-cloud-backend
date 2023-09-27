@@ -10,7 +10,12 @@ def select_by_execution_and_collection(execution_no, collection_no) -> TTestplan
 
 
 def select_all_by_execution(execution_no) -> list[TTestplanExecutionItems]:
-    return TTestplanExecutionItems.filter_by(EXECUTION_NO=execution_no).order_by(TTestplanExecutionItems.SORT_NO).all()
+    return (
+        TTestplanExecutionItems
+        .filter_by(EXECUTION_NO=execution_no)
+        .order_by(TTestplanExecutionItems.COLLECTION_SORT)
+        .all()
+    )
 
 
 def sum_success_count_by_execution(execution_no):

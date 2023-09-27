@@ -13,8 +13,8 @@ def select_by_parent_and_child(parent_no, child_no) -> TElementChildren:
     return TElementChildren.filter_by(PARENT_NO=parent_no, CHILD_NO=child_no).first()
 
 
-def select_by_parent_and_sortno(parent_no, sort_no) -> TElementChildren:
-    return TElementChildren.filter_by(PARENT_NO=parent_no, SORT_NO=sort_no).first()
+def select_by_parent_and_index(parent_no, index) -> TElementChildren:
+    return TElementChildren.filter_by(PARENT_NO=parent_no, CHILD_SORT=index).first()
 
 
 def count_by_parent(parent_no) -> int:
@@ -30,4 +30,4 @@ def next_serial_number_by_parent(parent_no) -> int:
 
 
 def select_all_by_parent(parent_no) -> list[TElementChildren]:
-    return TElementChildren.filter_by(PARENT_NO=parent_no).order_by(TElementChildren.SORT_NO).all()
+    return TElementChildren.filter_by(PARENT_NO=parent_no).order_by(TElementChildren.CHILD_SORT).all()

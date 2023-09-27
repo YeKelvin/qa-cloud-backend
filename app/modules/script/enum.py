@@ -134,21 +134,6 @@ class PropertyType(Enum):
 
 
 @unique
-class ComponentSortWeight(Enum):
-    # 配置器
-    CONFIG = 99
-
-    # 前置处理器
-    PREV_PROCESSOR = 3
-
-    # 后置处理器
-    POST_PROCESSOR = 2
-
-    # 断言器
-    ASSERTION = 1
-
-
-@unique
 class ElementStatus(Enum):
 
     # 启用

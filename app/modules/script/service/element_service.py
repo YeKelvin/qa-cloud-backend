@@ -14,7 +14,6 @@ from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
 from app.modules.script.dao import workspace_settings_dao
-from app.modules.script.enum import ComponentSortWeight
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import PasteType
@@ -157,14 +156,14 @@ def query_element_all_with_children(req):
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         childconds.equal(TTestElement.ENABLED, req.enabled)
         children = db_query(
-            TElementChildren.SORT_NO,
+            TElementChildren.CHILD_SORT,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_REMARK,
             TTestElement.ELEMENT_TYPE,
             TTestElement.ELEMENT_CLASS,
             TTestElement.ENABLED
-        ).filter(*childconds).order_by(TElementChildren.SORT_NO).all()
+        ).filter(*childconds).order_by(TElementChildren.CHILD_SORT).all()
         # 添加元素信息
         result.append({
             'elementNo': item.ELEMENT_NO,
@@ -256,7 +255,7 @@ def get_element_children(parent_no, depth):
         return result
 
     # 根据序号排序
-    relations.sort(key=lambda k: k.SORT_NO)
+    relations.sort(key=lambda k: k.CHILD_SORT)
     for relation in relations:
         # 查询子代元素
         if element := test_element_dao.select_by_no(relation.CHILD_NO):
@@ -268,8 +267,8 @@ def get_element_children(parent_no, depth):
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
+                'elementIndex': relation.CHILD_SORT,
                 'enabled': element.ENABLED,
-                'sortNo': relation.SORT_NO,
                 'children': grandchildren
             })
 
@@ -350,7 +349,7 @@ def create_element_child(req):
         ROOT_NO=req.rootNo,
         PARENT_NO=req.parentNo,
         CHILD_NO=element_no,
-        SORT_NO=element_children_dao.next_serial_number_by_parent(req.parentNo)
+        CHILD_SORT=element_children_dao.next_serial_number_by_parent(req.parentNo)
     )
     # 新建元素组件
     add_element_components(root_no=req.rootNo, parent_no=element_no, components=req.componentList)
@@ -451,9 +450,9 @@ def delete_element_child(child_no):
     if relation := element_children_dao.select_by_child(child_no):
         # 重新排序父级子代
         TElementChildren.filter(
-            TElementChildren.PARENT_NO == relation.PARENT_NO, TElementChildren.SORT_NO > relation.SORT_NO
+            TElementChildren.PARENT_NO == relation.PARENT_NO, TElementChildren.CHILD_SORT > relation.CHILD_SORT
         ).update(
-            {TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1}
+            {TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1}
         )
         # 删除父级关联
         relation.delete()
@@ -562,39 +561,39 @@ def move_element(req):
     check_exists(source_upper_relation, error_msg='source元素上级关联不存在')
 
     # 校验元素序号
-    if req.targetSortNo < 0:
+    if req.targetIndex < 0:
         raise ServiceError('target元素序号不能小于0')
 
     # source 父元素编号
     source_parent_no = source_upper_relation.PARENT_NO
     # source 元素序号
-    source_sort_no = source_upper_relation.SORT_NO
+    source_index = source_upper_relation.CHILD_SORT
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
         # 校验空间权限
         check_workspace_permission(get_workspace_no(get_root_no(req.sourceNo)))
         # 序号相等时直接跳过
-        if req.targetSortNo == source_upper_relation.SORT_NO:
+        if req.targetIndex == source_upper_relation.CHILD_SORT:
             return
         # 元素移动类型，上移或下移
-        move_type = 'UP' if source_sort_no > req.targetSortNo else 'DOWN'
+        move_type = 'UP' if source_index > req.targetIndex else 'DOWN'
         if move_type == 'UP':
             # 下移  [target, source) 区间元素
             TElementChildren.filter(
                 TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.SORT_NO < source_sort_no,
-                TElementChildren.SORT_NO >= req.targetSortNo
-            ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
+                TElementChildren.CHILD_SORT < source_index,
+                TElementChildren.CHILD_SORT >= req.targetIndex
+            ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
         else:
             # 上移  (source, target] 区间元素
             TElementChildren.filter(
                 TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.SORT_NO > source_sort_no,
-                TElementChildren.SORT_NO <= req.targetSortNo,
-            ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1})
+                TElementChildren.CHILD_SORT > source_index,
+                TElementChildren.CHILD_SORT <= req.targetIndex,
+            ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1})
         # 更新 target 元素序号
-        source_upper_relation.update(SORT_NO=req.targetSortNo)
+        source_upper_relation.update(CHILD_SORT=req.targetIndex)
     # source 元素移动至不同的父元素下
     else:
         # 校验空间权限
@@ -602,18 +601,18 @@ def move_element(req):
         # source 元素下方的同级元素序号 - 1（上移元素）
         TElementChildren.filter(
             TElementChildren.PARENT_NO == source_parent_no,
-            TElementChildren.SORT_NO > source_sort_no
-        ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1})
+            TElementChildren.CHILD_SORT > source_index
+        ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1})
         # target 元素下方（包含 target 自身位置）的同级元素序号 + 1（下移元素）
         TElementChildren.filter(
             TElementChildren.PARENT_NO == req.targetParentNo,
-            TElementChildren.SORT_NO >= req.targetSortNo
-        ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
+            TElementChildren.CHILD_SORT >= req.targetIndex
+        ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
         # 移动 source 元素至 target 位置
         source_upper_relation.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
-            SORT_NO=req.targetSortNo
+            CHILD_SORT=req.targetIndex
         )
         # 递归修改 source 子代元素的根元素编号
         update_children_root(req.sourceNo, req.targetRootNo)
@@ -621,11 +620,11 @@ def move_element(req):
     # 校验 target 父级子代元素序号的连续性，避免埋坑
     target_children_relations = element_children_dao.select_all_by_parent(req.targetParentNo)
     for index, target_relation in enumerate(target_children_relations):
-        if target_relation.SORT_NO != index + 1:
+        if target_relation.CHILD_SORT != index + 1:
             logger.error(
                 f'父级编号:[ {req.targetParentNo} ] '
                 f'元素编号:[ {target_relation.CHILD_NO} ] '
-                f'序号:[ {target_relation.SORT_NO} ]'
+                f'序号:[ {target_relation.CHILD_SORT} ]'
                 f'序号连续性错误 '
             )
             raise ServiceError('Target 父级子代序号连续性有误')
@@ -662,14 +661,14 @@ def duplicate_element(req):
     source_upper_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
-        TElementChildren.SORT_NO > source_upper_relation.SORT_NO
-    ).update({TElementChildren.SORT_NO: TElementChildren.SORT_NO + 1})
+        TElementChildren.CHILD_SORT > source_upper_relation.CHILD_SORT
+    ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
     # 将 copy 元素插入 source 元素的下方
     TElementChildren.insert(
         ROOT_NO=source_upper_relation.ROOT_NO,
         PARENT_NO=source_upper_relation.PARENT_NO,
         CHILD_NO=copied_no,
-        SORT_NO=source_upper_relation.SORT_NO + 1
+        CHILD_SORT=source_upper_relation.CHILD_SORT + 1
     )
     return {'elementNo': copied_no}
 
@@ -734,7 +733,7 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
         ROOT_NO=target_root_no,
         PARENT_NO=target_no,
         CHILD_NO=copied_no,
-        SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
+        CHILD_SORT=element_children_dao.next_serial_number_by_parent(target_no)
     )
 
 
@@ -747,15 +746,15 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     # 上移 source 元素下方的元素
     TElementChildren.filter(
         TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
-        TElementChildren.SORT_NO > source_upper_relation.SORT_NO
+        TElementChildren.CHILD_SORT > source_upper_relation.CHILD_SORT
     ).update({
-        TElementChildren.SORT_NO: TElementChildren.SORT_NO - 1
+        TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1
     })
     # 修改 source 上级关联
     source_upper_relation.update(
         ROOT_NO=target_root_no,
         PARENT_NO=target_no,
-        SORT_NO=element_children_dao.next_serial_number_by_parent(target_no)
+        CHILD_SORT=element_children_dao.next_serial_number_by_parent(target_no)
     )
     # 递归修改 source 子代元素的根元素编号
     update_children_root(source_no, target_root_no)
@@ -773,7 +772,7 @@ def copy_element(source: TTestElement, rename=False, root_no=None):
             ROOT_NO=root_no or source_relation.ROOT_NO,
             PARENT_NO=copied_no,
             CHILD_NO=copied_child_no,
-            SORT_NO=source_relation.SORT_NO
+            CHILD_SORT=source_relation.CHILD_SORT
         )
     # 遍历克隆内建元素
     source_component_relations = element_components_dao.select_all_by_parent(source.ELEMENT_NO)
@@ -785,8 +784,7 @@ def copy_element(source: TTestElement, rename=False, root_no=None):
             PARENT_NO=copied_no,
             CHILD_NO=copied_component_no,
             CHILD_TYPE=source_relation.CHILD_TYPE,
-            SORT_NUMBER=source_relation.SORT_NUMBER,
-            SORT_WEIGHT=source_relation.SORT_WEIGHT
+            CHILD_SORT=source_relation.CHILD_SORT
         )
     return copied_no
 
@@ -832,9 +830,9 @@ def query_element_components(req):
                 'elementName': component.ELEMENT_NAME,
                 'elementType': component.ELEMENT_TYPE,
                 'elementClass': component.ELEMENT_CLASS,
-                'enabled': component.ENABLED,
+                'elementIndex': relation.CHILD_SORT,
                 'property': get_element_property(component.ELEMENT_NO),
-                'sortNumber': relation.SORT_NUMBER,
+                'enabled': component.ENABLED
             })
 
     return result
@@ -869,8 +867,7 @@ def add_element_component(root_no, parent_no, component):
         PARENT_NO=parent_no,
         CHILD_NO=component_no,
         CHILD_TYPE=component.get('elementType'),
-        SORT_NUMBER=component.get('sortNumber', 0),
-        SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
+        CHILD_SORT=component.get('elementIndex', 0)
     )
     return component_no
 
@@ -915,7 +912,7 @@ def update_element_components(parent_no: str, component_list: list):
             update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
             relation = element_components_dao.select_by_child(component.elementNo)
-            relation.update(SORT_NUMBER=component.sortNumber)
+            relation.update(CHILD_SORT=component.elementIndex)
         # 元素不存在则新增
         else:
             # 新增元素组件
@@ -1012,9 +1009,9 @@ def query_workspace_components(req):
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
-                'enabled': element.ENABLED,
+                'elementIndex': workspace_component.COMPONENT_SORT,
                 'property': get_element_property(element.ELEMENT_NO),
-                'sortNumber': workspace_component.SORT_NUMBER,
+                'enabled': element.ENABLED
             })
 
     return result
@@ -1041,7 +1038,7 @@ def set_workspace_components(req):
             update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
             workspace_component = workspace_component_dao.select_by_component(component.elementNo)
-            workspace_component.update(SORT_NUMBER=component.sortNumber)
+            workspace_component.update(COMPONENT_SORT=component.elementIndex)
         # 元素不存在则新增
         else:
             component_no = add_workspace_component(req.workspaceNo, component)
@@ -1073,8 +1070,7 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
         WORKSPACE_NO=workspace_no,
         COMPONENT_NO=component_no,
         COMPONENT_TYPE=component.get('elementType'),
-        SORT_NUMBER=component.get('sortNumber'),
-        SORT_WEIGHT=ComponentSortWeight[component.get('elementType')].value
+        COMPONENT_SORT=component.get('elementIndex')
     )
     return component_no
 

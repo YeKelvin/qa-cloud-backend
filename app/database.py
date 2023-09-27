@@ -132,6 +132,10 @@ class CRUDMixin:
             setattr(self, column, value)
         self.submit()
 
+    def no_record_update(self: MODEL, **kwargs):
+        kwargs['record'] = False
+        self.update(**kwargs)
+
     def delete(self: MODEL, record=True):
         """软删除"""
         setattr(self, 'DELETED', self.ID)
