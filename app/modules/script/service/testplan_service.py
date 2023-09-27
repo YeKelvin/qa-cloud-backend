@@ -314,7 +314,7 @@ def query_testplan_execution_details(req):
         collection_list.append({
             'elementNo': item.COLLECTION_NO,
             'elementName': result.COLLECTION_NAME if result else collection.ELEMENT_NAME,
-            'elementRemark': result.COLLECTION_REMARK if result else collection.ELEMENT_REMARK,
+            'elementDesc': result.COLLECTION_DESC if result else collection.ELEMENT_DESC,
             'runningState': item.RUNNING_STATE,
             'success': (
                 result.SUCCESS

@@ -62,8 +62,8 @@ def loads_tree(
     for configs in loads_configurator.get().values():
         for config in configs:
             collection['children'].insert(0, config)
+    collection_attributes = collection.get('attrs')
     collection_properties = collection.get('property')
-    collection_attributes = collection.get('attributes')
     exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
     # 添加空间组件（配置器、前置处理器、后置处理器、测试断言器）
     if not exclude_workspaces:
@@ -111,7 +111,7 @@ def loads_element(
     children = []
     # 元素属性
     properties = loads_property(element_no)
-    attributes = element.ELEMENT_ATTRIBUTES or {}
+    attributes = element.ELEMENT_ATTRS or {}
 
     # 添加HTTP会话管理器
     if is_worker(element) and attributes.get('enable_http_session', False):
@@ -145,10 +145,10 @@ def loads_element(
 
     return {
         'name': element.ELEMENT_NAME,
-        'remark': element.ELEMENT_REMARK,
+        'desc': element.ELEMENT_DESC,
         'class': get_real_class(element),
+        'attrs': attributes,
         'enabled': element.ENABLED,
-        'attributes': attributes,
         'property': properties,
         'children': children
     }
@@ -227,7 +227,7 @@ def add_snippets(sampler_attrs, children: list):
     transaction_children = transaction.get('children')
     if not transaction_children:
         return
-    trans_attrs = transaction.get('attributes', {})
+    trans_attrs = transaction.get('attrs', {})
     # 片段形参
     parameters = trans_attrs.get('parameters', [])
     # 是否使用HTTP会话
@@ -252,7 +252,7 @@ def configure_snippets(children: list, parameters: list, arguments: list, use_ht
     if use_http_session:
         children.insert(0, {
             'name': '事务HTTP会话管理器',
-            'remark': '',
+            'desc': '',
             'class': 'TransactionHTTPSessionManager',
             'enabled': True,
             'property': {}
@@ -287,7 +287,7 @@ def configure_snippets(children: list, parameters: list, arguments: list, use_ht
         # 添加 TransactionParameter 组件
         children.insert(0, {
             'name': '事务参数',
-            'remark': '',
+            'desc': '',
             'class': 'TransactionParameter',
             'enabled': True,
             'property': {
@@ -296,14 +296,14 @@ def configure_snippets(children: list, parameters: list, arguments: list, use_ht
         })
 
 
-def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
+def loads_snippet_collecion(snippet_no, snippet_name, snippet_desc):
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
     # 查询元素
     element = test_element_dao.select_by_no(snippet_no)
     check_exists(element, error_msg='元素不存在')
-    attributes = element.ELEMENT_ATTRIBUTES or {}
-    use_http_session = attributes.get('use_http_session', False)
+    element_attrs = element.ELEMENT_ATTRS or {}
+    use_http_session = element_attrs.get('use_http_session', False)
     # 递归查询子代，并根据序号正序排序
     lower_relation_list = element_children_dao.select_all_by_parent(snippet_no)
     children = []
@@ -311,7 +311,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     if use_http_session:
         children.append({
             'name': 'HTTP会话管理器',
-            'remark': '',
+            'desc': '',
             'class': 'HTTPSessionManager',
             'enabled': True,
             'property': {}
@@ -325,7 +325,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_remark):
     # 创建一个临时的 Worker
     worker = create_test_worker(name=snippet_name, children=children)
     # 创建一个临时的 Collection
-    return create_test_collection(name=snippet_name, remark=snippet_remark, children=[worker])
+    return create_test_collection(name=snippet_name, desc=snippet_desc, children=[worker])
 
 
 def loads_workspace_components(workspace_no):
@@ -366,9 +366,9 @@ def get_real_class(element):
 
 def merge_workspace_settings_to_collection(workspace_no, collection_properties):
     # 查询集合运行策略
-    collection_running_strategy = collection_properties.get('TestCollection__running_strategy', {})
+    collection_running_strategy = collection_properties.get('TestCollection__running_strategy', {}) or {}
     # 优先使用集合的运行策略
-    if collection_running_strategy.get('reverse', []):
+    if collection_running_strategy.get('reverse'):
         return
     # 查询空间设置
     workspace_settings = workspace_settings_dao.select_by_workspace(workspace_no)

@@ -49,7 +49,7 @@ def query_element_list(req):
     conds = QueryCondition(TTestElement)
     conds.like(TTestElement.ELEMENT_NO, req.elementNo)
     conds.like(TTestElement.ELEMENT_NAME, req.elementName)
-    conds.like(TTestElement.ELEMENT_REMARK, req.elementRemark)
+    conds.like(TTestElement.ELEMENT_DESC, req.elementDesc)
     conds.like(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
     conds.equal(TTestElement.ENABLED, req.enabled)
@@ -72,7 +72,7 @@ def query_element_list(req):
         db_query(
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
-            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_DESC,
             TTestElement.ELEMENT_TYPE,
             TTestElement.ENABLED
         )
@@ -108,7 +108,7 @@ def query_element_all(req):
     items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_REMARK,
+        TTestElement.ELEMENT_DESC,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ELEMENT_CLASS,
         TTestElement.ENABLED
@@ -140,7 +140,7 @@ def query_element_all_with_children(req):
     items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
-        TTestElement.ELEMENT_REMARK,
+        TTestElement.ELEMENT_DESC,
         TTestElement.ELEMENT_TYPE,
         TTestElement.ELEMENT_CLASS,
         TTestElement.ENABLED
@@ -159,7 +159,7 @@ def query_element_all_with_children(req):
             TElementChildren.CHILD_SORT,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
-            TTestElement.ELEMENT_REMARK,
+            TTestElement.ELEMENT_DESC,
             TTestElement.ELEMENT_TYPE,
             TTestElement.ELEMENT_CLASS,
             TTestElement.ENABLED
@@ -198,12 +198,12 @@ def query_element_info(req):
     return {
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
-        'elementRemark': element.ELEMENT_REMARK,
+        'elementDesc': element.ELEMENT_DESC,
         'elementType': element.ELEMENT_TYPE,
         'elementClass': element.ELEMENT_CLASS,
+        'elementAttrs': element.ELEMENT_ATTRS or {},
         'enabled': element.ENABLED,
-        'property': properties,
-        'attributes': element.ELEMENT_ATTRIBUTES or {}
+        'property': properties
     }
 
 
@@ -287,11 +287,11 @@ def create_collection(req):
     # 创建元素
     element_no = add_element(
         element_name=req.elementName,
-        element_remark=req.elementRemark,
+        element_desc=req.elementDesc,
         element_type=req.elementType,
         element_class=req.elementClass,
-        element_property=req.property,
-        element_attributes=req.attributes
+        element_attrs=req.elementAttrs,
+        element_property=req.property
     )
 
     # 新建元素组件
@@ -309,21 +309,21 @@ def create_collection(req):
 
 def add_element(
         element_name,
-        element_remark,
+        element_desc,
         element_type,
         element_class,
-        element_property: dict = None,
-        element_attributes: dict = None
+        element_attrs: dict = None,
+        element_property: dict = None
 ):
     # 创建元素
     element_no = new_id()
     TTestElement.insert(
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
-        ELEMENT_REMARK=element_remark,
+        ELEMENT_DESC=element_desc,
         ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
-        ELEMENT_ATTRIBUTES=element_attributes,
+        ELEMENT_ATTRS=element_attrs,
         ENABLED=ElementStatus.ENABLE.value
     )
     # 创建元素属性
@@ -338,11 +338,11 @@ def create_element_child(req):
     # 新增元素
     element_no = add_element(
         element_name=req.elementName,
-        element_remark=req.elementRemark,
+        element_desc=req.elementDesc,
         element_type=req.elementType,
         element_class=req.elementClass,
-        element_property=req.property,
-        element_attributes=req.attributes
+        element_attrs=req.elementAttrs,
+        element_property=req.property
     )
     # 建立父子关联
     TElementChildren.insert(
@@ -365,9 +365,9 @@ def modify_element(req):
     update_element(
         element_no=req.elementNo,
         element_name=req.elementName,
-        element_remark=req.elementRemark,
-        element_property=req.property,
-        element_attributes=req.attributes
+        element_desc=req.elementDesc,
+        element_attrs=req.elementAttrs,
+        element_property=req.property
     )
     # 更新元素组件
     update_element_components(
@@ -379,9 +379,9 @@ def modify_element(req):
 def update_element(
         element_no,
         element_name,
-        element_remark,
-        element_property: dict = None,
-        element_attributes: dict = None
+        element_desc,
+        element_attrs: dict = None,
+        element_property: dict = None
 ):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
@@ -389,8 +389,8 @@ def update_element(
     # 更新元素
     element.update(
         ELEMENT_NAME=element_name,
-        ELEMENT_REMARK=element_remark,
-        ELEMENT_ATTRIBUTES=element_attributes
+        ELEMENT_DESC=element_desc,
+        ELEMENT_ATTRS=element_attrs
     )
     # 更新元素属性
     update_element_property(element_no, element_property)
@@ -795,10 +795,10 @@ def clone_element(source: TTestElement, rename=False):
     TTestElement.insert(
         ELEMENT_NO=cloned_no,
         ELEMENT_NAME=f'{source.ELEMENT_NAME} copy' if rename else source.ELEMENT_NAME,
-        ELEMENT_REMARK=source.ELEMENT_REMARK,
+        ELEMENT_DESC=source.ELEMENT_DESC,
         ELEMENT_TYPE=source.ELEMENT_TYPE,
         ELEMENT_CLASS=source.ELEMENT_CLASS,
-        ELEMENT_ATTRIBUTES=source.ELEMENT_ATTRIBUTES
+        ELEMENT_ATTRS=source.ELEMENT_ATTRS
     )
     # 克隆元素属性
     props = element_property_dao.select_all_by_element(source.ELEMENT_NO)
@@ -854,7 +854,7 @@ def add_element_component(root_no, parent_no, component):
     TTestElement.insert(
         ELEMENT_NO=component_no,
         ELEMENT_NAME=component.get('elementName'),
-        ELEMENT_REMARK=component.get('elementRemark', None),
+        ELEMENT_DESC=component.get('elementDesc', None),
         ELEMENT_TYPE=component.get('elementType'),
         ELEMENT_CLASS=component.get('elementClass'),
         ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
@@ -872,7 +872,7 @@ def add_element_component(root_no, parent_no, component):
     return component_no
 
 
-def update_element_component(element_no, element_name, element_remark, element_property=None, enabled: bool = None):
+def update_element_component(element_no, element_name, element_desc, element_property=None, enabled: bool = None):
     # 查询元素
     component = test_element_dao.select_by_no(element_no)
     check_exists(component, error_msg='元素不存在')
@@ -880,13 +880,13 @@ def update_element_component(element_no, element_name, element_remark, element_p
     if enabled is not None:
         component.update(
             ELEMENT_NAME=element_name,
-            ELEMENT_REMARK=element_remark,
+            ELEMENT_DESC=element_desc,
             ENABLED=enabled
         )
     else:
         component.update(
             ELEMENT_NAME=element_name,
-            ELEMENT_REMARK=element_remark
+            ELEMENT_DESC=element_desc
         )
     # 更新元素属性
     update_element_property(element_no, element_property)
@@ -905,7 +905,7 @@ def update_element_components(parent_no: str, component_list: list):
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
-                ELEMENT_REMARK=component.get('elementRemark', None),
+                ELEMENT_DESC=component.get('elementDesc', None),
                 ENABLED=component.enabled
             )
             # 更新元素属性
@@ -1023,7 +1023,7 @@ def set_workspace_components(req):
     check_workspace_permission(req.workspaceNo)
     # 遍历处理组件
     components = []
-    for component in req.components:
+    for component in req.componentList:
         # 组件元素存在则更新
         if element := test_element_dao.select_by_no(component.elementNo):
             # 存储元素的编号
@@ -1031,7 +1031,7 @@ def set_workspace_components(req):
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
-                ELEMENT_REMARK=component.get('elementRemark', None),
+                ELEMENT_DESC=component.get('elementDesc', None),
                 ENABLED=component.enabled
             )
             # 更新元素属性
@@ -1058,7 +1058,7 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
     TTestElement.insert(
         ELEMENT_NO=component_no,
         ELEMENT_NAME=component.get('elementName'),
-        ELEMENT_REMARK=component.get('elementRemark'),
+        ELEMENT_DESC=component.get('elementDesc'),
         ELEMENT_TYPE=component.get('elementType'),
         ELEMENT_CLASS=component.get('elementClass'),
         ENABLED=component.get('enabled', ElementStatus.ENABLE.value)

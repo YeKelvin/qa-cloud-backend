@@ -283,7 +283,7 @@ def execute_snippets(req):
     script = element_loader.loads_snippet_collecion(
         collection.ELEMENT_NO,
         collection.ELEMENT_NAME,
-        collection.ELEMENT_REMARK
+        collection.ELEMENT_DESC
     )
 
     # 添加 socket 组件

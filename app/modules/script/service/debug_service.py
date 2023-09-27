@@ -59,7 +59,7 @@ def query_snippets_json(req):
     script = element_loader.loads_snippet_collecion(
         collection.ELEMENT_NO,
         collection.ELEMENT_NAME,
-        collection.ELEMENT_REMARK
+        collection.ELEMENT_DESC
     )
     # 添加变量组件
     add_variable_dataset(script, req.datasets, req.useCurrentValue, req.variables)

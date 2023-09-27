@@ -16,7 +16,7 @@ def select_all_summary_by_worker(worker_id) -> list[TTestSamplerResult]:
             TTestSamplerResult.WORKER_ID,
             TTestSamplerResult.SAMPLER_ID,
             TTestSamplerResult.SAMPLER_NAME,
-            TTestSamplerResult.SAMPLER_REMARK,
+            TTestSamplerResult.SAMPLER_DESC,
             TTestSamplerResult.START_TIME,
             TTestSamplerResult.END_TIME,
             TTestSamplerResult.ELAPSED_TIME,

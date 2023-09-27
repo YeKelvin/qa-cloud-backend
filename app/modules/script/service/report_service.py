@@ -26,7 +26,7 @@ def query_report(req):
             'elementNo': collection_result.COLLECTION_NO,
             'id': collection_result.COLLECTION_ID,
             'name': collection_result.COLLECTION_NAME,
-            'remark': collection_result.COLLECTION_REMARK,
+            'desc': collection_result.COLLECTION_DESC,
             'startTime': collection_result.START_TIME.strftime('%H:%M:%S')
             if collection_result.START_TIME
             else 0,
@@ -80,7 +80,7 @@ def query_collection_result(req):
             'elementNo': result.COLLECTION_NO,
             'collectionId': result.COLLECTION_ID,
             'collectionName': result.COLLECTION_NAME,
-            'collectionRemark': result.COLLECTION_REMARK,
+            'collectionDesc': result.COLLECTION_DESC,
             'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.START_TIME else 0,
             'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
@@ -105,7 +105,7 @@ def query_worker_result(req):
     return {
         'workerId': result.WORKER_ID,
         'workerName': result.WORKER_NAME,
-        'workerRemark': result.WORKER_REMARK,
+        'workerDesc': result.WORKER_DESC,
         'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S')if result.START_TIME else 0,
         'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result.END_TIME else 0,
         'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME),
@@ -123,7 +123,7 @@ def query_sampler_result(req):
     return {
         'samplerId': result.SAMPLER_ID,
         'samplerName': result.SAMPLER_NAME,
-        'samplerRemark': result.SAMPLER_REMARK,
+        'samplerDesc': result.SAMPLER_DESC,
         'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if result.START_TIME else 0,
         'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if result.END_TIME else 0,
         'elapsedTime': f'{result.ELAPSED_TIME}ms',
@@ -148,7 +148,7 @@ def get_worker_result_list(collection_id):
             'collectionId': result.COLLECTION_ID,
             'id': result.WORKER_ID,
             'name': result.WORKER_NAME,
-            'remark': result.WORKER_REMARK,
+            'desc': result.WORKER_DESC,
             'startTime': (
                 result.START_TIME.strftime('%H:%M:%S')
                 if result.START_TIME
@@ -175,7 +175,7 @@ def get_sampler_result_list(worker_id):
             'parentId': None,
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,
-            'remark': result.SAMPLER_REMARK,
+            'desc': result.SAMPLER_DESC,
             'startTime': (
                 result.START_TIME.strftime('%H:%M:%S.%f')
                 if result.START_TIME
@@ -203,7 +203,7 @@ def get_subsampler_result_list(parent_id):
             'parentId': parent_id,
             'id': result.SAMPLER_ID,
             'name': result.SAMPLER_NAME,
-            'remark': result.SAMPLER_REMARK,
+            'desc': result.SAMPLER_DESC,
             'startTime': (
                 result.START_TIME.strftime('%H:%M:%S.%f')
                 if result.START_TIME

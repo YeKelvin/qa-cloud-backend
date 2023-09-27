@@ -19,7 +19,7 @@ def add_flask_sio_result_collector(script: dict, socket_id: str, result_id: str,
     # 添加 FlaskSIOResultCollector 组件
     script['children'].insert(0, {
         'name': 'Flask实时结果收集器',
-        'remark': '',
+        'desc': '',
         'class': 'FlaskSIOResultCollector',
         'enabled': True,
         'property': {
@@ -34,7 +34,7 @@ def add_flask_db_result_storage(script: dict, report_no: str, collection_no: str
     # 添加 FlaskDBResultStorage 组件
     script['children'].insert(0, {
         'name': 'Flask数据库结果存储器',
-        'remark': '',
+        'desc': '',
         'class': 'FlaskDBResultStorage',
         'enabled': True,
         'property': {
@@ -48,7 +48,7 @@ def add_flask_db_iteration_storage(script: dict, execution_no: str, collection_n
     # 添加 FlaskDBIterationStorage 组件
     script['children'].insert(0, {
         'name': 'Flask数据库迭代存储器',
-        'remark': '',
+        'desc': '',
         'class': 'FlaskDBIterationStorage',
         'enabled': True,
         'property': {
@@ -91,7 +91,7 @@ def add_variable_dataset(script: dict, datasets: list, use_current_value: bool, 
     # 添加 VariableDataset 组件
     script['children'].insert(0, {
         'name': '变量集',
-        'remark': '',
+        'desc': '',
         'class': 'VariableDataset',
         'enabled': True,
         'property': {
@@ -126,8 +126,8 @@ def get_variables(datasets: list, use_current_value: bool) -> dict:
 def add_http_header_manager(sampler: TTestElement, children: list):
     cache = loads_cache.get()
     # 查询元素关联的请求头模板
-    attrs = sampler.ELEMENT_ATTRIBUTES
-    refs = attrs.get('header_template_refs', [])
+    sampler_attrs = sampler.ELEMENT_ATTRS or {}
+    refs = sampler_attrs.get('header_template_refs', [])
 
     # 没有关联模板时直接跳过
     if not refs:
@@ -159,7 +159,7 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     # 添加 HTTPHeaderManager 组件
     children.append({
         'name': 'HTTP请求头管理器',
-        'remark': '',
+        'desc': '',
         'class': 'HTTPHeaderManager',
         'enabled': True,
         'property': {
@@ -181,7 +181,7 @@ def add_database_engine(engine_no, properties: dict):
         configurator[ElementClass.DATABASE_ENGINE.value] = engines
     engines.append({
         'name': engine.DB_NAME,
-        'remark': engine.DB_DESC,
+        'desc': engine.DB_DESC,
         'class': 'DatabaseEngine',
         'enabled': True,
         'property': {
@@ -202,7 +202,7 @@ def add_database_engine(engine_no, properties: dict):
 def add_http_session_manager(clear_each_iteration: bool, children: list):
     children.append({
         'name': 'HTTP会话管理器',
-        'remark': '',
+        'desc': '',
         'class': 'HTTPSessionManager',
         'enabled': True,
         'property': {
@@ -213,14 +213,14 @@ def add_http_session_manager(clear_each_iteration: bool, children: list):
 
 def create_test_collection(
     name,
-    remark='',
+    desc='',
     serialize_workers='true',
     delay='0',
     children=None
 ):
     return {
         'name': name,
-        'remark': remark,
+        'desc': desc,
         'class': 'TestCollection',
         'enabled': True,
         'property': {
@@ -233,7 +233,7 @@ def create_test_collection(
 
 def create_test_worker(
     name,
-    remark='',
+    desc='',
     on_sample_error='start_next_thread',
     number_of_threads='1',
     loops='1',
@@ -242,7 +242,7 @@ def create_test_worker(
 ):
     return {
         'name': name,
-        'remark': remark,
+        'desc': desc,
         'class': 'TestWorker',
         'enabled': True,
         'property': {

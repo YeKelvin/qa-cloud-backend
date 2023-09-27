@@ -21,7 +21,7 @@ def query_element_list():
         Argument('workspaceName'),
         Argument('elementNo'),
         Argument('elementName'),
-        Argument('elementRemark'),
+        Argument('elementDesc'),
         Argument('elementType'),
         Argument('elementClass'),
         Argument('enabled'),
@@ -102,11 +102,11 @@ def create_collection():
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
-        Argument('elementRemark'),
+        Argument('elementDesc'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
+        Argument('elementAttrs', type=dict),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('attributes', type=dict),
         Argument('componentList', type=list)
     ).parse()
     return service.create_collection(req)
@@ -121,11 +121,11 @@ def create_element_child():
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
-        Argument('elementRemark'),
+        Argument('elementDesc'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
+        Argument('elementAttrs', type=dict),
         Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('attributes', type=dict),
         Argument('componentList', type=list)
     ).parse()
     return service.create_element_child(req)
@@ -139,9 +139,9 @@ def modify_element():
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('elementName'),
-        Argument('elementRemark'),
+        Argument('elementDesc'),
+        Argument('elementAttrs', type=dict),
         Argument('property'),
-        Argument('attributes', type=dict),
         Argument('componentList', type=list)
     ).parse()
     return service.modify_element(req)
@@ -282,15 +282,14 @@ def set_workspace_components():
     request:
     {
         "workspaceNo": "",
-        "components": [
+        "componentList": [
             {
                 "elementNo": "",
                 "elementName": "",
                 "elementType": "",
                 "elementClass": "",
                 "elementIndex": "",
-                "property": { ... },
-                "matchRules": [ ... ]
+                "property": { ... }
             }
             ...
         ]
@@ -298,7 +297,7 @@ def set_workspace_components():
     """
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('components', type=list)
+        Argument('componentList', type=list)
     ).parse()
     return service.set_workspace_components(req)
 
