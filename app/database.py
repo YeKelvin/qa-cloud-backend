@@ -22,6 +22,10 @@ def db_query(*args, **kwargs):
 
 
 def db_execute(*args, **kwargs):
+    return db.session.execute(*args, **kwargs)
+
+
+def db_scalars(*args, **kwargs):
     return db.session.scalars(*args, **kwargs)
 
 
@@ -29,7 +33,7 @@ class CRUDMixin:
     """Mixin that adds convenience methods for CRUD (create, read, update, delete) operations"""
 
     @classmethod
-    def exclude_delete(cls):
+    def exclude_deleted_data(cls):
         return cls.DELETED == 0
 
     @classmethod

@@ -556,11 +556,11 @@ def update_element_property(element_no, element_property: dict):
 def move_element(req):
     # 查询 source 元素上级关联
     source_upper_relation = element_children_dao.select_by_child(req.sourceNo)
-    check_exists(source_upper_relation, error_msg='source元素上级关联不存在')
+    check_exists(source_upper_relation, error_msg='Source元素父级不存在')
 
     # 校验元素序号
     if req.targetIndex < 0:
-        raise ServiceError('target元素序号不能小于0')
+        raise ServiceError('Target元素序号不能小于0')
 
     # source 父元素编号
     source_parent_no = source_upper_relation.PARENT_NO
@@ -622,10 +622,10 @@ def move_element(req):
             logger.error(
                 f'父级编号:[ {req.targetParentNo} ] '
                 f'元素编号:[ {target_relation.CHILD_NO} ] '
-                f'序号:[ {target_relation.CHILD_SORT} ]'
-                f'序号连续性错误 '
+                f'元素序号:[ {target_relation.CHILD_SORT} ] '
+                f'序号连续性错误'
             )
-            raise ServiceError('Target 父级子代序号连续性有误')
+            raise ServiceError('Target元素父级的子代序号连续性错误')
 
 
 def update_children_root(parent_no, root_no):
@@ -675,14 +675,14 @@ def duplicate_element(req):
 def paste_element(req):
     # 查询 source 元素
     source = test_element_dao.select_by_no(req.sourceNo)
-    check_exists(source, error_msg='source元素不存在')
+    check_exists(source, error_msg='Source元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
 
     # 查询 target 元素
     target = test_element_dao.select_by_no(req.targetNo)
-    check_exists(target, error_msg='target元素不存在')
+    check_exists(target, error_msg='Target元素不存在')
 
     # 排除不支持剪贴的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:

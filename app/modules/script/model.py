@@ -154,7 +154,6 @@ class TDatabaseConfig(DBModel, BaseColumn):
     DATABASE = db.Column(db.String(256), nullable=False, comment='数据库库名')
     VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='存储数据库对象的变量名称')
     CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
-    UniqueConstraint('WORKSPACE_NO', 'DB_NAME', 'DB_TYPE', 'DELETED', name='unique_workspace_db')
 
 
 class TElementTag(DBModel, BaseColumn):
@@ -162,7 +161,6 @@ class TElementTag(DBModel, BaseColumn):
     __tablename__ = 'ELEMENT_TAG'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
-    UniqueConstraint('ELEMENT_NO', 'TAG_NO', 'DELETED', name='unique_element_tag')
 
 
 class TTestplan(DBModel, BaseColumn):
@@ -172,36 +170,15 @@ class TTestplan(DBModel, BaseColumn):
     PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
     PLAN_NAME = db.Column(db.String(256), nullable=False, comment='计划名称')
     PLAN_DESC = db.Column(db.String(512), comment='计划描述')
+    PLAN_STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
     SCRUM_SPRINT = db.Column(db.String(128), comment='迭代')
     SCRUM_VERSION = db.Column(db.String(128), comment='版本')
+    COLLECTIONS = db.Column(JSONB, comment='计划脚本列表')
     COLLECTION_TOTAL = db.Column(db.Integer(), nullable=False, default=0, comment='脚本总数')
-    STATE = db.Column(db.String(64), comment='计划状态，待开始/进行中/已完成')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段，待测试/冒烟测试/系统测试/回归测试/已完成')
     START_TIME = db.Column(db.DateTime(), comment='开始时间')
     END_TIME = db.Column(db.DateTime(), comment='结束时间')
-
-
-class TTestplanSettings(DBModel, BaseColumn):
-    """测试计划设置表"""
-    __tablename__ = 'TESTPLAN_SETTINGS'
-    PLAN_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='计划编号')
-    CONCURRENCY = db.Column(db.Integer(), nullable=False, default=1, comment='并发数')
-    ITERATIONS = db.Column(db.Integer(), nullable=False, default=0, comment='计划迭代次数')
-    DELAY = db.Column(db.Integer(), nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
-    SAVE = db.Column(db.Boolean(), nullable=False, default=True, comment='是否保存数据至报告中')
-    SAVE_ON_ERROR = db.Column(db.Boolean(), nullable=False, default=True, comment='是否只保存失败的数据至报告中')
-    STOP_ON_ERROR_COUNT = db.Column(db.Integer(), default=0, comment='累计指定的错误数量后停止运行')
-    USE_CURRENT_VALUE = db.Column(db.Boolean(), nullable=False, default=False, comment='是否使用变量的当前值')
-    NOTIFICATION_ROBOTS = db.Column(JSONB, comment='通知机器人列表')
-
-
-class TTestplanItems(DBModel, BaseColumn):
-    """测试计划项目明细表"""
-    __tablename__ = 'TESTPLAN_ITEMS'
-    PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
-    COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    COLLECTION_SORT = db.Column(db.Integer(), nullable=False, comment='集合序号')
-    UniqueConstraint('PLAN_NO', 'COLLECTION_NO', 'DELETED', name='unique_plan_collection')
+    SETTINGS = db.Column(JSONB, comment='计划设置')
 
 
 class TTestplanExecution(DBModel, BaseColumn):
@@ -209,45 +186,29 @@ class TTestplanExecution(DBModel, BaseColumn):
     __tablename__ = 'TESTPLAN_EXECUTION'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
     EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
-    RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/迭代中/已完成/已中断')
-    ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
+    EXECUTION_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/迭代中/已完成/已中断')
+    ITER_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='执行次数')
     TEST_PHASE = db.Column(db.String(64), comment='测试阶段')
-    ITERATION_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='迭代次数')
+    ENVIRONMENT = db.Column(db.String(128), comment='测试环境')
+    START_TIME = db.Column(db.DateTime(), comment='开始时间')
+    END_TIME = db.Column(db.DateTime(), comment='结束时间')
+    ELAPSED_TIME = db.Column(db.Integer(), comment='执行耗时')
+    SETTINGS = db.Column(JSONB, comment='执行设置')
     INTERRUPT = db.Column(db.Boolean, nullable=False, default=False, comment='是否中断运行')
     INTERRUPT_BY = db.Column(db.String(64), comment='中断人')
     INTERRUPT_TIME = db.Column(db.DateTime(), comment='中断时间')
-    START_TIME = db.Column(db.DateTime(), comment='开始时间')
-    END_TIME = db.Column(db.DateTime(), comment='结束时间')
-    ELAPSED_TIME = db.Column(db.Integer(), comment='耗时')
 
 
-class TTestplanExecutionSettings(DBModel, BaseColumn):
-    """测试计划执行记录设置表"""
-    __tablename__ = 'TESTPLAN_EXECUTION_SETTINGS'
-    EXECUTION_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='执行编号')
-    CONCURRENCY = db.Column(db.Integer(), nullable=False, default=1, comment='并发数')
-    ITERATIONS = db.Column(db.Integer(), nullable=False, default=0, comment='计划迭代次数')
-    DELAY = db.Column(db.Integer(), nullable=False, default=0, comment='运行脚本的间隔时间，单位ms')
-    SAVE = db.Column(db.Boolean(), nullable=False, default=True, comment='是否保存数据至报告中')
-    SAVE_ON_ERROR = db.Column(db.Boolean(), nullable=False, default=True, comment='是否只保存失败的数据至报告中')
-    STOP_ON_ERROR_COUNT = db.Column(db.Integer(), default=0, comment='累计指定的错误数量后停止运行')
-    VARIABLE_DATASETS = db.Column(JSONB, comment='变量集列表')
-    USE_CURRENT_VALUE = db.Column(db.Boolean(), nullable=False, default=False, comment='是否使用变量的当前值')
-    NOTIFICATION_ROBOTS = db.Column(JSONB, comment='通知机器人列表')
-
-
-class TTestplanExecutionItems(DBModel, BaseColumn):
-    """测试计划执行记录项目明细表"""
-    __tablename__ = 'TESTPLAN_EXECUTION_ITEMS'
+class TTestplanExecutionCollection(DBModel, BaseColumn):
+    """测试计划执行脚本表"""
+    __tablename__ = 'TESTPLAN_EXECUTION_COLLECTION'
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='集合编号')
-    COLLECTION_SORT = db.Column(db.Integer(), nullable=False, comment='集合序号')
     RUNNING_STATE = db.Column(db.String(64), comment='运行状态，待运行/运行中/已完成')
-    ITERATION_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='迭代次数')
+    ITER_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='迭代次数')
+    ERROR_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='异常次数')
     SUCCESS_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='成功次数')
     FAILURE_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='失败次数')
-    ERROR_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='异常次数')
-    UniqueConstraint('EXECUTION_NO', 'COLLECTION_NO', 'DELETED', name='unique_execution_collection')
 
 
 class TTestReport(DBModel, BaseColumn):
@@ -262,7 +223,6 @@ class TTestReport(DBModel, BaseColumn):
     START_TIME = db.Column(db.DateTime(), comment='开始时间')
     END_TIME = db.Column(db.DateTime(), comment='结束时间')
     ELAPSED_TIME = db.Column(db.Integer(), comment='耗时')
-    UniqueConstraint('WORKSPACE_NO', 'PLAN_NO', 'REPORT_NO', 'DELETED', name='unique_workspace_plan_report')
 
 
 class TTestCollectionResult(DBModel, BaseColumn):

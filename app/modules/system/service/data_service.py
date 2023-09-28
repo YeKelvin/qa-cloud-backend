@@ -4,17 +4,17 @@
 # @Author  : Kelvin.Ye
 from sqlalchemy import select
 
-from app.database import db_execute
+from app.database import db_scalars
 from app.modules.system.model import TSystemDataChangelog
 from app.tools.service import http_service
 
 
 @http_service
 def query_data_log(req):
-    changelogs = db_execute(
+    changelogs = db_scalars(
         select(TSystemDataChangelog)
         .where(
-            TSystemDataChangelog.exclude_delete(),
+            TSystemDataChangelog.exclude_deleted_data(),
             TSystemDataChangelog.LOG_NO == req.logNo
         )
     ).all()

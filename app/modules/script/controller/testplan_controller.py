@@ -21,10 +21,10 @@ def query_testplan_list():
         Argument('workspaceNo', required=True, nullable=False, help='工作空间不能为空'),
         Argument('planNo'),
         Argument('planName'),
+        Argument('planState'),
         Argument('scrumVersion'),
         Argument('scrumSprint'),
         Argument('testPhase'),
-        Argument('state'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')
     ).parse()
@@ -63,14 +63,14 @@ def create_testplan():
         Argument('planDesc'),
         Argument('scrumVersion'),
         Argument('scrumSprint'),
-        Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
-        Argument('concurrency', default=1),
-        Argument('iterations', default=1),
-        Argument('delay', default=0),
+        Argument('collections', type=list, required=True, nullable=False, help='集合列表不能为空'),
         Argument('save', default=True),
+        Argument('delay', default=0),
+        Argument('iterations', default=1),
+        Argument('concurrency', default=1),
         Argument('saveOnError', default=False),
-        Argument('stopOnErrorCount', default=3),
-        Argument('notificationRobots', type=list),
+        Argument('noticeRobots', type=list),
+        Argument('stopOnErrorCount', default=3)
     ).parse()
     return service.create_testplan(req)
 
@@ -86,12 +86,13 @@ def modify_testplan():
         Argument('planDesc'),
         Argument('scrumVersion'),
         Argument('scrumSprint'),
-        Argument('collectionList', type=list, required=True, nullable=False, help='集合列表不能为空'),
+        Argument('collections', type=list, required=True, nullable=False, help='集合列表不能为空'),
         Argument('concurrency', default=1),
         Argument('iterations', default=1),
         Argument('delay', default=0),
         Argument('save', default=True),
         Argument('saveOnError', default=False),
+        Argument('noticeRobots', type=list),
         Argument('stopOnErrorCount', default=3)
     ).parse()
     return service.modify_testplan(req)
@@ -104,7 +105,7 @@ def modify_testplan_state():
     """修改测试计划状态"""
     req = JsonParser(
         Argument('planNo', required=True, nullable=False, help='计划编号不能为空'),
-        Argument('state', required=True, nullable=False, enum=TestplanState, help='状态不能为空')
+        Argument('planState', required=True, nullable=False, enum=TestplanState, help='状态不能为空')
     ).parse()
     return service.modify_testplan_state(req)
 
