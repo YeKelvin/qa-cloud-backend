@@ -5,11 +5,11 @@
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TScheduleJob(DBModel, BaseColumn):
+class TScheduleJob(TableModel, BaseColumn):
     """定时任务表"""
     __tablename__ = 'SCHEDULE_JOB'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -23,7 +23,7 @@ class TScheduleJob(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='NORMAL', comment='用户状态(NORMAL, PAUSED, CLOSED)')
 
 
-class TScheduleJobLog(DBModel, BaseColumn):
+class TScheduleJobLog(TableModel, BaseColumn):
     """定时任务日志表"""
     __tablename__ = 'SCHEDULE_JOB_LOG'
     JOB_NO = db.Column(db.String(32), index=True, nullable=False, comment='作业编号')
@@ -34,7 +34,7 @@ class TScheduleJobLog(DBModel, BaseColumn):
     OPERATION_ARGS = db.Column(JSONB, comment='操作参数')
 
 
-class TScheduleJobChangeDetails(DBModel, BaseColumn):
+class TScheduleJobChangeDetails(TableModel, BaseColumn):
     """定时任务变更详情表"""
     __tablename__ = 'SCHEDULE_JOB_CHANGE_DETAILS'
     CHANGE_TYPE = db.Column(db.String(32), comment='参数类型(JOB, TRIGGER)')

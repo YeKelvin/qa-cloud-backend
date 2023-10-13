@@ -3,11 +3,11 @@
 # @Time    : 2023-04-11 18:18:01
 # @Author  : Kelvin.Ye
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TThirdPartyApplication(DBModel, BaseColumn):
+class TThirdPartyApplication(TableModel, BaseColumn):
     """第三方应用表"""
     __tablename__ = 'THIRD_PARTY_APPLICATION'
     APP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='应用编号')
@@ -18,7 +18,7 @@ class TThirdPartyApplication(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='应用状态(ENABLE:启用, DISABLE:禁用)')
 
 
-class TOpenApiLog(DBModel, BaseColumn):
+class TOpenApiLog(TableModel, BaseColumn):
     """OpenAPI日志表"""
     __tablename__ = 'OPEN_API_LOG'
     LOG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='日志编号')

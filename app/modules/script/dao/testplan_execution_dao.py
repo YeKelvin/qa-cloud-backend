@@ -43,6 +43,6 @@ def select_all_by_plan(plan_no) -> list[TTestplanExecution]:
 
 def update_execution_state(execution_no, state):
     entity = select_by_no(execution_no)
-    entity.no_record_update(
+    entity.norecord_update(
         EXECUTION_STATE=state
     )

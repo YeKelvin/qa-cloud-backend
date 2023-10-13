@@ -125,11 +125,11 @@ def get_variables(datasets: list, use_current_value: bool) -> dict:
 
 def add_http_header_manager(sampler: TTestElement, children: list):
     cache = loads_cache.get()
-    # 查询元素关联的请求头模板
+    # 查询请求头模板
     sampler_attrs = sampler.ELEMENT_ATTRS or {}
     refs = sampler_attrs.get('header_template_refs', [])
 
-    # 没有关联模板时直接跳过
+    # 没有模板时直接跳过
     if not refs:
         return
 

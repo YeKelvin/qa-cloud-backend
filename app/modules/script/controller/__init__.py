@@ -12,6 +12,7 @@ from . import database_controller   # noqa
 from . import debug_controller      # noqa
 from . import element_controller    # noqa
 from . import execution_controller  # noqa
+from . import history_controller    # noqa
 from . import httpheader_controller # noqa
 from . import report_controller     # noqa
 from . import testplan_controller   # noqa

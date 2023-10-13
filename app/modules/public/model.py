@@ -6,11 +6,11 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TWorkspace(DBModel, BaseColumn):
+class TWorkspace(TableModel, BaseColumn):
     """工作空间表"""
     __tablename__ = 'WORKSPACE'
     WORKSPACE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='空间编号')
@@ -21,7 +21,7 @@ class TWorkspace(DBModel, BaseColumn):
     UniqueConstraint('WORKSPACE_NAME', 'WORKSPACE_SCOPE', 'DELETED', name='unique_name_type_scope')
 
 
-class TWorkspaceUser(DBModel, BaseColumn):
+class TWorkspaceUser(TableModel, BaseColumn):
     """空间用户表"""
     __tablename__ = 'WORKSPACE_USER'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -29,14 +29,14 @@ class TWorkspaceUser(DBModel, BaseColumn):
     UniqueConstraint('WORKSPACE_NO', 'USER_NO', 'DELETED', name='unique_workspace_user')
 
 
-class TWorkspaceRestriction(DBModel, BaseColumn):
+class TWorkspaceRestriction(TableModel, BaseColumn):
     """空间限制表"""
     __tablename__ = 'WORKSPACE_RESTRICTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
 
 
-class TWorkspaceRestrictionExemption(DBModel, BaseColumn):
+class TWorkspaceRestrictionExemption(TableModel, BaseColumn):
     """空间限制豁免表"""
     __tablename__ = 'WORKSPACE_RESTRICTION_EXEMPTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -44,7 +44,7 @@ class TWorkspaceRestrictionExemption(DBModel, BaseColumn):
     GROUPS = db.Column(JSONB, comment='豁免分组列表')
 
 
-class TTag(DBModel, BaseColumn):
+class TTag(TableModel, BaseColumn):
     """标签表"""
     __tablename__ = 'TAG'
     TAG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='标签编号')
@@ -53,7 +53,7 @@ class TTag(DBModel, BaseColumn):
     UniqueConstraint('TAG_NAME', 'DELETED', name='unique_tagname')
 
 
-class TNoticeRobot(DBModel, BaseColumn):
+class TNoticeRobot(TableModel, BaseColumn):
     """通知机器人表"""
     __tablename__ = 'NOTICE_ROBOT'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')

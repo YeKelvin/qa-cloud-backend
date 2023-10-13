@@ -9,11 +9,11 @@ from app.tools.exceptions import ServiceError
 
 def get_root_no(element_no) -> str:
     """根据元素编号获取根元素编号"""
-    if not (relation := element_children_dao.select_by_child(element_no)):
+    if not (node := element_children_dao.select_by_child(element_no)):
         return element_no
-    if not relation.ROOT_NO:
+    if not node.ROOT_NO:
         raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
-    return relation.ROOT_NO
+    return node.ROOT_NO
 
 
 def get_workspace_no(collection_no) -> str:

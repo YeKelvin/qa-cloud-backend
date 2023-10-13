@@ -17,7 +17,7 @@ def generate_rsa_key() -> tuple[bytes, bytes]:
     return public_key, private_key
 
 
-def encrypt_by_rsa_public_key(content, public_key):
+def encrypt_by_rsa_public_key(content, public_key) -> str:
     """通过RSA公钥加密
 
     :param content:     加密内容
@@ -26,10 +26,10 @@ def encrypt_by_rsa_public_key(content, public_key):
     """
     rsakey = RSA.importKey(public_key)
     cipher = PKCS1_v1_5.new(rsakey)
-    return base64.b64encode(cipher.encrypt(content))
+    return base64.b64encode(cipher.encrypt(content)).decode()
 
 
-def decrypt_by_rsa_private_key(ciphertext, private_key):
+def decrypt_by_rsa_private_key(ciphertext, private_key) -> str:
     """通过RSA私钥解密
 
     :param ciphertext:  密文

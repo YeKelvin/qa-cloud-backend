@@ -36,10 +36,10 @@ def query_worker_json(req):
     if worker.ELEMENT_TYPE != ElementType.WORKER.value:
         raise ServiceError('仅支持 Worker 元素')
     # 获取 collectionNo
-    worker_parent_relation = element_children_dao.select_by_child(req.workerNo)
-    if not worker_parent_relation:
-        raise ServiceError('元素父级关联不存在')
-    collection_no = worker_parent_relation.PARENT_NO
+    worker_node = element_children_dao.select_by_child(req.workerNo)
+    if not worker_node:
+        raise ServiceError('元素节点不存在')
+    collection_no = worker_node.PARENT_NO
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, specify_worker_no=req.workerNo)
     # 添加变量组件

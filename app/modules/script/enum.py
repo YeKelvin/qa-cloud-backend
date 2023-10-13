@@ -15,17 +15,20 @@ class ElementType(Enum):
     # 工作者
     WORKER = 'WORKER'
 
-    # 取样器
-    SAMPLER = 'SAMPLER'
-
     # 逻辑控制器
     CONTROLLER = 'CONTROLLER'
 
     # 配置器
     CONFIG = 'CONFIG'
 
+    # 监听器
+    LISTENER = 'LISTENER'
+
     # 时间控制器
     TIMER = 'TIMER'
+
+    # 取样器
+    SAMPLER = 'SAMPLER'
 
     # 前置处理器
     PREV_PROCESSOR = 'PREV_PROCESSOR'
@@ -34,10 +37,7 @@ class ElementType(Enum):
     POST_PROCESSOR = 'POST_PROCESSOR'
 
     # 断言器
-    ASSERTION = 'ASSERTION'
-
-    # 监听器
-    LISTENER = 'LISTENER'
+    ASSERTION = 'ASSERTION' # TODO: rename TEST_ASSERTION
 
 
 @unique
@@ -247,7 +247,7 @@ class DatabaseType(Enum):
     ORACLE = 'oracle'
     MYSQL = 'mysql'
     POSTGRESQL = 'postgresql'
-    Microsoft_SQL_SERVER = 'mssql'
+    MICROSOFT_SQL_SERVER = 'mssql'
 
 
 @unique
@@ -255,7 +255,18 @@ class DatabaseDriver(Enum):
     ORACLE = 'cx_oracle'
     MYSQL = 'mysqlconnector'
     POSTGRESQL = 'psycopg2'
-    Microsoft_SQL_SERVER = 'pyodbc'
+    MICROSOFT_SQL_SERVER = 'pyodbc'
+
+
+@unique
+class ElementOperationType(Enum):
+    INSERT = 'INSERT'       # 新增元素
+    UPDATE = 'UPDATE'       # 修改元素
+    DELETE = 'DELETE'       # 删除元素
+    COPY = 'COPY'           # 复制元素（新增元素）
+    MOVE = 'MOVE'           # 移动元素（不同父级）
+    ORDER = 'ORDER'         # 排序元素（相同父级）
+    TRANSFER = 'TRANSFER'   # 转移元素（更改空间）
 
 
 def is_collection(element):

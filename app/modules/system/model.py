@@ -3,11 +3,11 @@
 # @Time    : 2019/11/7 9:54
 # @Author  : Kelvin.Ye
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TRestApiLog(DBModel, BaseColumn):
+class TRestApiLog(TableModel, BaseColumn):
     """RestAPI日志表"""
     __tablename__ = 'REST_API_LOG'
     LOG_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='日志编号')
@@ -21,7 +21,7 @@ class TRestApiLog(DBModel, BaseColumn):
     ELAPSED_TIME = db.Column(db.Integer(), comment='服务耗时')
 
 
-class TSystemDataChangelog(DBModel, BaseColumn):
+class TSystemDataChangelog(TableModel, BaseColumn):
     """系统数据变更日志表"""
     __tablename__ = 'SYSTEM_DATA_CHANGELOG'
     LOG_NO = db.Column(db.String(64), index=True, nullable=False, comment='日志编号')

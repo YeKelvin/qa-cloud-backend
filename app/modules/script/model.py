@@ -6,18 +6,18 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TWorkspaceCollection(DBModel, BaseColumn):
+class TWorkspaceCollection(TableModel, BaseColumn):
     """空间集合表"""
     __tablename__ = 'WORKSPACE_COLLECTION'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
     COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
 
 
-class TWorkspaceComponent(DBModel, BaseColumn):
+class TWorkspaceComponent(TableModel, BaseColumn):
     """空间组件表"""
     __tablename__ = 'WORKSPACE_COMPONENT'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -26,7 +26,7 @@ class TWorkspaceComponent(DBModel, BaseColumn):
     COMPONENT_SORT = db.Column(db.Integer(), nullable=False, comment='组件序号')
 
 
-class TTestElement(DBModel, BaseColumn):
+class TTestElement(TableModel, BaseColumn):
     """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
@@ -39,54 +39,61 @@ class TTestElement(DBModel, BaseColumn):
     ENABLED = db.Column(JSONB, nullable=False, default=True, comment='是否启用')
 
 
-class TElementProperty(DBModel, BaseColumn):
+class TElementProperty(TableModel, BaseColumn):
     """元素属性表"""
     __tablename__ = 'ELEMENT_PROPERTY'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
+    PROPERTY_TYPE = db.Column(db.String(32), nullable=False, default='STR', comment='属性类型')
     PROPERTY_NAME = db.Column(db.String(256), nullable=False, comment='属性名称')
     PROPERTY_VALUE = db.Column(db.Text(), comment='属性值')
-    PROPERTY_TYPE = db.Column(db.String(32), nullable=False, default='STR', comment='属性类型')
     ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
     UniqueConstraint('ELEMENT_NO', 'PROPERTY_NAME', 'DELETED', name='unique_element_property')
 
 
-class TElementChildren(DBModel, BaseColumn):
+class TElementChildren(TableModel, BaseColumn):
     """元素子代表"""
     __tablename__ = 'ELEMENT_CHILDREN'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
-    CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    CHILD_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
+    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
+    ELEMENT_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
-class TElementComponents(DBModel, BaseColumn):
+class TElementComponents(TableModel, BaseColumn):
     """元素组件表"""
     __tablename__ = 'ELEMENT_COMPONENTS'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
-    CHILD_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    CHILD_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
-    CHILD_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
+    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
+    ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
+    ELEMENT_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
-class TElementChangelog(DBModel, BaseColumn):
+class TElementChangelog(TableModel, BaseColumn):
     """元素变更日志表"""
     __tablename__ = 'ELEMENT_CHANGELOG'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
-    PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
+    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
+    ROOT_NO = db.Column(db.String(32), index=True, comment='根元素编号')
+    PARENT_NO = db.Column(db.String(32), index=True, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
-    # PROP_NAME: 属性名称，TestElement__name,TestElement__desc,TestElement__attrs
-    # ATTR_NAME
-    # OLD_VALUE
-    # NEW_VALUE
-    # OPERATION_SOURCE
-    # OPERATION_TARGET
-    # OPERATION_BY: 操作人
-    # OPERATION_TIME: 操作时间
-    # OPERATION_TYPE: 操作类型，INSERT,UPDATE,DELETE,MOVE,COPY,ENABLE,DISABLE,ORDER
+    PROP_NAME = db.Column(db.String(256), comment='属性名称')
+    ATTR_NAME = db.Column(db.String(256), comment='属性名称')
+    OLD_VALUE = db.Column(db.Text(), comment='旧值')
+    NEW_VALUE = db.Column(db.Text(), comment='新值')
+    SOURCE_NO = db.Column(db.String(32), comment='来源编号')
+    TARGET_NO = db.Column(db.String(32), comment='目标编号')
+    SOURCE_INDEX = db.Column(db.Integer(), comment='来源序号')
+    TARGET_INDEX = db.Column(db.Integer(), comment='目标序号')
+    OPERATION_BY = db.Column(db.String(64), nullable=False, comment='操作人')
+    OPERATION_TIME = db.Column(db.DateTime(), nullable=False, comment='操作时间')
+    OPERATION_TYPE = db.Column(
+        db.String(32),
+        nullable=False,
+        comment='操作类型: INSERT,UPDATE,DELETE,COPY,MOVE,ORDER,TRANSFER'
+    )
 
-class TVariableDataset(DBModel, BaseColumn):
+
+class TVariableDataset(TableModel, BaseColumn):
     """变量集表"""
     __tablename__ = 'VARIABLE_DATASET'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
@@ -103,7 +110,7 @@ class TVariableDataset(DBModel, BaseColumn):
     UniqueConstraint('WORKSPACE_NO', 'DATASET_NAME', 'DATASET_TYPE', 'DELETED', name='unique_workspace_dataset')
 
 
-class TVariable(DBModel, BaseColumn):
+class TVariable(TableModel, BaseColumn):
     """变量表"""
     __tablename__ = 'VARIABLE'
     DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
@@ -116,7 +123,7 @@ class TVariable(DBModel, BaseColumn):
     UniqueConstraint('DATASET_NO', 'VAR_NAME', 'DELETED', name='unique_dataset_variable')
 
 
-class THttpHeaderTemplate(DBModel, BaseColumn):
+class THttpHeaderTemplate(TableModel, BaseColumn):
     """请求头模板表"""
     __tablename__ = 'HTTP_HEADER_TEMPLATE'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
@@ -126,7 +133,7 @@ class THttpHeaderTemplate(DBModel, BaseColumn):
     UniqueConstraint('WORKSPACE_NO', 'TEMPLATE_NAME', 'DELETED', name='unique_workspace_template')
 
 
-class THttpHeader(DBModel, BaseColumn):
+class THttpHeader(TableModel, BaseColumn):
     """HTTP头部表"""
     __tablename__ = 'HTTP_HEADER'
     TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
@@ -138,7 +145,7 @@ class THttpHeader(DBModel, BaseColumn):
     UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DELETED', name='unique_template_header')
 
 
-class TDatabaseConfig(DBModel, BaseColumn):
+class TDatabaseConfig(TableModel, BaseColumn):
     """数据库配置表"""
     __tablename__ = 'DATABASE_CONFIG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
@@ -156,14 +163,14 @@ class TDatabaseConfig(DBModel, BaseColumn):
     CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
 
 
-class TElementTag(DBModel, BaseColumn):
+class TElementTag(TableModel, BaseColumn):
     """元素标签表"""
     __tablename__ = 'ELEMENT_TAG'
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     TAG_NO = db.Column(db.String(32), index=True, nullable=False, comment='标签编号')
 
 
-class TTestplan(DBModel, BaseColumn):
+class TTestplan(TableModel, BaseColumn):
     """测试计划表"""
     __tablename__ = 'TESTPLAN'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -181,7 +188,7 @@ class TTestplan(DBModel, BaseColumn):
     SETTINGS = db.Column(JSONB, comment='计划设置')
 
 
-class TTestplanExecution(DBModel, BaseColumn):
+class TTestplanExecution(TableModel, BaseColumn):
     """测试计划执行记录表"""
     __tablename__ = 'TESTPLAN_EXECUTION'
     PLAN_NO = db.Column(db.String(32), index=True, nullable=False, comment='计划编号')
@@ -199,7 +206,7 @@ class TTestplanExecution(DBModel, BaseColumn):
     INTERRUPT_TIME = db.Column(db.DateTime(), comment='中断时间')
 
 
-class TTestplanExecutionCollection(DBModel, BaseColumn):
+class TTestplanExecutionCollection(TableModel, BaseColumn):
     """测试计划执行脚本表"""
     __tablename__ = 'TESTPLAN_EXECUTION_COLLECTION'
     EXECUTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='执行编号')
@@ -211,7 +218,7 @@ class TTestplanExecutionCollection(DBModel, BaseColumn):
     FAILURE_COUNT = db.Column(db.Integer(), nullable=False, default=0, comment='失败次数')
 
 
-class TTestReport(DBModel, BaseColumn):
+class TTestReport(TableModel, BaseColumn):
     """测试报告表"""
     __tablename__ = 'TEST_REPORT'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
@@ -225,7 +232,7 @@ class TTestReport(DBModel, BaseColumn):
     ELAPSED_TIME = db.Column(db.Integer(), comment='耗时')
 
 
-class TTestCollectionResult(DBModel, BaseColumn):
+class TTestCollectionResult(TableModel, BaseColumn):
     """测试集合结果表"""
     __tablename__ = 'TEST_COLLECTION_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
@@ -239,7 +246,7 @@ class TTestCollectionResult(DBModel, BaseColumn):
     SUCCESS = db.Column(db.Boolean(), comment='是否成功')
 
 
-class TTestWorkerResult(DBModel, BaseColumn):
+class TTestWorkerResult(TableModel, BaseColumn):
     """测试工作者结果表"""
     __tablename__ = 'TEST_WORKER_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
@@ -253,7 +260,7 @@ class TTestWorkerResult(DBModel, BaseColumn):
     SUCCESS = db.Column(db.Boolean(), comment='是否成功')
 
 
-class TTestSamplerResult(DBModel, BaseColumn):
+class TTestSamplerResult(TableModel, BaseColumn):
     """测试取样器结果表"""
     __tablename__ = 'TEST_SAMPLER_RESULT'
     REPORT_NO = db.Column(db.String(32), index=True, nullable=False, comment='报告编号')
@@ -276,4 +283,5 @@ class TTestSamplerResult(DBModel, BaseColumn):
     RESPONSE_HEADERS = db.Column(db.Text(), comment='响应头')
     RESPONSE_DATA = db.Column(db.Text(), comment='响应数据')
     RESPONSE_DECODED = db.Column(db.Text(), comment='解码后的响应数据')
-    FAILED_ASSERTION = db.Column(db.Text(), comment='失败断言数据')
+    # ASSERTIONS = db.Column(db.Text(), comment='断言数据')
+    FAILED_ASSERTION = db.Column(db.Text(), comment='失败断言数据') # TODO: delete

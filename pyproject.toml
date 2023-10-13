@@ -32,7 +32,7 @@ priority = "primary"
 [tool.poetry.dependencies]
 python = "^3.11"
 # flask
-flask = "2.3.3"
+flask = "3.0.0"
 flask-sqlalchemy = "3.1.1"
 flask-socketio = "5.3.6"
 flask-migrate = "4.0.5"
@@ -40,12 +40,14 @@ flask-apscheduler = "1.13.0"
 # job
 apscheduler = "3.10.4"
 # signal
-blinker = "1.6.2"
+blinker = "1.6.3"
 # encryption
 pyjwt = "2.8.0"
 # environment
 environs = "9.5.0"
 python-dotenv = "1.0.0"
+# tool
+munch = "4.0.0"
 # 私仓依赖
 pymeter = { path = "../pymeter", develop = true }
 # 以下依赖的版本在pymeter项目中控制

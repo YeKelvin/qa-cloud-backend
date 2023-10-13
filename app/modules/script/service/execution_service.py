@@ -172,12 +172,12 @@ def execute_worker(req):
         raise ServiceError('仅支持运行 Worker 元素')
 
     # 获取 collectionNo
-    worker_upper_relation = element_children_dao.select_by_child(req.workerNo)
-    if not worker_upper_relation:
-        raise ServiceError('元素上级关联不存在')
+    worker_node = element_children_dao.select_by_child(req.workerNo)
+    if not worker_node:
+        raise ServiceError('元素节点不存在')
 
     # 临时存储变量
-    collection_no = worker_upper_relation.PARENT_NO
+    collection_no = worker_node.PARENT_NO
     worker_name = worker.ELEMENT_NAME
 
     # 定义 loader 函数
@@ -227,13 +227,13 @@ def execute_sampler(req):
         raise ServiceError('仅支持运行 Sampler 元素')
 
     # 获取 collectionNo 和 workerNo
-    sampler_upper_relation = element_children_dao.select_by_child(req.samplerNo)
-    if not sampler_upper_relation:
-        raise ServiceError('元素上级关联不存在')
+    sampler_node = element_children_dao.select_by_child(req.samplerNo)
+    if not sampler_node:
+        raise ServiceError('元素节点不存在')
 
     # 临时存储变量
-    collection_no = sampler_upper_relation.ROOT_NO
-    worker_no = sampler_upper_relation.PARENT_NO
+    collection_no = sampler_node.ROOT_NO
+    worker_no = sampler_node.PARENT_NO
 
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(
@@ -325,7 +325,7 @@ def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
 
     # 创建执行编号
     execution_no = new_id()
-    # 创建执行记录与数据集关联
+    # 记录测试环境
     environment = None
     for dataset_no in datasets:
         dataset = variable_dataset_dao.select_by_no(dataset_no)
@@ -333,7 +333,7 @@ def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
             environment = dataset.DATASET_NAME
 
     # 新增执行记录
-    TTestplanExecution.no_record_insert(
+    TTestplanExecution.norecord_insert(
         PLAN_NO=plan_no,
         EXECUTION_NO=execution_no,
         EXECUTION_STATE=RunningState.WAITING.value,
@@ -354,7 +354,7 @@ def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
 
     # 新增执行脚本明细
     for collection_no in testplan.COLLECTIONS:
-        TTestplanExecutionCollection.no_record_insert(
+        TTestplanExecutionCollection.norecord_insert(
             EXECUTION_NO=execution_no,
             COLLECTION_NO=collection_no,
             RUNNING_STATE=RunningState.WAITING.value
@@ -364,7 +364,7 @@ def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
     report_no = None
     if testplan.SETTINGS['SAVE']:
         report_no = new_id()
-        TTestReport.no_record_insert(
+        TTestReport.norecord_insert(
             WORKSPACE_NO=testplan.WORKSPACE_NO,
             PLAN_NO=testplan.PLAN_NO,
             EXECUTION_NO=execution_no,
@@ -432,7 +432,7 @@ def start_testplan(
     # 查询执行记录
     execution = testplan_execution_dao.select_by_no(execution_no)
     # 更新运行状态
-    execution.no_record_update(
+    execution.norecord_update(
         EXECUTION_STATE=RunningState.RUNNING.value if save else RunningState.ITERATING.value,
         START_TIME=timestamp_to_utc8_datetime(start_time)
     )
@@ -477,7 +477,7 @@ def start_testplan(
     if report_no:
         # 更新报告的开始时间、结束时间和耗时
         report = test_report_dao.select_by_no(report_no)
-        report.no_record_update(
+        report.norecord_update(
             ELAPSED_TIME=elapsed_time,
             START_TIME=timestamp_to_utc8_datetime(start_time),
             END_TIME=timestamp_to_utc8_datetime(end_time)
@@ -488,7 +488,7 @@ def start_testplan(
     execution = testplan_execution_dao.select_by_no(execution_no)
     # 更新运行状态，仅运行中和迭代中才更新为已完成
     if execution.EXECUTION_STATE in (RunningState.RUNNING.value, RunningState.ITERATING.value):
-        execution.no_record_update(
+        execution.norecord_update(
             EXECUTION_STATE=RunningState.COMPLETED.value,
             ELAPSED_TIME=elapsed_time,
             END_TIME=timestamp_to_utc8_datetime(end_time)
@@ -590,7 +590,7 @@ def start_testplan_by_loop(
             logger.info(f'执行编号:[ {execution_no} ] 开始第[ {i+1} ]次迭代')
             # 记录迭代次数
             execution = testplan_execution_dao.select_by_no(execution_no)
-            execution.no_record_update(ITER_COUNT=execution.ITER_COUNT + 1)
+            execution.norecord_update(ITER_COUNT=execution.ITER_COUNT + 1)
             db.session.commit()  # 这里要实时更新
             # 延迟迭代
             if delay and i > 0:
@@ -618,7 +618,7 @@ def start_testplan_by_loop(
                                     execution_no,
                                     collection_no
                                 )
-                                script.no_record_update(ERROR_COUNT=script.ERROR_COUNT + 1)
+                                script.norecord_update(ERROR_COUNT=script.ERROR_COUNT + 1)
                             except Exception:
                                 logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 更新异常')
 
@@ -661,7 +661,7 @@ def start_testplan_by_report(
             # 查询执行脚本
             script = testplan_execution_collection_dao.select_by_execution_and_collection(execution_no, collection_no)
             # 更新脚本运行状态
-            script.no_record_update(RUNNING_STATE=RunningState.RUNNING.value)
+            script.norecord_update(RUNNING_STATE=RunningState.RUNNING.value)
             db.session.commit()  # 这里要实时更新
             # 加载脚本
             collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
@@ -687,13 +687,13 @@ def start_testplan_by_report(
                                 execution_no,
                                 collection_no
                             )
-                            script.no_record_update(RUNNING_STATE=RunningState.ERROR.value)
+                            script.norecord_update(RUNNING_STATE=RunningState.ERROR.value)
                         except Exception:
                             logger.exception(f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 更新异常')
             task = executor.submit(start, app)  # 异步执行脚本
             task.result()  # 阻塞等待脚本执行完成
             # 更新脚本运行状态
-            script.no_record_update(RUNNING_STATE=RunningState.COMPLETED.value)
+            script.norecord_update(RUNNING_STATE=RunningState.COMPLETED.value)
             db.session.commit()  # 这里要实时更新
             logger.info(f'执行编号:[ {execution_no} ] 集合名称:[ {collection["name"]} ] 脚本执行完成')
     except TestplanInterruptError:

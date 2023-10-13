@@ -156,7 +156,7 @@ def loads_element(
 
 def loads_property(element_no):
     # 查询元素属性，只查询 enabled 的属性
-    props = element_property_dao.select_all_by_enable_element(element_no)
+    props = element_property_dao.select_all_enabled(element_no)
 
     properties = {}
     for prop in props:
@@ -176,42 +176,42 @@ def loads_property(element_no):
 def loads_children(element_no, specify_worker_no, specify_sampler_no):
     # TODO: 优化查询sql，查children时连表查询children和element
     # 查询子代，并根据序号正序排序
-    relations = element_children_dao.select_all_by_parent(element_no)
+    nodes = element_children_dao.select_all_by_parent(element_no)
     children = []
     # 添加子代
-    for relation in relations:
+    for node in nodes:
         # 加载子代元素
-        if child := loads_element(relation.CHILD_NO, specify_worker_no, specify_sampler_no):
+        if child := loads_element(node.ELEMENT_NO, specify_worker_no, specify_sampler_no):
             children.append(child)
         # 找到指定的 Sampler 就返回
-        if specify_sampler_no and relation.CHILD_NO == specify_sampler_no:
+        if specify_sampler_no and node.ELEMENT_NO == specify_sampler_no:
             return children
 
     return children
 
 
 def add_element_components(element_no, children: list):
-    relations = (
+    components = (
         db_query(
-            TElementComponents.CHILD_SORT,
-            TElementComponents.CHILD_TYPE,
-            TElementComponents.CHILD_NO
+            TElementComponents.ELEMENT_NO,
+            TElementComponents.ELEMENT_SORT,
+            TElementComponents.ELEMENT_TYPE
         )
         .filter(
             TElementComponents.DELETED == 0,
             TElementComponents.PARENT_NO == element_no,
-            TElementComponents.CHILD_TYPE.in_([
+            TElementComponents.ELEMENT_TYPE.in_([
                 ElementType.CONFIG.value,
                 ElementType.PREV_PROCESSOR.value,
                 ElementType.POST_PROCESSOR.value,
                 ElementType.ASSERTION.value
             ])
         )
-        .order_by(TElementComponents.CHILD_TYPE.desc(), TElementComponents.CHILD_SORT.asc())
+        .order_by(TElementComponents.ELEMENT_TYPE.desc(), TElementComponents.ELEMENT_SORT.asc())
         .all()
     )
-    for relation in relations:
-        if component := loads_element(relation.CHILD_NO):
+    for el in components:
+        if component := loads_element(el.ELEMENT_NO):
             children.append(component)
 
 
@@ -305,7 +305,7 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_desc):
     element_attrs = element.ELEMENT_ATTRS or {}
     use_http_session = element_attrs.get('use_http_session', False)
     # 递归查询子代，并根据序号正序排序
-    lower_relation_list = element_children_dao.select_all_by_parent(snippet_no)
+    nodes = element_children_dao.select_all_by_parent(snippet_no)
     children = []
     # 添加 HTTP Session 组件
     if use_http_session:
@@ -317,8 +317,8 @@ def loads_snippet_collecion(snippet_no, snippet_name, snippet_desc):
             'property': {}
         })
     # 添加子代
-    for relation in lower_relation_list:
-        if child := loads_element(relation.CHILD_NO):
+    for node in nodes:
+        if child := loads_element(node.ELEMENT_NO):
             children.append(child)
     # 清空上下文变量
     loads_cache.reset(cache_token)

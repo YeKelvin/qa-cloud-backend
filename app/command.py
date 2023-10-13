@@ -71,12 +71,12 @@ def initdata():
 def init_user():
     """初始化用户"""
     # 创建系统用户
-    TUser.no_record_insert(USER_NO='9999', USER_NAME='系统')
+    TUser.norecord_insert(USER_NO='9999', USER_NAME='系统')
     # 创建管理员用户
     user_no = new_id()
-    TUser.no_record_insert(USER_NO=user_no, USER_NAME='超级管理员')
-    TUserLoginInfo.no_record_insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
-    TUserPassword.no_record_insert(
+    TUser.norecord_insert(USER_NO=user_no, USER_NAME='超级管理员')
+    TUserLoginInfo.norecord_insert(USER_NO=user_no, LOGIN_NAME='admin', LOGIN_TYPE='ACCOUNT')
+    TUserPassword.norecord_insert(
         USER_NO=user_no,
         PASSWORD=encrypt_password('admin', 'admin'),
         PASSWORD_TYPE='LOGIN',
@@ -85,12 +85,12 @@ def init_user():
     )
     # 创建管理员空间
     workspace_no = new_id()
-    TWorkspace.no_record_insert(
+    TWorkspace.norecord_insert(
         WORKSPACE_NO=workspace_no,
         WORKSPACE_NAME='个人空间',
         WORKSPACE_SCOPE='PRIVATE'
     )
-    TWorkspaceUser.no_record_insert(WORKSPACE_NO=workspace_no, USER_NO=user_no)
+    TWorkspaceUser.norecord_insert(WORKSPACE_NO=workspace_no, USER_NO=user_no)
     # 创建空间变量
     TVariableDataset.insert(
         WORKSPACE_NO=workspace_no,
@@ -127,39 +127,39 @@ def init_permission():
 
 @with_appcontext
 def init_permission_module():
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='用户中心', MODULE_CODE='USERCENTER')
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='系统', MODULE_CODE='SYSTEM')
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='公共', MODULE_CODE='PUBLIC')
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='脚本', MODULE_CODE='SCRIPT')
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='调度', MODULE_CODE='SCHEDULER')
-    TPermissionModule.no_record_insert(MODULE_NO=new_id(), MODULE_NAME='开放中心', MODULE_CODE='OPENCENTER')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='用户中心', MODULE_CODE='USERCENTER')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='系统', MODULE_CODE='SYSTEM')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='公共', MODULE_CODE='PUBLIC')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='脚本', MODULE_CODE='SCRIPT')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='调度', MODULE_CODE='SCHEDULER')
+    TPermissionModule.norecord_insert(MODULE_NO=new_id(), MODULE_NAME='开放中心', MODULE_CODE='OPENCENTER')
 
 
 @with_appcontext
 def init_permission_object():
     # USERCENTER
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='用户', OBJECT_CODE='USER')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='分组', OBJECT_CODE='GROUP')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='角色', OBJECT_CODE='ROLE')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='权限', OBJECT_CODE='PERMISSION')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='用户', OBJECT_CODE='USER')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='分组', OBJECT_CODE='GROUP')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='角色', OBJECT_CODE='ROLE')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='权限', OBJECT_CODE='PERMISSION')
     # SYSTEM
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='日志', OBJECT_CODE='LOG')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='日志', OBJECT_CODE='LOG')
     # PUBLIC
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='空间', OBJECT_CODE='WORKSPACE')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='标签', OBJECT_CODE='TAG')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='消息', OBJECT_CODE='MESSAGE')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='空间', OBJECT_CODE='WORKSPACE')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='标签', OBJECT_CODE='TAG')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='消息', OBJECT_CODE='MESSAGE')
     # SCRIPT
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='元素', OBJECT_CODE='ELEMENT')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='变量', OBJECT_CODE='VARIABLE')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='HTTP请求头', OBJECT_CODE='HTTP_HEADER')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='数据库', OBJECT_CODE='DATABASE')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试计划', OBJECT_CODE='TESTPLAN')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试报告', OBJECT_CODE='TESTREPORT')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='元素', OBJECT_CODE='ELEMENT')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='变量', OBJECT_CODE='VARIABLE')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='HTTP请求头', OBJECT_CODE='HTTP_HEADER')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='数据库', OBJECT_CODE='DATABASE')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试计划', OBJECT_CODE='TESTPLAN')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试报告', OBJECT_CODE='TESTREPORT')
     # SCHEDULE
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时任务', OBJECT_CODE='TASK')
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时作业', OBJECT_CODE='JOB')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时任务', OBJECT_CODE='TASK')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时作业', OBJECT_CODE='JOB')
     # OPENCENTER
-    TPermissionObject.no_record_insert(OBJECT_NO=new_id(), OBJECT_NAME='第三方应用', OBJECT_CODE='THIRD_PARTY_APP')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='第三方应用', OBJECT_CODE='THIRD_PARTY_APP')
 
 
 @with_appcontext
@@ -279,13 +279,13 @@ def init_user_role():
     """初始化用户角色关联"""
     user = TUser.filter_by(USER_NAME='超级管理员').first()
     role = TRole.filter_by(ROLE_CODE='ADMIN').first()
-    TUserRole.no_record_insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
+    TUserRole.norecord_insert(USER_NO=user.USER_NO, ROLE_NO=role.ROLE_NO)
     click.echo('创建用户角色关联成功')
 
 
 @with_appcontext
 def init_global_variable_dataset():
-    TVariableDataset.no_record_insert(
+    TVariableDataset.norecord_insert(
         DATASET_NO=new_id(),
         DATASET_NAME='全局变量',
         DATASET_TYPE='GLOBAL',
@@ -295,12 +295,12 @@ def init_global_variable_dataset():
 
 
 def create_role(name, code, rank):
-    TRole.no_record_insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_TYPE='SYSTEM')
+    TRole.norecord_insert(ROLE_NO=new_id(), ROLE_NAME=name, ROLE_CODE=code, ROLE_RANK=rank, ROLE_TYPE='SYSTEM')
 
 
 def create_permission(module_code, object_code, name, code, act):
     permission_no = new_id()
-    TPermission.no_record_insert(
+    TPermission.norecord_insert(
         MODULE_NO=get_permission_module_no(module_code),
         OBJECT_NO=get_permission_object_no(object_code),
         PERMISSION_NO=permission_no,

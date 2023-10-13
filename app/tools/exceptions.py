@@ -9,6 +9,7 @@ from enum import unique
 @unique
 class ErrorCode(Enum):
     # TODO: 错误码改造
+    # TODO: rename Status
     """业务错误码枚举
 
     错误码命名规范：E前缀+后三位数，后三位数从000开始递增
@@ -51,6 +52,29 @@ class ErrorCode(Enum):
 
     # 500
     E500000 = '内部错误'
+
+    # 2XX
+    CODE_200 = {'code':200, 'message':'成功'}
+
+    # 4XX
+    CODE_401 = {'code':401, 'message':'用户未登录'}
+    CODE_403 = {'code':403, 'message':'用户无权限'}
+    CODE_404 = {'code':404, 'message':'不存在'}
+    CODE_405 = {'code':405, 'message':'状态异常'}
+
+    # 5XX
+    CODE_500 = {'code':500, 'message':'内部错误'}
+
+    # 6XX
+    CODE_600 = {'code':600, 'message':'业务错误'}
+
+    @property
+    def CODE(self):
+        return self.value.get('code')
+
+    @property
+    def MSG(self):
+        return self.value.get('message')
 
 
 class ServiceError(Exception):

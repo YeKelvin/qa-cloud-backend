@@ -31,6 +31,14 @@ from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
+from app.modules.script.types import TypedElement
+from app.signals import element_copied_signal
+from app.signals import element_created_signal
+from app.signals import element_modified_signal
+from app.signals import element_moved_signal
+from app.signals import element_removed_signal
+from app.signals import element_sorted_signal
+from app.signals import element_transferred_signal
 from app.tools.exceptions import ServiceError
 from app.tools.identity import new_id
 from app.tools.service import http_service
@@ -149,19 +157,19 @@ def query_element_all_with_children(req):
         # 查询子代
         childconds = QueryCondition(TElementChildren, TTestElement)
         childconds.equal(TElementChildren.PARENT_NO, item.ELEMENT_NO)
-        childconds.equal(TTestElement.ELEMENT_NO, TElementChildren.CHILD_NO)
+        childconds.equal(TTestElement.ELEMENT_NO, TElementChildren.ELEMENT_NO)
         childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         childconds.equal(TTestElement.ENABLED, req.enabled)
         children = db_query(
-            TElementChildren.CHILD_SORT,
+            TElementChildren.ELEMENT_SORT,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_DESC,
             TTestElement.ELEMENT_TYPE,
             TTestElement.ELEMENT_CLASS,
             TTestElement.ENABLED
-        ).filter(*childconds).order_by(TElementChildren.CHILD_SORT).all()
+        ).filter(*childconds).order_by(TElementChildren.ELEMENT_SORT).all()
         # 添加元素信息
         result.append({
             'elementNo': item.ELEMENT_NO,
@@ -208,7 +216,7 @@ def query_element_info(req):
 def get_element_property(element_no):
     """查询元素属性"""
     properties = {}
-    props = element_property_dao.select_all_by_element(element_no)
+    props = element_property_dao.select_all(element_no)
     for prop in props:
         if prop.PROPERTY_TYPE in ['DICT', 'LIST']:
             properties[prop.PROPERTY_NAME] = from_json(prop.PROPERTY_VALUE)
@@ -248,24 +256,24 @@ def get_element_children(parent_no, depth):
     """递归查询元素子代"""
     result = []
     # 查询元素所有子代
-    relations = element_children_dao.select_all_by_parent(parent_no)
-    if not relations:
+    nodes = element_children_dao.select_all_by_parent(parent_no)
+    if not nodes:
         return result
 
     # 根据序号排序
-    relations.sort(key=lambda k: k.CHILD_SORT)
-    for relation in relations:
+    nodes.sort(key=lambda k: k.ELEMENT_SORT)
+    for node in nodes:
         # 查询子代元素
-        if element := test_element_dao.select_by_no(relation.CHILD_NO):
+        if element := test_element_dao.select_by_no(node.ELEMENT_NO):
             # 递归查询子代
             grandchildren = depth and get_element_children(element.ELEMENT_NO, depth) or []
             result.append({
-                'rootNo': relation.ROOT_NO,
+                'rootNo': node.ROOT_NO,
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
-                'elementIndex': relation.CHILD_SORT,
+                'elementIndex': node.ELEMENT_SORT,
                 'enabled': element.ENABLED,
                 'children': grandchildren
             })
@@ -274,14 +282,12 @@ def get_element_children(parent_no, depth):
 
 
 @http_service
-def create_collection(req):
+def create_collection(req: TypedElement):
     # 校验工作空间
     workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
-
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
-
     # 创建元素
     element_no = add_element(
         element_name=req.elementName,
@@ -289,19 +295,19 @@ def create_collection(req):
         element_type=req.elementType,
         element_class=req.elementClass,
         element_attrs=req.elementAttrs,
-        element_property=req.property
+        element_props=req.property
     )
-
     # 新建元素组件
     add_element_components(
         root_no=element_no,
         parent_no=element_no,
         components=req.componentList
     )
-
-    # 新增空间元素关联
+    # 绑定空间元素
     TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
-
+    # 记录元素变更日志
+    element_created_signal.send(root_no=element_no, parent_no=None, element_no=element_no)
+    # 返回元素编号
     return {'elementNo': element_no}
 
 
@@ -311,7 +317,8 @@ def add_element(
         element_type,
         element_class,
         element_attrs: dict = None,
-        element_property: dict = None
+        element_props: dict = None,
+        enabled: bool = ElementStatus.ENABLE.value
 ):
     # 创建元素
     element_no = new_id()
@@ -322,10 +329,10 @@ def add_element(
         ELEMENT_TYPE=element_type,
         ELEMENT_CLASS=element_class,
         ELEMENT_ATTRS=element_attrs,
-        ENABLED=ElementStatus.ENABLE.value
+        ENABLED=enabled
     )
     # 创建元素属性
-    add_element_property(element_no, element_property)
+    add_element_property(element_no, element_props)
     return element_no
 
 
@@ -340,17 +347,27 @@ def create_element_child(req):
         element_type=req.elementType,
         element_class=req.elementClass,
         element_attrs=req.elementAttrs,
-        element_property=req.property
+        element_props=req.property
     )
-    # 建立父子关联
+    # 新增元素节点
     TElementChildren.insert(
         ROOT_NO=req.rootNo,
         PARENT_NO=req.parentNo,
-        CHILD_NO=element_no,
-        CHILD_SORT=element_children_dao.next_serial_number_by_parent(req.parentNo)
+        ELEMENT_NO=element_no,
+        ELEMENT_SORT=element_children_dao.next_index(req.parentNo)
     )
-    # 新建元素组件
-    add_element_components(root_no=req.rootNo, parent_no=element_no, components=req.componentList)
+    # 新增元素组件
+    add_element_components(
+        root_no=req.rootNo,
+        parent_no=element_no,
+        components=req.componentList
+    )
+    # 记录元素变更日志
+    element_created_signal.send(
+        root_no=req.rootNo,
+        parent_no=req.parentNo,
+        element_no=element_no
+    )
     # 返回元素编号
     return {'elementNo': element_no}
 
@@ -365,7 +382,7 @@ def modify_element(req):
         element_name=req.elementName,
         element_desc=req.elementDesc,
         element_attrs=req.elementAttrs,
-        element_property=req.property
+        element_props=req.property
     )
     # 更新元素组件
     update_element_components(
@@ -379,19 +396,61 @@ def update_element(
         element_name,
         element_desc,
         element_attrs: dict = None,
-        element_property: dict = None
+        element_props: dict = None
 ):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
+    # 更新元素属性
+    update_element_property(element_no, element_props)
+    # 记录元素变更日志
+    record_element_changelog(
+        element,
+        new_name=element_name,
+        new_desc=element_desc,
+        new_attrs=element_attrs
+    )
     # 更新元素
     element.update(
         ELEMENT_NAME=element_name,
         ELEMENT_DESC=element_desc,
         ELEMENT_ATTRS=element_attrs
     )
-    # 更新元素属性
-    update_element_property(element_no, element_property)
+
+
+def record_element_changelog(element: TTestElement, new_name: str, new_desc: str, new_attrs: dict):
+    """记录元素变更日志（仅元素名称，元素描述，元素attrs）"""
+    # 元素名称
+    if element.ELEMENT_NAME != new_name:
+        element_modified_signal.send(
+            element.ELEMENT_NO,
+            prop_name='TestElement__name',
+            old_value=element.ELEMENT_NAME,
+            new_value=new_name
+        )
+    # 元素描述
+    if element.ELEMENT_DESC != new_desc:
+        element_modified_signal.send(
+            element.ELEMENT_NO,
+            prop_name='TestElement__desc',
+            old_value=element.ELEMENT_DESC,
+            new_value=new_desc
+        )
+    # 元素属性
+    old_attrs = element.ELEMENT_ATTRS
+    for attr_name, new_value in new_attrs.items():
+        old_value = old_attrs.get(attr_name)
+        if isinstance(old_value, dict | list):
+            old_value = to_json(old_value)
+        if isinstance(new_value, dict | list):
+            new_value = to_json(new_value)
+        if old_value != new_value:
+            element_modified_signal.send(
+            element.ELEMENT_NO,
+            attr_name=attr_name,
+            old_value=old_value,
+            new_value=new_value
+        )
 
 
 @http_service
@@ -407,58 +466,59 @@ def delete_element(element_no):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
     check_exists(element, error_msg='元素不存在')
-
-    # 递归删除元素子代和子代关联
+    # 删除元素子代（递归）
     delete_element_children(element_no)
-
-    # 如果元素存在父级关联，则删除关联并重新排序子代元素
+    # 删除元素节点并重新排序
     delete_element_child(element_no)
-
-    # 如果存在元素组件，一并删除
+    # 删除元素组件
     delete_element_components_by_parent(element_no)
-
     # 删除元素属性
     delete_element_property(element_no)
-
+    # 记录元素变更日志
+    element_removed_signal.send(element_no)
     # 删除元素
     element.delete()
 
 
 def delete_element_children(parent_no):
-    """递归删除子代元素（包含子代元素、子代属性、子代与父级关联、元素组件和元素组件属性）"""
-    # 查询所有子代关联列表
-    children_relations = element_children_dao.select_all_by_parent(parent_no)
-    for relation in children_relations:
-        # 如果子代存在元素组件，一并删除
-        delete_element_components_by_parent(relation.CHILD_NO)
+    """递归删除子代元素（包含子代元素、子代属性、子代节点、元素组件和元素组件属性）"""
+    # 查询所有子代节点
+    nodes = element_children_dao.select_all_by_parent(parent_no)
+    for node in nodes:
         # 查询子代元素
-        child = test_element_dao.select_by_no(relation.CHILD_NO)
-        # 递归删除子代元素的子代和关联
-        delete_element_children(relation.CHILD_NO)
-        # 删除子代元素属性
-        delete_element_property(relation.CHILD_NO)
-        # 删除父子关联
-        relation.delete()
+        child = test_element_dao.select_by_no(node.ELEMENT_NO)
+        # 删除元素组件
+        delete_element_components_by_parent(node.ELEMENT_NO)
+        # 删除元素子代
+        delete_element_children(node.ELEMENT_NO)
+        # 删除元素属性
+        delete_element_property(node.ELEMENT_NO)
+        # 删除节点信息
+        node.delete()
         # 删除子代元素
         child.delete()
 
 
 def delete_element_child(child_no):
-    # 如果子代存在父级关联，则删除关联并重新排序子代元素
-    if relation := element_children_dao.select_by_child(child_no):
+    # 如果存在子代节点，则删除并重新排序子代元素
+    if node := element_children_dao.select_by_child(child_no):
         # 重新排序父级子代
-        TElementChildren.filter(
-            TElementChildren.PARENT_NO == relation.PARENT_NO, TElementChildren.CHILD_SORT > relation.CHILD_SORT
-        ).update(
-            {TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1}
+        (
+            TElementChildren
+            .filter(
+                TElementChildren.PARENT_NO == node.PARENT_NO,
+                TElementChildren.ELEMENT_SORT > node.ELEMENT_SORT
+            ).update(
+                {TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT - 1}
+            )
         )
-        # 删除父级关联
-        relation.delete()
+        # 删除节点信息
+        node.delete()
 
 
 def delete_element_property(element_no):
     # 查询所有元素属性
-    props = element_property_dao.select_all_by_element(element_no)
+    props = element_property_dao.select_all(element_no)
     for prop in props:
         prop.delete()
 
@@ -501,128 +561,167 @@ def toggle_element_state(req):
     element.update(ENABLED=state)
 
 
-def add_element_property(element_no, element_property: dict):
+def add_element_property(element_no, element_props: dict):
     """遍历添加元素属性"""
-    if element_property is None:
+    if element_props is None:
         return
-    for name, value in element_property.items():
-        property_type = 'STR'
-        if isinstance(value, dict):
-            property_type = 'DICT'
-            value = to_json(value)
-        if isinstance(value, list):
-            property_type = 'LIST'
-            value = to_json(value)
-
+    for prop_name, prop_value in element_props.items():
+        prop_type = 'STR'
+        # 转json
+        if isinstance(prop_value, dict):
+            prop_type = 'DICT'
+            prop_value = to_json(prop_value)
+        elif isinstance(prop_value, list):
+            prop_type = 'LIST'
+            prop_value = to_json(prop_value)
+        # 新增属性
         TElementProperty.insert(
             ELEMENT_NO=element_no,
-            PROPERTY_NAME=name,
-            PROPERTY_VALUE=value,
-            PROPERTY_TYPE=property_type
+            PROPERTY_TYPE=prop_type,
+            PROPERTY_NAME=prop_name,
+            PROPERTY_VALUE=prop_value
         )
 
 
-def update_element_property(element_no, element_property: dict):
+def update_element_property(element_no, element_props: dict):
     """遍历修改元素属性"""
-    if element_property is None:
+    if element_props is None:
         return
     # 遍历更新元素属性
-    for name, value in element_property.items():
+    for prop_name, prop_value in element_props.items():
         # 查询元素属性
-        prop = element_property_dao.select_by_element_and_name(element_no, name)
-        property_type = 'STR'
-        if isinstance(value, dict):
-            property_type = 'DICT'
-            value = to_json(value)
-        if isinstance(value, list):
-            property_type = 'LIST'
-            value = to_json(value)
+        prop = element_property_dao.select_by_name(element_no, prop_name)
+        prop_type = 'STR'
+        # 转json
+        if isinstance(prop_value, dict):
+            prop_type = 'DICT'
+            prop_value = to_json(prop_value)
+        elif isinstance(prop_value, list):
+            prop_type = 'LIST'
+            prop_value = to_json(prop_value)
 
-        # 有属性就更新，没有就新增
+        # 有属性就更新，没有就新增（为了以后兼容新增的属性）
         if prop:
-            prop.update(PROPERTY_VALUE=value, PROPERTY_TYPE=property_type)
+            if prop.PROPERTY_VALUE != prop_value:
+                # 记录属性变更日志
+                element_modified_signal.send(
+                    element_no,
+                    prop_name=prop_name,
+                    old_value=prop.PROPERTY_VALUE,
+                    new_value=prop_value
+                )
+                # 更新属性
+                prop.update(PROPERTY_TYPE=prop_type, PROPERTY_VALUE=prop_value)
         else:
+            # 新增属性
             TElementProperty.insert(
                 ELEMENT_NO=element_no,
-                PROPERTY_NAME=name,
-                PROPERTY_VALUE=value,
-                PROPERTY_TYPE=property_type
+                PROPERTY_TYPE=prop_type,
+                PROPERTY_NAME=prop_name,
+                PROPERTY_VALUE=prop_value
             )
     # 删除请求中没有的属性
-    element_property_dao.delete_all_by_element_and_notin_name(element_no, list(element_property.keys()))
+    element_property_dao.delete_all_by_notin_name(element_no, list(element_props.keys()))
 
 
 @http_service
 def move_element(req):
-    # 查询 source 元素上级关联
-    source_upper_relation = element_children_dao.select_by_child(req.sourceNo)
-    check_exists(source_upper_relation, error_msg='Source元素父级不存在')
+    # 查询 source 元素节点
+    source_node = element_children_dao.select_by_child(req.sourceNo)
+    check_exists(source_node, error_msg='Source元素父级不存在')
 
     # 校验元素序号
     if req.targetIndex < 0:
         raise ServiceError('Target元素序号不能小于0')
 
     # source 父元素编号
-    source_parent_no = source_upper_relation.PARENT_NO
+    source_parent_no = source_node.PARENT_NO
     # source 元素序号
-    source_index = source_upper_relation.CHILD_SORT
+    source_index = source_node.ELEMENT_SORT
 
     # 父元素不变时，仅重新排序 source 同级元素
     if source_parent_no == req.targetParentNo:
         # 校验空间权限
         check_workspace_permission(get_workspace_no(get_root_no(req.sourceNo)))
         # 序号相等时直接跳过
-        if req.targetIndex == source_upper_relation.CHILD_SORT:
+        if req.targetIndex == source_node.ELEMENT_SORT:
             return
+        # 记录元素变更日志
+        element_sorted_signal.send(req.sourceNo, source_index, req.targetIndex)
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_index > req.targetIndex else 'DOWN'
         if move_type == 'UP':
             # 下移  [target, source) 区间元素
-            TElementChildren.filter(
-                TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.CHILD_SORT < source_index,
-                TElementChildren.CHILD_SORT >= req.targetIndex
-            ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
+            (
+                TElementChildren
+                .filter(
+                    TElementChildren.PARENT_NO == source_parent_no,
+                    TElementChildren.ELEMENT_SORT < source_index,
+                    TElementChildren.ELEMENT_SORT >= req.targetIndex
+                )
+                .update({
+                    TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
+                })
+            )
         else:
             # 上移  (source, target] 区间元素
-            TElementChildren.filter(
-                TElementChildren.PARENT_NO == source_parent_no,
-                TElementChildren.CHILD_SORT > source_index,
-                TElementChildren.CHILD_SORT <= req.targetIndex,
-            ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1})
+            (
+                TElementChildren
+                .filter(
+                    TElementChildren.PARENT_NO == source_parent_no,
+                    TElementChildren.ELEMENT_SORT > source_index,
+                    TElementChildren.ELEMENT_SORT <= req.targetIndex,
+                )
+                .update({
+                    TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT - 1
+                })
+            )
         # 更新 target 元素序号
-        source_upper_relation.update(CHILD_SORT=req.targetIndex)
+        source_node.update(ELEMENT_SORT=req.targetIndex)
     # source 元素移动至不同的父元素下
     else:
         # 校验空间权限
         check_workspace_permission(get_workspace_no(req.targetRootNo))
         # source 元素下方的同级元素序号 - 1（上移元素）
-        TElementChildren.filter(
-            TElementChildren.PARENT_NO == source_parent_no,
-            TElementChildren.CHILD_SORT > source_index
-        ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1})
+        (
+            TElementChildren
+            .filter(
+                TElementChildren.PARENT_NO == source_parent_no,
+                TElementChildren.ELEMENT_SORT > source_index
+            )
+            .update({
+                TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT - 1
+            })
+        )
         # target 元素下方（包含 target 自身位置）的同级元素序号 + 1（下移元素）
-        TElementChildren.filter(
-            TElementChildren.PARENT_NO == req.targetParentNo,
-            TElementChildren.CHILD_SORT >= req.targetIndex
-        ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
+        (
+            TElementChildren
+            .filter(
+                TElementChildren.PARENT_NO == req.targetParentNo,
+                TElementChildren.ELEMENT_SORT >= req.targetIndex
+            ).update({
+                TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
+            })
+        )
+        # 记录元素变更日志
+        element_moved_signal.send(req.sourceNo, req.targetParentNo)
         # 移动 source 元素至 target 位置
-        source_upper_relation.update(
+        source_node.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
-            CHILD_SORT=req.targetIndex
+            ELEMENT_SORT=req.targetIndex
         )
         # 递归修改 source 子代元素的根元素编号
         update_children_root(req.sourceNo, req.targetRootNo)
 
     # 校验 target 父级子代元素序号的连续性，避免埋坑
-    target_children_relations = element_children_dao.select_all_by_parent(req.targetParentNo)
-    for index, target_relation in enumerate(target_children_relations):
-        if target_relation.CHILD_SORT != index + 1:
+    target_child_nodes = element_children_dao.select_all_by_parent(req.targetParentNo)
+    for target_index, target_node in enumerate(target_child_nodes):
+        if target_node.ELEMENT_SORT != target_index + 1:
             logger.error(
                 f'父级编号:[ {req.targetParentNo} ] '
-                f'元素编号:[ {target_relation.CHILD_NO} ] '
-                f'元素序号:[ {target_relation.CHILD_SORT} ] '
+                f'元素编号:[ {target_node.ELEMENT_NO} ] '
+                f'元素序号:[ {target_node.ELEMENT_SORT} ] '
                 f'序号连续性错误'
             )
             raise ServiceError('Target元素父级的子代序号连续性错误')
@@ -630,15 +729,15 @@ def move_element(req):
 
 def update_children_root(parent_no, root_no):
     """递归修改子代元素的根元素编号"""
-    # 查询子代关联
-    lower_relation_list = element_children_dao.select_all_by_parent(parent_no)
-    if not lower_relation_list:
+    # 查询子代节点
+    nodes = element_children_dao.select_all_by_parent(parent_no)
+    if not nodes:
         return
     # 遍历更新根元素编号
-    for relation in lower_relation_list:
-        relation.update(ROOT_NO=root_no)
+    for node in nodes:
+        node.update(ROOT_NO=root_no)
         # 递归修改
-        update_children_root(relation.CHILD_NO, root_no)
+        update_children_root(node.ELEMENT_NO, root_no)
 
 @http_service
 def duplicate_element(req):
@@ -656,29 +755,36 @@ def duplicate_element(req):
     # 递归复制元素
     copied_no = copy_element(source)
     # 下移 source 元素的下方的元素
-    source_upper_relation = element_children_dao.select_by_child(source.ELEMENT_NO)
-    TElementChildren.filter(
-        TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
-        TElementChildren.CHILD_SORT > source_upper_relation.CHILD_SORT
-    ).update({TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT + 1})
+    source_node = element_children_dao.select_by_child(source.ELEMENT_NO)
+    (
+        TElementChildren
+        .filter(
+            TElementChildren.PARENT_NO == source_node.PARENT_NO,
+            TElementChildren.ELEMENT_SORT > source_node.ELEMENT_SORT
+        ).update({
+            TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
+        })
+    )
     # 将 copy 元素插入 source 元素的下方
     TElementChildren.insert(
-        ROOT_NO=source_upper_relation.ROOT_NO,
-        PARENT_NO=source_upper_relation.PARENT_NO,
-        CHILD_NO=copied_no,
-        CHILD_SORT=source_upper_relation.CHILD_SORT + 1
+        ROOT_NO=source_node.ROOT_NO,
+        PARENT_NO=source_node.PARENT_NO,
+        ELEMENT_NO=copied_no,
+        ELEMENT_SORT=source_node.ELEMENT_SORT + 1
     )
+    # 记录元素变更日志
+    element_copied_signal.send(copied_no, source.ELEMENT_NO)
     return {'elementNo': copied_no}
 
 
 @http_service
 def paste_element(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
+
     # 查询 source 元素
     source = test_element_dao.select_by_no(req.sourceNo)
     check_exists(source, error_msg='Source元素不存在')
-
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.targetNo)))
 
     # 查询 target 元素
     target = test_element_dao.select_by_no(req.targetNo)
@@ -730,59 +836,66 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
     TElementChildren.insert(
         ROOT_NO=target_root_no,
         PARENT_NO=target_no,
-        CHILD_NO=copied_no,
-        CHILD_SORT=element_children_dao.next_serial_number_by_parent(target_no)
+        ELEMENT_NO=copied_no,
+        ELEMENT_SORT=element_children_dao.next_index(target_no)
     )
+    # 记录元素变更日志
+    element_copied_signal.send(copied_no, source.ELEMENT_NO)
 
 
 def paste_element_by_cut(source: TTestElement, target: TTestElement):
     source_no = source.ELEMENT_NO
     target_no = target.ELEMENT_NO
     target_root_no = get_root_no(target_no)
-    # 查询 source 元素与父级元素关联
-    source_upper_relation = element_children_dao.select_by_child(source_no)
+    # 查询 source 元素节点
+    source_node = element_children_dao.select_by_child(source_no)
     # 上移 source 元素下方的元素
-    TElementChildren.filter(
-        TElementChildren.PARENT_NO == source_upper_relation.PARENT_NO,
-        TElementChildren.CHILD_SORT > source_upper_relation.CHILD_SORT
-    ).update({
-        TElementChildren.CHILD_SORT: TElementChildren.CHILD_SORT - 1
-    })
-    # 修改 source 上级关联
-    source_upper_relation.update(
+    (
+        TElementChildren
+        .filter(
+            TElementChildren.PARENT_NO == source_node.PARENT_NO,
+            TElementChildren.ELEMENT_SORT > source_node.ELEMENT_SORT
+        ).update({
+            TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT - 1
+        })
+    )
+    # 修改 source 元素节点
+    source_node.update(
         ROOT_NO=target_root_no,
         PARENT_NO=target_no,
-        CHILD_SORT=element_children_dao.next_serial_number_by_parent(target_no)
+        ELEMENT_SORT=element_children_dao.next_index(target_no)
     )
     # 递归修改 source 子代元素的根元素编号
     update_children_root(source_no, target_root_no)
+    # 记录元素变更日志
+    element_moved_signal.send(source_no, target_no)
 
 
 def copy_element(source: TTestElement, rename=False, root_no=None):
     # 克隆元素和属性
     copied_no = clone_element(source, rename)
     # 遍历克隆元素子代
-    source_children_relations = element_children_dao.select_all_by_parent(source.ELEMENT_NO)
-    for source_relation in source_children_relations:
-        source_child = test_element_dao.select_by_no(source_relation.CHILD_NO)
+    source_child_nodes = element_children_dao.select_all_by_parent(source.ELEMENT_NO)
+    for source_node in source_child_nodes:
+        source_child = test_element_dao.select_by_no(source_node.ELEMENT_NO)
         copied_child_no = copy_element(source_child)
         TElementChildren.insert(
-            ROOT_NO=root_no or source_relation.ROOT_NO,
+            ROOT_NO=root_no or source_node.ROOT_NO,
             PARENT_NO=copied_no,
-            CHILD_NO=copied_child_no,
-            CHILD_SORT=source_relation.CHILD_SORT
+            ELEMENT_NO=copied_child_no,
+            ELEMENT_SORT=source_node.ELEMENT_SORT
         )
-    # 遍历克隆内建元素
-    source_component_relations = element_components_dao.select_all_by_parent(source.ELEMENT_NO)
-    for source_relation in source_component_relations:
-        source_component = test_element_dao.select_by_no(source_relation.CHILD_NO)
+    # 遍历克隆元素组件
+    source_component_nodes = element_components_dao.select_all_by_parent(source.ELEMENT_NO)
+    for source_node in source_component_nodes:
+        source_component = test_element_dao.select_by_no(source_node.ELEMENT_NO)
         copied_component_no = copy_element(source_component)
         TElementComponents.insert(
-            ROOT_NO=source_relation.ROOT_NO,
+            ROOT_NO=source_node.ROOT_NO,
             PARENT_NO=copied_no,
-            CHILD_NO=copied_component_no,
-            CHILD_TYPE=source_relation.CHILD_TYPE,
-            CHILD_SORT=source_relation.CHILD_SORT
+            ELEMENT_NO=copied_component_no,
+            ELEMENT_TYPE=source_node.ELEMENT_TYPE,
+            ELEMENT_SORT=source_node.ELEMENT_SORT
         )
     return copied_no
 
@@ -799,13 +912,13 @@ def clone_element(source: TTestElement, rename=False):
         ELEMENT_ATTRS=source.ELEMENT_ATTRS
     )
     # 克隆元素属性
-    props = element_property_dao.select_all_by_element(source.ELEMENT_NO)
+    props = element_property_dao.select_all(source.ELEMENT_NO)
     for prop in props:
         TElementProperty.insert(
             ELEMENT_NO=cloned_no,
+            PROPERTY_TYPE=prop.PROPERTY_TYPE,
             PROPERTY_NAME=prop.PROPERTY_NAME,
-            PROPERTY_VALUE=prop.PROPERTY_VALUE,
-            PROPERTY_TYPE=prop.PROPERTY_TYPE
+            PROPERTY_VALUE=prop.PROPERTY_VALUE
         )
 
     return cloned_no
@@ -815,20 +928,20 @@ def clone_element(source: TTestElement, rename=False):
 def query_element_components(req):
     result = []
 
-    # 查询元素组件关联
-    relations = element_components_dao.select_all_by_parent(req.elementNo)
-    if not relations:
+    # 查询元素组件节点
+    nodes = element_components_dao.select_all_by_parent(req.elementNo)
+    if not nodes:
         return result
 
-    for relation in relations:
+    for node in nodes:
         # 查询元素组件
-        if component := test_element_dao.select_by_no(relation.CHILD_NO):
+        if component := test_element_dao.select_by_no(node.ELEMENT_NO):
             result.append({
                 'elementNo': component.ELEMENT_NO,
                 'elementName': component.ELEMENT_NAME,
                 'elementType': component.ELEMENT_TYPE,
                 'elementClass': component.ELEMENT_CLASS,
-                'elementIndex': relation.CHILD_SORT,
+                'elementIndex': node.ELEMENT_SORT,
                 'property': get_element_property(component.ELEMENT_NO),
                 'enabled': component.ENABLED
             })
@@ -846,31 +959,29 @@ def add_element_components(root_no, parent_no, components) -> list:
     return result
 
 
-def add_element_component(root_no, parent_no, component):
+def add_element_component(root_no, parent_no, component: dict):
     # 创建元素
-    component_no = new_id()
-    TTestElement.insert(
-        ELEMENT_NO=component_no,
-        ELEMENT_NAME=component.get('elementName'),
-        ELEMENT_DESC=component.get('elementDesc', None),
-        ELEMENT_TYPE=component.get('elementType'),
-        ELEMENT_CLASS=component.get('elementClass'),
-        ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
+    component_no = add_element(
+        element_name=component.get('elementName'),
+        element_desc=component.get('elementDesc'),
+        element_type=component.get('elementType'),
+        element_class=component.get('elementClass'),
+        element_attrs=component.get('elementAttrs'),
+        element_props=component.get('property'),
+        enabled=component.get('enabled', ElementStatus.ENABLE.value)
     )
-    # 创建元素属性
-    add_element_property(component_no, component.get('property', None))
-    # 创建元素关联
+    # 创建元素组件节点
     TElementComponents.insert(
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
-        CHILD_NO=component_no,
-        CHILD_TYPE=component.get('elementType'),
-        CHILD_SORT=component.get('elementIndex', 0)
+        ELEMENT_NO=component_no,
+        ELEMENT_TYPE=component.get('elementType'),
+        ELEMENT_SORT=component.get('elementIndex', 0)
     )
     return component_no
 
 
-def update_element_component(element_no, element_name, element_desc, element_property=None, enabled: bool = None):
+def update_element_component(element_no, element_name, element_desc, element_props=None, enabled: bool = None):
     # 查询元素
     component = test_element_dao.select_by_no(element_no)
     check_exists(component, error_msg='元素不存在')
@@ -887,7 +998,7 @@ def update_element_component(element_no, element_name, element_desc, element_pro
             ELEMENT_DESC=element_desc
         )
     # 更新元素属性
-    update_element_property(element_no, element_property)
+    update_element_property(element_no, element_props)
 
 
 def update_element_components(parent_no: str, component_list: list):
@@ -909,8 +1020,8 @@ def update_element_components(parent_no: str, component_list: list):
             # 更新元素属性
             update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
-            relation = element_components_dao.select_by_child(component.elementNo)
-            relation.update(CHILD_SORT=component.elementIndex)
+            node = element_components_dao.select_by_component(component.elementNo)
+            node.update(ELEMENT_SORT=component.elementIndex)
         # 元素不存在则新增
         else:
             # 新增元素组件
@@ -921,13 +1032,13 @@ def update_element_components(parent_no: str, component_list: list):
     # 移除非请求中元素组件
     TElementComponents.deletes(
         TElementComponents.PARENT_NO == parent_no,
-        TElementComponents.CHILD_TYPE.in_([
+        TElementComponents.ELEMENT_TYPE.in_([
             ElementType.CONFIG.value,
             ElementType.PREV_PROCESSOR.value,
             ElementType.POST_PROCESSOR.value,
             ElementType.ASSERTION.value
         ]),
-        TElementComponents.CHILD_NO.notin_(components),
+        TElementComponents.ELEMENT_NO.notin_(components),
     )
 
 
@@ -943,12 +1054,12 @@ def delete_element_component(element_no):
 
 def delete_element_components_by_parent(parent_no):
     # 根据父级删除所有元素组件
-    if relations := element_components_dao.select_all_by_parent(parent_no):
-        for relation in relations:
+    if nodes := element_components_dao.select_all_by_parent(parent_no):
+        for node in nodes:
             # 删除元素组件
-            delete_element_component(relation.CHILD_NO)
-            # 删除元素组件关联
-            relation.delete()
+            delete_element_component(node.ELEMENT_NO)
+            # 删除元素节点
+            node.delete()
 
 
 @http_service
@@ -970,12 +1081,17 @@ def copy_collection_to_workspace(req):
     copied_no = copy_element(collection)
     TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=copied_no)
 
+    # 记录元素变更日志
+    element_copied_signal.send(copied_no, source_no=req.elementNo)
+
 
 @http_service
 def move_collection_to_workspace(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))  # 校验原空间权限
-    check_workspace_permission(req.workspaceNo)  # 校验目标空间权限
+    source_workspace_no = get_workspace_no(get_root_no(req.elementNo))
+    target_workspace_no = req.workspaceNo
+    check_workspace_permission(source_workspace_no)  # 校验来源空间权限
+    check_workspace_permission(target_workspace_no)  # 校验目标空间权限
 
     # 查询集合
     collection = test_element_dao.select_by_no(req.elementNo)
@@ -984,8 +1100,14 @@ def move_collection_to_workspace(req):
 
     # 查询集合的空间
     if workspace_collection := workspace_collection_dao.select_by_collection(req.elementNo):
+        # 记录元素变更日志
+        element_transferred_signal.send(
+            collection_no=req.elementNo,
+            source_workspace_no=source_workspace_no,
+            target_workspace_no=target_workspace_no
+        )
         # 移动空间
-        workspace_collection.update(WORKSPACE_NO=req.workspaceNo)
+        workspace_collection.update(WORKSPACE_NO=target_workspace_no)
     else:
         raise ServiceError('集合没有指定空间')
 
@@ -1063,7 +1185,7 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
     )
     # 创建元素属性
     add_element_property(component_no, component.get('property'))
-    # 创建元素关联
+    # 创建元素节点
     TWorkspaceComponent.insert(
         WORKSPACE_NO=workspace_no,
         COMPONENT_NO=component_no,

@@ -32,7 +32,7 @@ def sum_failure_count_by_execution(execution_no):
 
 
 def update_running_state_by_execution(execution_no, state):
-    TTestplanExecutionCollection.no_record_updates_by(
-        setter=dict(RUNNING_STATE=state),
+    TTestplanExecutionCollection.norecord_updates_by(
+        values=dict(RUNNING_STATE=state),
         where=dict(EXECUTION_NO=execution_no)
     )

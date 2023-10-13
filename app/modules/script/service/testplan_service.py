@@ -272,7 +272,7 @@ def query_testplan_execution_details(req):
             'failureCount': item['FAILURE_COUNT']
         })
 
-    # 查询执行记录关联的变量集
+    # 查询执行所使用的变量集
     variable_dataset_list = []
     if datasets := execution.SETTINGS['VARIABLE_DATASETS']:
         for dataset_no in datasets:

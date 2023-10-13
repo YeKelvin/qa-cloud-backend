@@ -5,11 +5,11 @@
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database import BaseColumn
-from app.database import DBModel
+from app.database import TableModel
 from app.database import db
 
 
-class TUser(DBModel, BaseColumn):
+class TUser(TableModel, BaseColumn):
     """用户表"""
     __tablename__ = 'USER'
     USER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='用户编号')
@@ -23,7 +23,7 @@ class TUser(DBModel, BaseColumn):
     SETTINGS = db.Column(JSONB, comment='用户设置')
 
 
-class TGroup(DBModel, BaseColumn):
+class TGroup(TableModel, BaseColumn):
     """分组表"""
     __tablename__ = 'GROUP'
     GROUP_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='分组编号')
@@ -32,21 +32,21 @@ class TGroup(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='分组状态(ENABLE:启用, DISABLE:禁用)')
 
 
-class TGroupMember(DBModel, BaseColumn):
+class TGroupMember(TableModel, BaseColumn):
     """分组成员表"""
     __tablename__ = 'GROUP_MEMBER'
     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
 
 
-class TGroupRole(DBModel, BaseColumn):
+class TGroupRole(TableModel, BaseColumn):
     """分组角色表"""
     __tablename__ = 'GROUP_ROLE'
     GROUP_NO = db.Column(db.String(32), index=True, nullable=False, comment='分组编号')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
 
 
-class TRole(DBModel, BaseColumn):
+class TRole(TableModel, BaseColumn):
     """角色表"""
     __tablename__ = 'ROLE'
     ROLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='角色编号')
@@ -58,14 +58,14 @@ class TRole(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='角色状态(ENABLE:启用, DISABLE:禁用)')
 
 
-class TRolePermission(DBModel, BaseColumn):
+class TRolePermission(TableModel, BaseColumn):
     """角色权限关联表"""
     __tablename__ = 'ROLE_PERMISSION'
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
     PERMISSION_NO = db.Column(db.String(32), index=True, nullable=False, comment='权限编号')
 
 
-class TPermission(DBModel, BaseColumn):
+class TPermission(TableModel, BaseColumn):
     """权限表"""
     __tablename__ = 'PERMISSION'
     MODULE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模块编号')
@@ -78,7 +78,7 @@ class TPermission(DBModel, BaseColumn):
     STATE = db.Column(db.String(16), nullable=False, default='ENABLE', comment='权限状态(ENABLE:启用, DISABLE:禁用)')
 
 
-class TPermissionModule(DBModel, BaseColumn):
+class TPermissionModule(TableModel, BaseColumn):
     # TODO: del
     """权限模块表"""
     __tablename__ = 'PERMISSION_MODULE'
@@ -88,7 +88,7 @@ class TPermissionModule(DBModel, BaseColumn):
     MODULE_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='模块代码')
 
 
-class TPermissionObject(DBModel, BaseColumn):
+class TPermissionObject(TableModel, BaseColumn):
     # TODO: del
     """权限对象表"""
     __tablename__ = 'PERMISSION_OBJECT'
@@ -98,14 +98,14 @@ class TPermissionObject(DBModel, BaseColumn):
     OBJECT_CODE = db.Column(db.String(64), unique=True, nullable=False, comment='对象代码')
 
 
-class TUserRole(DBModel, BaseColumn):
+class TUserRole(TableModel, BaseColumn):
     """用户角色关联表"""
     __tablename__ = 'USER_ROLE'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
     ROLE_NO = db.Column(db.String(32), index=True, nullable=False, comment='角色编号')
 
 
-class TUserLoginInfo(DBModel, BaseColumn):
+class TUserLoginInfo(TableModel, BaseColumn):
     """用户登陆号表"""
     __tablename__ = 'USER_LOGIN_INFO'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
@@ -113,7 +113,7 @@ class TUserLoginInfo(DBModel, BaseColumn):
     LOGIN_TYPE = db.Column(db.String(32), nullable=False, comment='登陆类型(MOBILE:手机号, EMAIL:邮箱, ACCOUNT:账号)')
 
 
-class TUserLoginLog(DBModel, BaseColumn):
+class TUserLoginLog(TableModel, BaseColumn):
     """用户登陆日志表"""
     __tablename__ = 'USER_LOGIN_LOG'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
@@ -124,7 +124,7 @@ class TUserLoginLog(DBModel, BaseColumn):
     LOGIN_TIME = db.Column(db.DateTime(), comment='登录时间')
 
 
-class TUserPassword(DBModel, BaseColumn):
+class TUserPassword(TableModel, BaseColumn):
     """用户密码表"""
     __tablename__ = 'USER_PASSWORD'
     USER_NO = db.Column(db.String(32), index=True, nullable=False, comment='用户编号')
