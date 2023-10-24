@@ -26,7 +26,7 @@ from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import RunningState
 from app.modules.script.enum import VariableDatasetType
-from app.modules.script.enum import is_snippet_collection
+from app.modules.script.enum import is_test_snippet
 from app.modules.script.manager import element_loader
 from app.modules.script.manager.element_component import add_flask_db_iteration_storage
 from app.modules.script.manager.element_component import add_flask_db_result_storage
@@ -263,7 +263,7 @@ def execute_sampler(req):
 
 
 @http_service
-def execute_snippets(req):
+def execute_snippet(req):
     # 校验空间权限
     check_workspace_permission(
         get_workspace_no(get_root_no(req.collectionNo))
@@ -273,11 +273,11 @@ def execute_snippets(req):
     collection = test_element_dao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
-    if not is_snippet_collection(collection):
-        raise ServiceError('仅支持运行 SnippetCollection 元素')
+    if not is_test_snippet(collection):
+        raise ServiceError('仅支持运行 TestSnippet 元素')
 
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_snippet_collecion(
+    script = element_loader.loads_test_snippet(
         collection.ELEMENT_NO,
         collection.ELEMENT_NAME,
         collection.ELEMENT_DESC
@@ -563,7 +563,7 @@ def start_testplan_by_loop(
     scripts = {}
     for collection_no in collections:
         # 加载脚本
-        collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
+        collection = element_loader.loads_tree(collection_no)
         if not collection:
             logger.warning(
                 f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
@@ -664,7 +664,7 @@ def start_testplan_by_report(
             script.norecord_update(RUNNING_STATE=RunningState.RUNNING.value)
             db.session.commit()  # 这里要实时更新
             # 加载脚本
-            collection = element_loader.loads_tree(collection_no, exclude_debuger=True)
+            collection = element_loader.loads_tree(collection_no)
             if not collection:
                 logger.warning(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'

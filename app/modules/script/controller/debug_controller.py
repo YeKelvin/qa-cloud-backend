@@ -36,10 +36,10 @@ def query_worker_json():
     return service.query_worker_json(req)
 
 
-@blueprint.get('/snippets/json')
+@blueprint.get('/snippet/json')
 @require_login
 @require_permission('QUERY_SCRIPT_AS_JSON')
-def query_snippets_json():
+def query_snippet_json():
     """查询片段集合的脚本(JSON)"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='集合编号不能为空'),
@@ -47,4 +47,4 @@ def query_snippets_json():
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.query_snippets_json(req)
+    return service.query_snippet_json(req)

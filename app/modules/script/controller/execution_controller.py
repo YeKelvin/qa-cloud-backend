@@ -52,10 +52,10 @@ def execute_sampler():
     return service.execute_sampler(req)
 
 
-@blueprint.post('/snippets/execute')
+@blueprint.post('/snippet/execute')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_snippets():
+def execute_snippet():
     """运行片段集合"""
     req = JsonParser(
         Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
@@ -64,7 +64,7 @@ def execute_snippets():
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.execute_snippets(req)
+    return service.execute_snippet(req)
 
 
 @blueprint.post('/testplan/execute')

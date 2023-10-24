@@ -5,7 +5,7 @@
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
-from app.modules.script.enum import is_snippet_collection
+from app.modules.script.enum import is_test_snippet
 from app.modules.script.manager import element_loader
 from app.modules.script.manager.element_component import add_variable_dataset
 from app.tools.exceptions import ServiceError
@@ -48,15 +48,15 @@ def query_worker_json(req):
 
 
 @http_service
-def query_snippets_json(req):
+def query_snippet_json(req):
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
         raise ServiceError('元素已禁用')
-    if not is_snippet_collection(collection):
-        raise ServiceError('仅支持 SnippetCollection 元素')
+    if not is_test_snippet(collection):
+        raise ServiceError('仅支持 TestSnippet 元素')
     # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_snippet_collecion(
+    script = element_loader.loads_test_snippet(
         collection.ELEMENT_NO,
         collection.ELEMENT_NAME,
         collection.ELEMENT_DESC

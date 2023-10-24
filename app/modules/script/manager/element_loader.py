@@ -11,15 +11,12 @@ from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ElementClass
-from app.modules.script.enum import is_debuger
 from app.modules.script.enum import is_http_sampler
 from app.modules.script.enum import is_python_assertion
 from app.modules.script.enum import is_python_post_processor
 from app.modules.script.enum import is_python_prev_processor
-from app.modules.script.enum import is_setup_debuger
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_sql_sampler
-from app.modules.script.enum import is_teardown_debuger
 from app.modules.script.enum import is_test_collection
 from app.modules.script.enum import is_test_worker
 from app.modules.script.enum import is_worker
@@ -32,6 +29,7 @@ from app.modules.script.manager.element_context import loads_cache
 from app.modules.script.manager.element_context import loads_configurator
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementComponents
+from app.modules.script.model import TTestElement
 from app.tools.exceptions import ServiceError
 from app.tools.validator import check_exists
 from app.utils.json_util import from_json
@@ -40,21 +38,19 @@ from app.utils.json_util import from_json
 def loads_tree(
         collection_no,
         specify_worker_no=None,
-        specify_sampler_no=None,
-        exclude_debuger=False,
+        specify_sampler_no=None
 ):
     """根据元素编号加载脚本"""
     logger.debug(
         f'开始从数据库中加载脚本, '
         f'指定的工作者编号:[ {specify_worker_no} ], '
-        f'指定的取样器编号:[ {specify_sampler_no} ], '
-        f'排除调试器:[ {exclude_debuger} ]'
+        f'指定的取样器编号:[ {specify_sampler_no} ]'
     )
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
     configurator_token = loads_configurator.set({})
     # 递归加载元素
-    collection = loads_element(collection_no, specify_worker_no, specify_sampler_no, exclude_debuger)
+    collection = loads_element(collection_no, specify_worker_no, specify_sampler_no)
     if not collection:
         raise ServiceError('脚本异常，请联系管理员')
     # 添加全局配置
@@ -83,8 +79,7 @@ def loads_tree(
 def loads_element(
         element_no,
         specify_worker_no: str = None,
-        specify_sampler_no: str = None,
-        exclude_debuger: bool = False
+        specify_sampler_no: str = None
 ):
     """根据元素编号加载元素数据"""
     # 查询元素
@@ -94,11 +89,6 @@ def loads_element(
     # 元素为禁用状态时返回 None
     if not element.ENABLED:
         logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素已禁用, 无需加载')
-        return None
-
-    # 排除 debuger
-    if  exclude_debuger and is_debuger(element):
-        logger.debug(f'元素名称:[ {element.ELEMENT_NAME} ] 元素为调试器, 无需加载')
         return None
 
     # 加载指定的 ，如果当前元素非指定的worker时返回 None
@@ -208,7 +198,7 @@ def add_element_components(element_no, children: list):
 
 
 def add_snippets(sampler_attrs, children: list):
-    # 根据片段编号加载片段集合（片段集合在脚本中其实是事务，这里做了一层转换）
+    # 根据片段编号加载片段集合（片段请求在脚本中其实是事务，这里做了一层转换）
     snippet_no = sampler_attrs.get('snippet_no', None)
     if not snippet_no:
         raise ServiceError('片段编号不能为空')
@@ -216,21 +206,21 @@ def add_snippets(sampler_attrs, children: list):
     transaction = loads_element(snippet_no)
     if not transaction:
         return
-    transaction_children = transaction.get('children')
-    if not transaction_children:
+    trans_children = transaction.get('children')
+    if not trans_children:
         return
     trans_attrs = transaction.get('attrs', {})
     # 片段形参
     parameters = trans_attrs.get('parameters', [])
-    # 是否使用HTTP会话
-    use_http_session = trans_attrs.get('use_http_session', False)
     # 片段实参
     arguments = sampler_attrs.get('arguments', [])
     # 是否使用形参默认值
     use_default = sampler_attrs.get('use_default', False)
+    # 是否使用HTTP会话
+    use_http_session = trans_attrs.get('use_http_session', False)
     # 配置片段
-    configure_snippets(transaction_children, parameters, arguments, use_http_session, use_default)
-    children.extend(transaction_children)
+    configure_test_snippet(trans_children, parameters, arguments, use_default, use_http_session)
+    children.extend(trans_children)
 
 
 def add_root_configs(script: dict, config_components: dict[str, list]):
@@ -239,7 +229,9 @@ def add_root_configs(script: dict, config_components: dict[str, list]):
             script['children'].insert(0, config)
 
 
-def configure_snippets(children: list, parameters: list, arguments: list, use_http_session: bool, use_default: bool):
+def configure_test_snippet(
+    children: list, parameters: list, arguments: list, use_default: bool, use_http_session: bool
+):
     # 添加 TransactionHTTPSessionManager 组件
     if use_http_session:
         children.insert(0, {
@@ -288,7 +280,7 @@ def configure_snippets(children: list, parameters: list, arguments: list, use_ht
         })
 
 
-def loads_snippet_collecion(snippet_no, snippet_name, snippet_desc):
+def loads_test_snippet(snippet_no, snippet_name, snippet_desc):
     # 配置上下文变量，用于临时缓存
     cache_token = loads_cache.set({})
     # 查询元素
@@ -345,13 +337,9 @@ def is_blank_python(element, properties):
     return is_python_assertion(element) and not properties.get('PythonAssertion__script').strip()
 
 
-def get_real_class(element):
+def get_real_class(element: TTestElement):
     if is_snippet_sampler(element):
         return ElementClass.TRANSACTION_CONTROLLER.value
-    elif is_setup_debuger(element):
-        return ElementClass.SETUP_DEBUGER.value
-    elif is_teardown_debuger(element):
-        return ElementClass.TEARDOWN_DEBUGER.value
     else:
         return element.ELEMENT_CLASS
 

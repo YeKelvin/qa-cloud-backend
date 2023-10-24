@@ -19,8 +19,7 @@ from app.modules.script.enum import PasteType
 from app.modules.script.enum import is_collection
 from app.modules.script.enum import is_controller
 from app.modules.script.enum import is_sampler
-from app.modules.script.enum import is_snippet_collection
-from app.modules.script.enum import is_test_collection
+from app.modules.script.enum import is_snippet
 from app.modules.script.enum import is_timer
 from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_manager import get_root_no
@@ -801,7 +800,7 @@ def paste_element(req):
     check_exists(target, error_msg='Target元素不存在')
 
     # 排除不支持剪贴的元素
-    if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
+    if source.ELEMENT_TYPE in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
         raise ServiceError('暂不支持剪贴集合')
 
     # 检查元素是否允许剪贴
@@ -817,24 +816,25 @@ def paste_element(req):
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Wroup
     if is_worker(source) and not is_collection(target):
-        raise ServiceError('[用例] 仅支持在 [集合] 节点下剪贴')
+        raise ServiceError('用例仅支持在 [集合] 下剪贴')
     # Sampler
     elif is_sampler(source) and (
-        is_test_collection(target) or not (is_snippet_collection(target) or is_worker(target) or is_controller(target))
+        is_collection(target) or not (is_snippet(target) or is_worker(target) or is_controller(target))
     ):
-        raise ServiceError('[请求] 仅支持在 [片段|用例|逻辑控制器] 节点下剪贴')
+        raise ServiceError('请求仅支持在 [片段|用例|逻辑控制器] 下剪贴')
     # Controller
     elif is_controller(source) and (
-        is_test_collection(target) or not (is_snippet_collection(target) or is_worker(target) or is_controller(target))
+        is_collection(target) or not (is_snippet(target) or is_worker(target) or is_controller(target))
     ):
-        raise ServiceError('[逻辑控制器] 仅支持在 [片段|用例|逻辑控制器] 节点下剪贴')
+        raise ServiceError('逻辑控制器仅支持在 [片段|用例|逻辑控制器] 下剪贴')
     # Timer
-    elif is_timer(source) and (is_test_collection(target)
-        or not (  # noqa
-            is_snippet_collection(target) or is_worker(target) or is_sampler(target) or is_controller(target)
-        )  # noqa
+    elif is_timer(source) and (
+        is_collection(target)
+        or not (is_snippet(target) or is_worker(target) or is_sampler(target) or is_controller(target))
     ):
         raise ServiceError('[时间控制器] 仅支持在 [ 片段|用例|逻辑控制器 ] 节点下剪贴')
+    else:
+        return True
 
 
 def paste_element_by_copy(source: TTestElement, target: TTestElement):

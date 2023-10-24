@@ -12,6 +12,9 @@ class ElementType(Enum):
     # 测试集合
     COLLECTION = 'COLLECTION'
 
+    # 片段
+    SNIPPET = 'SNIPPET'
+
     # 工作者
     WORKER = 'WORKER'
 
@@ -47,20 +50,16 @@ class ElementClass(Enum):
     TEST_COLLECTION = 'TestCollection'
 
     # 片段集合
-    SNIPPET_COLLECTION = 'SnippetCollection'
+    TEST_SNIPPET = 'TestSnippet'
 
     # 工作者
     TEST_WORKER = 'TestWorker'
 
     # 前置工作者
     SETUP_WORKER = 'SetupWorker'
-    # 前置调试者
-    SETUP_DEBUGER = 'SetupDebuger'
 
     # 后置工作者
     TEARDOWN_WORKER = 'TeardownWorker'
-    # 后置调试者
-    TEARDOWN_DEBUGER = 'TeardownDebuger'
 
     # HTTP取样器
     HTTP_SAMPLER = 'HTTPSampler'
@@ -273,6 +272,10 @@ def is_collection(element):
     return element.ELEMENT_TYPE == ElementType.COLLECTION.value
 
 
+def is_snippet(element):
+    return element.ELEMENT_TYPE == ElementType.SNIPPET.value
+
+
 def is_worker(element):
     return element.ELEMENT_TYPE == ElementType.WORKER.value
 
@@ -313,8 +316,8 @@ def is_test_collection(element):
     return element.ELEMENT_CLASS == ElementClass.TEST_COLLECTION.value
 
 
-def is_snippet_collection(element):
-    return element.ELEMENT_CLASS == ElementClass.SNIPPET_COLLECTION.value
+def is_test_snippet(element):
+    return element.ELEMENT_CLASS == ElementClass.TEST_SNIPPET.value
 
 
 def is_test_worker(element):
@@ -331,18 +334,6 @@ def is_sql_sampler(element):
 
 def is_snippet_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.SNIPPET_SAMPLER.value
-
-
-def is_setup_debuger(element):
-    return element.ELEMENT_CLASS == ElementClass.SETUP_DEBUGER.value
-
-
-def is_teardown_debuger(element):
-    return element.ELEMENT_CLASS == ElementClass.TEARDOWN_DEBUGER.value
-
-
-def is_debuger(element):
-    return is_setup_debuger(element) or is_teardown_debuger(element)
 
 
 def is_python_prev_processor(element):
