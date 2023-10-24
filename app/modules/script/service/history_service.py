@@ -19,7 +19,6 @@ from app.modules.script.model import TTestElement
 from app.modules.usercenter.model import TUser
 from app.tools.exceptions import ServiceError
 from app.tools.service import http_service
-from app.tools.validator import check_exists
 
 
 TParentElement: TTestElement = aliased(TTestElement)
@@ -27,19 +26,16 @@ TParentElement: TTestElement = aliased(TTestElement)
 
 @http_service
 def query_element_changelog_list(req):
-    if element_no := req.elementNo:
-        element = test_element_dao.select_by_no(element_no)
-        check_exists(element, error_msg='元素不存在')
-
+    if element := test_element_dao.select_by_no(req.elementNo):
         if is_collection(element):
-            stmt = get_changelog_stmt_by_collection(element_no)
-            total = count_changelog_by_collection(element_no)
+            stmt = get_changelog_stmt_by_collection(req.elementNo)
+            total = count_changelog_by_collection(req.elementNo)
         elif is_worker(element):
-            stmt = get_changelog_stmt_by_testcase(element_no)
-            total = count_changelog_by_testcase(element_no)
+            stmt = get_changelog_stmt_by_testcase(req.elementNo)
+            total = count_changelog_by_testcase(req.elementNo)
         elif is_sampler(element):
-            stmt = get_changelog_stmt_by_sampler(element_no)
-            total = count_changelog_by_sampler(element_no)
+            stmt = get_changelog_stmt_by_sampler(req.elementNo)
+            total = count_changelog_by_sampler(req.elementNo)
         else:
             raise ServiceError('暂不支持的元素类型')
     else:
@@ -62,7 +58,6 @@ def query_element_changelog_list(req):
 
     data = []
     for entity in results:
-        print(f'{entity=}')
         if req.elementNo and entity.ELEMENT_NO == req.elementNo and entity.OPERATION_TYPE in ['INSERT', 'COPY']:
             continue
         data.append({
@@ -124,11 +119,14 @@ def get_changelog_stmt_by_workspace(workspace_no):
             TTestElement.ELEMENT_TYPE,
             TParentElement.ELEMENT_NAME.label('PARENT_NAME')
         )
-        .join(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(
-            TElementChangelog.WORKSPACE_NO == workspace_no
+            TElementChangelog.WORKSPACE_NO == workspace_no,
+            TElementChangelog.ROOT_NO is None,
+            TElementChangelog.CASE_NO is None,
+            TElementChangelog.PARENT_NO is None
         )
     )
     return union_all(stmt)
@@ -140,6 +138,7 @@ def count_changelog_by_workspace(workspace_no):
         .where(
             TElementChangelog.WORKSPACE_NO == workspace_no,
             TElementChangelog.ROOT_NO is None,
+            TElementChangelog.CASE_NO is None,
             TElementChangelog.PARENT_NO is None
         )
     )
@@ -155,9 +154,9 @@ def get_changelog_stmt_by_collection(element_no):
             TTestElement.ELEMENT_TYPE,
             TParentElement.ELEMENT_NAME.label('PARENT_NAME')
         )
-        .join(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(
             TElementChangelog.ROOT_NO == element_no
         )
@@ -185,9 +184,9 @@ def get_changelog_stmt_by_testcase(element_no):
             TTestElement.ELEMENT_TYPE,
             TParentElement.ELEMENT_NAME.label('PARENT_NAME')
         )
-        .join(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(
             TElementChangelog.CASE_NO == element_no
         )
@@ -214,9 +213,9 @@ def get_changelog_stmt_by_sampler(element_no):
             TTestElement.ELEMENT_TYPE,
             TParentElement.ELEMENT_NAME.label('PARENT_NAME')
         )
-        .join(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(TElementChangelog.ELEMENT_NO == element_no)
     )
     component_stmt = (
@@ -227,9 +226,9 @@ def get_changelog_stmt_by_sampler(element_no):
             TTestElement.ELEMENT_TYPE,
             TParentElement.ELEMENT_NAME.label('PARENT_NAME')
         )
-        .join(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(TElementChangelog.PARENT_NO == element_no)
     )
     return union_all(sampler_stmt, component_stmt)

@@ -3,14 +3,14 @@
 # @Time    : 2023-05-16 17:41:28
 # @Author  : Kelvin.Ye
 from app.modules.script.dao import element_children_dao
-from app.modules.script.dao import workspace_collection_dao
+from app.modules.script.dao import workspace_script_dao
 from app.tools.exceptions import ServiceError
 
 
 def get_workspace_no(collection_no) -> str:
     """获取元素空间编号"""
-    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
-        return workspace_collection.WORKSPACE_NO
+    if workspace_script := workspace_script_dao.select_by_script(collection_no):
+        return workspace_script.WORKSPACE_NO
     else:
         raise ServiceError('查询元素空间失败')
 

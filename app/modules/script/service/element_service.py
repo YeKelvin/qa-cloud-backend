@@ -11,8 +11,8 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_components_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import workspace_collection_dao
 from app.modules.script.dao import workspace_component_dao
+from app.modules.script.dao import workspace_script_dao
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import PasteType
@@ -28,8 +28,8 @@ from app.modules.script.model import TElementChildren
 from app.modules.script.model import TElementComponents
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
-from app.modules.script.model import TWorkspaceCollection
 from app.modules.script.model import TWorkspaceComponent
+from app.modules.script.model import TWorkspaceScript
 from app.modules.script.types import TypedElement
 from app.signals import element_copied_signal
 from app.signals import element_created_signal
@@ -60,19 +60,19 @@ def query_element_list(req):
     conds.equal(TTestElement.ENABLED, req.enabled)
 
     if req.workspaceNo or req.workspaceName:
-        conds.add_table(TWorkspaceCollection)
+        conds.add_table(TWorkspaceScript)
 
     if req.workspaceNo:
-        conds.like(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
-        conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
+        conds.like(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
+        conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
         conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
-        conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-        conds.equal(TWorkspaceCollection.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
+        conds.equal(TWorkspaceScript.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
 
-    # TTestElement，TWorkspace，TWorkspaceCollection连表查询
+    # TTestElement，TWorkspace，TWorkspaceScript连表查询
     pagination = (
         db_query(
             TTestElement.ELEMENT_NO,
@@ -102,14 +102,14 @@ def query_element_list(req):
 @http_service
 def query_element_all(req):
     # 查询条件
-    conds = QueryCondition(TTestElement, TWorkspaceCollection)
-    conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conds.equal(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TTestElement, TWorkspaceScript)
+    conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
+    conds.equal(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ENABLED, req.enabled)
     conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
-    # TTestElement，TWorkspaceCollection连表查询
+    # TTestElement，TTWorkspaceScript连表查询
     items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
@@ -134,14 +134,14 @@ def query_element_all(req):
 @http_service
 def query_element_all_with_children(req):
     # 查询条件
-    conds = QueryCondition(TTestElement, TWorkspaceCollection)
-    conds.equal(TWorkspaceCollection.COLLECTION_NO, TTestElement.ELEMENT_NO)
-    conds.equal(TWorkspaceCollection.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TTestElement, TWorkspaceScript)
+    conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
+    conds.equal(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ENABLED, req.enabled)
     conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
-    # TTestElement，TWorkspaceCollection连表查询
+    # TTestElement，TWorkspaceScript连表查询
     items = db_query(
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
@@ -230,7 +230,7 @@ def query_element_children(req):
 
 
 @http_service
-def query_elements_children(req):
+def query_element_children_by_list(req):
     result = []
     for element_no in req.elements:
         element = test_element_dao.select_by_no(element_no)
@@ -281,7 +281,7 @@ def get_element_children(parent_no, depth):
 
 
 @http_service
-def create_collection(req: TypedElement):
+def create_element_root(req: TypedElement):
     # 校验工作空间
     workspace = workspace_dao.select_by_no(req.workspaceNo)
     check_exists(workspace, error_msg='工作空间不存在')
@@ -302,10 +302,52 @@ def create_collection(req: TypedElement):
         parent_no=element_no,
         components=req.componentList
     )
-    # 绑定空间元素
-    TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=element_no)
+    # 绑定空间
+    TWorkspaceScript.insert(
+        WORKSPACE_NO=req.workspaceNo,
+        ELEMENT_NO=element_no
+    )
     # 记录元素变更日志
-    element_created_signal.send(root_no=element_no, parent_no=None, element_no=element_no)
+    element_created_signal.send(
+        root_no=element_no,
+        parent_no=None,
+        element_no=element_no
+    )
+    # 返回元素编号
+    return {'elementNo': element_no}
+
+
+@http_service
+def create_element_child(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(req.rootNo))
+    # 新增元素
+    element_no = add_element(
+        element_name=req.elementName,
+        element_desc=req.elementDesc,
+        element_type=req.elementType,
+        element_class=req.elementClass,
+        element_attrs=req.elementAttrs,
+        element_props=req.property
+    )
+    # 新增元素节点
+    add_element_node(
+        root_no=req.rootNo,
+        parent_no=req.parentNo,
+        element_no=element_no
+    )
+    # 新增元素组件
+    add_element_components(
+        root_no=req.rootNo,
+        parent_no=element_no,
+        components=req.componentList
+    )
+    # 记录元素变更日志
+    element_created_signal.send(
+        root_no=req.rootNo,
+        parent_no=req.parentNo,
+        element_no=element_no
+    )
     # 返回元素编号
     return {'elementNo': element_no}
 
@@ -335,40 +377,13 @@ def add_element(
     return element_no
 
 
-@http_service
-def create_element_child(req):
-    # 校验空间权限
-    check_workspace_permission(get_workspace_no(req.rootNo))
-    # 新增元素
-    element_no = add_element(
-        element_name=req.elementName,
-        element_desc=req.elementDesc,
-        element_type=req.elementType,
-        element_class=req.elementClass,
-        element_attrs=req.elementAttrs,
-        element_props=req.property
-    )
-    # 新增元素节点
+def add_element_node(root_no, parent_no, element_no):
     TElementChildren.insert(
-        ROOT_NO=req.rootNo,
-        PARENT_NO=req.parentNo,
+        ROOT_NO=root_no,
+        PARENT_NO=parent_no,
         ELEMENT_NO=element_no,
-        ELEMENT_SORT=element_children_dao.next_index(req.parentNo)
+        ELEMENT_SORT=element_children_dao.next_index(parent_no)
     )
-    # 新增元素组件
-    add_element_components(
-        root_no=req.rootNo,
-        parent_no=element_no,
-        components=req.componentList
-    )
-    # 记录元素变更日志
-    element_created_signal.send(
-        root_no=req.rootNo,
-        parent_no=req.parentNo,
-        element_no=element_no
-    )
-    # 返回元素编号
-    return {'elementNo': element_no}
 
 
 @http_service
@@ -1081,43 +1096,43 @@ def delete_element_components_by_parent(parent_no):
 
 
 @http_service
-def copy_collection_to_workspace(req):
+def copy_root_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
 
-    # 查询集合
-    collection = test_element_dao.select_by_no(req.elementNo)
-    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅支持复制集合')
+    # 查询集合或片段
+    root = test_element_dao.select_by_no(req.elementNo)
+    if root.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
+        raise ServiceError('仅支持复制 [集合|片段]')
 
-    # 查询集合的空间
-    workspace_collection = workspace_collection_dao.select_by_collection(req.elementNo)
-    if not workspace_collection:
-        raise ServiceError('集合空间不存在')
+    # 查询根节点
+    node = workspace_script_dao.select_by_script(req.elementNo)
+    if not node:
+        raise ServiceError('根元素没有绑定空间')
 
     # 复制集合到指定的空间
-    copied_no = copy_element(collection)
-    TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=copied_no)
+    copied_no = copy_element(root)
+    TWorkspaceScript.insert(WORKSPACE_NO=req.workspaceNo, ELEMENT_NO=copied_no)
 
     # 记录元素变更日志
     element_copied_signal.send(element_no=copied_no, source_no=req.elementNo)
 
 
 @http_service
-def move_collection_to_workspace(req):
+def move_root_to_workspace(req):
     # 校验空间权限
     source_workspace_no = get_workspace_no(get_root_no(req.elementNo))
     target_workspace_no = req.workspaceNo
     check_workspace_permission(source_workspace_no)  # 校验来源空间权限
     check_workspace_permission(target_workspace_no)  # 校验目标空间权限
 
-    # 查询集合
-    collection = test_element_dao.select_by_no(req.elementNo)
-    if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
+    # 查询集合或片段
+    root = test_element_dao.select_by_no(req.elementNo)
+    if root.ELEMENT_TYPE != ElementType.COLLECTION.value:
         raise ServiceError('仅允许移动集合')
 
-    # 查询节点
-    if node := workspace_collection_dao.select_by_collection(req.elementNo):
+    # 查询根节点
+    if node := workspace_script_dao.select_by_script(req.elementNo):
         # 记录元素变更日志
         element_transferred_signal.send(
             collection_no=req.elementNo,
@@ -1127,7 +1142,7 @@ def move_collection_to_workspace(req):
         # 移动空间
         node.update(WORKSPACE_NO=target_workspace_no)
     else:
-        raise ServiceError('集合没有指定空间')
+        raise ServiceError('根元素没有绑定空间')
 
 
 @http_service

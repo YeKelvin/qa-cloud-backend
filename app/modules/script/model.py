@@ -10,11 +10,11 @@ from app.database import TableModel
 from app.database import db
 
 
-class TWorkspaceCollection(TableModel, BaseColumn):
-    """空间集合表"""
-    __tablename__ = 'WORKSPACE_COLLECTION'
+class TWorkspaceScript(TableModel, BaseColumn):
+    """空间脚本表"""
+    __tablename__ = 'WORKSPACE_SCRIPT'
     WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    COLLECTION_NO = db.Column(db.String(32), index=True, nullable=False, comment='测试集合编号')
+    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号(集合或片段)')
 
 
 class TWorkspaceComponent(TableModel, BaseColumn):
@@ -34,7 +34,7 @@ class TTestElement(TableModel, BaseColumn):
     ELEMENT_DESC = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
-    ELEMENT_ATTRS = db.Column(JSONB, comment='元素属性，与元素本身相关但不属于ElementProperty')
+    ELEMENT_ATTRS = db.Column(JSONB, comment='元素属性(与加载过程相关但与运行时无关的属性)')
     ELEMENT_METADATA = db.Column(db.String(512), comment='元素的元数据')
     ENABLED = db.Column(JSONB, nullable=False, default=True, comment='是否启用')
 
@@ -73,8 +73,8 @@ class TElementChangelog(TableModel, BaseColumn):
     """
     说明：
     1、ROOT_NO、CASE_NO、PARENT_NO同时为空，则为空间组件
-    2、ROOT_NO不为空，CASE_NO和PARENT_NO为空，则为集合
-    2、ROOT_NO不为空，CASE_NO为空，则为片段
+    2、ROOT_NO不为空，CASE_NO和PARENT_NO为空，则为集合或片段（根元素）
+    3、ROOT_NO不为空，CASE_NO为空，则为片段的子代
     """
     __tablename__ = 'ELEMENT_CHANGELOG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')

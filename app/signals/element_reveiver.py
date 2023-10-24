@@ -6,10 +6,11 @@ from contextvars import ContextVar
 
 from flask import request
 from sqlalchemy import select
-from sqlalchemy import union_all
+from sqlalchemy.orm import aliased
 
 from app.database import db_execute
 from app.modules.script.dao import test_element_dao
+from app.modules.script.dao import workspace_script_dao
 from app.modules.script.enum import ElementOperationType
 from app.modules.script.enum import ElementType
 from app.modules.script.model import TElementChangelog
@@ -28,11 +29,15 @@ from app.tools.exceptions import ServiceError
 from app.utils.time_util import datetime_now_by_utc8
 
 
-localvar__element_nodes = ContextVar('ELEMENT_NODES', default=None)
-localvar__root_no = ContextVar('ROOT_NO', default=None)
-localvar__case_no = ContextVar('CASE_NO', default=None)
-localvar__parents = ContextVar('PARENTS', default=None)
+# 0代表当前线程没有值，需要初始化
+localvar__element_nodes = ContextVar('ELEMENT_NODES', default=0)
+localvar__root_no = ContextVar('ROOT_NO', default=0)
+localvar__case_no = ContextVar('CASE_NO', default=0)
+localvar__parents = ContextVar('PARENTS', default=0)
 
+
+TRootElement: TTestElement = aliased(TTestElement)
+TParentElement: TTestElement = aliased(TTestElement)
 
 
 def get_workspace_no():
@@ -43,35 +48,49 @@ def get_workspace_no():
         raise ServiceError('获取空间编号失败')
 
 
-def get_node(element_no):
-    """没有子代节点也没有组件节点的就是空间组件"""
-    child_stmt = (
+def is_root_node(element_no):
+    return workspace_script_dao.select_by_script(element_no)
+
+
+def get_child_node(element_no):
+    stmt = (
         select(
             TElementChildren.ROOT_NO,
             TElementChildren.PARENT_NO,
-            TTestElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
         )
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.PARENT_NO)
+        .join(TRootElement, TRootElement.ELEMENT_NO == TElementChildren.ROOT_NO)
+        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChildren.PARENT_NO)
         .where(TElementChildren.ELEMENT_NO == element_no)
     )
+    return db_execute(stmt).first()
 
-    compo_stmt = (
+
+def get_component_node(element_no):
+    stmt = (
         select(
             TElementComponents.ROOT_NO,
             TElementComponents.PARENT_NO,
-            TTestElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
         )
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementComponents.PARENT_NO)
+        .join(TRootElement, TRootElement.ELEMENT_NO == TElementComponents.ROOT_NO)
+        .join(TParentElement, TParentElement.ELEMENT_NO == TElementComponents.PARENT_NO)
         .where(TElementComponents.ELEMENT_NO == element_no)
     )
+    return db_execute(stmt).first()
 
-    return db_execute(union_all(child_stmt, compo_stmt)).first()
+
+def get_node(element_no):
+    """没有子代节点也没有组件节点的就是空间组件"""
+    return get_child_node(element_no) or get_component_node(element_no)
 
 
 def get_element_node(element_no):
     """获取元素节点信息"""
     nodes = localvar__element_nodes.get()
-    if not nodes:
+    if nodes == 0:
         nodes = {}
         localvar__element_nodes.set(nodes)
     if element_no in nodes:
@@ -84,9 +103,11 @@ def get_element_node(element_no):
 def get_root_no(element_no):
     """获取根元素编号"""
     root_no = localvar__root_no.get()
-    if not root_no:
+    if root_no == 0:
         node = get_element_node(element_no)
         root_no = node.ROOT_NO if node else None
+        if not root_no and is_root_node(element_no):
+            root_no = element_no
         localvar__root_no.set(root_no)
     return root_no
 
@@ -110,11 +131,16 @@ def get_worker_no(parent_no):
 def get_case_no(element_no):
     """获取用例编号"""
     case_no = localvar__case_no.get()
-    if not case_no:
+    if case_no == 0:
         node = get_element_node(element_no)
-        if not node:
-            return None
-        case_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.COLLECTION.value else get_worker_no(node.PARENT_NO)
+        if not node or node.ROOT_TYPE == ElementType.SNIPPET.value:
+            case_no = None
+        else:
+            case_no = (
+                node.PARENT_NO
+                if node.PARENT_TYPE == ElementType.COLLECTION.value
+                else get_worker_no(node.PARENT_NO)
+            )
         localvar__case_no.set(case_no)
     return case_no
 
@@ -122,15 +148,16 @@ def get_case_no(element_no):
 def get_parent_no(element_no):
     """获取父级编号"""
     parents = localvar__parents.get()
-    if not parents:
+    if parents == 0:
         parents = {}
         localvar__parents.set(parents)
     if element_no in parents:
         return parents[element_no]
 
     node = get_element_node(element_no)
-    parents[element_no] = node.PARENT_NO if node else None
-    return node.PARENT_NO
+    parent_no = node.PARENT_NO if node else None
+    parents[element_no] = parent_no
+    return parent_no
 
 
 @element_created_signal.connect
