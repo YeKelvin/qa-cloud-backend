@@ -6,6 +6,7 @@ import decimal
 
 from typing import TypeVar
 
+from sqlalchemy import ScalarResult
 from sqlalchemy import func
 from sqlalchemy.orm import Query
 
@@ -28,7 +29,7 @@ def db_execute(*args, **kwargs):
     return db.session.execute(*args, **kwargs)
 
 
-def db_scalars(*args, **kwargs):
+def db_scalars(*args, **kwargs) -> ScalarResult:
     return db.session.scalars(*args, **kwargs)
 
 

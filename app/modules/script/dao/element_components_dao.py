@@ -15,3 +15,14 @@ def select_by_parent_and_component(parent_no, element_no) -> TElementComponents:
 
 def select_all_by_parent(parent_no) -> list[TElementComponents]:
     return TElementComponents.filter_by(PARENT_NO=parent_no).all()
+
+
+def select_all_by_parent_and_notin_components(parent_no, components) -> list[TElementComponents]:
+    return (
+        TElementComponents
+        .filter(
+            TElementComponents.PARENT_NO == parent_no,
+            TElementComponents.ELEMENT_NO.notin_(components)
+        )
+        .all()
+    )

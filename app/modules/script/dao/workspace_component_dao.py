@@ -20,3 +20,14 @@ def select_all_by_workspace(workspace_no) -> list[TWorkspaceComponent]:
         .order_by(TWorkspaceComponent.COMPONENT_TYPE.desc(), TWorkspaceComponent.COMPONENT_SORT.asc())
         .all()
     )
+
+
+def select_all_by_workspace_and_notin_components(workspace_no, components) -> list[TWorkspaceComponent]:
+    return (
+        TWorkspaceComponent
+        .filter(
+            TWorkspaceComponent.WORKSPACE_NO == workspace_no,
+            TWorkspaceComponent.COMPONENT_NO.notin_(components)
+        )
+        .all()
+    )

@@ -11,7 +11,6 @@ from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import ElementClass
-from app.modules.script.enum import ElementType
 from app.modules.script.enum import is_debuger
 from app.modules.script.enum import is_http_sampler
 from app.modules.script.enum import is_python_assertion
@@ -194,20 +193,13 @@ def add_element_components(element_no, children: list):
     components = (
         db_query(
             TElementComponents.ELEMENT_NO,
-            TElementComponents.ELEMENT_SORT,
-            TElementComponents.ELEMENT_TYPE
+            TElementComponents.ELEMENT_SORT
         )
         .filter(
             TElementComponents.DELETED == 0,
-            TElementComponents.PARENT_NO == element_no,
-            TElementComponents.ELEMENT_TYPE.in_([
-                ElementType.CONFIG.value,
-                ElementType.PREV_PROCESSOR.value,
-                ElementType.POST_PROCESSOR.value,
-                ElementType.ASSERTION.value
-            ])
+            TElementComponents.PARENT_NO == element_no
         )
-        .order_by(TElementComponents.ELEMENT_TYPE.desc(), TElementComponents.ELEMENT_SORT.asc())
+        .order_by(TElementComponents.ELEMENT_SORT.asc())
         .all()
     )
     for el in components:

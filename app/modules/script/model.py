@@ -65,15 +65,21 @@ class TElementComponents(TableModel, BaseColumn):
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')
-    ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='子元素类型')
     ELEMENT_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
 class TElementChangelog(TableModel, BaseColumn):
     """元素变更日志表"""
+    """
+    说明：
+    1、ROOT_NO、CASE_NO、PARENT_NO同时为空，则为空间组件
+    2、ROOT_NO不为空，CASE_NO和PARENT_NO为空，则为集合
+    2、ROOT_NO不为空，CASE_NO为空，则为片段
+    """
     __tablename__ = 'ELEMENT_CHANGELOG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     ROOT_NO = db.Column(db.String(32), index=True, comment='根元素编号')
+    CASE_NO = db.Column(db.String(32), index=True, comment='用例编号')
     PARENT_NO = db.Column(db.String(32), index=True, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号')
     PROP_NAME = db.Column(db.String(256), comment='属性名称')

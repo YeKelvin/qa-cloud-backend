@@ -423,7 +423,7 @@ def record_element_changelog(element: TTestElement, new_name: str, new_desc: str
     # 元素名称
     if element.ELEMENT_NAME != new_name:
         element_modified_signal.send(
-            element.ELEMENT_NO,
+            element_no=element.ELEMENT_NO,
             prop_name='TestElement__name',
             old_value=element.ELEMENT_NAME,
             new_value=new_name
@@ -431,7 +431,7 @@ def record_element_changelog(element: TTestElement, new_name: str, new_desc: str
     # 元素描述
     if element.ELEMENT_DESC != new_desc:
         element_modified_signal.send(
-            element.ELEMENT_NO,
+            element_no=element.ELEMENT_NO,
             prop_name='TestElement__desc',
             old_value=element.ELEMENT_DESC,
             new_value=new_desc
@@ -446,7 +446,7 @@ def record_element_changelog(element: TTestElement, new_name: str, new_desc: str
             new_value = to_json(new_value)
         if old_value != new_value:
             element_modified_signal.send(
-            element.ELEMENT_NO,
+            element_no=element.ELEMENT_NO,
             attr_name=attr_name,
             old_value=old_value,
             new_value=new_value
@@ -475,7 +475,7 @@ def delete_element(element_no):
     # 删除元素属性
     delete_element_property(element_no)
     # 记录元素变更日志
-    element_removed_signal.send(element_no)
+    element_removed_signal.send(element_no=element_no)
     # 删除元素
     element.delete()
 
@@ -605,7 +605,7 @@ def update_element_property(element_no, element_props: dict):
             if prop.PROPERTY_VALUE != prop_value:
                 # 记录属性变更日志
                 element_modified_signal.send(
-                    element_no,
+                    element_no=element_no,
                     prop_name=prop_name,
                     old_value=prop.PROPERTY_VALUE,
                     new_value=prop_value
@@ -619,6 +619,12 @@ def update_element_property(element_no, element_props: dict):
                 PROPERTY_TYPE=prop_type,
                 PROPERTY_NAME=prop_name,
                 PROPERTY_VALUE=prop_value
+            )
+            # 记录属性变更日志
+            element_modified_signal.send(
+                element_no=element_no,
+                prop_name=prop_name,
+                new_value=prop_value
             )
     # 删除请求中没有的属性
     element_property_dao.delete_all_by_notin_name(element_no, list(element_props.keys()))
@@ -647,7 +653,11 @@ def move_element(req):
         if req.targetIndex == source_node.ELEMENT_SORT:
             return
         # 记录元素变更日志
-        element_sorted_signal.send(req.sourceNo, source_index, req.targetIndex)
+        element_sorted_signal.send(
+            element_no=req.sourceNo,
+            source_index=source_index,
+            target_index=req.targetIndex
+        )
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_index > req.targetIndex else 'DOWN'
         if move_type == 'UP':
@@ -704,7 +714,7 @@ def move_element(req):
             })
         )
         # 记录元素变更日志
-        element_moved_signal.send(req.sourceNo, req.targetParentNo)
+        element_moved_signal.send(source_no=req.sourceNo, target_no=req.targetParentNo)
         # 移动 source 元素至 target 位置
         source_node.update(
             ROOT_NO=req.targetRootNo,
@@ -773,7 +783,7 @@ def duplicate_element(req):
         ELEMENT_SORT=source_node.ELEMENT_SORT + 1
     )
     # 记录元素变更日志
-    element_copied_signal.send(copied_no, source.ELEMENT_NO)
+    element_copied_signal.send(element_no=copied_no, source_no=source.ELEMENT_NO)
     return {'elementNo': copied_no}
 
 
@@ -840,7 +850,7 @@ def paste_element_by_copy(source: TTestElement, target: TTestElement):
         ELEMENT_SORT=element_children_dao.next_index(target_no)
     )
     # 记录元素变更日志
-    element_copied_signal.send(copied_no, source.ELEMENT_NO)
+    element_copied_signal.send(element_no=copied_no, source_no=source.ELEMENT_NO)
 
 
 def paste_element_by_cut(source: TTestElement, target: TTestElement):
@@ -868,7 +878,7 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     # 递归修改 source 子代元素的根元素编号
     update_children_root(source_no, target_root_no)
     # 记录元素变更日志
-    element_moved_signal.send(source_no, target_no)
+    element_moved_signal.send(source_no=source_no, target_no=target_no)
 
 
 def copy_element(source: TTestElement, rename=False, root_no=None):
@@ -894,7 +904,6 @@ def copy_element(source: TTestElement, rename=False, root_no=None):
             ROOT_NO=source_node.ROOT_NO,
             PARENT_NO=copied_no,
             ELEMENT_NO=copied_component_no,
-            ELEMENT_TYPE=source_node.ELEMENT_TYPE,
             ELEMENT_SORT=source_node.ELEMENT_SORT
         )
     return copied_no
@@ -975,7 +984,6 @@ def add_element_component(root_no, parent_no, component: dict):
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
         ELEMENT_NO=component_no,
-        ELEMENT_TYPE=component.get('elementType'),
         ELEMENT_SORT=component.get('elementIndex', 0)
     )
     return component_no
@@ -1001,6 +1009,16 @@ def update_element_component(element_no, element_name, element_desc, element_pro
     update_element_property(element_no, element_props)
 
 
+def record_component_changelog(element: TTestElement, new_name):
+    if element.ELEMENT_NAME != new_name:
+        element_modified_signal.send(
+            element_no=element.ELEMENT_NO,
+            prop_name='TestElement__name',
+            old_value=element.ELEMENT_NAME,
+            new_value=new_name
+        )
+
+
 def update_element_components(parent_no: str, component_list: list):
     # 临时存储元素编号，用于删除非请求中的元素
     if component_list is None:
@@ -1011,35 +1029,35 @@ def update_element_components(parent_no: str, component_list: list):
         if element := test_element_dao.select_by_no(component.elementNo):
             # 存储元素的编号
             components.append(component.elementNo)
+            # 记录元素变更日志
+            record_component_changelog(element, component.elementName)
+            # 更新元素属性
+            update_element_property(component.elementNo, component.get('property'))
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
-                ELEMENT_DESC=component.get('elementDesc', None),
                 ENABLED=component.enabled
             )
-            # 更新元素属性
-            update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
             node = element_components_dao.select_by_component(component.elementNo)
             node.update(ELEMENT_SORT=component.elementIndex)
         # 元素不存在则新增
         else:
+            root_no = get_root_no(parent_no)
             # 新增元素组件
-            component_no = add_element_component(get_root_no(parent_no), parent_no, component)
+            component_no = add_element_component(root_no, parent_no, component)
             # 存储元素组件的编号
             components.append(component_no)
+            # 记录元素变更日志
+            element_created_signal.send(root_no=root_no, parent_no=parent_no, element_no=component_no)
 
-    # 移除非请求中元素组件
-    TElementComponents.deletes(
-        TElementComponents.PARENT_NO == parent_no,
-        TElementComponents.ELEMENT_TYPE.in_([
-            ElementType.CONFIG.value,
-            ElementType.PREV_PROCESSOR.value,
-            ElementType.POST_PROCESSOR.value,
-            ElementType.ASSERTION.value
-        ]),
-        TElementComponents.ELEMENT_NO.notin_(components),
-    )
+    # 删除非请求中的元素组件
+    pending_deletes = element_components_dao.select_all_by_parent_and_notin_components(parent_no, components)
+    for component in pending_deletes:
+        # 记录元素变更日志
+        element_removed_signal.send(element_no=component.ELEMENT_NO)
+        # 删除组件
+        component.delete()
 
 
 def delete_element_component(element_no):
@@ -1082,7 +1100,7 @@ def copy_collection_to_workspace(req):
     TWorkspaceCollection.insert(WORKSPACE_NO=req.workspaceNo, COLLECTION_NO=copied_no)
 
     # 记录元素变更日志
-    element_copied_signal.send(copied_no, source_no=req.elementNo)
+    element_copied_signal.send(element_no=copied_no, source_no=req.elementNo)
 
 
 @http_service
@@ -1096,10 +1114,10 @@ def move_collection_to_workspace(req):
     # 查询集合
     collection = test_element_dao.select_by_no(req.elementNo)
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅运行移动集合')
+        raise ServiceError('仅允许移动集合')
 
-    # 查询集合的空间
-    if workspace_collection := workspace_collection_dao.select_by_collection(req.elementNo):
+    # 查询节点
+    if node := workspace_collection_dao.select_by_collection(req.elementNo):
         # 记录元素变更日志
         element_transferred_signal.send(
             collection_no=req.elementNo,
@@ -1107,7 +1125,7 @@ def move_collection_to_workspace(req):
             target_workspace_no=target_workspace_no
         )
         # 移动空间
-        workspace_collection.update(WORKSPACE_NO=target_workspace_no)
+        node.update(WORKSPACE_NO=target_workspace_no)
     else:
         raise ServiceError('集合没有指定空间')
 
@@ -1148,14 +1166,15 @@ def set_workspace_components(req):
         if element := test_element_dao.select_by_no(component.elementNo):
             # 存储元素的编号
             components.append(component.elementNo)
+            # 记录元素变更日志
+            record_component_changelog(element, component.elementName)
+            # 更新元素属性
+            update_element_property(component.elementNo, component.get('property'))
             # 更新元素
             element.update(
                 ELEMENT_NAME=component.elementName,
-                ELEMENT_DESC=component.get('elementDesc', None),
                 ENABLED=component.enabled
             )
-            # 更新元素属性
-            update_element_property(component.elementNo, component.get('property', None))
             # 更新序号
             workspace_component = workspace_component_dao.select_by_component(component.elementNo)
             workspace_component.update(COMPONENT_SORT=component.elementIndex)
@@ -1164,17 +1183,24 @@ def set_workspace_components(req):
             component_no = add_workspace_component(req.workspaceNo, component)
             # 存储元素的编号
             components.append(component_no)
+            # 记录元素变更日志
+            element_created_signal.send(root_no=None, parent_no=None, element_no=component_no)
 
-    # 移除非请求中元素
-    TWorkspaceComponent.deletes(
-        TWorkspaceComponent.WORKSPACE_NO == req.workspaceNo,
-        TWorkspaceComponent.COMPONENT_NO.notin_(components),
-    )
+    # 删除非请求中的空间组件
+    pending_deletes = workspace_component_dao.select_all_by_workspace_and_notin_components(req.workspaceNo, components)
+    for component in pending_deletes:
+        # 记录元素变更日志
+        element_removed_signal.send(element_no=component.ELEMENT_NO)
+        # 删除组件
+        component.delete()
 
 
 def add_workspace_component(workspace_no: str, component: dict) -> str:
     # 新增元素
     component_no = new_id()
+    # 创建属性
+    add_element_property(component_no, component.get('property'))
+    # 创建元素
     TTestElement.insert(
         ELEMENT_NO=component_no,
         ELEMENT_NAME=component.get('elementName'),
@@ -1183,9 +1209,7 @@ def add_workspace_component(workspace_no: str, component: dict) -> str:
         ELEMENT_CLASS=component.get('elementClass'),
         ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
     )
-    # 创建元素属性
-    add_element_property(component_no, component.get('property'))
-    # 创建元素节点
+    # 创建节点
     TWorkspaceComponent.insert(
         WORKSPACE_NO=workspace_no,
         COMPONENT_NO=component_no,

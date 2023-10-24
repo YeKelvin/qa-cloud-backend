@@ -7,6 +7,14 @@ from app.modules.script.dao import workspace_collection_dao
 from app.tools.exceptions import ServiceError
 
 
+def get_workspace_no(collection_no) -> str:
+    """获取元素空间编号"""
+    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
+        return workspace_collection.WORKSPACE_NO
+    else:
+        raise ServiceError('查询元素空间失败')
+
+
 def get_root_no(element_no) -> str:
     """根据元素编号获取根元素编号"""
     if not (node := element_children_dao.select_by_child(element_no)):
@@ -16,9 +24,5 @@ def get_root_no(element_no) -> str:
     return node.ROOT_NO
 
 
-def get_workspace_no(collection_no) -> str:
-    """获取元素空间编号"""
-    if workspace_collection := workspace_collection_dao.select_by_collection(collection_no):
-        return workspace_collection.WORKSPACE_NO
-    else:
-        raise ServiceError('查询元素空间失败')
+def get_case_no(element_no) -> str:
+    ...

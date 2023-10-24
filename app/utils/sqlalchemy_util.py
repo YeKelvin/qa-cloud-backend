@@ -2,7 +2,9 @@
 # @File    : sqlalchemy_util.py
 # @Time    : 2020/1/6 17:07
 # @Author  : Kelvin.Ye
+from loguru import logger
 from sqlalchemy import or_
+from sqlalchemy.dialects import postgresql
 
 
 def paginate(page, page_size):
@@ -70,3 +72,22 @@ class QueryCondition(list):
 
     def or_(self, *args):
         self.append(or_(*args))
+
+
+def show_statement(stmt):
+    logger.info(str(
+        stmt
+        .compile(
+            dialect=postgresql.dialect(paramstyle="named"),
+            compile_kwargs={"literal_binds": True}
+        )
+    ))
+
+
+def show_query_statement(query):
+    logger.info(
+        query.statement.compile(
+            dialect=postgresql.dialect(paramstyle="named"),
+            compile_kwargs={"literal_binds": True}
+        )
+    )
