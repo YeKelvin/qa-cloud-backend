@@ -127,10 +127,10 @@ def add_http_header_manager(sampler: TTestElement, children: list):
     cache = loads_cache.get()
     # 查询请求头模板
     sampler_attrs = sampler.ELEMENT_ATTRS or {}
-    refs = sampler_attrs.get('header_template_refs', [])
+    template_refs = sampler_attrs.get('HTTPSampler__header_template_refs', [])
 
     # 没有模板时直接跳过
-    if not refs:
+    if not template_refs:
         return
 
     # 获取请求头管理器缓存
@@ -140,7 +140,7 @@ def add_http_header_manager(sampler: TTestElement, children: list):
 
     # 遍历添加请求头
     properties = []
-    for ref in refs:
+    for ref in template_refs:
         # 先查缓存
         headers_cache = header_manager_cache.get(ref.TEMPLATE_NO, [])
         if not headers_cache:

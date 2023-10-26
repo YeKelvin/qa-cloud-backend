@@ -648,11 +648,11 @@ def update_element_property(element_no, element_props: dict):
 def move_element(req):
     # 查询 source 元素节点
     source_node = element_children_dao.select_by_child(req.sourceNo)
-    check_exists(source_node, error_msg='Source元素父级不存在')
+    check_exists(source_node, error_msg='来源元素父级不存在')
 
     # 校验元素序号
     if req.targetIndex < 0:
-        raise ServiceError('Target元素序号不能小于0')
+        raise ServiceError('目标元素序号不能小于0')
 
     # source 父元素编号
     source_parent_no = source_node.PARENT_NO
@@ -666,12 +666,6 @@ def move_element(req):
         # 序号相等时直接跳过
         if req.targetIndex == source_node.ELEMENT_SORT:
             return
-        # 记录元素变更日志
-        element_sorted_signal.send(
-            element_no=req.sourceNo,
-            source_index=source_index,
-            target_index=req.targetIndex
-        )
         # 元素移动类型，上移或下移
         move_type = 'UP' if source_index > req.targetIndex else 'DOWN'
         if move_type == 'UP':
@@ -702,6 +696,12 @@ def move_element(req):
             )
         # 更新 target 元素序号
         source_node.update(ELEMENT_SORT=req.targetIndex)
+        # 记录元素变更日志
+        element_sorted_signal.send(
+            element_no=req.sourceNo,
+            source_index=source_index,
+            target_index=req.targetIndex
+        )
     # source 元素移动至不同的父元素下
     else:
         # 校验空间权限
@@ -727,13 +727,19 @@ def move_element(req):
                 TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
             })
         )
-        # 记录元素变更日志
-        element_moved_signal.send(source_no=req.sourceNo, target_no=req.targetParentNo)
         # 移动 source 元素至 target 位置
         source_node.update(
             ROOT_NO=req.targetRootNo,
             PARENT_NO=req.targetParentNo,
             ELEMENT_SORT=req.targetIndex
+        )
+        # 记录元素变更日志
+        element_moved_signal.send(
+            element_no=req.sourceNo,
+            source_no=source_parent_no,
+            source_index=source_index,
+            target_no=req.targetParentNo,
+            target_index=req.targetIndex
         )
         # 递归修改 source 子代元素的根元素编号
         update_children_root(req.sourceNo, req.targetRootNo)
@@ -748,7 +754,7 @@ def move_element(req):
                 f'元素序号:[ {target_node.ELEMENT_SORT} ] '
                 f'序号连续性错误'
             )
-            raise ServiceError('Target元素父级的子代序号连续性错误')
+            raise ServiceError('目标元素父级的子代序号连续性错误')
 
 
 def update_children_root(parent_no, root_no):
@@ -798,6 +804,7 @@ def duplicate_element(req):
     )
     # 记录元素变更日志
     element_copied_signal.send(element_no=copied_no, source_no=source.ELEMENT_NO)
+    # 返回元素编号
     return {'elementNo': copied_no}
 
 
@@ -808,11 +815,11 @@ def paste_element(req):
 
     # 查询 source 元素
     source = test_element_dao.select_by_no(req.sourceNo)
-    check_exists(source, error_msg='Source元素不存在')
+    check_exists(source, error_msg='来源元素不存在')
 
     # 查询 target 元素
     target = test_element_dao.select_by_no(req.targetNo)
-    check_exists(target, error_msg='Target元素不存在')
+    check_exists(target, error_msg='目标元素不存在')
 
     # 排除不支持剪贴的元素
     if source.ELEMENT_TYPE in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
@@ -874,6 +881,8 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     target_root_no = get_root_no(target_no)
     # 查询 source 元素节点
     source_node = element_children_dao.select_by_child(source_no)
+    source_parent_no = source_node.PARENT_NO
+    source_index = source_node.ELEMENT_SORT
     # 上移 source 元素下方的元素
     (
         TElementChildren
@@ -885,15 +894,22 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
         })
     )
     # 修改 source 元素节点
+    target_index = element_children_dao.next_index(target_no)
     source_node.update(
         ROOT_NO=target_root_no,
         PARENT_NO=target_no,
-        ELEMENT_SORT=element_children_dao.next_index(target_no)
+        ELEMENT_SORT=target_index
     )
     # 递归修改 source 子代元素的根元素编号
     update_children_root(source_no, target_root_no)
     # 记录元素变更日志
-    element_moved_signal.send(source_no=source_no, target_no=target_no)
+    element_moved_signal.send(
+        element_no=source_no,
+        source_no=source_parent_no,
+        source_index=source_index,
+        target_no=target_no,
+        target_index=target_index
+    )
 
 
 def copy_element(source: TTestElement, rename=False, root_no=None):

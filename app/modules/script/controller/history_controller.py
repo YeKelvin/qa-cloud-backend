@@ -17,6 +17,7 @@ def query_element_changelog_list():
     """分页查询操作日志列表"""
     req = JsonParser(
         Argument('elementNo'),
+        Argument('onlyself', type=bool, default=True),
         Argument('order', default='desc'),
         Argument('page', type=int, required=True, nullable=False, help='页数不能为空'),
         Argument('pageSize', type=int, required=True, nullable=False, help='每页总数不能为空')

@@ -12,12 +12,10 @@ from app.database import db_execute
 from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import is_collection
-from app.modules.script.enum import is_sampler
 from app.modules.script.enum import is_worker
 from app.modules.script.model import TElementChangelog
 from app.modules.script.model import TTestElement
 from app.modules.usercenter.model import TUser
-from app.tools.exceptions import ServiceError
 from app.tools.service import http_service
 
 
@@ -26,22 +24,22 @@ TParentElement: TTestElement = aliased(TTestElement)
 
 @http_service
 def query_element_changelog_list(req):
+    # sourcery skip: list-comprehension, reintroduce-else, remove-redundant-continue
     if element := test_element_dao.select_by_no(req.elementNo):
-        if is_collection(element):
+        if not req.onlyself and is_collection(element):
+            print('collection-collection-collection')
             stmt = get_changelog_stmt_by_collection(req.elementNo)
             total = count_changelog_by_collection(req.elementNo)
-        elif is_worker(element):
+        elif not req.onlyself and is_worker(element):
+            print('worker-worker-worker')
             stmt = get_changelog_stmt_by_testcase(req.elementNo)
             total = count_changelog_by_testcase(req.elementNo)
-        elif is_sampler(element):
-            stmt = get_changelog_stmt_by_sampler(req.elementNo)
-            total = count_changelog_by_sampler(req.elementNo)
         else:
-            raise ServiceError('暂不支持的元素类型')
+            print('element-element-element')
+            stmt = get_changelog_stmt_by_element(req.elementNo)
+            total = count_changelog_by_element(req.elementNo)
     else:
         workspace_no = request.headers.get('x-workspace-no')
-        if not workspace_no:
-            raise ServiceError('暂不支持的元素类型')
         stmt = get_changelog_stmt_by_workspace(workspace_no)
         total = count_changelog_by_workspace(workspace_no)
 
@@ -80,7 +78,7 @@ def query_element_changelog_list(req):
             'targetName': (
                 get_element_name(entity.TARGET_NO)
                 if entity.OPERATION_TYPE != 'TRANSFER'
-                else get_workspace_name(entity.SOURCE_NO)
+                else get_workspace_name(entity.TARGET_NO)
             ),
             'sourceIndex': entity.SOURCE_INDEX,
             'targetIndex': entity.TARGET_INDEX,
@@ -110,7 +108,7 @@ def get_workspace_name(workspace_no):
         return
 
 
-def get_changelog_stmt_by_workspace(workspace_no):
+def get_changelog_stmt_by_workspace(workspace_no):  # sourcery skip: none-compare
     stmt = (
         select(
             TElementChangelog,
@@ -124,22 +122,22 @@ def get_changelog_stmt_by_workspace(workspace_no):
         .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(
             TElementChangelog.WORKSPACE_NO == workspace_no,
-            TElementChangelog.ROOT_NO is None,
-            TElementChangelog.CASE_NO is None,
-            TElementChangelog.PARENT_NO is None
+            TElementChangelog.ROOT_NO == None,  # noqa: E711
+            TElementChangelog.CASE_NO == None,  # noqa: E711
+            TElementChangelog.PARENT_NO == None  # noqa: E711
         )
     )
     return union_all(stmt)
 
 
-def count_changelog_by_workspace(workspace_no):
+def count_changelog_by_workspace(workspace_no):  # sourcery skip: none-compare
     stmt = (
         select(func.count(TElementChangelog.ID))
         .where(
             TElementChangelog.WORKSPACE_NO == workspace_no,
-            TElementChangelog.ROOT_NO is None,
-            TElementChangelog.CASE_NO is None,
-            TElementChangelog.PARENT_NO is None
+            TElementChangelog.ROOT_NO == None,  # noqa: E711
+            TElementChangelog.CASE_NO == None,  # noqa: E711
+            TElementChangelog.PARENT_NO == None  # noqa: E711
         )
     )
     return int(db_execute(stmt).scalar())
@@ -204,8 +202,8 @@ def count_changelog_by_testcase(element_no):
     return int(db_execute(stmt).scalar())
 
 
-def get_changelog_stmt_by_sampler(element_no):
-    sampler_stmt = (
+def get_changelog_stmt_by_element(element_no):
+    element_stmt = (
         select(
             TElementChangelog,
             TUser.USER_NAME,
@@ -231,10 +229,10 @@ def get_changelog_stmt_by_sampler(element_no):
         .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(TElementChangelog.PARENT_NO == element_no)
     )
-    return union_all(sampler_stmt, component_stmt)
+    return union_all(element_stmt, component_stmt)
 
 
-def count_changelog_by_sampler(element_no):
+def count_changelog_by_element(element_no):
     subtable = union_all(
         (
             select(func.count(TElementChangelog.ID).label('count'))

@@ -135,12 +135,10 @@ def get_case_no(element_no):
         node = get_element_node(element_no)
         if not node or node.ROOT_TYPE == ElementType.SNIPPET.value:
             case_no = None
+        elif node.PARENT_TYPE == ElementType.COLLECTION.value:
+            case_no = element_no
         else:
-            case_no = (
-                node.PARENT_NO
-                if node.PARENT_TYPE == ElementType.COLLECTION.value
-                else get_worker_no(node.PARENT_NO)
-            )
+            case_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_worker_no(node.PARENT_NO)
         localvar__case_no.set(case_no)
     return case_no
 
@@ -211,16 +209,20 @@ def record_remove_element(sender, element_no):
 
 
 @element_moved_signal.connect
-def record_move_element(sender, source_no, target_no):
+def record_move_element(sender, element_no, source_no, source_index, target_no, target_index):
     """不同父级下叫移动"""
+    # source_no 为source的父级编号
+    # target_no 为target的父级编号
     TElementChangelog.insert(
         WORKSPACE_NO=get_workspace_no(),
         ROOT_NO=get_root_no(source_no),
         CASE_NO=get_case_no(source_no),
-        PARENT_NO=get_parent_no(source_no),
-        ELEMENT_NO=source_no,
+        PARENT_NO=source_no,
+        ELEMENT_NO=element_no,
         SOURCE_NO=source_no,
-        TARGET_NO=target_no, # target的父级
+        TARGET_NO=target_no,
+        SOURCE_INDEX=source_index,
+        TARGET_INDEX=target_index,
         OPERATION_BY=localvars.get_user_no(),
         OPERATION_TIME=datetime_now_by_utc8(),
         OPERATION_TYPE=ElementOperationType.MOVE.value

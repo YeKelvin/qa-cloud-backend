@@ -59,7 +59,7 @@ def loads_tree(
             collection['children'].insert(0, config)
     collection_attributes = collection.get('attrs')
     collection_properties = collection.get('property')
-    exclude_workspaces = collection_attributes.get('exclude_workspaces', False)
+    exclude_workspaces = collection_attributes.get('TestCollection__exclude_workspaces', False)
     # 添加空间组件（配置器、前置处理器、后置处理器、测试断言器）
     if not exclude_workspaces:
         workspace_no = get_workspace_no(collection_no)
@@ -103,8 +103,8 @@ def loads_element(
     attributes = element.ELEMENT_ATTRS or {}
 
     # 添加HTTP会话管理器
-    if is_worker(element) and attributes.get('enable_http_session', False):
-        add_http_session_manager(attributes.get('clear_http_session_for_each_iteration', False), children)
+    if is_worker(element) and attributes.get('Worker__use_http_session', False):
+        add_http_session_manager(attributes.get('Worker__clear_http_session_each_iteration', False), children)
 
     # 过滤空代码的 Python 组件
     if is_blank_python(element, properties):
@@ -117,7 +117,7 @@ def loads_element(
 
     # 添加数据库引擎配置器
     if is_sql_sampler(element):
-        add_database_engine(attributes.get('engine_no'), properties)
+        add_database_engine(attributes.get('SQLSampler__engine_no'), properties)
 
     # 添加元素组件
     if is_test_collection(element) or is_worker(element) or is_http_sampler(element):
@@ -211,13 +211,13 @@ def add_snippets(sampler_attrs, children: list):
         return
     trans_attrs = transaction.get('attrs', {})
     # 片段形参
-    parameters = trans_attrs.get('parameters', [])
+    parameters = trans_attrs.get('TestSnippet__parameters', [])
     # 片段实参
     arguments = sampler_attrs.get('arguments', [])
     # 是否使用形参默认值
     use_default = sampler_attrs.get('use_default', False)
     # 是否使用HTTP会话
-    use_http_session = trans_attrs.get('use_http_session', False)
+    use_http_session = trans_attrs.get('TestSnippet__use_http_session', False)
     # 配置片段
     configure_test_snippet(trans_children, parameters, arguments, use_default, use_http_session)
     children.extend(trans_children)
