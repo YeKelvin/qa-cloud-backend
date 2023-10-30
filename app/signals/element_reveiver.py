@@ -15,7 +15,7 @@ from app.modules.script.enum import ElementOperationType
 from app.modules.script.enum import ElementType
 from app.modules.script.model import TElementChangelog
 from app.modules.script.model import TElementChildren
-from app.modules.script.model import TElementComponents
+from app.modules.script.model import TElementComponent
 from app.modules.script.model import TTestElement
 from app.signals import element_copied_signal
 from app.signals import element_created_signal
@@ -70,14 +70,14 @@ def get_child_node(element_no):
 def get_component_node(element_no):
     stmt = (
         select(
-            TElementComponents.ROOT_NO,
-            TElementComponents.PARENT_NO,
+            TElementComponent.ROOT_NO,
+            TElementComponent.PARENT_NO,
             TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
             TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
         )
-        .join(TRootElement, TRootElement.ELEMENT_NO == TElementComponents.ROOT_NO)
-        .join(TParentElement, TParentElement.ELEMENT_NO == TElementComponents.PARENT_NO)
-        .where(TElementComponents.ELEMENT_NO == element_no)
+        .join(TRootElement, TRootElement.ELEMENT_NO == TElementComponent.ROOT_NO)
+        .join(TParentElement, TParentElement.ELEMENT_NO == TElementComponent.PARENT_NO)
+        .where(TElementComponent.ELEMENT_NO == element_no)
     )
     return db_execute(stmt).first()
 

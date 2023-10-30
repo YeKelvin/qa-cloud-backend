@@ -16,9 +16,11 @@ from app.tools.require import require_permission
 def execute_collection():
     """运行测试集合"""
     req = JsonParser(
-        Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
-        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
+        Argument('collectionNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('offlines', type=dict, default={}),
         Argument('datasets', type=list, default=[]),
+        Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_collection(req)
@@ -30,9 +32,11 @@ def execute_collection():
 def execute_worker():
     """运行测试用例"""
     req = JsonParser(
-        Argument('socketId', required=True, nullable=False, help='socketId不能为空'),
-        Argument('workerNo', required=True, nullable=False, help='workerNo不能为空'),
+        Argument('workerNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('offlines', type=dict, default={}),
         Argument('datasets', type=list, default=[]),
+        Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_worker(req)
@@ -44,9 +48,11 @@ def execute_worker():
 def execute_sampler():
     """运行取样器"""
     req = JsonParser(
-        Argument('socketId', required=True, nullable=False, help='sid不能为空'),
-        Argument('samplerNo', required=True, nullable=False, help='Sampler 编号不能为空'),
+        Argument('samplerNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('offlines', type=dict, default={}),
         Argument('datasets', type=list, default=[]),
+        Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
     return service.execute_sampler(req)
@@ -58,8 +64,9 @@ def execute_sampler():
 def execute_snippet():
     """运行片段集合"""
     req = JsonParser(
-        Argument('socketId', required=True, nullable=False, help='sid 不能为空'),
-        Argument('collectionNo', required=True, nullable=False, help='Collection 编号不能为空'),
+        Argument('snippetNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('offlines', type=dict, default={}),
         Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
@@ -80,7 +87,7 @@ def execute_testplan():
     return service.execute_testplan(req)
 
 
-@blueprint.post('/testplan/execution/interrupt')
+@blueprint.post('/testplan/interrupt')
 @require_login
 @require_permission('INTERRUPT_TESTPLAN')
 def interrupt_testplan():

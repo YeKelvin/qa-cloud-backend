@@ -8,7 +8,7 @@ from app.database import db_query
 from app.modules.public.dao import workspace_dao
 from app.modules.public.model import TWorkspace
 from app.modules.script.dao import element_children_dao
-from app.modules.script.dao import element_components_dao
+from app.modules.script.dao import element_component_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_component_dao
@@ -25,7 +25,7 @@ from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementChildren
-from app.modules.script.model import TElementComponents
+from app.modules.script.model import TElementComponent
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
 from app.modules.script.model import TWorkspaceComponent
@@ -927,11 +927,11 @@ def copy_element(source: TTestElement, rename=False, root_no=None):
             ELEMENT_SORT=source_node.ELEMENT_SORT
         )
     # 遍历克隆元素组件
-    source_component_nodes = element_components_dao.select_all_by_parent(source.ELEMENT_NO)
+    source_component_nodes = element_component_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_node in source_component_nodes:
         source_component = test_element_dao.select_by_no(source_node.ELEMENT_NO)
         copied_component_no = copy_element(source_component)
-        TElementComponents.insert(
+        TElementComponent.insert(
             ROOT_NO=source_node.ROOT_NO,
             PARENT_NO=copied_no,
             ELEMENT_NO=copied_component_no,
@@ -969,7 +969,7 @@ def query_element_components(req):
     result = []
 
     # 查询元素组件节点
-    nodes = element_components_dao.select_all_by_parent(req.elementNo)
+    nodes = element_component_dao.select_all_by_parent(req.elementNo)
     if not nodes:
         return result
 
@@ -1011,7 +1011,7 @@ def add_element_component(root_no, parent_no, component: dict):
         enabled=component.get('enabled', ElementStatus.ENABLE.value)
     )
     # 创建元素组件节点
-    TElementComponents.insert(
+    TElementComponent.insert(
         ROOT_NO=root_no,
         PARENT_NO=parent_no,
         ELEMENT_NO=component_no,
@@ -1070,7 +1070,7 @@ def update_element_components(parent_no: str, component_list: list):
                 ENABLED=component.enabled
             )
             # 更新序号
-            node = element_components_dao.select_by_component(component.elementNo)
+            node = element_component_dao.select_by_component(component.elementNo)
             node.update(ELEMENT_SORT=component.elementIndex)
         # 元素不存在则新增
         else:
@@ -1083,7 +1083,7 @@ def update_element_components(parent_no: str, component_list: list):
             element_created_signal.send(root_no=root_no, parent_no=parent_no, element_no=component_no)
 
     # 删除非请求中的元素组件
-    pending_deletes = element_components_dao.select_all_by_parent_and_notin_components(parent_no, components)
+    pending_deletes = element_component_dao.select_all_by_parent_and_notin_components(parent_no, components)
     for component in pending_deletes:
         # 记录元素变更日志
         element_removed_signal.send(element_no=component.ELEMENT_NO)
@@ -1103,7 +1103,7 @@ def delete_element_component(element_no):
 
 def delete_element_components_by_parent(parent_no):
     # 根据父级删除所有元素组件
-    if nodes := element_components_dao.select_all_by_parent(parent_no):
+    if nodes := element_component_dao.select_all_by_parent(parent_no):
         for node in nodes:
             # 删除元素组件
             delete_element_component(node.ELEMENT_NO)

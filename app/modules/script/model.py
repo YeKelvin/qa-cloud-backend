@@ -38,6 +38,34 @@ class TTestElement(TableModel, BaseColumn):
     ELEMENT_METADATA = db.Column(db.String(512), comment='元素的元数据')
     ENABLED = db.Column(JSONB, nullable=False, default=True, comment='是否启用')
 
+    @property
+    def number(self):
+        return self.ELEMENT_NO
+
+    @property
+    def name(self):
+        return self.ELEMENT_NAME
+
+    @property
+    def desc(self):
+        return self.ELEMENT_DESC
+
+    @property
+    def type(self):
+        return self.ELEMENT_TYPE
+
+    @property
+    def clazz(self):
+        return self.ELEMENT_CLASS
+
+    @property
+    def attrs(self):
+        return self.ELEMENT_ATTRS or {}
+
+    @property
+    def enabled(self):
+        return self.ENABLED or {}
+
 
 class TElementProperty(TableModel, BaseColumn):
     """元素属性表"""
@@ -59,9 +87,9 @@ class TElementChildren(TableModel, BaseColumn):
     ELEMENT_SORT = db.Column(db.Integer(), nullable=False, comment='子元素序号')
 
 
-class TElementComponents(TableModel, BaseColumn):
+class TElementComponent(TableModel, BaseColumn):
     """元素组件表"""
-    __tablename__ = 'ELEMENT_COMPONENTS'
+    __tablename__ = 'ELEMENT_COMPONENT'
     ROOT_NO = db.Column(db.String(32), index=True, nullable=False, comment='根元素编号')
     PARENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='父元素编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='子元素编号')

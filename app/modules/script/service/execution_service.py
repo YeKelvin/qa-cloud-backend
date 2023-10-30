@@ -27,11 +27,13 @@ from app.modules.script.enum import ElementType
 from app.modules.script.enum import RunningState
 from app.modules.script.enum import VariableDatasetType
 from app.modules.script.enum import is_test_snippet
-from app.modules.script.manager import element_loader
 from app.modules.script.manager.element_component import add_flask_db_iteration_storage
 from app.modules.script.manager.element_component import add_flask_db_result_storage
 from app.modules.script.manager.element_component import add_flask_sio_result_collector
 from app.modules.script.manager.element_component import add_variable_dataset
+from app.modules.script.manager.element_loader import ElementLoader
+from app.modules.script.manager.element_manager import get_case_no
+from app.modules.script.manager.element_manager import get_element_node
 from app.modules.script.manager.element_manager import get_root_no
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TTestplanExecution
@@ -131,8 +133,8 @@ def execute_collection(req):
     # 定义 loader 函数
     def script_loader(app, result_id):
         with app.app_context():
-            # 根据 collectionNo 递归加载脚本
-            script = element_loader.loads_tree(req.collectionNo)
+            # 递归加载脚本
+            script = ElementLoader(req.collectionNo, offlines=req.offlines).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
@@ -144,6 +146,7 @@ def execute_collection(req):
             add_variable_dataset(
                 script,
                 datasets=req.datasets,
+                additional=req.variables,
                 use_current_value=req.useCurrentValue
             )
             return script
@@ -183,11 +186,8 @@ def execute_worker(req):
     # 定义 loader 函数
     def script_loader(app, result_id):
         with app.app_context():
-            # 根据 collectionNo 递归加载脚本
-            script = element_loader.loads_tree(
-                collection_no,
-                specify_worker_no=req.workerNo
-            )
+            # 递归加载脚本
+            script = ElementLoader(collection_no, offlines=req.offlines, required_worker=req.workerNo).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
@@ -199,6 +199,7 @@ def execute_worker(req):
             add_variable_dataset(
                 script,
                 datasets=req.datasets,
+                additional=req.variables,
                 use_current_value=req.useCurrentValue
             )
             return script
@@ -227,20 +228,21 @@ def execute_sampler(req):
         raise ServiceError('仅支持运行 Sampler 元素')
 
     # 获取 collectionNo 和 workerNo
-    sampler_node = element_children_dao.select_by_child(req.samplerNo)
-    if not sampler_node:
+    node = get_element_node(req.samplerNo)
+    if not node:
         raise ServiceError('元素节点不存在')
 
     # 临时存储变量
-    collection_no = sampler_node.ROOT_NO
-    worker_no = sampler_node.PARENT_NO
+    collection_no = node.ROOT_NO
+    worker_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_case_no(node.PARENT_NO)
 
-    # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_tree(
+    # 递归加载脚本
+    script = ElementLoader(
         collection_no,
-        specify_worker_no=worker_no,
-        specify_sampler_no=req.samplerNo
-    )
+        offlines=req.offlines,
+        required_worker=worker_no,
+        required_sampler=req.samplerNo,
+    ).loads_tree()
 
     # 添加 socket 组件
     result_id = new_ulid()
@@ -255,6 +257,7 @@ def execute_sampler(req):
     add_variable_dataset(
         script,
         datasets=req.datasets,
+        additional=req.variables,
         use_current_value=req.useCurrentValue
     )
 
@@ -266,22 +269,18 @@ def execute_sampler(req):
 def execute_snippet(req):
     # 校验空间权限
     check_workspace_permission(
-        get_workspace_no(get_root_no(req.collectionNo))
+        get_workspace_no(get_root_no(req.snippetNo))
     )
 
     # 查询元素
-    collection = test_element_dao.select_by_no(req.collectionNo)
-    if not collection.ENABLED:
+    snippet = test_element_dao.select_by_no(req.snippetNo)
+    if not snippet.ENABLED:
         raise ServiceError('元素已禁用')
-    if not is_test_snippet(collection):
+    if not is_test_snippet(snippet):
         raise ServiceError('仅支持运行 TestSnippet 元素')
 
-    # 根据 collectionNo 递归加载脚本
-    script = element_loader.loads_test_snippet(
-        collection.ELEMENT_NO,
-        collection.ELEMENT_NAME,
-        collection.ELEMENT_DESC
-    )
+    # 递归加载脚本
+    script = ElementLoader(req.snippetNo, offlines=req.offlines).loads_tree()
 
     # 添加 socket 组件
     result_id = new_ulid()
@@ -289,15 +288,15 @@ def execute_snippet(req):
         script,
         socket_id=req.socketId,
         result_id=result_id,
-        result_name=collection.ELEMENT_NAME
+        result_name=snippet.ELEMENT_NAME
     )
 
     # 添加变量组件
     add_variable_dataset(
         script,
         datasets=req.datasets,
-        use_current_value=req.useCurrentValue,
-        additional=req.variables
+        additional=req.variables,
+        use_current_value=req.useCurrentValue
     )
 
     # 新建线程执行脚本
@@ -563,7 +562,7 @@ def start_testplan_by_loop(
     scripts = {}
     for collection_no in collections:
         # 加载脚本
-        collection = element_loader.loads_tree(collection_no)
+        collection = ElementLoader(collection_no).loads_tree()
         if not collection:
             logger.warning(
                 f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
@@ -664,7 +663,7 @@ def start_testplan_by_report(
             script.norecord_update(RUNNING_STATE=RunningState.RUNNING.value)
             db.session.commit()  # 这里要实时更新
             # 加载脚本
-            collection = element_loader.loads_tree(collection_no)
+            collection = ElementLoader(collection_no).loads_tree()
             if not collection:
                 logger.warning(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
