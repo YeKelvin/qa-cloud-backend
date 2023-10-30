@@ -346,11 +346,3 @@ def is_python_post_processor(element):
 
 def is_python_assertion(element):
     return element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value
-
-
-def is_blank_python(element, properties):
-    if is_python_prev_processor(element) and not properties.get('PythonPrevProcessor__script').strip():
-        return True
-    if is_python_post_processor(element) and not properties.get('PythonPostProcessor__script').strip():
-        return True
-    return is_python_assertion(element) and not properties.get('PythonAssertion__script').strip()

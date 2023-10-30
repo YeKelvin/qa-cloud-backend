@@ -138,16 +138,22 @@ def sql_sampler_loader(**kwargs):
 
 
 checkers = {
+    # worker
+    'TestWorker': test_worker_checker,
+    # python
     'PythonPrevProcessor': python_prev_processor_checker,
     'PythonPostProcessor': python_post_processor_checker,
     'PythonAssertion': python_test_assertion_checker
 }
 
 loaders ={
+    # collection
     'TestCollection': setup_worker_loader,
+    # worker
     'TestWorker': test_worker_loader,
     'SetupWorker': setup_worker_loader,
     'TeardownWorker': teardown_worker_loader,
+    # sampler
     'HTTPSampler': http_sampler_loader,
     'SQLSampler': sql_sampler_loader
 }
@@ -155,14 +161,15 @@ loaders ={
 
 class ElementLoader:
 
-    def __init__(self, root_no, offlines: dict=None, required_worker=None, required_sampler=None):
+    def __init__(self, root_no, offlines=None, required_worker=None, required_sampler=None):
+        # 离线数据
+        self.offlines = offlines or {}
         # 根元素编号
         self.root_no = root_no
         # 根元素对象
-        self.root_element = test_element_dao.select_by_no(self.root_no)
-        check_exists(self.root_element, error_msg='根元素不存在')
-        # 离线数据
-        self.offlines = offlines or {}
+        self.root_element = self.get_root_element()
+        # 根元素所在的空间编号
+        self.workspace_no = get_workspace_no(root_no)
         # 指定的用例编号
         self.required_worker = required_worker
         # 指定的请求编号
@@ -175,13 +182,19 @@ class ElementLoader:
         self.worker_found = False
         # 寻找请求标识
         self.sampler_found = False
-        # 根元素所在的空间编号
-        self.workspace_no = get_workspace_no(self.root_no)
+
+    def get_root_element(self):
+        root, _ = self.get_offline_element(self.root_no)
+        root = root or test_element_dao.select_by_no(self.root_no)
+        check_exists(root, error_msg='根元素不存在')
+        return root
 
     def loads_tree(self):
         """根据元素编号加载脚本"""
         logger.debug(
-            f'开始加载脚本, 指定的用例编号:[ {self.required_worker} ], 指定的请求编号:[ {self.required_sampler} ]'
+            f'开始加载脚本'
+            f'\n指定的用例编号:[ {self.required_worker} ]'
+            f'\n指定的请求编号:[ {self.required_sampler} ]'
         )
         # 加载脚本
         if is_test_collection(self.root_element):
@@ -234,14 +247,11 @@ class ElementLoader:
             return
 
     def loads_test_snippet(self):
-        # TODO: 这里要读取 offlines
-        # 获取属性
-        attributes = self.root_element.attrs or {}
         # 递归查询子代，并根据序号正序排序
         nodes = element_children_dao.select_all_by_parent(self.root_no)
         children = []
         # 添加 HTTP Session 组件
-        if attributes.get('use_http_session', False):
+        if self.root_element.attrs.get('use_http_session', False):
             children.append(create_http_session_manager())
         # 添加子代
         for node in nodes:
@@ -256,34 +266,54 @@ class ElementLoader:
             ]
         )
 
-    def get_element(self, element_no) -> dict:
+    def get_offline_element(self, element_no) -> (TTestElement, dict):
         # 优先读取离线数据
         if offline := self.offlines.get(element_no):
-            # 元素为禁用状态时返回None
-            if not offline['enabled']:
-                logger.debug(f'元素名称:[ {offline["elementName"]} ] 元素已禁用, 无需加载')
-                return None
             # 组装元素信息
-            return {
-                'name': offline['elementName'],
-                'desc': offline['elementDesc'],
-                'class': (
-                    ElementClass.TRANSACTION_CONTROLLER.value
-                    if offline['elementClass'] == ElementClass.SNIPPET_SAMPLER.value
-                    else offline['elementClass']
-                ),
-                'attrs': offline['elementAttrs'],
-                'property': offline['property'],
-                'enabled': offline['enabled'],
-            }
-        # 查询元素
-        element = test_element_dao.select_by_no(element_no)
-        check_exists(element, error_msg='元素不存在')
+            element = TTestElement(
+                ELEMENT_NO=element_no,
+                ELEMENT_NAME=offline['elementName'],
+                ELEMENT_DESC=offline['elementDesc'],
+                ELEMENT_TYPE=offline['elementType'],
+                ELEMENT_CLASS=offline['elementClass'],
+                ELEMENT_ATTRS=offline['elementAttrs'],
+                ENABLED=offline['enabled']
+            )
+            return element, offline['property']
+        else:
+            return None, None
+
+    def loads_element(self, element_no) -> dict:
+        """根据元素编号加载元素数据"""
+        # 优先从离线数据中获取元素
+        element, properties = self.get_offline_element(element_no)
+        if not element:
+            # 查询元素
+            element = test_element_dao.select_by_no(element_no)
+            check_exists(element, error_msg='元素不存在')
+            properties = get_element_property(element_no)
         # 元素为禁用状态时返回None
         if not element.enabled:
             logger.debug(f'元素名称:[ {element.name} ] 元素已禁用, 无需加载')
             return None
-        # 组装元素信息
+        # 元素子代
+        children = []
+        # 校验组件
+        try:
+            checker = checkers.get(element.clazz)
+            checker and not checker(loader=self, element=element, attrs=element.attrs, props=properties)
+        except CheckError:
+            return None
+        # 加载组件
+        loader = loaders.get(element.clazz)
+        loader and loader(loader=self, element=element, attrs=element.attrs, props=properties, children=children)
+        # 非片段请求时直接添加子代
+        if not is_snippet_sampler(element):
+            children.extend(self.loads_children(element_no))
+        # 片段请求则查询片段内容
+        else:
+            children.extend(self.loads_snippet_sampler(element.attrs))
+        # 组装元素信息并返回
         return {
             'name': element.name,
             'desc': element.desc,
@@ -293,37 +323,10 @@ class ElementLoader:
                 else element.clazz
             ),
             'attrs': element.attrs,
-            'property': get_element_property(element_no),
-            'enabled': element.enabled
+            'property': properties,
+            'enabled': element.enabled,
+            'children': children
         }
-
-    def loads_element(self, element_no) -> dict:
-        """根据元素编号加载元素数据"""
-        # 查询元素
-        element = self.get_element(element_no)
-        # 元素子代
-        children = []
-        # 元素配置属性
-        attributes = element['attrs']
-        # 元素脚本属性
-        properties = element['property']
-        # 校验组件
-        try:
-            checker = checkers.get(element['class'])
-            checker and not checker(loader=self, element=element, attrs=attributes, props=properties)
-        except CheckError:
-            return None
-        # 加载组件
-        loader = loaders.get(element['class'])
-        loader and loader(loader=self, element=element, attrs=attributes, props=properties, children=children)
-        # 非片段请求时直接添加子代
-        if not is_snippet_sampler(element):
-            children.extend(self.loads_children(element_no))
-        # 片段请求则查询片段内容
-        else:
-            children.extend(self.loads_snippet_sampler(attributes))
-        # 添加元素子代并返回
-        return element.update({'children': children})
 
     def loads_children(self, element_no):
         # 查询子代，并根据序号正序排序
