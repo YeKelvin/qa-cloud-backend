@@ -225,26 +225,27 @@ def get_element_property(element_no):
 
 
 @http_service
-def query_element_children(req):
+def query_element_tree(req):
     return get_element_children(req.elementNo, req.depth)
 
 
 @http_service
-def query_element_children_by_list(req):
+def query_element_tree_by_roots(req):
     result = []
-    for element_no in req.elements:
-        element = test_element_dao.select_by_no(element_no)
-        if not element:
-            logger.warning(f'elementNo:[ {element_no} ] 元素不存在')
+    for root_no in req.roots:
+        root = test_element_dao.select_by_no(root_no)
+        if not root:
+            logger.warning(f'元素编号:[ {root_no} ] 元素不存在')
             continue
-        children = get_element_children(element_no, req.depth)
+        children = get_element_children(root_no, req.depth)
         result.append({
-            'rootNo': get_root_no(element_no),
-            'elementNo': element.ELEMENT_NO,
-            'elementName': element.ELEMENT_NAME,
-            'elementType': element.ELEMENT_TYPE,
-            'elementClass': element.ELEMENT_CLASS,
-            'enabled': element.ENABLED,
+            'rootNo': root_no,
+            'parentNo': None,
+            'elementNo': root.ELEMENT_NO,
+            'elementName': root.ELEMENT_NAME,
+            'elementType': root.ELEMENT_TYPE,
+            'elementClass': root.ELEMENT_CLASS,
+            'enabled': root.ENABLED,
             'children': children
         })
 
@@ -268,6 +269,7 @@ def get_element_children(parent_no, depth):
             grandchildren = depth and get_element_children(element.ELEMENT_NO, depth) or []
             result.append({
                 'rootNo': node.ROOT_NO,
+                'parentNo': node.PARENT_NO,
                 'elementNo': element.ELEMENT_NO,
                 'elementName': element.ELEMENT_NAME,
                 'elementType': element.ELEMENT_TYPE,

@@ -73,25 +73,25 @@ def query_element_info():
 @blueprint.get('/element/children')
 @require_login
 @require_permission('QUERY_ELEMENT')
-def query_element_children():
+def query_element_tree():
     """查询元素子代"""
     req = JsonParser(
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
-    return service.query_element_children(req)
+    return service.query_element_tree(req)
 
 
-@blueprint.get('/element/children/by/list')
+@blueprint.get('/element/tree/by/roots')
 @require_login
 @require_permission('QUERY_ELEMENT')
-def query_element_children_by_list():
+def query_element_tree_by_roots():
     """根据编号列表批量查询子代元素"""
     req = JsonParser(
-        Argument('elements', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
+        Argument('roots', type=list, required=True, nullable=False, help='元素编号列表不能为空'),
         Argument('depth', type=bool, required=True, default=True),
     ).parse()
-    return service.query_element_children_by_list(req)
+    return service.query_element_tree_by_roots(req)
 
 
 @blueprint.post('/element/root')

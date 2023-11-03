@@ -78,63 +78,64 @@ def test_collection_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     children: list = kwargs.get('children')
+    components: list = kwargs.get('components')
     # 添加元素组件
-    loader.add_element_components(element.number, children)
+    loader.add_element_components(element.number, children, offlines=components)
 
 
 def test_worker_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
-    attrs: dict = kwargs.get('attrs')
     children: list = kwargs.get('children')
+    components: list = kwargs.get('components')
     # 添加HTTP会话管理器
-    if attrs.get('Worker__use_http_session', False):
-        add_http_session_manager(attrs.get('Worker__clear_http_session_each_iteration', False), children)
+    if element.attrs.get('Worker__use_http_session', False):
+        add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
-    loader.add_element_components(element.number, children)
+    loader.add_element_components(element.number, children, offlines=components)
 
 
 def setup_worker_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
-    attrs: dict = kwargs.get('attrs')
     children: list = kwargs.get('children')
+    components: list = kwargs.get('components')
     # 添加HTTP会话管理器
-    if attrs.get('Worker__use_http_session', False):
-        add_http_session_manager(attrs.get('Worker__clear_http_session_each_iteration', False), children)
+    if element.attrs.get('Worker__use_http_session', False):
+        add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
-    loader.add_element_components(element.number, children)
+    loader.add_element_components(element.number, children, offlines=components)
 
 
 def teardown_worker_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
-    attrs: dict = kwargs.get('attrs')
     children: list = kwargs.get('children')
+    components: list = kwargs.get('components')
     # 添加HTTP会话管理器
-    if attrs.get('Worker__use_http_session', False):
-        add_http_session_manager(attrs.get('Worker__clear_http_session_each_iteration', False), children)
+    if element.attrs.get('Worker__use_http_session', False):
+        add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
-    loader.add_element_components(element.number, children)
+    loader.add_element_components(element.number, children, offlines=components)
 
 
 def http_sampler_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
-    attrs: dict = kwargs.get('attrs')
     children: list = kwargs.get('children')
+    components: list = kwargs.get('components')
     # 添加HTTP请求头管理器
-    loader.add_http_header_manager(attrs, children)
+    loader.add_http_header_manager(element.attrs, children)
     # 添加元素组件
-    loader.add_element_components(element.number, children)
+    loader.add_element_components(element.number, children, offlines=components)
 
 
 def sql_sampler_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
-    attrs: dict = kwargs.get('attrs')
+    element: TTestElement = kwargs.get('element')
     props: dict = kwargs.get('props')
     # 添加数据库引擎配置器
-    loader.add_database_engine(attrs.get('SQLSampler__engine_no'), props)
+    loader.add_database_engine(element.attrs.get('SQLSampler__engine_no'), props)
 
 
 checkers = {
@@ -184,7 +185,7 @@ class ElementLoader:
         self.sampler_found = False
 
     def get_root_element(self):
-        root, _ = self.get_offline_element(self.root_no)
+        root, _, _ = self.get_offline_element(self.root_no)
         root = root or test_element_dao.select_by_no(self.root_no)
         check_exists(root, error_msg='根元素不存在')
         return root
@@ -266,8 +267,8 @@ class ElementLoader:
             ]
         )
 
-    def get_offline_element(self, element_no) -> (TTestElement, dict):
-        # 优先读取离线数据
+    def get_offline_element(self, element_no) -> (TTestElement, dict, list):
+        """从离线数据中读取元素信息，包含TTestElement对象，元素属性和元素组件"""
         if offline := self.offlines.get(element_no):
             # 组装元素信息
             element = TTestElement(
@@ -279,14 +280,14 @@ class ElementLoader:
                 ELEMENT_ATTRS=offline['elementAttrs'],
                 ENABLED=offline['enabled']
             )
-            return element, offline['property']
+            return element, offline.get('property', {}), offline.get('componentList', [])
         else:
-            return None, None
+            return None, {}, []
 
     def loads_element(self, element_no) -> dict:
         """根据元素编号加载元素数据"""
         # 优先从离线数据中获取元素
-        element, properties = self.get_offline_element(element_no)
+        element, properties, components = self.get_offline_element(element_no)
         if not element:
             # 查询元素
             element = test_element_dao.select_by_no(element_no)
@@ -301,12 +302,12 @@ class ElementLoader:
         # 校验组件
         try:
             checker = checkers.get(element.clazz)
-            checker and not checker(loader=self, element=element, attrs=element.attrs, props=properties)
+            checker and not checker(loader=self, element=element, props=properties)
         except CheckError:
             return None
         # 加载组件
         loader = loaders.get(element.clazz)
-        loader and loader(loader=self, element=element, attrs=element.attrs, props=properties, children=children)
+        loader and loader(loader=self, element=element, props=properties, children=children, components=components)
         # 非片段请求时直接添加子代
         if not is_snippet_sampler(element):
             children.extend(self.loads_children(element_no))
@@ -346,16 +347,15 @@ class ElementLoader:
                 self.sampler_found = True
         return children
 
-    def add_element_components(self, element_no, children: list):
+    def add_element_components(self, element_no, children: list, offlines: list=None):
+        # 读取离线数据
+        if offlines:
+            children.extend(offlines)
+            return
+        # 读取数据库
         components = (
-            db_query(
-                TElementComponent.ELEMENT_NO,
-                TElementComponent.ELEMENT_SORT
-            )
-            .filter(
-                TElementComponent.DELETED == 0,
-                TElementComponent.PARENT_NO == element_no
-            )
+            db_query(TElementComponent.ELEMENT_NO, TElementComponent.ELEMENT_SORT)
+            .filter(TElementComponent.DELETED == 0, TElementComponent.PARENT_NO == element_no)
             .order_by(TElementComponent.ELEMENT_SORT.asc())
             .all()
         )
