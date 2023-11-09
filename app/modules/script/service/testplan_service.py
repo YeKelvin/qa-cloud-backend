@@ -8,6 +8,7 @@ from app.modules.script.dao import test_collection_result_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import test_report_dao
 from app.modules.script.dao import testplan_dao
+from app.modules.script.dao import testplan_execution_collection_dao
 from app.modules.script.dao import testplan_execution_dao
 from app.modules.script.dao import variable_dataset_dao
 from app.modules.script.enum import RunningState
@@ -245,46 +246,47 @@ def query_testplan_execution_details(req):
     report = test_report_dao.select_by_execution(execution.EXECUTION_NO)
 
     # 查询执行脚本
+    collections = testplan_execution_collection_dao.select_all_by_execution(req.executionNo)
     collection_list = []
-    for item in execution.COLLECTIONS:
+    for script in collections:
         result = None
         if report:
-            result = test_collection_result_dao.select_by_report_and_collectionno(report.REPORT_NO, item['ELEMENT_NO'])
+            result = test_collection_result_dao.select_by_report_and_collection(report.REPORT_NO, script.COLLECTION_NO)
         collection = None
         if not result:
-            collection = test_element_dao.select_by_no(item['ELEMENT_NO'])
+            collection = test_element_dao.select_by_no(script.COLLECTION_NO)
         collection_list.append({
-            'elementNo': item['ELEMENT_NO'],
+            'elementNo': script.COLLECTION_NO,
             'elementName': result.COLLECTION_NAME if result else collection.ELEMENT_NAME,
             'elementDesc': result.COLLECTION_DESC if result else collection.ELEMENT_DESC,
-            'runningState': item['RUNNING_STATE'],
+            'runningState': script.RUNNING_STATE,
             'success': (
                 result.SUCCESS
-                if result and item['RUNNING_STATE'] not in (RunningState.WAITING.value, RunningState.RUNNING.value)
+                if result and script.RUNNING_STATE not in (RunningState.WAITING.value, RunningState.RUNNING.value)
                 else None
             ),
             'startTime': result.START_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.START_TIME else None,
             'endTime': result.END_TIME.strftime('%Y-%m-%d %H:%M:%S') if result and result.END_TIME else None,
             'elapsedTime': microsecond_to_m_s(result.ELAPSED_TIME) if result and result.ELAPSED_TIME else None,
-            'iterCount': item['ITER_COUNT'],
-            'errorCount': item['ERROR_COUNT'],
-            'successCount': item['SUCCESS_COUNT'],
-            'failureCount': item['FAILURE_COUNT']
+            'iterCount': script.ITER_COUNT,
+            'errorCount': script.ERROR_COUNT,
+            'successCount': script.SUCCESS_COUNT,
+            'failureCount': script.FAILURE_COUNT
         })
 
     # 查询执行所使用的变量集
-    variable_dataset_list = []
+    dataset_list = []
     if datasets := execution.SETTINGS['VARIABLE_DATASETS']:
         for dataset_no in datasets:
             dataset = variable_dataset_dao.select_by_number_with_deleted(dataset_no)
-            dataset and variable_dataset_list.append({
+            dataset and dataset_list.append({
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME
             })
 
     return {
         'reportNo': report.REPORT_NO if report else None,
-        'datasetList': variable_dataset_list,
+        'datasetList': dataset_list,
         'collectionList': collection_list,
         'iterCount': execution.ITER_COUNT,
         'save': execution.SETTINGS['SAVE'],

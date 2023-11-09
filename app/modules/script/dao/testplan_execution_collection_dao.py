@@ -6,7 +6,11 @@ from app.modules.script.model import TTestplanExecutionCollection
 
 
 def select_by_execution_and_collection(execution_no, collection_no) -> TTestplanExecutionCollection:
-    return TTestplanExecutionCollection.filter_by(EXECUTION_NO=execution_no, COLLECTION_NO=collection_no).first()
+    return (
+        TTestplanExecutionCollection
+        .filter_by(EXECUTION_NO=execution_no, COLLECTION_NO=collection_no)
+        .first()
+    )
 
 
 def select_all_by_execution(execution_no) -> list[TTestplanExecutionCollection]:
