@@ -87,8 +87,8 @@ def create_variable():
     """新增变量"""
     req = JsonParser(
         Argument('datasetNo', required=True, nullable=False, help='变量集编号不能为空'),
-        Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
-        Argument('varDesc'),
+        Argument('variableName', required=True, nullable=False, help='变量名称不能为空'),
+        Argument('variableDesc'),
         Argument('initialValue'),
         Argument('currentValue')
     ).parse()
@@ -101,9 +101,9 @@ def create_variable():
 def modify_variable():
     """修改变量"""
     req = JsonParser(
-        Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
-        Argument('varName', required=True, nullable=False, help='变量名称不能为空'),
-        Argument('varDesc'),
+        Argument('variableNo', required=True, nullable=False, help='变量编号不能为空'),
+        Argument('variableName', required=True, nullable=False, help='变量名称不能为空'),
+        Argument('variableDesc'),
         Argument('initialValue'),
         Argument('currentValue')
     ).parse()
@@ -116,7 +116,7 @@ def modify_variable():
 def remove_variable():
     """删除变量"""
     req = JsonParser(
-        Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
+        Argument('variableNo', required=True, nullable=False, help='变量编号不能为空')
     ).parse()
     return service.remove_variable(req)
 
@@ -127,7 +127,7 @@ def remove_variable():
 def enable_variable():
     """启用变量"""
     req = JsonParser(
-        Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
+        Argument('variableNo', required=True, nullable=False, help='变量编号不能为空')
     ).parse()
     return service.enable_variable(req)
 
@@ -138,7 +138,7 @@ def enable_variable():
 def disable_variable():
     """禁用变量"""
     req = JsonParser(
-        Argument('varNo', required=True, nullable=False, help='变量编号不能为空')
+        Argument('variableNo', required=True, nullable=False, help='变量编号不能为空')
     ).parse()
     return service.disable_variable(req)
 
@@ -149,7 +149,7 @@ def disable_variable():
 def update_current_value():
     """更新变量当前值"""
     req = JsonParser(
-        Argument('varNo', required=True, nullable=False, help='变量编号不能为空'),
+        Argument('variableNo', required=True, nullable=False, help='变量编号不能为空'),
         Argument('value')
     ).parse()
     return service.update_current_value(req)
@@ -188,8 +188,8 @@ def create_variables():
         "datasetNo": "",
         "variableList": [
             {
-                "varName": "",
-                "varDesc": "",
+                "variableName": "",
+                "variableDesc": "",
                 "initialValue": "",
                 "currentValue": ""
             }
@@ -215,9 +215,9 @@ def modify_variables():
         "datasetNo": "",
         "variableList": [
             {
-                "varNo": "",
-                "varName": "",
-                "varDesc": "",
+                "variableNo": "",
+                "variableName": "",
+                "variableDesc": "",
                 "initialValue": "",
                 "currentValue": ""
             }

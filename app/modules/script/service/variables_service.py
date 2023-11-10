@@ -142,7 +142,7 @@ def remove_dataset(req):
 @http_service
 def create_variable(req):
     # 查询变量信息
-    variable = variable_dao.select_by_dataset_and_name(req.datasetNo, req.varName)
+    variable = variable_dao.select_by_dataset_and_name(req.datasetNo, req.variableName)
     check_not_exists(variable, error_msg='变量集已存在')
 
     # 查询变量集信息
@@ -153,24 +153,24 @@ def create_variable(req):
     check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 新增变量
-    var_no = new_id()
+    variable_no = new_id()
     TVariable.insert(
         DATASET_NO=req.datasetNo,
-        VAR_NO=var_no,
-        VAR_NAME=req.varName.strip() if req.varName else req.varName,
-        VAR_DESC=req.varDesc.strip() if req.varDesc else req.varDesc,
+        VAR_NO=variable_no,
+        VAR_NAME=req.variableName.strip() if req.variableName else req.variableName,
+        VAR_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
         INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
         CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue,
         ENABLED=True
     )
 
-    return var_no
+    return variable_no
 
 
 @http_service
 def modify_variable(req):
     # 查询变量信息
-    variable = variable_dao.select_by_no(req.varNo)
+    variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error_msg='变量不存在')
 
     # 查询变量集信息
@@ -182,8 +182,8 @@ def modify_variable(req):
 
     # 更新变量信息
     variable.update(
-        VAR_NAME=req.varName.strip() if req.varName else req.varName,
-        VAR_DESC=req.varDesc.strip() if req.varDesc else req.varDesc,
+        VAR_NAME=req.variableName.strip() if req.variableName else req.variableName,
+        VAR_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
         INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
         CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue
     )
@@ -192,7 +192,7 @@ def modify_variable(req):
 @http_service
 def remove_variable(req):
     # 查询变量信息
-    variable = variable_dao.select_by_no(req.varNo)
+    variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error_msg='变量不存在')
 
     # 查询变量集信息
@@ -209,7 +209,7 @@ def remove_variable(req):
 @http_service
 def enable_variable(req):
     # 查询变量信息
-    variable = variable_dao.select_by_no(req.varNo)
+    variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error_msg='变量不存在')
 
     # 查询变量集信息
@@ -228,7 +228,7 @@ def enable_variable(req):
 @http_service
 def disable_variable(req):
     # 查询变量信息
-    variable = variable_dao.select_by_no(req.varNo)
+    variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error_msg='变量不存在')
 
     # 查询变量集信息
@@ -247,7 +247,7 @@ def disable_variable(req):
 @http_service
 def update_current_value(req):
     # 查询变量信息
-    variable = variable_dao.select_by_no(req.varNo)
+    variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error_msg='变量不存在')
 
     # 查询变量集信息
@@ -269,9 +269,9 @@ def query_variable_by_dataset(req):
 
     return [
         {
-            'varNo': variable.VAR_NO,
-            'varName': variable.VAR_NAME,
-            'varDesc': variable.VAR_DESC,
+            'variableNo': variable.VAR_NO,
+            'variableName': variable.VAR_NAME,
+            'variableDesc': variable.VAR_DESC,
             'initialValue': variable.INITIAL_VALUE,
             'currentValue': variable.CURRENT_VALUE,
             'enabled': variable.ENABLED
@@ -296,9 +296,9 @@ def query_variables(req):
             {
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME,
-                'varNo': variable.VAR_NO,
-                'varName': variable.VAR_NAME,
-                'varDesc': variable.VAR_DESC,
+                'variableNo': variable.VAR_NO,
+                'variableName': variable.VAR_NAME,
+                'variableDesc': variable.VAR_DESC,
                 'initialValue': variable.INITIAL_VALUE,
                 'currentValue': variable.CURRENT_VALUE,
                 'enabled': variable.ENABLED
@@ -320,19 +320,19 @@ def create_variables(req):
 
     for vari in req.variableList:
         # 跳过变量名为空的数据
-        if not vari.varName:
+        if not vari.variableName:
             continue
 
         # 查询变量信息
-        variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.varName)
-        check_not_exists(variable, error_msg='变量已存在')
+        variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.variableName)
+        check_not_exists(variable, error_msg=f'变量名称:[ {vari.variableName} ] 变量已存在')
 
         # 新增变量
         TVariable.insert(
             DATASET_NO=req.datasetNo,
             VAR_NO=new_id(),
-            VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
-            VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+            VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+            VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
             INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
             CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
             ENABLED=True
@@ -349,33 +349,34 @@ def modify_variables(req):
     # 遍历更新变量
     for vari in req.variableList:
         # 跳过变量名为空的数据
-        if not vari.varName:
+        if not vari.variableName:
             continue
 
-        if 'varNo' in vari:
+        if 'variableNo' in vari:
             # 查询变量信息
-            variable = variable_dao.select_by_no(vari.varNo)
+            variable = variable_dao.select_by_no(vari.variableNo)
             check_exists(variable, error_msg='变量不存在')
             # 更新变量信息
             variable.update(
-                VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
-                VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+                VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+                VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
                 INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
                 CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
+                ENABLED=vari.enabled
             )
         else:
             # 查询变量信息
-            variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.varName)
-            check_not_exists(variable, error_msg='变量已存在')
+            variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.variableName)
+            check_not_exists(variable, error_msg=f'变量名称:[ {vari.variableName} ] 变量已存在')
             # 新增变量
             TVariable.insert(
                 DATASET_NO=req.datasetNo,
                 VAR_NO=new_id(),
-                VAR_NAME=vari.varName.strip() if vari.varName else vari.varName,
-                VAR_DESC=vari.varDesc.strip() if vari.varDesc else vari.varDesc,
+                VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+                VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
                 INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
                 CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
-                ENABLED=True
+                ENABLED=vari.enabled
             )
 
 

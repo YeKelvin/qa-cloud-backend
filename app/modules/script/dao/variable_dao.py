@@ -5,16 +5,16 @@
 from app.modules.script.model import TVariable
 
 
-def select_by_no(var_no) -> TVariable:
-    return TVariable.filter_by(VAR_NO=var_no).first()
+def select_by_no(variable_no) -> TVariable:
+    return TVariable.filter_by(VAR_NO=variable_no).first()
 
 
-def select_by_name(var_name) -> TVariable:
-    return TVariable.filter_by(VAR_NAME=var_name).first()
+def select_by_name(variable_name) -> TVariable:
+    return TVariable.filter_by(VAR_NAME=variable_name).first()
 
 
-def select_by_dataset_and_name(dataset_no, var_name) -> TVariable:
-    return TVariable.filter_by(DATASET_NO=dataset_no, VAR_NAME=var_name).first()
+def select_by_dataset_and_name(dataset_no, variable_name) -> TVariable:
+    return TVariable.filter_by(DATASET_NO=dataset_no, VAR_NAME=variable_name).first()
 
 
 def select_all_by_dataset(dataset_no) -> list[TVariable]:

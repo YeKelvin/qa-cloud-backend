@@ -129,8 +129,8 @@ def create_http_header(req):
         TEMPLATE_NO=req.templateNo,
         HEADER_NO=header_no,
         HEADER_NAME=req.headerName.strip() if req.headerName else req.headerName,
-        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue,
         HEADER_DESC=req.headerDesc,
+        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue,
         ENABLED=True
     )
 
@@ -153,8 +153,8 @@ def modify_http_header(req):
     # 更新请求头
     header.update(
         HEADER_NAME=req.headerName.strip() if req.headerName else req.headerName,
-        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue,
-        HEADER_DESC=req.headerDesc
+        HEADER_DESC=req.headerDesc,
+        HEADER_VALUE=req.headerValue.strip() if req.headerValue else req.headerValue
     )
 
 
@@ -221,8 +221,8 @@ def query_httpheaders_by_template(req):
         {
             'headerNo': header.HEADER_NO,
             'headerName': header.HEADER_NAME,
-            'headerValue': header.HEADER_VALUE,
             'headerDesc': header.HEADER_DESC,
+            'headerValue': header.HEADER_VALUE,
             'enabled': header.ENABLED
         }
         for header in headers
@@ -245,8 +245,8 @@ def query_httpheaders(req):
             {
                 'headerNo': header.HEADER_NO,
                 'headerName': header.HEADER_NAME,
-                'headerValue': header.HEADER_VALUE,
                 'headerDesc': header.HEADER_DESC,
+                'headerValue': header.HEADER_VALUE,
                 'enabled': header.ENABLED
             }
             for header in headers
@@ -271,15 +271,15 @@ def create_httpheaders(req):
 
         # 查询请求头
         entity = http_header_dao.select_by_template_and_name(req.templateNo, header.headerName)
-        check_not_exists(entity, error_msg='请求头已存在')
+        check_not_exists(entity, error_msg=f'请求头:[ {header.headerName} ] 请求头已存在')
 
         # 新增请求头
         THttpHeader.insert(
             TEMPLATE_NO=req.templateNo,
             HEADER_NO=new_id(),
             HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
-            HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
             HEADER_DESC=header.headerDesc,
+            HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
             ENABLED=True
         )
 
@@ -304,21 +304,22 @@ def modify_httpheaders(req):
             # 更新请求头
             entity.update(
                 HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
+                HEADER_DESC=header.headerDesc,
                 HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
-                HEADER_DESC=header.headerDesc
+                ENABLED=header.enabled
             )
         else:
             # 查询请求头
             entity = http_header_dao.select_by_template_and_name(req.templateNo, header.headerName)
-            check_not_exists(entity, error_msg='请求头已存在')
+            check_not_exists(entity, error_msg=f'请求头:[ {header.headerName} ] 请求头已存在')
             # 新增请求头
             THttpHeader.insert(
                 TEMPLATE_NO=req.templateNo,
                 HEADER_NO=new_id(),
                 HEADER_NAME=header.headerName.strip() if header.headerName else header.headerName,
-                HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
                 HEADER_DESC=header.headerDesc,
-                ENABLED=True
+                HEADER_VALUE=header.headerValue.strip() if header.headerValue else header.headerValue,
+                ENABLED=header.enabled
             )
 
 
@@ -358,8 +359,8 @@ def duplicate_template(req):
             TEMPLATE_NO=new_template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.HEADER_NAME,
-            HEADER_VALUE=header.HEADER_VALUE,
             HEADER_DESC=header.HEADER_DESC,
+            HEADER_VALUE=header.HEADER_VALUE,
             ENABLED=True
         )
 
@@ -391,8 +392,8 @@ def copy_template_to_workspace(req):
             TEMPLATE_NO=new_template_no,
             HEADER_NO=new_id(),
             HEADER_NAME=header.HEADER_NAME,
-            HEADER_VALUE=header.HEADER_VALUE,
             HEADER_DESC=header.HEADER_DESC,
+            HEADER_VALUE=header.HEADER_VALUE,
             ENABLED=True
         )
 
