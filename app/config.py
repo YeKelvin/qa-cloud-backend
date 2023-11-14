@@ -29,7 +29,7 @@ LOG_FILE = CONFIGS['log']['file'].replace('.log', '')
 LOG_LEVEL = CONFIGS['log']['level']
 
 # 数据库相关配置
-DB_TYPE = CONFIGS['database']['type']
+DATABASE_TYPE = CONFIGS['database']['type']
 DB_URL = CONFIGS['database']['url']
 
 # JWT相关配置

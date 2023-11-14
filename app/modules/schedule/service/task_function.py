@@ -32,7 +32,7 @@ def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
         script = ElementLoader(collectionNo).loads_tree()
         # 添加变量组件
         if datasets:
-            add_variable_dataset(script, datasets, useCurrentValue)
+            add_variable_dataset(script, datasets=datasets, use_current=useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)
@@ -57,7 +57,7 @@ def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
         script = ElementLoader(collection_no, required_worker=workerNo).loads_tree()
         # 添加变量组件
         if datasets:
-            add_variable_dataset(script, datasets, useCurrentValue)
+            add_variable_dataset(script, datasets=datasets, use_current=useCurrentValue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)

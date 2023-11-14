@@ -9,6 +9,7 @@ from flask.cli import with_appcontext
 from app.extension import db  # noqa
 from app.modules.public.model import TWorkspace  # noqa
 from app.modules.public.model import TWorkspaceUser  # noqa
+from app.modules.script.model import TTestElement  # noqa
 from app.modules.script.model import TVariableDataset  # noqa
 from app.modules.usercenter.model import TPermission  # noqa
 from app.modules.usercenter.model import TPermissionModule  # noqa
@@ -98,6 +99,13 @@ def init_user():
         DATASET_NAME='空间变量',
         DATASET_TYPE='WORKSPACE',
         DATASET_WEIGHT=2
+    )
+    # 创建空间元素
+    TTestElement.insert(
+        ELEMENT_NO=workspace_no,
+        ELEMENT_NAME='空间元素',
+        ELEMENT_TYPE='WORKSPACE',
+        ELEMENT_CLASS='TestWorkspace'
     )
     click.echo('创建初始用户成功')
 

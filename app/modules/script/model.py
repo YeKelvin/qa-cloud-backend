@@ -17,15 +17,6 @@ class TWorkspaceScript(TableModel, BaseColumn):
     ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号(集合或片段)')
 
 
-class TWorkspaceComponent(TableModel, BaseColumn):
-    """空间组件表"""
-    __tablename__ = 'WORKSPACE_COMPONENT'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    COMPONENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='组件编号')
-    COMPONENT_TYPE = db.Column(db.String(64), nullable=False, comment='组件类型')
-    COMPONENT_SORT = db.Column(db.Integer(), nullable=False, comment='组件序号')
-
-
 class TTestElement(TableModel, BaseColumn):
     """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
@@ -148,13 +139,13 @@ class TVariable(TableModel, BaseColumn):
     """变量表"""
     __tablename__ = 'VARIABLE'
     DATASET_NO = db.Column(db.String(32), index=True, nullable=False, comment='变量集编号')
-    VAR_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
-    VAR_NAME = db.Column(db.Text(), nullable=False, comment='变量名称')
-    VAR_DESC = db.Column(db.String(256), comment='变量描述')
+    VARIABLE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='变量编号')
+    VARIABLE_NAME = db.Column(db.Text(), nullable=False, comment='变量名称')
+    VARIABLE_DESC = db.Column(db.String(256), comment='变量描述')
     INITIAL_VALUE = db.Column(db.String(2048), comment='变量值')
     CURRENT_VALUE = db.Column(db.String(2048), comment='当前值')
     ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
-    UniqueConstraint('DATASET_NO', 'VAR_NAME', 'DELETED', name='unique_dataset_variable')
+    UniqueConstraint('DATASET_NO', 'VARIABLE_NAME', 'DELETED', name='unique_dataset_variable')
 
 
 class THttpHeaderTemplate(TableModel, BaseColumn):
@@ -183,17 +174,17 @@ class TDatabaseConfig(TableModel, BaseColumn):
     """数据库配置表"""
     __tablename__ = 'DATABASE_CONFIG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
-    DB_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='数据库编号')
-    DB_NAME = db.Column(db.String(256), nullable=False, comment='数据库名称')
-    DB_DESC = db.Column(db.String(256), comment='数据库描述')
-    DB_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
+    DATABASE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='数据库编号')
+    DATABASE_NAME = db.Column(db.String(256), nullable=False, comment='数据库名称')
+    DATABASE_DESC = db.Column(db.String(256), comment='数据库描述')
+    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
     USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
     PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
     HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
     PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
     QUERY = db.Column(db.String(256), comment='数据库主机地址')
     DATABASE = db.Column(db.String(256), nullable=False, comment='数据库库名')
-    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='存储数据库对象的变量名称')
+    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='对象变量名称')
     CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
 
 

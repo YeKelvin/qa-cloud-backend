@@ -66,7 +66,9 @@ def query_element_all_with_children():
 @require_permission('QUERY_ELEMENT')
 def query_element_info():
     """查询元素信息"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.query_element_info(req)
 
 
@@ -106,8 +108,8 @@ def create_element_root():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('elementAttrs', type=dict),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('componentList', type=list)
+        Argument('elementProps', type=dict),
+        Argument('elementCompos', type=dict)
     ).parse()
     return service.create_element_root(req)
 
@@ -125,8 +127,8 @@ def create_element_child():
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
         Argument('elementClass', required=True, nullable=False, help='元素类不能为空'),
         Argument('elementAttrs', type=dict),
-        Argument('property', required=True, nullable=False, help='元素属性不能为空'),
-        Argument('componentList', type=list)
+        Argument('elementProps', type=dict),
+        Argument('elementCompos', type=dict)
     ).parse()
     return service.create_element_child(req)
 
@@ -141,8 +143,8 @@ def modify_element():
         Argument('elementName'),
         Argument('elementDesc'),
         Argument('elementAttrs', type=dict),
-        Argument('property'),
-        Argument('componentList', type=list)
+        Argument('elementProps', type=dict),
+        Argument('elementCompos', type=dict)
     ).parse()
     return service.modify_element(req)
 
@@ -260,66 +262,3 @@ def move_root_to_workspace():
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
     return service.move_root_to_workspace(req)
-
-
-@blueprint.get('/element/workspace/components')
-@require_login
-@require_permission('QUERY_WORKSPACE_COMPONENT')
-def query_workspace_components():
-    """根据空间查询全部组件"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
-    ).parse()
-    return service.query_workspace_components(req)
-
-
-@blueprint.post('/element/workspace/components')
-@require_login
-@require_permission('SET_WORKSPACE_COMPONENT')
-def set_workspace_components():
-    """设置空间组件"""
-    """
-    request:
-    {
-        "workspaceNo": "",
-        "componentList": [
-            {
-                "elementNo": "",
-                "elementName": "",
-                "elementType": "",
-                "elementClass": "",
-                "elementIndex": "",
-                "property": { ... }
-            }
-            ...
-        ]
-    }
-    """
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('componentList', type=list)
-    ).parse()
-    return service.set_workspace_components(req)
-
-
-@blueprint.get('/element/workspace/settings')
-@require_login
-@require_permission('QUERY_WORKSPACE_COMPONENT')
-def query_workspace_settings():
-    """查询空间组件设置"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空')
-    ).parse()
-    return service.query_workspace_settings(req)
-
-
-@blueprint.post('/element/workspace/settings')
-@require_login
-@require_permission('SET_WORKSPACE_COMPONENT')
-def set_workspace_settings():
-    """设置空间组件设置"""
-    req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
-        Argument('settings', type=dict)
-    ).parse()
-    return service.set_workspace_settings(req)

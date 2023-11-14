@@ -17,10 +17,10 @@ def query_database_engine_list(req):
     # 查询条件
     conds = QueryCondition()
     conds.like(TDatabaseConfig.WORKSPACE_NO, req.workspaceNo)
-    conds.like(TDatabaseConfig.DB_NO, req.dbNo)
-    conds.like(TDatabaseConfig.DB_NAME, req.dbName)
-    conds.like(TDatabaseConfig.DB_DESC, req.dbDesc)
-    conds.like(TDatabaseConfig.DB_TYPE, req.dbType)
+    conds.like(TDatabaseConfig.DATABASE_NO, req.dbNo)
+    conds.like(TDatabaseConfig.DATABASE_NAME, req.dbName)
+    conds.like(TDatabaseConfig.DATABASE_DESC, req.dbDesc)
+    conds.like(TDatabaseConfig.DATABASE_TYPE, req.dbType)
 
     # 分页查询
     pagination = (
@@ -32,10 +32,10 @@ def query_database_engine_list(req):
 
     data = [
         {
-            'dbNo': item.DB_NO,
-            'dbName': item.DB_NAME,
-            'dbDesc': item.DB_DESC,
-            'dbType': item.DB_TYPE
+            'dbNo': item.DATABASE_NO,
+            'dbName': item.DATABASE_NAME,
+            'dbDesc': item.DATABASE_DESC,
+            'dbType': item.DATABASE_TYPE
         }
         for item in pagination.items
     ]
@@ -47,16 +47,16 @@ def query_database_engine_list(req):
 def query_database_engine_all(req):
     conds = QueryCondition()
     conds.like(TDatabaseConfig.WORKSPACE_NO, req.workspaceNo)
-    conds.like(TDatabaseConfig.DB_NO, req.dbType)
+    conds.like(TDatabaseConfig.DATABASE_NO, req.dbType)
 
     items = TDatabaseConfig.filter(*conds).order_by(TDatabaseConfig.CREATED_TIME.desc()).all()
 
     return [
         {
-            'dbNo': item.DB_NO,
-            'dbName': item.DB_NAME,
-            'dbDesc': item.DB_DESC,
-            'dbType': item.DB_TYPE
+            'dbNo': item.DATABASE_NO,
+            'dbName': item.DATABASE_NAME,
+            'dbDesc': item.DATABASE_DESC,
+            'dbType': item.DATABASE_TYPE
         }
         for item in items
     ]
@@ -69,10 +69,10 @@ def query_database_engine_info(req):
     check_exists(engine, error_msg='数据库引擎不存在')
 
     return {
-        'dbNo': engine.DB_NO,
-        'dbName': engine.DB_NAME,
-        'dbDesc': engine.DB_DESC,
-        'dbType': engine.DB_TYPE,
+        'dbNo': engine.DATABASE_NO,
+        'dbName': engine.DATABASE_NAME,
+        'dbDesc': engine.DATABASE_DESC,
+        'dbType': engine.DATABASE_TYPE,
         'username': engine.USERNAME,
         'password': engine.PASSWORD,
         'host': engine.HOST,
@@ -92,8 +92,8 @@ def create_database_engine(req):
     # 唯一性校验
     engine = database_config_dao.select_first(
         WORKSPACE_NO=req.workspaceNo,
-        DB_NAME=req.dbName,
-        DB_TYPE=req.dbType
+        DATABASE_NAME=req.dbName,
+        DATABASE_TYPE=req.dbType
     )
     check_not_exists(engine, error_msg='数据库引擎已存在')
 
@@ -101,10 +101,10 @@ def create_database_engine(req):
     db_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DB_NO=db_no,
-        DB_NAME=req.dbName,
-        DB_DESC=req.dbDesc,
-        DB_TYPE=req.dbType,
+        DATABASE_NO=db_no,
+        DATABASE_NAME=req.dbName,
+        DATABASE_DESC=req.dbDesc,
+        DATABASE_TYPE=req.dbType,
         USERNAME=req.username,
         PASSWORD=req.password,
         HOST=req.host,
@@ -129,9 +129,9 @@ def modify_database_engine(req):
 
     # 更新数据库引擎信息
     engine.update(
-        DB_NAME=req.dbName,
-        DB_DESC=req.dbDesc,
-        DB_TYPE=req.dbType,
+        DATABASE_NAME=req.dbName,
+        DATABASE_DESC=req.dbDesc,
+        DATABASE_TYPE=req.dbType,
         USERNAME=req.username,
         PASSWORD=req.password,
         HOST=req.host,
@@ -169,10 +169,10 @@ def duplicate_database_engine(req):
     db_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=engine.WORKSPACE_NO,
-        DB_NO=db_no,
-        DB_NAME=engine.DB_NAME,
-        DB_DESC=engine.DB_DESC,
-        DB_TYPE=engine.DB_TYPE,
+        DATABASE_NO=db_no,
+        DATABASE_NAME=engine.DATABASE_NAME,
+        DATABASE_DESC=engine.DATABASE_DESC,
+        DATABASE_TYPE=engine.DATABASE_TYPE,
         USERNAME=engine.USERNAME,
         PASSWORD=engine.PASSWORD,
         HOST=engine.HOST,
@@ -199,10 +199,10 @@ def copy_database_engine_to_workspace(req):
     db_no = new_id()
     TDatabaseConfig.insert(
         WORKSPACE_NO=req.workspaceNo,
-        DB_NO=db_no,
-        DB_NAME=engine.DB_NAME,
-        DB_DESC=engine.DB_DESC,
-        DB_TYPE=engine.DB_TYPE,
+        DATABASE_NO=db_no,
+        DATABASE_NAME=engine.DATABASE_NAME,
+        DATABASE_DESC=engine.DATABASE_DESC,
+        DATABASE_TYPE=engine.DATABASE_TYPE,
         USERNAME=engine.USERNAME,
         PASSWORD=engine.PASSWORD,
         HOST=engine.HOST,

@@ -4,6 +4,7 @@
 # @Author  : Kelvin.Ye
 from app.modules.script.dao import variable_dao
 from app.modules.script.dao import variable_dataset_dao
+from app.modules.script.model import TVariable
 
 
 def create_test_collection(
@@ -174,13 +175,15 @@ def add_flask_db_iteration_storage(script: dict, execution_no: str, collection_n
     })
 
 
-def add_variable_dataset(script: dict, datasets: list, use_current_value: bool=False, additional: dict = None):
+def add_variable_dataset(
+    root: dict, datasets: list, offlines: dict=None, additional: dict = None, use_current: bool=False
+):
     # 不存在变量集就忽略了
     if not datasets:
         return
 
     # 获取变量集
-    variables = get_variables(datasets, use_current_value)
+    variables = get_variables(datasets, use_current, offlines)
 
     # 添加额外的变量
     if additional:
@@ -195,28 +198,47 @@ def add_variable_dataset(script: dict, datasets: list, use_current_value: bool=F
     arguments = [create_argument(name, value) for name, value in variables.items()]
 
     # 添加 VariableDataset 组件
-    script['children'].insert(0, create_variable_dataset(arguments))
+    root['children'].insert(0, create_variable_dataset(arguments))
 
 
-def get_variables(datasets: list, use_current_value: bool) -> dict:
+def get_offline_variables(offlines, dataset_no):
+    if not offlines or dataset_no not in offlines:
+        return
+    variable_list = offlines[dataset_no]['variableList']
+    return [
+        TVariable(
+            VARIABLE_NAME=var['variableName'],
+            INITIAL_VALUE=var['initialValue'],
+            CURRENT_VALUE=var['currentValue'],
+            ENABLED=var['enabled']
+        )
+        for var in variable_list if var['variableName']
+    ]
+
+
+def get_variables(datasets: list, use_current: bool, offlines: dict=None) -> dict:
     result = {}
     # 根据列表查询变量集，并根据权重从小到大排序
-    dataset_list = variable_dataset_dao.select_list_in_no(*datasets)
+    dataset_list = variable_dataset_dao.select_list_in_numbers(*datasets)
     if not dataset_list:
         return result
 
     for dataset in dataset_list:
         # 查询变量列表
-        variables = variable_dao.select_all_by_dataset(dataset.DATASET_NO)
+        variables = (
+            get_offline_variables(offlines, dataset.DATASET_NO)
+            or
+            variable_dao.select_all_by_dataset(dataset.DATASET_NO)
+        )
 
         for variable in variables:
             # 过滤非启用状态的变量
             if not variable.ENABLED:
                 continue
-            if use_current_value and variable.CURRENT_VALUE:
-                result[variable.VAR_NAME] = variable.CURRENT_VALUE
+            if use_current and variable.CURRENT_VALUE:
+                result[variable.VARIABLE_NAME] = variable.CURRENT_VALUE
             else:
-                result[variable.VAR_NAME] = variable.INITIAL_VALUE
+                result[variable.VARIABLE_NAME] = variable.INITIAL_VALUE
 
     return result
 

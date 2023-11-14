@@ -2,6 +2,7 @@
 # @File    : element_service.py
 # @Time    : 2020/3/13 16:58
 # @Author  : Kelvin.Ye
+from flask import request
 from loguru import logger
 
 from app.database import db_query
@@ -11,7 +12,6 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_component_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import workspace_component_dao
 from app.modules.script.dao import workspace_script_dao
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
@@ -28,7 +28,6 @@ from app.modules.script.model import TElementChildren
 from app.modules.script.model import TElementComponent
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
-from app.modules.script.model import TWorkspaceComponent
 from app.modules.script.model import TWorkspaceScript
 from app.modules.script.types import TypedElement
 from app.signals import element_copied_signal
@@ -88,10 +87,10 @@ def query_element_list(req):
 
     data = [
         {
+            'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
-            'elementType': item.ELEMENT_TYPE,
-            'enabled': item.ENABLED
+            'elementType': item.ELEMENT_TYPE
         }
         for item in pagination.items
     ]
@@ -111,21 +110,21 @@ def query_element_all(req):
 
     # TTestElement，TTWorkspaceScript连表查询
     items = db_query(
+        TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_DESC,
         TTestElement.ELEMENT_TYPE,
-        TTestElement.ELEMENT_CLASS,
-        TTestElement.ENABLED
+        TTestElement.ELEMENT_CLASS
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
 
     return [
         {
+            'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
             'elementType': item.ELEMENT_TYPE,
-            'elementClass': item.ELEMENT_CLASS,
-            'enabled': item.ENABLED
+            'elementClass': item.ELEMENT_CLASS
         }
         for item in items
     ]
@@ -143,12 +142,12 @@ def query_element_all_with_children(req):
 
     # TTestElement，TWorkspaceScript连表查询
     items = db_query(
+        TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
         TTestElement.ELEMENT_DESC,
         TTestElement.ELEMENT_TYPE,
-        TTestElement.ELEMENT_CLASS,
-        TTestElement.ENABLED
+        TTestElement.ELEMENT_CLASS
     ).filter(*conds).order_by(TTestElement.CREATED_TIME.desc()).all()
 
     result = []
@@ -161,28 +160,28 @@ def query_element_all_with_children(req):
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         childconds.equal(TTestElement.ENABLED, req.enabled)
         children = db_query(
-            TElementChildren.ELEMENT_SORT,
+            TTestElement.ENABLED,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_DESC,
             TTestElement.ELEMENT_TYPE,
             TTestElement.ELEMENT_CLASS,
-            TTestElement.ENABLED
+            TElementChildren.ELEMENT_SORT
         ).filter(*childconds).order_by(TElementChildren.ELEMENT_SORT).all()
         # 添加元素信息
         result.append({
+            'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
             'elementType': item.ELEMENT_TYPE,
             'elementClass': item.ELEMENT_CLASS,
-            'enabled': item.ENABLED,
             'children': [
                 {
+                    'enabled': child.ENABLED,
                     'elementNo': child.ELEMENT_NO,
                     'elementName': child.ELEMENT_NAME,
                     'elementType': child.ELEMENT_TYPE,
                     'elementClass': child.ELEMENT_CLASS,
-                    'enabled': child.ENABLED,
                     'children': []
                 }
                 for child in children
@@ -197,18 +196,15 @@ def query_element_info(req):
     element = test_element_dao.select_by_no(req.elementNo)
     check_exists(element, error_msg='元素不存在')
 
-    # 查询元素属性
-    properties = get_element_property(req.elementNo)
-
     return {
+        'enabled': element.ENABLED,
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
         'elementDesc': element.ELEMENT_DESC,
         'elementType': element.ELEMENT_TYPE,
         'elementClass': element.ELEMENT_CLASS,
         'elementAttrs': element.ELEMENT_ATTRS or {},
-        'enabled': element.ENABLED,
-        'property': properties
+        'elementProps': get_element_property(req.elementNo)
     }
 
 
@@ -289,20 +285,20 @@ def create_element_root(req: TypedElement):
     check_exists(workspace, error_msg='工作空间不存在')
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
-    # 创建元素
+    # 新增元素
     element_no = add_element(
         element_name=req.elementName,
         element_desc=req.elementDesc,
         element_type=req.elementType,
         element_class=req.elementClass,
         element_attrs=req.elementAttrs,
-        element_props=req.property
+        element_props=req.elementProps
     )
-    # 新建元素组件
+    # 新增元素组件
     add_element_components(
         root_no=element_no,
         parent_no=element_no,
-        components=req.componentList
+        components=req.elementCompos
     )
     # 绑定空间
     TWorkspaceScript.insert(
@@ -330,7 +326,7 @@ def create_element_child(req):
         element_type=req.elementType,
         element_class=req.elementClass,
         element_attrs=req.elementAttrs,
-        element_props=req.property
+        element_props=req.elementProps
     )
     # 新增元素节点
     add_element_node(
@@ -342,7 +338,7 @@ def create_element_child(req):
     add_element_components(
         root_no=req.rootNo,
         parent_no=element_no,
-        components=req.componentList
+        components=req.elementCompos
     )
     # 记录元素变更日志
     element_created_signal.send(
@@ -391,19 +387,20 @@ def add_element_node(root_no, parent_no, element_no):
 @http_service
 def modify_element(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    # TODO: 空间校验改造成装饰器
+    check_workspace_permission(request.headers.get('x-workspace-no'))
     # 更新元素
     update_element(
         element_no=req.elementNo,
         element_name=req.elementName,
         element_desc=req.elementDesc,
         element_attrs=req.elementAttrs,
-        element_props=req.property
+        element_props=req.elementProps
     )
     # 更新元素组件
     update_element_components(
         parent_no=req.elementNo,
-        component_list=req.componentList
+        components=req.elementCompos
     )
 
 
@@ -947,7 +944,7 @@ def clone_element(source: TTestElement, rename=False):
     # 克隆元素
     TTestElement.insert(
         ELEMENT_NO=cloned_no,
-        ELEMENT_NAME=f'{source.ELEMENT_NAME} copy' if rename else source.ELEMENT_NAME,
+        ELEMENT_NAME=f'{source.ELEMENT_NAME}的副本' if rename else source.ELEMENT_NAME,
         ELEMENT_DESC=source.ELEMENT_DESC,
         ELEMENT_TYPE=source.ELEMENT_TYPE,
         ELEMENT_CLASS=source.ELEMENT_CLASS,
@@ -968,40 +965,107 @@ def clone_element(source: TTestElement, rename=False):
 
 @http_service
 def query_element_components(req):
-    result = []
+    conf_list = []
+    prev_list = []
+    post_list = []
+    test_list = []
 
     # 查询元素组件节点
     nodes = element_component_dao.select_all_by_parent(req.elementNo)
     if not nodes:
-        return result
+        return {'confList': [], 'prevList': [], 'postList': [], 'testList': []}
 
     for node in nodes:
         # 查询元素组件
         if component := test_element_dao.select_by_no(node.ELEMENT_NO):
-            result.append({
-                'elementNo': component.ELEMENT_NO,
-                'elementName': component.ELEMENT_NAME,
-                'elementType': component.ELEMENT_TYPE,
-                'elementClass': component.ELEMENT_CLASS,
-                'elementIndex': node.ELEMENT_SORT,
-                'property': get_element_property(component.ELEMENT_NO),
-                'enabled': component.ENABLED
-            })
+            if component.type == ElementType.CONFIG.value:
+                conf_list.append({
+                    'enabled': component.ENABLED,
+                    'elementNo': component.ELEMENT_NO,
+                    'elementName': component.ELEMENT_NAME,
+                    'elementType': component.ELEMENT_TYPE,
+                    'elementClass': component.ELEMENT_CLASS,
+                    'elementIndex': node.ELEMENT_SORT,
+                    'elementProps': get_element_property(component.ELEMENT_NO)
+                })
+                continue
+            if component.type == ElementType.PREV_PROCESSOR.value:
+                prev_list.append({
+                    'enabled': component.ENABLED,
+                    'elementNo': component.ELEMENT_NO,
+                    'elementName': component.ELEMENT_NAME,
+                    'elementType': component.ELEMENT_TYPE,
+                    'elementClass': component.ELEMENT_CLASS,
+                    'elementIndex': node.ELEMENT_SORT,
+                    'elementProps': get_element_property(component.ELEMENT_NO)
+                })
+                continue
+            if component.type == ElementType.POST_PROCESSOR.value:
+                post_list.append({
+                    'enabled': component.ENABLED,
+                    'elementNo': component.ELEMENT_NO,
+                    'elementName': component.ELEMENT_NAME,
+                    'elementType': component.ELEMENT_TYPE,
+                    'elementClass': component.ELEMENT_CLASS,
+                    'elementIndex': node.ELEMENT_SORT,
+                    'elementProps': get_element_property(component.ELEMENT_NO)
+                })
+                continue
+            if component.type == ElementType.ASSERTION.value:
+                test_list.append({
+                    'enabled': component.ENABLED,
+                    'elementNo': component.ELEMENT_NO,
+                    'elementName': component.ELEMENT_NAME,
+                    'elementType': component.ELEMENT_TYPE,
+                    'elementClass': component.ELEMENT_CLASS,
+                    'elementIndex': node.ELEMENT_SORT,
+                    'elementProps': get_element_property(component.ELEMENT_NO)
+                })
+                continue
 
-    return result
+    # 根据序号排序
+    conf_list.sort(key=lambda k: k.get('elementIndex'))
+    prev_list.sort(key=lambda k: k.get('elementIndex'))
+    post_list.sort(key=lambda k: k.get('elementIndex'))
+    test_list.sort(key=lambda k: k.get('elementIndex'))
+
+    return {
+        'confList': conf_list,
+        'prevList': prev_list,
+        'postList': post_list,
+        'testList': test_list
+    }
 
 
-def add_element_components(root_no, parent_no, components) -> list:
+def add_element_components(root_no, parent_no, components: dict) -> list:
     result = []
-    if components is None:
+    if not components:
         return result
-    for component in components:
-        component_no = add_element_component(root_no, parent_no, component)
+    # 分类获取组件列表
+    conf_list = components.get('confList', []) or []
+    prev_list = components.get('prevList', []) or []
+    post_list = components.get('postList', []) or []
+    test_list = components.get('testList', []) or []
+    # 新增配置组件
+    for component in conf_list:
+        component_no = add_component(root_no, parent_no, component)
+        result.append(component_no)
+    # 新增前置组件
+    for component in prev_list:
+        component_no = add_component(root_no, parent_no, component)
+        result.append(component_no)
+    # 新增后置组件
+    for component in post_list:
+        component_no = add_component(root_no, parent_no, component)
+        result.append(component_no)
+    # 新增断言组件
+    for component in test_list:
+        component_no = add_component(root_no, parent_no, component)
         result.append(component_no)
     return result
 
 
-def add_element_component(root_no, parent_no, component: dict):
+def add_component(root_no, parent_no, component: dict):
     # 创建元素
     component_no = add_element(
         element_name=component.get('elementName'),
@@ -1009,7 +1073,7 @@ def add_element_component(root_no, parent_no, component: dict):
         element_type=component.get('elementType'),
         element_class=component.get('elementClass'),
         element_attrs=component.get('elementAttrs'),
-        element_props=component.get('property'),
+        element_props=component.get('elementProps'),
         enabled=component.get('enabled', ElementStatus.ENABLE.value)
     )
     # 创建元素组件节点
@@ -1022,26 +1086,6 @@ def add_element_component(root_no, parent_no, component: dict):
     return component_no
 
 
-def update_element_component(element_no, element_name, element_desc, element_props=None, enabled: bool = None):
-    # 查询元素
-    component = test_element_dao.select_by_no(element_no)
-    check_exists(component, error_msg='元素不存在')
-    # 更新元素
-    if enabled is not None:
-        component.update(
-            ELEMENT_NAME=element_name,
-            ELEMENT_DESC=element_desc,
-            ENABLED=enabled
-        )
-    else:
-        component.update(
-            ELEMENT_NAME=element_name,
-            ELEMENT_DESC=element_desc
-        )
-    # 更新元素属性
-    update_element_property(element_no, element_props)
-
-
 def record_component_changelog(element: TTestElement, new_name):
     if element.ELEMENT_NAME != new_name:
         element_modified_signal.send(
@@ -1052,45 +1096,65 @@ def record_component_changelog(element: TTestElement, new_name):
         )
 
 
-def update_element_components(parent_no: str, component_list: list):
-    # 临时存储元素编号，用于删除非请求中的元素
-    if component_list is None:
+def update_element_components(parent_no: str, components: dict):
+    if components is None:
         return
-    components = []
-    for component in component_list:
-        # 元素存在则更新
-        if element := test_element_dao.select_by_no(component.elementNo):
-            # 存储元素的编号
-            components.append(component.elementNo)
-            # 记录元素变更日志
-            record_component_changelog(element, component.elementName)
-            # 更新元素属性
-            update_element_property(component.elementNo, component.get('property'))
-            # 更新元素
-            element.update(
-                ELEMENT_NAME=component.elementName,
-                ENABLED=component.enabled
-            )
-            # 更新序号
-            node = element_component_dao.select_by_component(component.elementNo)
-            node.update(ELEMENT_SORT=component.elementIndex)
-        # 元素不存在则新增
-        else:
-            root_no = get_root_no(parent_no)
-            # 新增元素组件
-            component_no = add_element_component(root_no, parent_no, component)
-            # 存储元素组件的编号
-            components.append(component_no)
-            # 记录元素变更日志
-            element_created_signal.send(root_no=root_no, parent_no=parent_no, element_no=component_no)
-
+    # 临时存储组件编号，用于删除非请求中的元素
+    numbers = []
+    # 分类获取组件列表
+    conf_list = components.get('confList', []) or []
+    prev_list = components.get('prevList', []) or []
+    post_list = components.get('postList', []) or []
+    test_list = components.get('testList', []) or []
+    # 更新配置组件
+    for component in conf_list:
+        component_no = update_component(parent_no, component)
+        numbers.append(component_no)
+    # 更新前置组件
+    for component in prev_list:
+        component_no = update_component(parent_no, component)
+        numbers.append(component_no)
+    # 更新后置组件
+    for component in post_list:
+        component_no = update_component(parent_no, component)
+        numbers.append(component_no)
+    # 更新断言组件
+    for component in test_list:
+        component_no = update_component(parent_no, component)
+        numbers.append(component_no)
     # 删除非请求中的元素组件
-    pending_deletes = element_component_dao.select_all_by_parent_and_notin_components(parent_no, components)
+    pending_deletes = element_component_dao.select_all_by_parent_and_notin_components(parent_no, numbers)
     for component in pending_deletes:
         # 记录元素变更日志
         element_removed_signal.send(element_no=component.ELEMENT_NO)
         # 删除组件
         component.delete()
+
+
+def update_component(parent_no: str, component: dict):
+    # 元素存在则更新
+    if element := test_element_dao.select_by_no(component.elementNo):
+        # 记录元素变更日志
+        record_component_changelog(element, component.elementName)
+        # 更新元素属性
+        update_element_property(component.elementNo, component.get('elementProps'))
+        # 更新元素信息
+        element.update(ELEMENT_NAME=component.elementName, ENABLED=component.enabled)
+        # 查询元素节点
+        node = element_component_dao.select_by_component(component.elementNo)
+        # 更新元素序号
+        node.update(ELEMENT_SORT=component.elementIndex)
+        # 返回元素编号
+        return component.elementNo
+    # 元素不存在则新增
+    else:
+        root_no = get_root_no(parent_no)
+        # 新增元素组件
+        component_no = add_component(root_no, parent_no, component)
+        # 记录元素变更日志
+        element_created_signal.send(root_no=root_no, parent_no=parent_no, element_no=component_no)
+        # 返回元素编号
+        return component_no
 
 
 def delete_element_component(element_no):
@@ -1161,112 +1225,3 @@ def move_root_to_workspace(req):
         node.update(WORKSPACE_NO=target_workspace_no)
     else:
         raise ServiceError('根元素没有绑定空间')
-
-
-@http_service
-def query_workspace_components(req):
-    result = []
-
-    # 查询空间的所有组件
-    workspace_component_list = workspace_component_dao.select_all_by_workspace(req.workspaceNo)
-    if not workspace_component_list:
-        return result
-
-    for workspace_component in workspace_component_list:
-        # 查询元素
-        if element := test_element_dao.select_by_no(workspace_component.COMPONENT_NO):
-            result.append({
-                'elementNo': element.ELEMENT_NO,
-                'elementName': element.ELEMENT_NAME,
-                'elementType': element.ELEMENT_TYPE,
-                'elementClass': element.ELEMENT_CLASS,
-                'elementIndex': workspace_component.COMPONENT_SORT,
-                'property': get_element_property(element.ELEMENT_NO),
-                'enabled': element.ENABLED
-            })
-
-    return result
-
-
-@http_service
-def set_workspace_components(req):
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
-    # 遍历处理组件
-    components = []
-    for component in req.componentList:
-        # 组件元素存在则更新
-        if element := test_element_dao.select_by_no(component.elementNo):
-            # 存储元素的编号
-            components.append(component.elementNo)
-            # 记录元素变更日志
-            record_component_changelog(element, component.elementName)
-            # 更新元素属性
-            update_element_property(component.elementNo, component.get('property'))
-            # 更新元素
-            element.update(
-                ELEMENT_NAME=component.elementName,
-                ENABLED=component.enabled
-            )
-            # 更新序号
-            workspace_component = workspace_component_dao.select_by_component(component.elementNo)
-            workspace_component.update(COMPONENT_SORT=component.elementIndex)
-        # 元素不存在则新增
-        else:
-            component_no = add_workspace_component(req.workspaceNo, component)
-            # 存储元素的编号
-            components.append(component_no)
-            # 记录元素变更日志
-            element_created_signal.send(root_no=None, parent_no=None, element_no=component_no)
-
-    # 删除非请求中的空间组件
-    pending_deletes = workspace_component_dao.select_all_by_workspace_and_notin_components(req.workspaceNo, components)
-    for component in pending_deletes:
-        # 记录元素变更日志
-        element_removed_signal.send(element_no=component.ELEMENT_NO)
-        # 删除组件
-        component.delete()
-
-
-def add_workspace_component(workspace_no: str, component: dict) -> str:
-    # 新增元素
-    component_no = new_id()
-    # 创建属性
-    add_element_property(component_no, component.get('property'))
-    # 创建元素
-    TTestElement.insert(
-        ELEMENT_NO=component_no,
-        ELEMENT_NAME=component.get('elementName'),
-        ELEMENT_DESC=component.get('elementDesc'),
-        ELEMENT_TYPE=component.get('elementType'),
-        ELEMENT_CLASS=component.get('elementClass'),
-        ENABLED=component.get('enabled', ElementStatus.ENABLE.value)
-    )
-    # 创建节点
-    TWorkspaceComponent.insert(
-        WORKSPACE_NO=workspace_no,
-        COMPONENT_NO=component_no,
-        COMPONENT_TYPE=component.get('elementType'),
-        COMPONENT_SORT=component.get('elementIndex')
-    )
-    return component_no
-
-
-@http_service
-def query_workspace_settings(req):
-    # 查询空间
-    workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='空间不存在')
-    # 没有配置时返回空字典
-    return workspace.COMPONENT_SETTINGS or {}
-
-
-@http_service
-def set_workspace_settings(req):
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
-    # 查询空间
-    workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='空间不存在')
-    # 更新组件设置
-    workspace.update(COMPONENT_SETTINGS=req.settings)

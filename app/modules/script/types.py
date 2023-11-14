@@ -7,6 +7,7 @@ from typing import TypedDict
 
 class TypedElement(TypedDict):
     workspaceNo: str
+    enabled: bool
     elementNo: str
     elementName: str
     elementDesc: str
@@ -14,6 +15,5 @@ class TypedElement(TypedDict):
     elementClass: str
     elementIndex: str
     elementAttrs: dict
-    enabled: bool
-    property: dict
-    componentList: list
+    elementProps: dict
+    elementCompos: dict

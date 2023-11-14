@@ -133,7 +133,11 @@ def get_case_no(element_no):
     case_no = localvar__case_no.get()
     if case_no == 0:
         node = get_element_node(element_no)
-        if not node or node.ROOT_TYPE == ElementType.SNIPPET.value:
+        if not node:
+            case_no = None
+        elif node.ROOT_TYPE == ElementType.SNIPPET.value:
+            case_no = None
+        elif node.PARENT_TYPE == ElementType.WORKSPACE.value:
             case_no = None
         elif node.PARENT_TYPE == ElementType.COLLECTION.value:
             case_no = element_no

@@ -156,9 +156,9 @@ def create_variable(req):
     variable_no = new_id()
     TVariable.insert(
         DATASET_NO=req.datasetNo,
-        VAR_NO=variable_no,
-        VAR_NAME=req.variableName.strip() if req.variableName else req.variableName,
-        VAR_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
+        VARIABLE_NO=variable_no,
+        VARIABLE_NAME=req.variableName.strip() if req.variableName else req.variableName,
+        VARIABLE_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
         INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
         CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue,
         ENABLED=True
@@ -182,8 +182,8 @@ def modify_variable(req):
 
     # 更新变量信息
     variable.update(
-        VAR_NAME=req.variableName.strip() if req.variableName else req.variableName,
-        VAR_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
+        VARIABLE_NAME=req.variableName.strip() if req.variableName else req.variableName,
+        VARIABLE_DESC=req.variableDesc.strip() if req.variableDesc else req.variableDesc,
         INITIAL_VALUE=req.initialValue.strip() if req.initialValue else req.initialValue,
         CURRENT_VALUE=req.currentValue.strip() if req.currentValue else req.currentValue
     )
@@ -269,9 +269,9 @@ def query_variable_by_dataset(req):
 
     return [
         {
-            'variableNo': variable.VAR_NO,
-            'variableName': variable.VAR_NAME,
-            'variableDesc': variable.VAR_DESC,
+            'variableNo': variable.VARIABLE_NO,
+            'variableName': variable.VARIABLE_NAME,
+            'variableDesc': variable.VARIABLE_DESC,
             'initialValue': variable.INITIAL_VALUE,
             'currentValue': variable.CURRENT_VALUE,
             'enabled': variable.ENABLED
@@ -296,9 +296,9 @@ def query_variables(req):
             {
                 'datasetNo': dataset.DATASET_NO,
                 'datasetName': dataset.DATASET_NAME,
-                'variableNo': variable.VAR_NO,
-                'variableName': variable.VAR_NAME,
-                'variableDesc': variable.VAR_DESC,
+                'variableNo': variable.VARIABLE_NO,
+                'variableName': variable.VARIABLE_NAME,
+                'variableDesc': variable.VARIABLE_DESC,
                 'initialValue': variable.INITIAL_VALUE,
                 'currentValue': variable.CURRENT_VALUE,
                 'enabled': variable.ENABLED
@@ -330,9 +330,9 @@ def create_variables(req):
         # 新增变量
         TVariable.insert(
             DATASET_NO=req.datasetNo,
-            VAR_NO=new_id(),
-            VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
-            VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
+            VARIABLE_NO=new_id(),
+            VARIABLE_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+            VARIABLE_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
             INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
             CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
             ENABLED=True
@@ -358,8 +358,8 @@ def modify_variables(req):
             check_exists(variable, error_msg='变量不存在')
             # 更新变量信息
             variable.update(
-                VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
-                VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
+                VARIABLE_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+                VARIABLE_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
                 INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
                 CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
                 ENABLED=vari.enabled
@@ -371,9 +371,9 @@ def modify_variables(req):
             # 新增变量
             TVariable.insert(
                 DATASET_NO=req.datasetNo,
-                VAR_NO=new_id(),
-                VAR_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
-                VAR_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
+                VARIABLE_NO=new_id(),
+                VARIABLE_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
+                VARIABLE_DESC=vari.variableDesc.strip() if vari.variableDesc else vari.variableDesc,
                 INITIAL_VALUE=vari.initialValue.strip() if vari.initialValue else vari.initialValue,
                 CURRENT_VALUE=vari.currentValue.strip() if vari.currentValue else vari.currentValue,
                 ENABLED=vari.enabled
@@ -416,9 +416,9 @@ def duplicate_dataset(req):
     for variable in variables:
         TVariable.insert(
             DATASET_NO=new_dataset_no,
-            VAR_NO=new_id(),
-            VAR_NAME=variable.VAR_NAME,
-            VAR_DESC=variable.VAR_DESC,
+            VARIABLE_NO=new_id(),
+            VARIABLE_NAME=variable.VARIABLE_NAME,
+            VARIABLE_DESC=variable.VARIABLE_DESC,
             INITIAL_VALUE=variable.INITIAL_VALUE,
             CURRENT_VALUE=variable.CURRENT_VALUE,
             ENABLED=True
@@ -452,9 +452,9 @@ def copy_dataset_to_workspace(req):
     for variable in variables:
         TVariable.insert(
             DATASET_NO=new_dataset_no,
-            VAR_NO=new_id(),
-            VAR_NAME=variable.VAR_NAME,
-            VAR_DESC=variable.VAR_DESC,
+            VARIABLE_NO=new_id(),
+            VARIABLE_NAME=variable.VARIABLE_NAME,
+            VARIABLE_DESC=variable.VARIABLE_DESC,
             INITIAL_VALUE=variable.INITIAL_VALUE,
             CURRENT_VALUE=variable.CURRENT_VALUE,
             ENABLED=True

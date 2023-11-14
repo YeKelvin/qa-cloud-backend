@@ -8,8 +8,10 @@ from enum import unique
 
 @unique
 class ElementType(Enum):
+    # 工作空间
+    WORKSPACE = 'WORKSPACE'
 
-    # 测试集合
+    # 集合
     COLLECTION = 'COLLECTION'
 
     # 片段
@@ -45,6 +47,8 @@ class ElementType(Enum):
 
 @unique
 class ElementClass(Enum):
+    # 空间元素
+    TEST_WORKSPACE = 'TestWorkspace'
 
     # 测试集合
     TEST_COLLECTION = 'TestCollection'

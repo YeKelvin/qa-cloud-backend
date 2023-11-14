@@ -5,12 +5,10 @@
 from loguru import logger
 
 from app.database import db_query
-from app.modules.public.dao import workspace_dao
 from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import http_header_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import workspace_component_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
@@ -163,6 +161,8 @@ loaders ={
 class ElementLoader:
 
     def __init__(self, root_no, offlines=None, required_worker=None, required_sampler=None):
+        # 数据库缓存
+        self.caches = {} # { ElementClass: {} }
         # 离线数据
         self.offlines = offlines or {}
         # 根元素编号
@@ -171,24 +171,51 @@ class ElementLoader:
         self.root_element = self.get_root_element()
         # 根元素所在的空间编号
         self.workspace_no = get_workspace_no(root_no)
+        # 空间元素对象
+        self.workspace_element:TTestElement = None
         # 指定的用例编号
         self.required_worker = required_worker
         # 指定的请求编号
         self.required_sampler = required_sampler
-        # 缓存
-        self.caches = {}
-        # 配置器
-        self.configurator = {} # 需要优化
         # 寻找用例标识
         self.worker_found = False
         # 寻找请求标识
         self.sampler_found = False
+        # 全局配置器
+        self.global_config = {} # { ElementClass: [] }
 
-    def get_root_element(self):
+    def get_root_element(self) -> TTestElement:
         root, _, _ = self.get_offline_element(self.root_no)
         root = root or test_element_dao.select_by_no(self.root_no)
         check_exists(root, error_msg='根元素不存在')
         return root
+
+    def get_workspace_element(self) -> (TTestElement, list):
+        ws, _, compos = self.get_offline_element(self.workspace_no)
+        components =[]
+        if compos:
+            # 读取离线数据
+            for component in compos:
+                component_no = component['elementNo']
+                self.offlines[component_no] = component
+                components.append(TElementComponent(ELEMENT_NO=component_no))
+        if not ws:
+            # 读取后端数据
+            ws = test_element_dao.select_by_no(self.workspace_no)
+            check_exists(ws, error_msg='空间元素不存在')
+            components = (
+                db_query(TElementComponent.ELEMENT_NO, TElementComponent.ELEMENT_SORT)
+                .filter(TElementComponent.DELETED == 0, TElementComponent.PARENT_NO == self.workspace_no)
+                .order_by(TElementComponent.ELEMENT_SORT.asc())
+                .all()
+            )
+        compos = []
+        for component in components:
+            if element := self.loads_element(component.ELEMENT_NO):
+                element['level'] = 0  # 给空间组件添加层级
+                compos.append(element)
+
+        return ws, compos
 
     def loads_tree(self):
         """根据元素编号加载脚本"""
@@ -211,18 +238,18 @@ class ElementLoader:
         if not collection:
             raise ServiceError('脚本异常，请联系管理员')
         # 添加全局配置
-        for configs in self.configurator.values():
+        for configs in self.global_config.values():
             for config in configs:
                 collection['children'].insert(0, config)
         # 获取配置属性和脚本属性
-        attributes = collection.get('attrs')
+        attributes = collection.get('attribute')
         properties = collection.get('property')
         exclude_workspace = attributes.get('TestCollection__exclude_workspace', False)
         # 添加空间组件（配置器、前置处理器、后置处理器、测试断言器）
         if not exclude_workspace:
-            # 加载空间组件
-            components = self.loads_workspace_components()
-            # 添加至脚本头部
+            # 获取空间元素和空间组件
+            self.workspace_element, components = self.get_workspace_element()
+            # 添加空间组件至脚本顶部
             for component in components[::-1]:
                 collection['children'].insert(0, component)
             # 合并空间和集合的运行策略
@@ -230,20 +257,17 @@ class ElementLoader:
 
         return collection
 
-    def merge_running_strategy(self, properties):
+    def merge_running_strategy(self, root_propery):
         # 查询集合运行策略
-        cl_running_strategy = properties.get('TestCollection__running_strategy', {}) or {}
+        root_strategy = root_propery.get('TestCollection__running_strategy', {}) or {}
         # 优先使用集合的运行策略
-        if cl_running_strategy.get('reverse'):
+        if root_strategy.get('reverse'):
             return
-        # 查询空间设置
-        workspace = workspace_dao.select_by_no(self.workspace_no)
-        workspace_settings = workspace.COMPONENT_SETTINGS or {} if workspace else {}
         # 集合的运行策略没有设置时，合并空间的运行策略
-        wrs = workspace_settings.get('running_strategy', {}) or {}
-        if ws_reverse := wrs.get('reverse', []):
-            cl_running_strategy['reverse'] = ws_reverse
-            properties['TestCollection__running_strategy'] = cl_running_strategy
+        workspace_strategy = self.workspace_element.attrs.get('running_strategy', {}) or {}
+        if workspace_reverse := workspace_strategy.get('reverse', []):
+            root_strategy['reverse'] = workspace_reverse
+            root_propery['TestCollection__running_strategy'] = root_strategy
         else:
             return
 
@@ -259,6 +283,7 @@ class ElementLoader:
             if child := self.loads_element(node.ELEMENT_NO):
                 children.append(child)
         # 创建一个临时的 Collection
+        # TODO: 需要增加一个参数来控制，是否排除空间组件
         return create_test_collection(
             name=self.root_element.name,
             children=[
@@ -273,14 +298,21 @@ class ElementLoader:
             # 组装元素信息
             element = TTestElement(
                 ELEMENT_NO=element_no,
-                ELEMENT_NAME=offline['elementName'],
-                ELEMENT_DESC=offline['elementDesc'],
-                ELEMENT_TYPE=offline['elementType'],
-                ELEMENT_CLASS=offline['elementClass'],
-                ELEMENT_ATTRS=offline['elementAttrs'],
-                ENABLED=offline['enabled']
+                ELEMENT_NAME=offline.get('elementName'),
+                ELEMENT_DESC=offline.get('elementDesc'),
+                ELEMENT_TYPE=offline.get('elementType'),
+                ELEMENT_CLASS=offline.get('elementClass'),
+                ELEMENT_ATTRS=offline.get('elementAttrs'),
+                ENABLED=offline.get('enabled')
             )
-            return element, offline.get('property', {}), offline.get('componentList', [])
+            # 分类获取组件列表
+            components = offline.get('elementCompos', {})
+            conf_list = components.get('confList', []) or []
+            prev_list = components.get('prevList', []) or []
+            post_list = components.get('postList', []) or []
+            test_list = components.get('testList', []) or []
+            # 返回元素信息、元素属性和元素组件
+            return element, offline.get('elementProps', {}), conf_list + prev_list + post_list + test_list
         else:
             return None, {}, []
 
@@ -323,10 +355,10 @@ class ElementLoader:
                 if is_snippet_sampler(element)
                 else element.clazz
             ),
-            'attrs': element.attrs,
-            'property': properties,
             'enabled': element.enabled,
-            'children': children
+            'property': properties,
+            'children': children,
+            'attribute': element.attrs
         }
 
     def loads_children(self, element_no):
@@ -348,17 +380,21 @@ class ElementLoader:
         return children
 
     def add_element_components(self, element_no, children: list, offlines: list=None):
-        # 读取离线数据
+        components = []
         if offlines:
-            children.extend(offlines)
-            return
-        # 读取数据库
-        components = (
-            db_query(TElementComponent.ELEMENT_NO, TElementComponent.ELEMENT_SORT)
-            .filter(TElementComponent.DELETED == 0, TElementComponent.PARENT_NO == element_no)
-            .order_by(TElementComponent.ELEMENT_SORT.asc())
-            .all()
-        )
+            # 读取离线数据
+            for component in offlines:
+                component_no = component['elementNo']
+                self.offlines[component_no] = component
+                components.append(TElementComponent(ELEMENT_NO=component_no))
+        else:
+            # 读取数据库
+            components = (
+                db_query(TElementComponent.ELEMENT_NO, TElementComponent.ELEMENT_SORT)
+                .filter(TElementComponent.DELETED == 0, TElementComponent.PARENT_NO == element_no)
+                .order_by(TElementComponent.ELEMENT_SORT.asc())
+                .all()
+            )
         for el in components:
             if component := self.loads_element(el.ELEMENT_NO):
                 children.append(component)
@@ -375,7 +411,7 @@ class ElementLoader:
         trans_children = transaction.get('children')
         if not trans_children:
             return
-        trans_attrs = transaction.get('attrs', {})
+        trans_attrs = transaction.get('attribute', {})
         # 片段形参
         parameters = trans_attrs.get('TestSnippet__parameters', [])
         # 片段实参
@@ -402,18 +438,6 @@ class ElementLoader:
             trans_children.insert(0, create_transaction_parameter(elements))
         # 返回片段子代
         return trans_children
-
-    def loads_workspace_components(self):
-        components = workspace_component_dao.select_all_by_workspace(self.workspace_no)
-        if not components:
-            return []
-
-        elements = []
-        for component in components:
-            if element := self.loads_element(component.COMPONENT_NO):
-                element['level'] = 0  # 给空间组件添加层级
-                elements.append(element)
-        return elements
 
 
     def add_http_header_manager(self, attributes: dict, children: list):
@@ -450,18 +474,18 @@ class ElementLoader:
         check_exists(engine, error_msg='数据库引擎不存在')
         # 实时将引擎变量名称写入元素属性中
         properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
-        engines = self.configurator.get(ElementClass.DATABASE_ENGINE.value, [])
+        engines = self.global_config.get(ElementClass.DATABASE_ENGINE.value, [])
         if not engines:
-            self.configurator[ElementClass.DATABASE_ENGINE.value] = engines
+            self.global_config[ElementClass.DATABASE_ENGINE.value] = engines
         engines.append({
-            'name': engine.DB_NAME,
-            'desc': engine.DB_DESC,
+            'name': engine.DATABASE_NAME,
+            'desc': engine.DATABASE_DESC,
             'class': 'DatabaseEngine',
             'enabled': True,
             'property': {
                 'DatabaseEngine__variable_name': engine.VARIABLE_NAME,
-                'DatabaseEngine__database_type': DatabaseType[engine.DB_TYPE].value,
-                'DatabaseEngine__driver': DatabaseDriver[engine.DB_TYPE].value,
+                'DatabaseEngine__database_type': DatabaseType[engine.DATABASE_TYPE].value,
+                'DatabaseEngine__driver': DatabaseDriver[engine.DATABASE_TYPE].value,
                 'DatabaseEngine__username': engine.USERNAME,
                 'DatabaseEngine__password': engine.PASSWORD,
                 'DatabaseEngine__host': engine.HOST,

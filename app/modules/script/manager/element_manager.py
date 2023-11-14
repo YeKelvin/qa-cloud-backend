@@ -15,9 +15,9 @@ from app.tools.exceptions import ServiceError
 from app.utils.json_util import from_json
 
 
-def get_workspace_no(collection_no) -> str:
+def get_workspace_no(root_no) -> str:
     """获取元素空间编号"""
-    if workspace_script := workspace_script_dao.select_by_script(collection_no):
+    if workspace_script := workspace_script_dao.select_by_script(root_no):
         return workspace_script.WORKSPACE_NO
     else:
         raise ServiceError('查询元素空间失败')
@@ -25,6 +25,7 @@ def get_workspace_no(collection_no) -> str:
 
 def get_root_no(element_no) -> str:
     """根据元素编号获取根元素编号"""
+    # 没有节点的就是根元素或者空间元素
     if not (node := element_children_dao.select_by_child(element_no)):
         return element_no
     if not node.ROOT_NO:

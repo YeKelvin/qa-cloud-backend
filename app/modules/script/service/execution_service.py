@@ -146,8 +146,9 @@ def execute_collection(req):
             add_variable_dataset(
                 script,
                 datasets=req.datasets,
+                offlines=req.offlines,
                 additional=req.variables,
-                use_current_value=req.useCurrentValue
+                use_current=req.useCurrentValue
             )
             return script
 
@@ -199,8 +200,9 @@ def execute_worker(req):
             add_variable_dataset(
                 script,
                 datasets=req.datasets,
+                offlines=req.offlines,
                 additional=req.variables,
-                use_current_value=req.useCurrentValue
+                use_current=req.useCurrentValue
             )
             return script
 
@@ -257,8 +259,9 @@ def execute_sampler(req):
     add_variable_dataset(
         script,
         datasets=req.datasets,
+        offlines=req.offlines,
         additional=req.variables,
-        use_current_value=req.useCurrentValue
+        use_current=req.useCurrentValue
     )
 
     # 新建线程执行脚本
@@ -295,8 +298,9 @@ def execute_snippet(req):
     add_variable_dataset(
         script,
         datasets=req.datasets,
+        offlines=req.offlines,
         additional=req.variables,
-        use_current_value=req.useCurrentValue
+        use_current=req.useCurrentValue
     )
 
     # 新建线程执行脚本
@@ -569,7 +573,7 @@ def start_testplan_by_loop(
             )
             continue
         # 添加自定义变量组件
-        add_variable_dataset(collection, datasets, use_current_value)
+        add_variable_dataset(collection, datasets=datasets, use_current=use_current_value)
         # 添加迭代记录器组件
         add_flask_db_iteration_storage(collection, execution_no, collection_no)
         # 存储解析后的脚本，不需要每次迭代都重新解析一遍
@@ -669,7 +673,7 @@ def start_testplan_by_report(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
                 )
             # 添加自定义变量组件
-            add_variable_dataset(collection, datasets, use_current_value)
+            add_variable_dataset(collection, datasets=datasets, use_current=use_current_value)
             # 添加报告存储器组件
             add_flask_db_result_storage(collection, report_no, collection_no)
 

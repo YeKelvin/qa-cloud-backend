@@ -13,7 +13,10 @@ from app import config as CONFIG
 from app.database import db_query
 from app.modules.public.model import TWorkspace
 from app.modules.public.model import TWorkspaceUser
+from app.modules.script.enum import ElementClass
+from app.modules.script.enum import ElementType
 from app.modules.script.enum import VariableDatasetWeight
+from app.modules.script.model import TTestElement
 from app.modules.script.model import TVariableDataset
 from app.modules.usercenter.dao import group_dao
 from app.modules.usercenter.dao import group_member_dao
@@ -290,6 +293,14 @@ def create_user(req):
         DATASET_NAME='空间变量',
         DATASET_TYPE=VariableDatasetWeight.WORKSPACE.name,
         DATASET_WEIGHT=VariableDatasetWeight.WORKSPACE.value
+    )
+
+    # 创建空间元素
+    TTestElement.insert(
+        ELEMENT_NO=workspace_no,
+        ELEMENT_NAME='空间元素',
+        ELEMENT_TYPE=ElementType.WORKSPACE.value,
+        ELEMENT_CLASS=ElementClass.TEST_WORKSPACE.value
     )
 
     # 绑定用户角色

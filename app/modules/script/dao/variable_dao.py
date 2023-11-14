@@ -6,15 +6,15 @@ from app.modules.script.model import TVariable
 
 
 def select_by_no(variable_no) -> TVariable:
-    return TVariable.filter_by(VAR_NO=variable_no).first()
+    return TVariable.filter_by(VARIABLE_NO=variable_no).first()
 
 
 def select_by_name(variable_name) -> TVariable:
-    return TVariable.filter_by(VAR_NAME=variable_name).first()
+    return TVariable.filter_by(VARIABLE_NAME=variable_name).first()
 
 
 def select_by_dataset_and_name(dataset_no, variable_name) -> TVariable:
-    return TVariable.filter_by(DATASET_NO=dataset_no, VAR_NAME=variable_name).first()
+    return TVariable.filter_by(DATASET_NO=dataset_no, VARIABLE_NAME=variable_name).first()
 
 
 def select_all_by_dataset(dataset_no) -> list[TVariable]:
@@ -26,7 +26,7 @@ def select_list_in_dataset(*dataset_no) -> list[TVariable]:
 
 
 def delete_in_no(*args):
-    TVariable.deletes(TVariable.VAR_NO.in_(*args))
+    TVariable.deletes(TVariable.VARIABLE_NO.in_(*args))
 
 
 def delete_all_by_dataset(dataset_no):

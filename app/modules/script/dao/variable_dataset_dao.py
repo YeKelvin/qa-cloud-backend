@@ -17,7 +17,7 @@ def select_first(**kwargs) -> TVariableDataset:
     return TVariableDataset.filter_by(**kwargs).first()
 
 
-def select_list_in_no(*dataset_no) -> list[TVariableDataset]:
+def select_list_in_numbers(*dataset_no) -> list[TVariableDataset]:
     return (
         TVariableDataset
         .filter(TVariableDataset.DATASET_NO.in_(dataset_no))
