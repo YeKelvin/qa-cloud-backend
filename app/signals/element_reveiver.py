@@ -9,7 +9,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import aliased
 
 from app.database import db_execute
-from app.modules.script.dao import test_element_dao
 from app.modules.script.dao import workspace_script_dao
 from app.modules.script.enum import ElementOperationType
 from app.modules.script.enum import ElementType
@@ -38,6 +37,7 @@ localvar__parents = ContextVar('PARENTS', default=0)
 
 TRootElement: TTestElement = aliased(TTestElement)
 TParentElement: TTestElement = aliased(TTestElement)
+TChildElement: TTestElement = aliased(TTestElement)
 
 
 def get_workspace_no():
@@ -57,11 +57,14 @@ def get_child_node(element_no):
         select(
             TElementChildren.ROOT_NO,
             TElementChildren.PARENT_NO,
+            TElementChildren.ELEMENT_NO,
             TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
-            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE'),
+            TChildElement.ELEMENT_TYPE.label('ELEMENT_TYPE')
         )
         .join(TRootElement, TRootElement.ELEMENT_NO == TElementChildren.ROOT_NO)
         .join(TParentElement, TParentElement.ELEMENT_NO == TElementChildren.PARENT_NO)
+        .join(TChildElement, TChildElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
         .where(TElementChildren.ELEMENT_NO == element_no)
     )
     return db_execute(stmt).first()
@@ -72,11 +75,14 @@ def get_component_node(element_no):
         select(
             TElementComponent.ROOT_NO,
             TElementComponent.PARENT_NO,
+            TElementComponent.ELEMENT_NO,
             TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
-            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE'),
+            TChildElement.ELEMENT_TYPE.label('ELEMENT_TYPE')
         )
         .join(TRootElement, TRootElement.ELEMENT_NO == TElementComponent.ROOT_NO)
         .join(TParentElement, TParentElement.ELEMENT_NO == TElementComponent.PARENT_NO)
+        .join(TChildElement, TChildElement.ELEMENT_NO == TElementComponent.ELEMENT_NO)
         .where(TElementComponent.ELEMENT_NO == element_no)
     )
     return db_execute(stmt).first()
@@ -105,9 +111,16 @@ def get_root_no(element_no):
     root_no = localvar__root_no.get()
     if root_no == 0:
         node = get_element_node(element_no)
-        root_no = node.ROOT_NO if node else None
-        if not root_no and is_root_node(element_no):
-            root_no = element_no
+        if node:
+            if node.ROOT == ElementType.WORKSPACE.value:
+                root_no = None # 空间组件没有根元素
+            else:
+                root_no = node.ROOT_NO # 有节点时直接拿根元素（集合/片段）
+        else:
+            if is_root_node(element_no):
+                root_no = element_no # 没有节点时判断自身是否为根元素
+            root_no = None # 空间元素
+
         localvar__root_no.set(root_no)
     return root_no
 
@@ -115,7 +128,6 @@ def get_root_no(element_no):
 def get_worker_no(parent_no):
     stmt = (
         select(
-            TElementChildren.ROOT_NO,
             TElementChildren.PARENT_NO,
             TTestElement.ELEMENT_TYPE.label('PARENT_TYPE')
         )
@@ -125,7 +137,7 @@ def get_worker_no(parent_no):
     node = db_execute(stmt).first()
     if node.PARENT_TYPE == ElementType.WORKER.value:
         return node.PARENT_NO
-    return get_worker_no(node.PARENT_NO) # 找不到时继续递归往上层找
+    return get_worker_no(node.PARENT_NO) # 找不到时继续递归往上找
 
 
 def get_case_no(element_no):
@@ -133,16 +145,18 @@ def get_case_no(element_no):
     case_no = localvar__case_no.get()
     if case_no == 0:
         node = get_element_node(element_no)
-        if not node:
+        if not node: # 没有节点的没有case（根元素：集合/片段）
             case_no = None
-        elif node.ROOT_TYPE == ElementType.SNIPPET.value:
+        elif node.ROOT_TYPE == ElementType.SNIPPET.value: # 片段子代没有case
             case_no = None
-        elif node.PARENT_TYPE == ElementType.WORKSPACE.value:
+        elif node.PARENT_TYPE == ElementType.WORKSPACE.value: # 空间组件没有case
             case_no = None
-        elif node.PARENT_TYPE == ElementType.COLLECTION.value:
+        elif node.ELEMENT_TYPE == ElementType.WORKSPACE.value: # 空间元素没有case
+            case_no = None
+        elif node.ELEMENT_TYPE == ElementType.WORKER.value: # Worker就是case
             case_no = element_no
         else:
-            case_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_worker_no(node.PARENT_NO)
+            case_no = get_worker_no(node.PARENT_NO) # Worker子代就递归往上找case
         localvar__case_no.set(case_no)
     return case_no
 
@@ -164,14 +178,10 @@ def get_parent_no(element_no):
 
 @element_created_signal.connect
 def record_create_element(sender, root_no, parent_no, element_no):
-    case_no = None
-    if parent_no:
-        parent = test_element_dao.select_by_no(parent_no)
-        case_no = parent_no if parent.ELEMENT_TYPE == ElementType.WORKER.value else get_worker_no(parent_no)
     TElementChangelog.insert(
         WORKSPACE_NO=get_workspace_no(),
         ROOT_NO=root_no,
-        CASE_NO=case_no,
+        CASE_NO=get_case_no(parent_no) if parent_no else None,
         PARENT_NO=parent_no,
         ELEMENT_NO=element_no,
         OPERATION_BY=localvars.get_user_no(),

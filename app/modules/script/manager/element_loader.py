@@ -40,7 +40,25 @@ def test_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if element.number != loader.required_worker:
+    if loader.required_worker and element.number != loader.required_worker:
+        logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
+        raise CheckError()
+
+
+def setup_worker_checker(**kwargs):
+    loader: 'ElementLoader' = kwargs.get('loader')
+    element: TTestElement = kwargs.get('element')
+    # 加载指定的用例，如果当前元素非指定的用例时返回None
+    if loader.required_worker and element.number != loader.required_worker:
+        logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
+        raise CheckError()
+
+
+def teardown_worker_checker(**kwargs):
+    loader: 'ElementLoader' = kwargs.get('loader')
+    element: TTestElement = kwargs.get('element')
+    # 加载指定的用例，如果当前元素非指定的用例时返回None
+    if loader.required_worker and element.number != loader.required_worker:
         logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
         raise CheckError()
 
@@ -139,6 +157,8 @@ def sql_sampler_loader(**kwargs):
 checkers = {
     # worker
     'TestWorker': test_worker_checker,
+    'SetupWorker': setup_worker_checker,
+    'TeardownWorker': teardown_worker_checker,
     # python
     'PythonPrevProcessor': python_prev_processor_checker,
     'PythonPostProcessor': python_post_processor_checker,
@@ -147,7 +167,7 @@ checkers = {
 
 loaders ={
     # collection
-    'TestCollection': setup_worker_loader,
+    'TestCollection': test_collection_loader,
     # worker
     'TestWorker': test_worker_loader,
     'SetupWorker': setup_worker_loader,
@@ -303,7 +323,7 @@ class ElementLoader:
                 ELEMENT_TYPE=offline.get('elementType'),
                 ELEMENT_CLASS=offline.get('elementClass'),
                 ELEMENT_ATTRS=offline.get('elementAttrs'),
-                ENABLED=offline.get('enabled')
+                ENABLED=offline.get('enabled', test_element_dao.is_enabled(element_no))
             )
             # 分类获取组件列表
             components = offline.get('elementCompos', {})

@@ -27,15 +27,12 @@ def query_element_changelog_list(req):
     # sourcery skip: list-comprehension, reintroduce-else, remove-redundant-continue
     if element := test_element_dao.select_by_no(req.elementNo):
         if not req.onlyself and is_collection(element):
-            print('collection-collection-collection')
             stmt = get_changelog_stmt_by_collection(req.elementNo)
             total = count_changelog_by_collection(req.elementNo)
         elif not req.onlyself and is_worker(element):
-            print('worker-worker-worker')
             stmt = get_changelog_stmt_by_testcase(req.elementNo)
             total = count_changelog_by_testcase(req.elementNo)
         else:
-            print('element-element-element')
             stmt = get_changelog_stmt_by_element(req.elementNo)
             total = count_changelog_by_element(req.elementNo)
     else:
@@ -109,7 +106,7 @@ def get_workspace_name(workspace_no):
 
 
 def get_changelog_stmt_by_workspace(workspace_no):  # sourcery skip: none-compare
-    stmt = (
+    element_stmt = (
         select(
             TElementChangelog,
             TUser.USER_NAME,
@@ -127,19 +124,49 @@ def get_changelog_stmt_by_workspace(workspace_no):  # sourcery skip: none-compar
             TElementChangelog.PARENT_NO == None  # noqa: E711
         )
     )
-    return union_all(stmt)
-
-
-def count_changelog_by_workspace(workspace_no):  # sourcery skip: none-compare
-    stmt = (
-        select(func.count(TElementChangelog.ID))
+    component_stmt = (
+        select(
+            TElementChangelog,
+            TUser.USER_NAME,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_TYPE,
+            TParentElement.ELEMENT_NAME.label('PARENT_NAME')
+        )
+        .outerjoin(TUser, TUser.USER_NO == TElementChangelog.OPERATION_BY)
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChangelog.ELEMENT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChangelog.PARENT_NO)
         .where(
             TElementChangelog.WORKSPACE_NO == workspace_no,
             TElementChangelog.ROOT_NO == None,  # noqa: E711
             TElementChangelog.CASE_NO == None,  # noqa: E711
-            TElementChangelog.PARENT_NO == None  # noqa: E711
+            TElementChangelog.PARENT_NO == workspace_no  # noqa: E711
         )
     )
+    return union_all(element_stmt, component_stmt)
+
+
+def count_changelog_by_workspace(workspace_no):  # sourcery skip: none-compare
+    subtable = union_all(
+        (
+            select(func.count(TElementChangelog.ID).label('count'))
+            .where(
+                TElementChangelog.WORKSPACE_NO == workspace_no,
+            TElementChangelog.ROOT_NO == None,  # noqa: E711
+            TElementChangelog.CASE_NO == None,  # noqa: E711
+            TElementChangelog.PARENT_NO == None  # noqa: E711
+            )
+        ),
+        (
+            select(func.count(TElementChangelog.ID).label('count'))
+            .where(
+                TElementChangelog.WORKSPACE_NO == workspace_no,
+            TElementChangelog.ROOT_NO == None,  # noqa: E711
+            TElementChangelog.CASE_NO == None,  # noqa: E711
+            TElementChangelog.PARENT_NO == workspace_no  # noqa: E711
+            )
+        )
+    )
+    stmt = select(func.sum(subtable.c.count)).select_from(subtable)
     return int(db_execute(stmt).scalar())
 
 

@@ -91,9 +91,10 @@ class TElementChangelog(TableModel, BaseColumn):
     """元素变更日志表"""
     """
     说明：
-    1、ROOT_NO、CASE_NO、PARENT_NO同时为空，则为空间组件
-    2、ROOT_NO不为空，CASE_NO和PARENT_NO为空，则为集合或片段（根元素）
-    3、ROOT_NO不为空，CASE_NO为空，则为片段的子代
+    1、ROOT_NO + CASE_NO + PARENT_NO==null，则为空间元素
+    2、PARENT_NO!=null，CASE_NO + ROOT_NO==null，则为空间组件
+    3、ROOT_NO!=null，CASE_NO + PARENT_NO==null，则为根元素（集合/片段）
+    4、ROOT_NO+PARENT_NO!=null，CASE_NO==null，则为片段子代
     """
     __tablename__ = 'ELEMENT_CHANGELOG'
     WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
