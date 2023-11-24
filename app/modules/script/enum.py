@@ -11,11 +11,11 @@ class ElementType(Enum):
     # 工作空间
     WORKSPACE = 'WORKSPACE'
 
-    # 集合
-    COLLECTION = 'COLLECTION'
-
     # 片段
     SNIPPET = 'SNIPPET'
+
+    # 集合
+    COLLECTION = 'COLLECTION'
 
     # 工作者
     WORKER = 'WORKER'
@@ -350,3 +350,11 @@ def is_python_post_processor(element):
 
 def is_python_assertion(element):
     return element.ELEMENT_CLASS == ElementClass.PYTHON_ASSERTION.value
+
+
+def has_children(element):
+    return element.ELEMENT_TYPE in [
+        ElementType.COLLECTION.value,
+        ElementType.CONTROLLER.value,
+        ElementType.WORKER.value
+    ]

@@ -12,7 +12,7 @@ from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_component_dao
 from app.modules.script.dao import element_property_dao
 from app.modules.script.dao import test_element_dao
-from app.modules.script.dao import workspace_script_dao
+from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementStatus
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import PasteType
@@ -28,7 +28,6 @@ from app.modules.script.model import TElementChildren
 from app.modules.script.model import TElementComponent
 from app.modules.script.model import TElementProperty
 from app.modules.script.model import TTestElement
-from app.modules.script.model import TWorkspaceScript
 from app.modules.script.types import TypedElement
 from app.signals import element_copied_signal
 from app.signals import element_created_signal
@@ -45,6 +44,7 @@ from app.tools.validator import check_workspace_permission
 from app.utils.json_util import from_json
 from app.utils.json_util import to_json
 from app.utils.sqlalchemy_util import QueryCondition
+from app.utils.time_util import datetime_now_by_utc8
 
 
 @http_service
@@ -58,20 +58,15 @@ def query_element_list(req):
     conds.like(TTestElement.ELEMENT_CLASS, req.elementClass)
     conds.equal(TTestElement.ENABLED, req.enabled)
 
-    if req.workspaceNo or req.workspaceName:
-        conds.add_table(TWorkspaceScript)
-
     if req.workspaceNo:
-        conds.like(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
-        conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
+        conds.like(TTestElement.WORKSPACE_NO, req.workspaceNo)
 
     if req.workspaceName:
         conds.add_table(TWorkspace)
         conds.like(TWorkspace.WORKSPACE_NAME, req.workspaceName)
-        conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
-        conds.equal(TWorkspaceScript.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
+        conds.equal(TTestElement.WORKSPACE_NO, TWorkspace.WORKSPACE_NO)
 
-    # TTestElement，TWorkspace，TWorkspaceScript连表查询
+    # TTestElement，TWorkspace连表查询
     pagination = (
         db_query(
             TTestElement.ELEMENT_NO,
@@ -101,14 +96,12 @@ def query_element_list(req):
 @http_service
 def query_element_all(req):
     # 查询条件
-    conds = QueryCondition(TTestElement, TWorkspaceScript)
-    conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
-    conds.equal(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TTestElement)
     conds.equal(TTestElement.ENABLED, req.enabled)
+    conds.equal(TTestElement.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
-    # TTestElement，TTWorkspaceScript连表查询
     items = db_query(
         TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
@@ -133,14 +126,12 @@ def query_element_all(req):
 @http_service
 def query_element_all_with_children(req):
     # 查询条件
-    conds = QueryCondition(TTestElement, TWorkspaceScript)
-    conds.equal(TWorkspaceScript.ELEMENT_NO, TTestElement.ELEMENT_NO)
-    conds.equal(TWorkspaceScript.WORKSPACE_NO, req.workspaceNo)
+    conds = QueryCondition(TTestElement)
     conds.equal(TTestElement.ENABLED, req.enabled)
+    conds.equal(TTestElement.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ELEMENT_TYPE, req.elementType)
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
-    # TTestElement，TWorkspaceScript连表查询
     items = db_query(
         TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
@@ -155,10 +146,10 @@ def query_element_all_with_children(req):
         # 查询子代
         childconds = QueryCondition(TElementChildren, TTestElement)
         childconds.equal(TElementChildren.PARENT_NO, item.ELEMENT_NO)
+        childconds.equal(TTestElement.ENABLED, req.enabled)
         childconds.equal(TTestElement.ELEMENT_NO, TElementChildren.ELEMENT_NO)
         childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
-        childconds.equal(TTestElement.ENABLED, req.enabled)
         children = db_query(
             TTestElement.ENABLED,
             TTestElement.ELEMENT_NO,
@@ -279,14 +270,19 @@ def get_element_children(parent_no, depth):
 
 
 @http_service
-def create_element_root(req: TypedElement):
-    # 校验工作空间
-    workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='工作空间不存在')
-    # 校验空间权限
-    check_workspace_permission(req.workspaceNo)
+def create_element(req: TypedElement):
+    workspace_no = None
+    if req.elementType in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
+        # 获取空间编号
+        workspace_no = request.headers.get('x-workspace-no')
+        # 校验工作空间
+        workspace = workspace_dao.select_by_no(workspace_no)
+        check_exists(workspace, error_msg='工作空间不存在')
+        # 校验空间权限
+        check_workspace_permission(workspace_no)
     # 新增元素
     element_no = add_element(
+        workspace_no=workspace_no,
         element_name=req.elementName,
         element_desc=req.elementDesc,
         element_type=req.elementType,
@@ -299,11 +295,6 @@ def create_element_root(req: TypedElement):
         root_no=element_no,
         parent_no=element_no,
         components=req.elementCompos
-    )
-    # 绑定空间
-    TWorkspaceScript.insert(
-        WORKSPACE_NO=req.workspaceNo,
-        ELEMENT_NO=element_no
     )
     # 记录元素变更日志
     element_created_signal.send(
@@ -357,11 +348,13 @@ def add_element(
         element_class,
         element_attrs: dict = None,
         element_props: dict = None,
-        enabled: bool = ElementStatus.ENABLE.value
+        enabled: bool = ElementStatus.ENABLE.value,
+        workspace_no = None
 ):
     # 创建元素
     element_no = new_id()
     TTestElement.insert(
+        WORKSPACE_NO=workspace_no,
         ELEMENT_NO=element_no,
         ELEMENT_NAME=element_name,
         ELEMENT_DESC=element_desc,
@@ -427,7 +420,8 @@ def update_element(
     element.update(
         ELEMENT_NAME=element_name,
         ELEMENT_DESC=element_desc,
-        ELEMENT_ATTRS=element_attrs
+        ELEMENT_ATTRS=element_attrs,
+        UPDATED_TIME=datetime_now_by_utc8()
     )
 
 
@@ -911,9 +905,9 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
     )
 
 
-def copy_element(source: TTestElement, rename=False, root_no=None):
+def copy_element(source: TTestElement, rename=False, root_no=None, workspace_no=None):
     # 克隆元素和属性
-    copied_no = clone_element(source, rename)
+    copied_no = clone_element(source, rename, workspace_no)
     # 遍历克隆元素子代
     source_child_nodes = element_children_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_node in source_child_nodes:
@@ -939,10 +933,11 @@ def copy_element(source: TTestElement, rename=False, root_no=None):
     return copied_no
 
 
-def clone_element(source: TTestElement, rename=False):
+def clone_element(source: TTestElement, rename=False, workspace_no=None):
     cloned_no = new_id()
     # 克隆元素
     TTestElement.insert(
+        WORKSPACE_NO=workspace_no,
         ELEMENT_NO=cloned_no,
         ELEMENT_NAME=f'{source.ELEMENT_NAME}的副本' if rename else source.ELEMENT_NAME,
         ELEMENT_DESC=source.ELEMENT_DESC,
@@ -1178,50 +1173,69 @@ def delete_element_components_by_parent(parent_no):
 
 
 @http_service
-def copy_root_to_workspace(req):
+def copy_element_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
 
-    # 查询集合或片段
-    root = test_element_dao.select_by_no(req.elementNo)
-    if root.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
-        raise ServiceError('仅支持复制 [集合|片段]')
-
-    # 查询根节点
-    node = workspace_script_dao.select_by_script(req.elementNo)
-    if not node:
-        raise ServiceError('根元素没有绑定空间')
+    # 查询集合/片段/配置器
+    element = test_element_dao.select_by_no(req.elementNo)
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
+        raise ServiceError('仅支持复制 [集合/片段/配置器]')
 
     # 复制集合到指定的空间
-    copied_no = copy_element(root)
-    TWorkspaceScript.insert(WORKSPACE_NO=req.workspaceNo, ELEMENT_NO=copied_no)
+    copied_no = copy_element(element, workspace_no=req.workspaceNo)
 
     # 记录元素变更日志
     element_copied_signal.send(element_no=copied_no, source_no=req.elementNo)
 
 
 @http_service
-def move_root_to_workspace(req):
+def move_element_to_workspace(req):
     # 校验空间权限
     source_workspace_no = get_workspace_no(get_root_no(req.elementNo))
     target_workspace_no = req.workspaceNo
     check_workspace_permission(source_workspace_no)  # 校验来源空间权限
     check_workspace_permission(target_workspace_no)  # 校验目标空间权限
-
     # 查询集合或片段
-    root = test_element_dao.select_by_no(req.elementNo)
-    if root.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅允许移动集合')
+    element = test_element_dao.select_by_no(req.elementNo)
+    # 校验空间
+    if not element.WORKSPACE_NO:
+        raise ServiceError('元素没有绑定空间，不支持移动')
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
+        raise ServiceError('仅支持移动 [集合/片段/配置器]')
+    # 记录元素变更日志
+    element_transferred_signal.send(
+        collection_no=req.elementNo,
+        source_workspace_no=source_workspace_no,
+        target_workspace_no=target_workspace_no
+    )
+    # 移动空间
+    element.update(WORKSPACE_NO=target_workspace_no)
 
-    # 查询根节点
-    if node := workspace_script_dao.select_by_script(req.elementNo):
-        # 记录元素变更日志
-        element_transferred_signal.send(
-            collection_no=req.elementNo,
-            source_workspace_no=source_workspace_no,
-            target_workspace_no=target_workspace_no
+
+@http_service
+def query_database_engine_all(req):
+    conds = QueryCondition(TTestElement)
+    conds.equal(TTestElement.WORKSPACE_NO, req.workspaceNo)
+    conds.equal(TTestElement.ELEMENT_TYPE, ElementType.CONFIG.value)
+    conds.equal(TTestElement.ELEMENT_CLASS, ElementClass.DATABASE_ENGINE.value)
+
+    items = (
+        db_query(
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.ELEMENT_ATTRS,
         )
-        # 移动空间
-        node.update(WORKSPACE_NO=target_workspace_no)
-    else:
-        raise ServiceError('根元素没有绑定空间')
+        .filter(*conds)
+        .order_by(TTestElement.CREATED_TIME.desc())
+        .all()
+    )
+
+    return [
+        {
+            'databaseNo': item.ELEMENT_NO,
+            'databaseName':item.ELEMENT_NAME,
+            'databaseType': item.ELEMENT_ATTRS['DatabaseEngine__database_type']
+        }
+        for item in items
+    ]

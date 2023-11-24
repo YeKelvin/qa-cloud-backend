@@ -5,11 +5,23 @@
 from sqlalchemy import select
 
 from app.database import db_scalars
+from app.modules.script.enum import ElementType
 from app.modules.script.model import TTestElement
 
 
 def select_by_no(element_no) -> TTestElement:
     return TTestElement.filter_by(ELEMENT_NO=element_no).first()
+
+
+def get_root_by_number(root_no) -> TTestElement:
+    return (
+        TTestElement
+        .filter(
+            TTestElement.ELEMENT_NO==root_no,
+            TTestElement.ELEMENT_TYPE.in_([ElementType.COLLECTION.value, ElementType.SNIPPET.value])
+        )
+        .first()
+    )
 
 
 def is_enabled(element_no) -> bool:

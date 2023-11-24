@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.database import db_execute
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import element_property_dao
-from app.modules.script.dao import workspace_script_dao
+from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.model import TElementChildren
 from app.modules.script.model import TTestElement
@@ -17,10 +17,12 @@ from app.utils.json_util import from_json
 
 def get_workspace_no(root_no) -> str:
     """获取元素空间编号"""
-    if workspace_script := workspace_script_dao.select_by_script(root_no):
-        return workspace_script.WORKSPACE_NO
-    else:
-        raise ServiceError('查询元素空间失败')
+    root = test_element_dao.get_root_by_number(root_no)
+    if not root:
+        raise ServiceError('根元素不存在')
+    if not root.WORKSPACE_NO:
+        raise ServiceError('根元素没有绑定空间')
+    return root.WORKSPACE_NO
 
 
 def get_root_no(element_no) -> str:

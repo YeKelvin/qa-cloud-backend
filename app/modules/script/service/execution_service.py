@@ -4,6 +4,7 @@
 # @Author  : Kelvin.Ye
 import time
 
+from flask import request
 from gevent.event import Event
 from loguru import logger
 from pymeter.runner import Runner as PyMeterRunner
@@ -114,11 +115,9 @@ def debug_pymeter_by_loader(loader, app, socket_id):
 
 
 @http_service
-def execute_collection(req):
+def run_collection(req):
     # 校验空间权限
-    check_workspace_permission(
-        get_workspace_no(get_root_no(req.collectionNo))
-    )
+    check_workspace_permission(get_workspace_no(get_root_no(req.collectionNo)))
 
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
@@ -162,11 +161,9 @@ def execute_collection(req):
 
 
 @http_service
-def execute_worker(req):
+def run_worker(req):
     # 校验空间权限
-    check_workspace_permission(
-        get_workspace_no(get_root_no(req.workerNo))
-    )
+    check_workspace_permission(get_workspace_no(get_root_no(req.workerNo)))
 
     # 查询元素
     worker = test_element_dao.select_by_no(req.workerNo)
@@ -188,7 +185,7 @@ def execute_worker(req):
     def script_loader(app, result_id):
         with app.app_context():
             # 递归加载脚本
-            script = ElementLoader(collection_no, offlines=req.offlines, required_worker=req.workerNo).loads_tree()
+            script = ElementLoader(collection_no, worker_no=req.workerNo, offlines=req.offlines).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
@@ -216,11 +213,9 @@ def execute_worker(req):
 
 
 @http_service
-def execute_sampler(req):
+def run_sampler(req):
     # 校验空间权限
-    check_workspace_permission(
-        get_workspace_no(get_root_no(req.samplerNo))
-    )
+    check_workspace_permission(get_workspace_no(get_root_no(req.samplerNo)))
 
     # 查询元素
     sampler = test_element_dao.select_by_no(req.samplerNo)
@@ -242,8 +237,8 @@ def execute_sampler(req):
     script = ElementLoader(
         collection_no,
         offlines=req.offlines,
-        required_worker=worker_no,
-        required_sampler=req.samplerNo,
+        worker_no=worker_no,
+        sampler_no=req.samplerNo
     ).loads_tree()
 
     # 添加 socket 组件
@@ -269,11 +264,9 @@ def execute_sampler(req):
 
 
 @http_service
-def execute_snippet(req):
+def run_snippet(req):
     # 校验空间权限
-    check_workspace_permission(
-        get_workspace_no(get_root_no(req.snippetNo))
-    )
+    check_workspace_permission(get_workspace_no(get_root_no(req.snippetNo)))
 
     # 查询元素
     snippet = test_element_dao.select_by_no(req.snippetNo)
@@ -305,6 +298,49 @@ def execute_snippet(req):
 
     # 新建线程执行脚本
     executor.submit(debug_pymeter, script, req.socketId, result_id)
+
+
+@http_service
+def run_offline(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
+    # 获取离线数据
+    offline = req.offlines.get(req.offlineNo)
+    if not offline:
+        raise ServiceError('离线数据不存在')
+
+    # 定义 loader 函数
+    def script_loader(app, result_id):
+        with app.app_context():
+            # 递归加载脚本
+            script = ElementLoader(
+                req.rootNo, worker_no=req.parentNo, offline_no=req.offlineNo, offlines=req.offlines
+            ).loads_tree()
+            # 添加 socket 组件
+            add_flask_sio_result_collector(
+                script,
+                socket_id=req.socketId,
+                result_id=result_id,
+                result_name=offline['elementName']
+            )
+            # 添加变量组件
+            add_variable_dataset(
+                script,
+                datasets=req.datasets,
+                offlines=req.offlines,
+                additional=req.variables,
+                use_current=req.useCurrentValue
+            )
+            return script
+
+    # 新建线程执行脚本
+    executor.submit(
+        debug_pymeter_by_loader,
+        loader=script_loader,
+        app=get_flask_app(),
+        socket_id=req.socketId
+    )
 
 
 @http_service

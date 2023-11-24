@@ -2,21 +2,25 @@
 # @File    : element_loader.py
 # @Time    : 2021-10-02 13:04:49
 # @Author  : Kelvin.Ye
+from collections import deque
+
 from loguru import logger
 
 from app.database import db_query
-from app.modules.script.dao import database_config_dao
 from app.modules.script.dao import element_children_dao
 from app.modules.script.dao import http_header_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
+from app.modules.script.enum import has_children
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_test_collection
 from app.modules.script.enum import is_test_snippet
 from app.modules.script.manager.element_component import add_http_session_manager
 from app.modules.script.manager.element_component import create_argument
+from app.modules.script.manager.element_component import create_http_argument
+from app.modules.script.manager.element_component import create_http_file_argument
 from app.modules.script.manager.element_component import create_http_header
 from app.modules.script.manager.element_component import create_http_header_manager
 from app.modules.script.manager.element_component import create_http_session_manager
@@ -40,7 +44,7 @@ def test_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.required_worker and element.number != loader.required_worker:
+    if loader.specified_worker_no and element.number != loader.specified_worker_no:
         logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
         raise CheckError()
 
@@ -49,7 +53,7 @@ def setup_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.required_worker and element.number != loader.required_worker:
+    if loader.specified_worker_no and element.number != loader.specified_worker_no:
         logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
         raise CheckError()
 
@@ -58,7 +62,7 @@ def teardown_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.required_worker and element.number != loader.required_worker:
+    if loader.specified_worker_no and element.number != loader.specified_worker_no:
         logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
         raise CheckError()
 
@@ -99,6 +103,14 @@ def test_collection_loader(**kwargs):
     loader.add_element_components(element.number, children, offlines=components)
 
 
+def database_engine_loader(**kwargs):
+    element: TTestElement = kwargs.get('element')
+    props: dict = kwargs.get('props')
+    database_type = element.attrs['DatabaseEngine__database_type']
+    props['DatabaseEngine__driver'] = DatabaseDriver[database_type].value,
+    props['DatabaseEngine__database_type'] = DatabaseType[database_type].value,
+
+
 def test_worker_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
@@ -109,6 +121,12 @@ def test_worker_loader(**kwargs):
         add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
     loader.add_element_components(element.number, children, offlines=components)
+    # 添加离线取样器至用例最后
+    if loader.offline_no:
+        offline = loader.loads_element(loader.offline_no)
+        if not offline:
+            raise ServiceError('加载离线取样器失败')
+        children.append(offline)
 
 
 def setup_worker_loader(**kwargs):
@@ -121,6 +139,12 @@ def setup_worker_loader(**kwargs):
         add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
     loader.add_element_components(element.number, children, offlines=components)
+    # 添加离线取样器至用例最后
+    if loader.offline_no:
+        offline = loader.loads_element(loader.offline_no)
+        if not offline:
+            raise ServiceError('加载离线取样器失败')
+        children.append(offline)
 
 
 def teardown_worker_loader(**kwargs):
@@ -133,13 +157,72 @@ def teardown_worker_loader(**kwargs):
         add_http_session_manager(element.attrs.get('Worker__clear_http_session_each_iteration', False), children)
     # 添加元素组件
     loader.add_element_components(element.number, children, offlines=components)
+    # 添加离线取样器至用例最后
+    if loader.offline_no:
+        offline = loader.loads_element(loader.offline_no)
+        if not offline:
+            raise ServiceError('加载离线取样器失败')
+        children.append(offline)
 
 
 def http_sampler_loader(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
+    props: dict = kwargs.get('props')
     children: list = kwargs.get('children')
     components: list = kwargs.get('components')
+    props['HTTPSampler__headers'] = None
+    props['HTTPSampler__params'] = None
+    props['HTTPSampler__forms'] = None
+    props['HTTPSampler__files'] = None
+    # 添加请求头
+    if headers := element.attrs.get('HTTPSampler__headers', []):
+        props['HTTPSampler__headers'] = {
+            'class': 'HTTPHeaderManager',
+            'property': {
+                'HeaderManager__headers': [
+                    create_http_header(header['name'], header['value'])
+                    for header in headers
+                    if header['enabled'] and header['name'] and header['value']
+                ]
+            }
+        }
+    # 添加QUERY参数
+    if querys := element.attrs.get('HTTPSampler__querys', []):
+        props['HTTPSampler__params'] = {
+            'class': 'Arguments',
+            'property': {
+                'Arguments__arguments': [
+                    create_http_argument(arg['name'], arg['value'])
+                    for arg in querys
+                    if arg['enabled'] and arg['name'] and arg['value']
+                ]
+            }
+        }
+    # 添加表单参数
+    if forms := element.attrs.get('HTTPSampler__forms', []):
+        props['HTTPSampler__forms'] = {
+            'class': 'Arguments',
+            'property': {
+                'Arguments__arguments': [
+                    create_http_argument(arg['name'], arg['value'])
+                    for arg in forms
+                    if arg['enabled'] and arg['name'] and arg['value']
+                ]
+            }
+        }
+    # 添加文件参数
+    if files := element.attrs.get('HTTPSampler__files', []):
+        props['HTTPSampler__files'] = {
+            'class': 'Arguments',
+            'property': {
+                'Arguments__arguments': [
+                    create_http_file_argument(arg['name'], arg['value'], arg['argtype'], arg['mimetype'])
+                    for arg in files
+                    if arg['enabled'] and arg['name'] and arg['value']
+                ]
+            }
+        }
     # 添加HTTP请求头管理器
     loader.add_http_header_manager(element.attrs, children)
     # 添加元素组件
@@ -168,6 +251,8 @@ checkers = {
 loaders ={
     # collection
     'TestCollection': test_collection_loader,
+    # config
+    'DatabaseEngine': database_engine_loader,
     # worker
     'TestWorker': test_worker_loader,
     'SetupWorker': setup_worker_loader,
@@ -180,11 +265,15 @@ loaders ={
 
 class ElementLoader:
 
-    def __init__(self, root_no, offlines=None, required_worker=None, required_sampler=None):
+    def __init__(self, root_no, worker_no=None, sampler_no=None, offline_no=None, offlines=None, aloneness=False):
         # 数据库缓存
-        self.caches = {} # { ElementClass: {} }
+        self.caches = {} # { 'ElementClass': { 'elementNo': {} } }
+        # 全局配置器
+        self.configurator = {} # { 'ElementClass': { 'elementNo': {} } }
         # 离线数据
         self.offlines = offlines or {}
+        # 离线的请求编号
+        self.offline_no = offline_no
         # 根元素编号
         self.root_no = root_no
         # 根元素对象
@@ -194,15 +283,15 @@ class ElementLoader:
         # 空间元素对象
         self.workspace_element:TTestElement = None
         # 指定的用例编号
-        self.required_worker = required_worker
+        self.specified_worker_no = worker_no
         # 指定的请求编号
-        self.required_sampler = required_sampler
+        self.specified_sampler_no = sampler_no
         # 寻找用例标识
         self.worker_found = False
         # 寻找请求标识
         self.sampler_found = False
-        # 全局配置器
-        self.global_config = {} # { ElementClass: [] }
+        # 独立运行
+        self.aloneness = aloneness
 
     def get_root_element(self) -> TTestElement:
         root, _, _ = self.get_offline_element(self.root_no)
@@ -237,12 +326,13 @@ class ElementLoader:
 
         return ws, compos
 
-    def loads_tree(self):
+    def loads_tree(self) -> dict:
         """根据元素编号加载脚本"""
         logger.debug(
             f'开始加载脚本'
-            f'\n指定的用例编号:[ {self.required_worker} ]'
-            f'\n指定的请求编号:[ {self.required_sampler} ]'
+            f'\n独立运行:[ {"是" if self.aloneness else "否"} ]'
+            f'\n指定的用例编号:[ {self.specified_worker_no} ]'
+            f'\n指定的请求编号:[ {self.specified_sampler_no or self.offline_no} ]'
         )
         # 加载脚本
         if is_test_collection(self.root_element):
@@ -258,8 +348,8 @@ class ElementLoader:
         if not collection:
             raise ServiceError('脚本异常，请联系管理员')
         # 添加全局配置
-        for configs in self.global_config.values():
-            for config in configs:
+        for configs in self.configurator.values():
+            for config in configs.values():
                 collection['children'].insert(0, config)
         # 获取配置属性和脚本属性
         attributes = collection.get('attribute')
@@ -316,6 +406,7 @@ class ElementLoader:
         """从离线数据中读取元素信息，包含TTestElement对象，元素属性和元素组件"""
         if offline := self.offlines.get(element_no):
             # 组装元素信息
+            enabled = True if self.offline_no else offline.get('enabled', test_element_dao.is_enabled(element_no))
             element = TTestElement(
                 ELEMENT_NO=element_no,
                 ELEMENT_NAME=offline.get('elementName'),
@@ -323,7 +414,7 @@ class ElementLoader:
                 ELEMENT_TYPE=offline.get('elementType'),
                 ELEMENT_CLASS=offline.get('elementClass'),
                 ELEMENT_ATTRS=offline.get('elementAttrs'),
-                ENABLED=offline.get('enabled', test_element_dao.is_enabled(element_no))
+                ENABLED=enabled
             )
             # 分类获取组件列表
             components = offline.get('elementCompos', {})
@@ -350,22 +441,22 @@ class ElementLoader:
             logger.debug(f'元素名称:[ {element.name} ] 元素已禁用, 无需加载')
             return None
         # 元素子代
-        children = []
+        children = deque()
         # 校验组件
         try:
             checker = checkers.get(element.clazz)
             checker and not checker(loader=self, element=element, props=properties)
         except CheckError:
             return None
-        # 加载组件
-        loader = loaders.get(element.clazz)
-        loader and loader(loader=self, element=element, props=properties, children=children, components=components)
         # 非片段请求时直接添加子代
         if not is_snippet_sampler(element):
-            children.extend(self.loads_children(element_no))
+            has_children(element) and children.extend(self.loads_children(element_no))
         # 片段请求则查询片段内容
         else:
             children.extend(self.loads_snippet_sampler(element.attrs))
+        # 加载组件
+        loader = loaders.get(element.clazz)
+        loader and loader(loader=self, element=element, props=properties, children=children, components=components)
         # 组装元素信息并返回
         return {
             'name': element.name,
@@ -375,9 +466,9 @@ class ElementLoader:
                 if is_snippet_sampler(element)
                 else element.clazz
             ),
-            'enabled': element.enabled,
+            'enabled': True,
             'property': properties,
-            'children': children,
+            'children': list(children),
             'attribute': element.attrs
         }
 
@@ -395,7 +486,7 @@ class ElementLoader:
             else:
                 continue
             # 找到指定的 Sampler 就返回
-            if node.ELEMENT_NO == self.required_sampler:
+            if node.ELEMENT_NO == self.specified_sampler_no:
                 self.sampler_found = True
         return children
 
@@ -415,9 +506,11 @@ class ElementLoader:
                 .order_by(TElementComponent.ELEMENT_SORT.asc())
                 .all()
             )
+        compo_list = []
         for el in components:
             if component := self.loads_element(el.ELEMENT_NO):
-                children.append(component)
+                compo_list.append(component)
+        children.extendleft(compo_list)
 
     def loads_snippet_sampler(self, sampler_attrs):
         # 根据片段编号加载片段集合（片段请求在脚本中其实是事务，这里做了一层转换）
@@ -460,12 +553,12 @@ class ElementLoader:
         return trans_children
 
 
-    def add_http_header_manager(self, attributes: dict, children: list):
+    def add_http_header_manager(self, element_attrs: dict, children: list):
         # 查询请求头模板
-        template_refs = attributes.get('HTTPSampler__header_template_refs', [])
+        templates = element_attrs.get('HTTPSampler__header_templates', [])
 
         # 没有模板时直接跳过
-        if not template_refs:
+        if not templates:
             return
 
         # 获取请求头管理器缓存
@@ -475,14 +568,14 @@ class ElementLoader:
 
         # 遍历添加请求头
         properties = []
-        for ref in template_refs:
+        for template_no in templates:
             # 先查缓存
-            cache__headers = cache__header_manager.get(ref.TEMPLATE_NO, [])
+            cache__headers = cache__header_manager.get(template_no, [])
             if not cache__headers:
-                headers = http_header_dao.select_all_by_template(ref.TEMPLATE_NO)
+                headers = http_header_dao.select_all_by_template(template_no)
                 for header in headers:
                     cache__headers.append(create_http_header(name=header.HEADER_NAME, value=header.HEADER_VALUE))
-                cache__header_manager[ref.TEMPLATE_NO] = cache__headers
+                cache__header_manager[template_no] = cache__headers
             properties.extend(cache__headers)
 
         # 添加 HTTPHeaderManager 组件
@@ -490,28 +583,14 @@ class ElementLoader:
 
     def add_database_engine(self, engine_no, properties: dict):
         # 查询数据库引擎
-        engine = database_config_dao.select_by_no(engine_no)
-        check_exists(engine, error_msg='数据库引擎不存在')
-        # 实时将引擎变量名称写入元素属性中
-        properties['SQLSampler__engine_name'] = engine.VARIABLE_NAME
-        engines = self.global_config.get(ElementClass.DATABASE_ENGINE.value, [])
+        engine = self.loads_element(engine_no)
+        if not engine:
+            raise ServiceError('数据库配置不存在')
+        # 将引擎变量名称存入取样器属性中
+        properties['SQLSampler__engine_name'] = engine['property']['DatabaseEngine__variable_name']
+        # 存储全局组件
+        engines = self.configurator.get(ElementClass.DATABASE_ENGINE.value, {})
         if not engines:
-            self.global_config[ElementClass.DATABASE_ENGINE.value] = engines
-        engines.append({
-            'name': engine.DATABASE_NAME,
-            'desc': engine.DATABASE_DESC,
-            'class': 'DatabaseEngine',
-            'enabled': True,
-            'property': {
-                'DatabaseEngine__variable_name': engine.VARIABLE_NAME,
-                'DatabaseEngine__database_type': DatabaseType[engine.DATABASE_TYPE].value,
-                'DatabaseEngine__driver': DatabaseDriver[engine.DATABASE_TYPE].value,
-                'DatabaseEngine__username': engine.USERNAME,
-                'DatabaseEngine__password': engine.PASSWORD,
-                'DatabaseEngine__host': engine.HOST,
-                'DatabaseEngine__port': engine.PORT,
-                'DatabaseEngine__query': engine.QUERY,
-                'DatabaseEngine__database': engine.DATABASE,
-                'DatabaseEngine__connect_timeout': engine.CONNECT_TIMEOUT
-            }
-        })
+            self.configurator[ElementClass.DATABASE_ENGINE.value] = engines
+        if engine_no not in engines:
+            engines[engine_no] = engine

@@ -11,13 +11,13 @@ from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementType
 from app.modules.script.manager.element_component import add_variable_dataset
 from app.modules.script.manager.element_loader import ElementLoader
-from app.modules.script.service.execution_service import run_testplan
+from app.modules.script.service.execution_service import execute_testplan
 from app.tools.exceptions import ServiceError
 
 
 def execute_testplan(planNo, datasets, useCurrentValue):  # noqa
     with apscheduler.app.app_context():
-        run_testplan(planNo, datasets, useCurrentValue, check_workspace=False)
+        execute_testplan(planNo, datasets, useCurrentValue, check_workspace=False)
 
 
 def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
@@ -54,7 +54,7 @@ def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
             raise ServiceError('元素节点不存在')
         # 根据 collectionNo 递归加载脚本
         collection_no = worker_node.PARENT_NO
-        script = ElementLoader(collection_no, required_worker=workerNo).loads_tree()
+        script = ElementLoader(collection_no, worker_no=workerNo).loads_tree()
         # 添加变量组件
         if datasets:
             add_variable_dataset(script, datasets=datasets, use_current=useCurrentValue)

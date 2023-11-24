@@ -264,13 +264,6 @@ def init_permission_item():
     create_permission('SCRIPT', 'HTTP_HEADER', '新增HTTP请求头', 'CREATE_HTTP_HEADER', 'CREATE')
     create_permission('SCRIPT', 'HTTP_HEADER', '修改HTTP请求头', 'MODIFY_HTTP_HEADER', 'MODIFY')
     create_permission('SCRIPT', 'HTTP_HEADER', '删除HTTP请求头', 'REMOVE_HTTP_HEADER', 'REMOVE')
-    # database
-    create_permission('SCRIPT', 'DATABASE', '查询数据库配置', 'QUERY_DATABASE_ENGINE', 'QUERY')
-    create_permission('SCRIPT', 'DATABASE', '新增数据库配置', 'CREATE_DATABASE_ENGINE', 'CREATE')
-    create_permission('SCRIPT', 'DATABASE', '修改数据库配置', 'MODIFY_DATABASE_ENGINE', 'MODIFY')
-    create_permission('SCRIPT', 'DATABASE', '删除数据库配置', 'REMOVE_DATABASE_ENGINE', 'REMOVE')
-    create_permission('SCRIPT', 'DATABASE', '复制数据库配置', 'COPY_DATABASE_ENGINE', 'COPY')
-    create_permission('SCRIPT', 'DATABASE', '移动数据库配置', 'MOVE_DATABASE_ENGINE', 'MOVE')
     # testplan
     create_permission('SCRIPT', 'TESTPLAN', '查询测试计划', 'QUERY_TESTPLAN', 'QUERY')
     create_permission('SCRIPT', 'TESTPLAN', '新增测试计划', 'CREATE_TESTPLAN', 'CREATE')

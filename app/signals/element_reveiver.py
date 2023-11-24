@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import aliased
 
 from app.database import db_execute
-from app.modules.script.dao import workspace_script_dao
+from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import ElementOperationType
 from app.modules.script.enum import ElementType
 from app.modules.script.model import TElementChangelog
@@ -49,7 +49,7 @@ def get_workspace_no():
 
 
 def is_root_node(element_no):
-    return workspace_script_dao.select_by_script(element_no)
+    return test_element_dao.get_root_by_number(element_no)
 
 
 def get_child_node(element_no):
@@ -112,29 +112,34 @@ def get_root_no(element_no):
     if root_no == 0:
         node = get_element_node(element_no)
         if node:
-            if node.ROOT == ElementType.WORKSPACE.value:
+            if node.ROOT_NO == ElementType.WORKSPACE.value:
                 root_no = None # 空间组件没有根元素
             else:
                 root_no = node.ROOT_NO # 有节点时直接拿根元素（集合/片段）
         else:
-            if is_root_node(element_no):
-                root_no = element_no # 没有节点时判断自身是否为根元素
+            if is_root_node(element_no): # 没有节点时判断自身是否为根元素
+                root_no = element_no
             root_no = None # 空间元素
 
         localvar__root_no.set(root_no)
     return root_no
 
 
-def get_worker_no(parent_no):
+def get_worker_no(element_no):
     stmt = (
         select(
             TElementChildren.PARENT_NO,
-            TTestElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TElementChildren.ELEMENT_NO,
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE'),
+            TChildElement.ELEMENT_TYPE.label('ELEMENT_TYPE'),
         )
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.PARENT_NO)
-        .where(TElementChildren.ELEMENT_NO == parent_no)
+        .join(TParentElement, TParentElement.ELEMENT_NO == TElementChildren.PARENT_NO)
+        .join(TChildElement, TChildElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
+        .where(TElementChildren.ELEMENT_NO == element_no)
     )
     node = db_execute(stmt).first()
+    if node.ELEMENT_TYPE == ElementType.WORKER.value:
+        return node.ELEMENT_NO
     if node.PARENT_TYPE == ElementType.WORKER.value:
         return node.PARENT_NO
     return get_worker_no(node.PARENT_NO) # 找不到时继续递归往上找

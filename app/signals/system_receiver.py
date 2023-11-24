@@ -19,7 +19,7 @@ from app.utils.json_util import to_json
 
 
 # resrapi排除列表
-URI_EXCLUDE = ['/execute']
+EXCLUDED_URI = ['/run', '/execute']
 
 
 @restapi_log_signal.connect
@@ -30,7 +30,7 @@ def record_restapi_log(sender, method, uri, request, response, success, elapsed)
         if method not in ['POST', 'PUT', 'DELETE']:
             return
         # 过滤指定路径的请求
-        for path in URI_EXCLUDE:
+        for path in EXCLUDED_URI:
             if path in uri:
                 return
         # 获取接口描述

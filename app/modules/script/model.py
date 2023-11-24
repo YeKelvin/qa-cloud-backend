@@ -10,24 +10,18 @@ from app.database import TableModel
 from app.database import db
 
 
-class TWorkspaceScript(TableModel, BaseColumn):
-    """空间脚本表"""
-    __tablename__ = 'WORKSPACE_SCRIPT'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, nullable=False, comment='空间编号')
-    ELEMENT_NO = db.Column(db.String(32), index=True, nullable=False, comment='元素编号(集合或片段)')
-
-
 class TTestElement(TableModel, BaseColumn):
     """测试元素表"""
     __tablename__ = 'TEST_ELEMENT'
+    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
     ELEMENT_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='元素编号')
     ELEMENT_NAME = db.Column(db.String(256), nullable=False, comment='元素名称')
     ELEMENT_DESC = db.Column(db.String(512), comment='元素描述')
     ELEMENT_TYPE = db.Column(db.String(64), nullable=False, comment='元素类型')
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
     ELEMENT_ATTRS = db.Column(JSONB, comment='元素属性(与加载过程相关但与运行时无关的属性)')
-    ELEMENT_METADATA = db.Column(db.String(512), comment='元素的元数据')
-    ENABLED = db.Column(JSONB, nullable=False, default=True, comment='是否启用')
+    ELEMENT_METADATA = db.Column(JSONB, comment='元素的元数据')
+    ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
 
     @property
     def number(self):
@@ -169,24 +163,6 @@ class THttpHeader(TableModel, BaseColumn):
     HEADER_DESC = db.Column(db.String(256), comment='请求头描述')
     ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
     UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DELETED', name='unique_template_header')
-
-
-class TDatabaseConfig(TableModel, BaseColumn):
-    """数据库配置表"""
-    __tablename__ = 'DATABASE_CONFIG'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
-    DATABASE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='数据库编号')
-    DATABASE_NAME = db.Column(db.String(256), nullable=False, comment='数据库名称')
-    DATABASE_DESC = db.Column(db.String(256), comment='数据库描述')
-    DATABASE_TYPE = db.Column(db.String(64), nullable=False, comment='数据库类型')
-    USERNAME = db.Column(db.String(256), nullable=False, comment='数据库用户名称')
-    PASSWORD = db.Column(db.String(256), nullable=False, comment='数据库用户密码')
-    HOST = db.Column(db.String(128), nullable=False, comment='数据库主机')
-    PORT = db.Column(db.String(32), nullable=False, comment='数据库端口')
-    QUERY = db.Column(db.String(256), comment='数据库主机地址')
-    DATABASE = db.Column(db.String(256), nullable=False, comment='数据库库名')
-    VARIABLE_NAME = db.Column(db.String(256), nullable=False, comment='对象变量名称')
-    CONNECT_TIMEOUT = db.Column(db.String(128), nullable=False, comment='连接超时时间')
 
 
 class TElementTag(TableModel, BaseColumn):

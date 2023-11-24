@@ -77,9 +77,10 @@ def create_transaction_http_session_manager(name='事务HTTP会话管理器', de
     }
 
 
-def create_argument(name, value):
+def create_argument(name, value, enabled=True):
     return {
         'class': 'Argument',
+        'enabled': enabled,
         'property': {
             'Argument__name': name,
             'Argument__value': value,
@@ -98,12 +99,37 @@ def create_transaction_parameter(arguments, name='事务参数', desc=''):
         }
     }
 
-def create_http_header(name, value):
+def create_http_header(name, value, enabled=True):
     return {
         'class': 'HTTPHeader',
+        'enabled': enabled,
         'property': {
             'Header__name': name,
             'Header__value': value
+        }
+    }
+
+
+def create_http_argument(name, value, enabled=True):
+    return {
+        'class': 'HTTPArgument',
+        'enabled': enabled,
+        'property': {
+            'Argument__name': name,
+            'Argument__value': value,
+        },
+    }
+
+
+def create_http_file_argument(name, value, argtype='', mimetype='', enabled=True):
+    return {
+        'class': 'HTTPFileArgument',
+        'enabled': enabled,
+        'property': {
+            'Argument__name': name,
+            'Argument__value': value,
+            'Argument__argtype': argtype,
+            'Argument__mimetype': mimetype,
         }
     }
 
@@ -188,6 +214,8 @@ def add_variable_dataset(
     # 添加额外的变量
     if additional:
         for name, value in additional.items():
+            if not name: # 过滤名字为空的变量
+                continue
             # 如果额外变量的值还是变量，则先在变量集中查找真实值并替换
             if value.startswith('${') and value.endswith('}'):
                 variables[name] = variables.get(value[2:-1])
@@ -234,6 +262,9 @@ def get_variables(datasets: list, use_current: bool, offlines: dict=None) -> dic
         for variable in variables:
             # 过滤非启用状态的变量
             if not variable.ENABLED:
+                continue
+            # 过滤名字为空的变量
+            if not variable.VARIABLE_NAME:
                 continue
             if use_current and variable.CURRENT_VALUE:
                 result[variable.VARIABLE_NAME] = variable.CURRENT_VALUE

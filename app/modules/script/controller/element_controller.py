@@ -96,13 +96,12 @@ def query_element_tree_by_roots():
     return service.query_element_tree_by_roots(req)
 
 
-@blueprint.post('/element/root')
+@blueprint.post('/element')
 @require_login
 @require_permission('CREATE_ELEMENT')
-def create_element_root():
+def create_element():
     """新增根元素"""
     req = JsonParser(
-        Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementName', required=True, nullable=False, help='元素名称不能为空'),
         Argument('elementDesc'),
         Argument('elementType', required=True, nullable=False, help='元素类型不能为空'),
@@ -111,7 +110,7 @@ def create_element_root():
         Argument('elementProps', type=dict),
         Argument('elementCompos', type=dict)
     ).parse()
-    return service.create_element_root(req)
+    return service.create_element(req)
 
 
 @blueprint.post('/element/child')
@@ -212,7 +211,9 @@ def move_element():
 @require_permission('COPY_ELEMENT')
 def duplicate_element():
     """复制元素及其子代"""
-    req = JsonParser(Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')).parse()
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
     return service.duplicate_element(req)
 
 
@@ -240,25 +241,36 @@ def query_element_components():
     return service.query_element_components(req)
 
 
-@blueprint.post('/element/root/copy/to/workspace')
+@blueprint.post('/element/copy/to/workspace')
 @require_login
 @require_permission('COPY_ELEMENT')
-def copy_root_to_workspace():
+def copy_element_to_workspace():
     """复制集合到指定空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.copy_root_to_workspace(req)
+    return service.copy_element_to_workspace(req)
 
 
-@blueprint.post('/element/root/move/to/workspace')
+@blueprint.post('/element/move/to/workspace')
 @require_login
 @require_permission('MOVE_ELEMENT')
-def move_root_to_workspace():
+def move_element_to_workspace():
     """移动集合到指定空间"""
     req = JsonParser(
         Argument('workspaceNo', required=True, nullable=False, help='空间编号不能为空'),
         Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
     ).parse()
-    return service.move_root_to_workspace(req)
+    return service.move_element_to_workspace(req)
+
+
+@blueprint.get('/element/database/engine/all')
+@require_login
+@require_permission('QUERY_ELEMENT')
+def query_database_engine_all():
+    """查询全部数据库配置"""
+    req = JsonParser(
+        Argument('workspaceNo')
+    ).parse()
+    return service.query_database_engine_all(req)

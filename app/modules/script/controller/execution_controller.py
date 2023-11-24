@@ -10,68 +10,86 @@ from app.tools.require import require_login
 from app.tools.require import require_permission
 
 
-@blueprint.post('/collection/execute')
+@blueprint.post('/element/collection/run')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_collection():
+def run_collection():
     """运行测试集合"""
     req = JsonParser(
         Argument('collectionNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('offlines', type=dict, default={}),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.execute_collection(req)
+    return service.run_collection(req)
 
 
-@blueprint.post('/worker/execute')
+@blueprint.post('/element/worker/run')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_worker():
+def run_worker():
     """运行测试用例"""
     req = JsonParser(
         Argument('workerNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('offlines', type=dict, default={}),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.execute_worker(req)
+    return service.run_worker(req)
 
 
-@blueprint.post('/sampler/execute')
+@blueprint.post('/element/sampler/run')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_sampler():
+def run_sampler():
     """运行取样器"""
     req = JsonParser(
         Argument('samplerNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('offlines', type=dict, default={}),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.execute_sampler(req)
+    return service.run_sampler(req)
 
 
-@blueprint.post('/snippet/execute')
+@blueprint.post('/element/snippet/run')
 @require_login
 @require_permission('RUN_ELEMENT')
-def execute_snippet():
+def run_snippet():
     """运行片段集合"""
     req = JsonParser(
         Argument('snippetNo', required=True, nullable=False, help='元素编号不能为空'),
-        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('offlines', type=dict, default={}),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('datasets', type=list, default=[]),
         Argument('variables', type=dict, default={}),
         Argument('useCurrentValue', type=bool, default=False)
     ).parse()
-    return service.execute_snippet(req)
+    return service.run_snippet(req)
+
+
+@blueprint.post('/element/offline/run')
+@require_login
+@require_permission('RUN_ELEMENT')
+def run_offline():
+    """运行片段集合"""
+    req = JsonParser(
+        Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
+        Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('offlineNo', required=True, nullable=False, help='离线编号不能为空'),
+        Argument('offlines', type=dict, required=True, nullable=False, help='离线数据不能为空'),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('datasets', type=list, default=[]),
+        Argument('variables', type=dict, default={}),
+        Argument('useCurrentValue', type=bool, default=False)
+    ).parse()
+    return service.run_offline(req)
 
 
 @blueprint.post('/testplan/execute')

@@ -151,18 +151,18 @@ def count_changelog_by_workspace(workspace_no):  # sourcery skip: none-compare
             select(func.count(TElementChangelog.ID).label('count'))
             .where(
                 TElementChangelog.WORKSPACE_NO == workspace_no,
-            TElementChangelog.ROOT_NO == None,  # noqa: E711
-            TElementChangelog.CASE_NO == None,  # noqa: E711
-            TElementChangelog.PARENT_NO == None  # noqa: E711
+                TElementChangelog.ROOT_NO == None,  # noqa: E711
+                TElementChangelog.CASE_NO == None,  # noqa: E711
+                TElementChangelog.PARENT_NO == None  # noqa: E711
             )
         ),
         (
             select(func.count(TElementChangelog.ID).label('count'))
             .where(
                 TElementChangelog.WORKSPACE_NO == workspace_no,
-            TElementChangelog.ROOT_NO == None,  # noqa: E711
-            TElementChangelog.CASE_NO == None,  # noqa: E711
-            TElementChangelog.PARENT_NO == workspace_no  # noqa: E711
+                TElementChangelog.ROOT_NO == None,  # noqa: E711
+                TElementChangelog.CASE_NO == None,  # noqa: E711
+                TElementChangelog.PARENT_NO == workspace_no  # noqa: E711
             )
         )
     )

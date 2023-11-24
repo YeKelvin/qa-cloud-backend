@@ -8,7 +8,6 @@ from flask import Blueprint
 blueprint = Blueprint('script', __name__, url_prefix='/script')
 
 
-from . import database_controller   # noqa
 from . import debug_controller      # noqa
 from . import element_controller    # noqa
 from . import execution_controller  # noqa
