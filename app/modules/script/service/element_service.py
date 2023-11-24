@@ -1239,3 +1239,74 @@ def query_database_engine_all(req):
         }
         for item in items
     ]
+
+
+@http_service
+def fix_element():
+    samplers = TTestElement.filter_by(ELEMENT_CLASS='HTTPSampler').all()
+    success = 0
+    errors = []
+    for sampler in samplers:
+        logger.info(f'当前元素:[ {sampler.name} ]')
+        try:
+            headers = []
+            querys = []
+            forms = []
+            files = []
+            headers_prop = element_property_dao.select_by_name(sampler.ELEMENT_NO, 'HTTPSampler__headers')
+            params_prop = element_property_dao.select_by_name(sampler.ELEMENT_NO, 'HTTPSampler__params')
+            body_prop = element_property_dao.select_by_name(sampler.ELEMENT_NO, 'HTTPSampler__data')
+            if headers_prop and headers_prop.PROPERTY_VALUE:
+                manager = from_json(headers_prop.PROPERTY_VALUE)
+                for header in manager['property']['HeaderManager__headers']:
+                    headers.append({
+                        'enabled': header['enabled'],
+                        'name': header['property']['Header__name'],
+                        'value': header['property']['Header__value'],
+                        'desc': ''
+                    })
+            if params_prop and params_prop.PROPERTY_VALUE:
+                manager = from_json(params_prop.PROPERTY_VALUE)
+                for arg in manager['property']['Arguments__arguments']:
+                    querys.append({
+                        'enabled': arg['enabled'],
+                        'name': arg['property']['Argument__name'],
+                        'value': arg['property']['Argument__value'],
+                        'desc': arg['property']['Argument__desc']
+                    })
+            if body_prop and body_prop.PROPERTY_VALUE:
+                if 'Arguments' in body_prop.PROPERTY_VALUE:
+                    manager = from_json(body_prop.PROPERTY_VALUE)
+                    for arg in manager['property']['Arguments__arguments']:
+                        if 'HTTPFileArgument' in body_prop.PROPERTY_VALUE:
+                            files.append({
+                                'enabled': arg['enabled'],
+                                'name': arg['property']['Argument__name'],
+                                'desc': arg['property']['Argument__desc'],
+                                'value': arg['property']['Argument__value'],
+                                'argtype': arg['property']['Argument__argtype'],
+                                'mimetype': arg['property']['Argument__argtype']
+                            })
+                        else:
+                            forms.append({
+                                'enabled': arg['enabled'],
+                                'type': 'string',
+                                'name': arg['property']['Argument__name'],
+                                'desc': arg['property']['Argument__desc'],
+                                'value': arg['property']['Argument__value']
+                            })
+                    body_prop.update(PROPERTY_VALUE='')
+            attrs = {
+                'HTTPSampler__header_templates': [],
+                'HTTPSampler__headers': headers,
+                'HTTPSampler__querys': querys,
+                'HTTPSampler__forms': forms,
+                'HTTPSampler__files': files
+            }
+            logger.info(f'修复后的attrs:[ {attrs} ]')
+            sampler.update(ELEMENT_ATTRS=attrs)
+            success += 1
+        except Exception:
+            errors.append(sampler.ELEMENT_NO)
+            logger.exception('异常啦')
+    return {'success': success, 'errors': errors}
