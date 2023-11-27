@@ -78,9 +78,9 @@ class CRUDMixin:
     @classmethod
     def insert(cls: type[T], **kwargs):
         """插入数据"""
+        record = kwargs.pop('record', True)
         entity = cls(**kwargs)
         entity.submit()
-        record = kwargs.pop('record', True)
         record and record_insert_signal.send(entity=entity)
 
     @classmethod
