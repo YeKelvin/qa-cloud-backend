@@ -274,9 +274,3 @@ def query_database_engine_all():
         Argument('workspaceNo')
     ).parse()
     return service.query_database_engine_all(req)
-
-
-@blueprint.post('/element/fix/run')
-def fix_element():
-    """修复"""
-    return service.fix_element()
