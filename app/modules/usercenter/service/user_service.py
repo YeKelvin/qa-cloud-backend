@@ -248,9 +248,13 @@ def create_user(req):
     login_info = user_login_info_dao.select_by_loginname(req.loginName)
     check_not_exists(login_info, error_msg='登录账号已存在')
 
-    # 查询用户
-    user = user_dao.select_first(USER_NAME=req.userName, MOBILE=req.mobile, EMAIL=req.email)
-    check_not_exists(user, error_msg='用户已存在')
+    # 查询手机号是否存在
+    mobile = user_dao.select_first(MOBILE=req.mobile)
+    check_not_exists(mobile, error_msg='手机号已被占用')
+
+    # 查询邮箱是否存在
+    email = user_dao.select_first(EMAIL=req.email)
+    check_not_exists(email, error_msg='邮箱已被占用')
 
     # 创建用户
     user_no = new_id()
@@ -483,8 +487,8 @@ def modify_user_info(req):
     user = user_dao.select_by_no(user_no)
     check_exists(user, error_msg='用户不存在')
     # 更新用户登录信息
-    update_user_mobile_login_info(user_no, user.MOBILE, req.mobile)
-    update_user_email_login_info(user_no, user.EMAIL, req.email)
+    update_user_login_info_by_mobile(user_no, user.MOBILE, req.mobile)
+    update_user_login_info_by_email(user_no, user.EMAIL, req.email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
@@ -493,7 +497,7 @@ def modify_user_info(req):
     )
 
 
-def update_user_mobile_login_info(user_no, old_mobile, new_mobile):
+def update_user_login_info_by_mobile(user_no, old_mobile, new_mobile):
     # 新手机号为空时无需处理
     if new_mobile is None:
         return
@@ -520,7 +524,7 @@ def update_user_mobile_login_info(user_no, old_mobile, new_mobile):
         old_login_info and old_login_info.delete()
 
 
-def update_user_email_login_info(user_no, old_email, new_email):
+def update_user_login_info_by_email(user_no, old_email, new_email):
     # 新邮箱为空时无需处理
     if new_email is None:
         return
@@ -606,8 +610,8 @@ def modify_user(req):
     user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
     # 更新用户登录信息
-    update_user_mobile_login_info(req.userNo, user.MOBILE, req.mobile)
-    update_user_email_login_info(req.userNo, user.EMAIL, req.email)
+    update_user_login_info_by_mobile(req.userNo, user.MOBILE, req.mobile)
+    update_user_login_info_by_email(req.userNo, user.EMAIL, req.email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,

@@ -65,6 +65,7 @@ def initdata():
     init_permission()
     init_user_role()
     init_global_variable_dataset()
+    db.session.commit()
     click.echo('初始化数据成功')
 
 
