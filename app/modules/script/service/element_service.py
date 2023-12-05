@@ -444,7 +444,7 @@ def record_element_changelog(element: TTestElement, new_name: str, new_desc: str
             new_value=new_desc
         )
     # 元素属性
-    old_attrs = element.ELEMENT_ATTRS
+    old_attrs = element.attrs
     for attr_name, new_value in new_attrs.items():
         old_value = old_attrs.get(attr_name)
         if isinstance(old_value, dict | list):
