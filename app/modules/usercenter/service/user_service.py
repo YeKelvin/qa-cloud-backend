@@ -192,6 +192,13 @@ def login_by_enterprise(req):
             DATASET_TYPE=VariableDatasetWeight.WORKSPACE.name,
             DATASET_WEIGHT=VariableDatasetWeight.WORKSPACE.value
         )
+        # 创建空间元素
+        TTestElement.insert(
+            ELEMENT_NO=workspace_no,
+            ELEMENT_NAME='空间元素',
+            ELEMENT_TYPE=ElementType.WORKSPACE.value,
+            ELEMENT_CLASS=ElementClass.TEST_WORKSPACE.value
+        )
     else:
         # 更新用户信息和登录状态
         kwargs = {'LOGGED_IN': True}
