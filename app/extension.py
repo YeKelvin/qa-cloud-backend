@@ -17,12 +17,13 @@ from app import config as CONFIG
 
 FLASK_DEBUG = bool(os.environ.get('FLASK_DEBUG'))
 
-sio_opts = {}
-if FLASK_DEBUG:
-    sio_opts['cors_allowed_origins'] = '*'
+# sio_opts = {}
+# if FLASK_DEBUG:
+#     sio_opts['cors_allowed_origins'] = '*'
+socketio_options = {'cors_allowed_origins': '*'}
 
 db: SQLAlchemy = SQLAlchemy()
 migrate = Migrate()
-socketio = SocketIO(**sio_opts)
+socketio = SocketIO(**socketio_options)
 executor = ThreadPoolExecutor(max_workers=CONFIG.THREAD_EXECUTOR_WORKERS_MAX)
 apscheduler = APScheduler() if FLASK_DEBUG else APScheduler(GeventScheduler())
