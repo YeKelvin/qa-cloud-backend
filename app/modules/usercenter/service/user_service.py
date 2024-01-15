@@ -56,7 +56,8 @@ from app.utils.time_util import timestamp_to_utc8_datetime
 def login(req):
     try:
         # 查询用户登录信息
-        login_info = user_login_info_dao.select_by_loginname(req.loginName)
+        login_name = req.loginName.strip().lower()
+        login_info = user_login_info_dao.select_by_loginname(login_name)
         if not login_info:
             logger.info('用户登录信息不存在')
             raise ServiceError('账号或密码不正确')
@@ -85,7 +86,7 @@ def login(req):
         decrypted_password = decrypt_by_rsa_private_key(req.password, secret_key)
 
         # 校验密码是否正确
-        password_success = check_password(req.loginName, user_password.PASSWORD, decrypted_password)
+        password_success = check_password(login_name, user_password.PASSWORD, decrypted_password)
 
         # 密码校验失败
         if not password_success:
@@ -133,6 +134,10 @@ def login_by_enterprise(req):
     if not CONFIG.SSO_ENTERPRISE_URL:
         raise ServiceError('暂未启用企业账号登录')
 
+    # 邮箱转小写，去空格
+    sso_email = req.email.strip().lower()
+    # TODO: email_domain 改配置，根据邮箱域名去请求对应的认证请求
+
     # 密码RSA解密
     secret_key = cache.encryption_factors.get(req.index)
     if not secret_key:
@@ -143,29 +148,29 @@ def login_by_enterprise(req):
     sso_res = http_client.post(
         url=CONFIG.SSO_ENTERPRISE_URL,
         json={
-            'email': req.email,
+            'email': sso_email,
             'password': decrypted_password
         }
     )
     if sso_res['code'] != 200:
-        logger.info(f'企业账号:[ {req.email} ] 企业账号认证请求失败')
+        logger.info(f'企业账号:[ {req.email.strip()} ] 企业账号认证请求失败')
         raise ServiceError(sso_res['message'])
-    logger.info(f'企业账号:[ {req.email} ] 企业账号认证成功')
+    logger.info(f'企业账号:[ {req.email.strip()} ] 企业账号认证成功')
 
     # 查询用户信息
-    user = user_dao.select_by_email(req.email)
+    user = user_dao.select_by_email(sso_email)
     user_no = user.USER_NO if user else new_id()
 
     # 用户不存在时新增
     sso_res_data = sso_res['data']
     if not user:
-        logger.info(f'企业账号:[ {req.email} ] 平台用户信息不存在，创建用户并绑定默认角色')
+        logger.info(f'企业账号:[ {sso_email} ] 平台用户信息不存在，创建用户并绑定默认角色')
         # 创建用户
         TUser.insert(
             USER_NO=user_no,
             USER_NAME=sso_res_data['username'],
             MOBILE=sso_res_data['mobile'],
-            EMAIL=sso_res_data['email'],
+            EMAIL=sso_email,
             STATE='ENABLE',
             SSO=True,
             LOGGED_IN=True
@@ -216,7 +221,7 @@ def login_by_enterprise(req):
     # 记录用户登录日志
     TUserLoginLog.insert(
         USER_NO=user_no,
-        LOGIN_NAME=req.email,
+        LOGIN_NAME=sso_email,
         LOGIN_TYPE='EMAIL',
         LOGIN_METHOD='ENTERPRISE',
         LOGIN_IP=remote_addr(),
@@ -252,38 +257,45 @@ def register(req):
 @http_service
 def create_user(req):
     # 查询用户登录信息
-    login_info = user_login_info_dao.select_by_loginname(req.loginName)
+    login_name = req.loginName.strip().lower()
+    login_info = user_login_info_dao.select_by_loginname(login_name)
     check_not_exists(login_info, error_msg='登录账号已存在')
 
     # 查询手机号是否存在
-    mobile = user_dao.select_first(MOBILE=req.mobile)
-    check_not_exists(mobile, error_msg='手机号已被占用')
+    user_mobile = req.mobile
+    if user_mobile:
+        user_mobile = user_mobile.strip()
+        mobile = user_dao.select_first(MOBILE=user_mobile)
+        check_not_exists(mobile, error_msg='手机号已被占用')
 
     # 查询邮箱是否存在
-    email = user_dao.select_first(EMAIL=req.email)
-    check_not_exists(email, error_msg='邮箱已被占用')
+    user_email = req.email
+    if user_email:
+        user_email = user_email.strip().lower()
+        email = user_dao.select_first(EMAIL=user_email)
+        check_not_exists(email, error_msg='邮箱已被占用')
 
     # 创建用户
     user_no = new_id()
     TUser.insert(
         USER_NO=user_no,
         USER_NAME=req.userName,
-        MOBILE=req.mobile,
-        EMAIL=req.email,
+        MOBILE=user_mobile,
+        EMAIL=user_email,
         STATE='ENABLE'
     )
 
     # 创建用户登录信息
     TUserLoginInfo.insert(
         USER_NO=user_no,
-        LOGIN_NAME=req.loginName,
+        LOGIN_NAME=login_name,
         LOGIN_TYPE='ACCOUNT'
     )
 
     # 创建用户登录密码
     TUserPassword.insert(
         USER_NO=user_no,
-        PASSWORD=encrypt_password(req.loginName, req.password),
+        PASSWORD=encrypt_password(login_name, req.password),
         PASSWORD_TYPE='LOGIN',
         CREATE_TYPE='CUSTOMER'
     )
@@ -356,7 +368,7 @@ def query_user_list(req):
     conds.like(TUser.MOBILE, req.mobile)
     conds.like(TUser.EMAIL, req.email)
     conds.like(TUser.STATE, req.state)
-    conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName)
+    conds.equal(TUserLoginInfo.LOGIN_NAME, req.loginName.lower())
 
     # 查询用户列表
     pagination = (
@@ -494,13 +506,15 @@ def modify_user_info(req):
     user = user_dao.select_by_no(user_no)
     check_exists(user, error_msg='用户不存在')
     # 更新用户登录信息
-    update_user_login_info_by_mobile(user_no, user.MOBILE, req.mobile)
-    update_user_login_info_by_email(user_no, user.EMAIL, req.email)
+    new_mobile = req.mobile.strip()
+    new_email = req.email.strip().lower()
+    update_user_login_info_by_mobile(user_no, user.MOBILE, new_mobile)
+    update_user_login_info_by_email(user_no, user.EMAIL, new_email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
-        MOBILE=req.mobile,
-        EMAIL=req.email
+        MOBILE=new_mobile,
+        EMAIL=new_email
     )
 
 
@@ -617,13 +631,15 @@ def modify_user(req):
     user = user_dao.select_by_no(req.userNo)
     check_exists(user, error_msg='用户不存在')
     # 更新用户登录信息
-    update_user_login_info_by_mobile(req.userNo, user.MOBILE, req.mobile)
-    update_user_login_info_by_email(req.userNo, user.EMAIL, req.email)
+    new_mobile = req.mobile.strip()
+    new_email = req.email.strip().lower()
+    update_user_login_info_by_mobile(req.userNo, user.MOBILE, new_mobile)
+    update_user_login_info_by_email(req.userNo, user.EMAIL, new_email)
     # 更新用户信息
     user.update(
         USER_NAME=req.userName,
-        MOBILE=req.mobile,
-        EMAIL=req.email
+        MOBILE=new_mobile,
+        EMAIL=new_email
     )
     # 绑定用户角色
     update_user_roles(req.userNo, req.roles)
