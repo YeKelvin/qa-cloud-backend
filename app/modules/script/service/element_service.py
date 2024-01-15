@@ -908,11 +908,14 @@ def paste_element_by_cut(source: TTestElement, target: TTestElement):
 def copy_element(source: TTestElement, rename=False, root_no=None, workspace_no=None):
     # 克隆元素和属性
     copied_no = clone_element(source, rename, workspace_no)
+    # 克隆的元素为根元素时，递归传递根元素编号
+    if is_collection(source) or is_snippet(source):
+        root_no = copied_no
     # 遍历克隆元素子代
     source_child_nodes = element_children_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_node in source_child_nodes:
         source_child = test_element_dao.select_by_no(source_node.ELEMENT_NO)
-        copied_child_no = copy_element(source_child)
+        copied_child_no = copy_element(source_child, root_no=root_no)
         TElementChildren.insert(
             ROOT_NO=root_no or source_node.ROOT_NO,
             PARENT_NO=copied_no,
@@ -923,9 +926,9 @@ def copy_element(source: TTestElement, rename=False, root_no=None, workspace_no=
     source_component_nodes = element_component_dao.select_all_by_parent(source.ELEMENT_NO)
     for source_node in source_component_nodes:
         source_component = test_element_dao.select_by_no(source_node.ELEMENT_NO)
-        copied_component_no = copy_element(source_component)
+        copied_component_no = copy_element(source_component, root_no=root_no)
         TElementComponent.insert(
-            ROOT_NO=source_node.ROOT_NO,
+            ROOT_NO=root_no or source_node.ROOT_NO,
             PARENT_NO=copied_no,
             ELEMENT_NO=copied_component_no,
             ELEMENT_SORT=source_node.ELEMENT_SORT
@@ -1177,10 +1180,10 @@ def copy_element_to_workspace(req):
     # 校验空间权限
     check_workspace_permission(req.workspaceNo)
 
-    # 查询集合/片段/配置器
+    # 查询根元素
     element = test_element_dao.select_by_no(req.elementNo)
-    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
-        raise ServiceError('仅支持复制 [集合/片段/配置器]')
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
+        raise ServiceError('仅支持复制【集合】或【片段】')
 
     # 复制集合到指定的空间
     copied_no = copy_element(element, workspace_no=req.workspaceNo)
@@ -1201,8 +1204,8 @@ def move_element_to_workspace(req):
     # 校验空间
     if not element.WORKSPACE_NO:
         raise ServiceError('元素没有绑定空间，不支持移动')
-    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
-        raise ServiceError('仅支持移动 [集合/片段/配置器]')
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
+        raise ServiceError('仅支持移动【集合】或【片段】')
     # 记录元素变更日志
     element_transferred_signal.send(
         collection_no=req.elementNo,

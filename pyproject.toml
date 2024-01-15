@@ -44,7 +44,7 @@ blinker = "1.7.0"
 # encryption
 pyjwt = "2.8.0"
 # environment
-environs = "10.0.0"
+environs = "10.3.0"
 python-dotenv = "1.0.0"
 # tool
 munch = "4.0.0"

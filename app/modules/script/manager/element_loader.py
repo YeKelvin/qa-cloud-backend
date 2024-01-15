@@ -330,9 +330,9 @@ class ElementLoader:
         """根据元素编号加载脚本"""
         logger.debug(
             f'开始加载脚本'
-            f'\n独立运行:[ {"是" if self.aloneness else "否"} ]'
-            f'\n指定的用例编号:[ {self.specified_worker_no} ]'
-            f'\n指定的请求编号:[ {self.specified_sampler_no or self.offline_no} ]'
+            f'\n是否独立运行:[ {"是" if self.aloneness else "否"} ]'
+            f'\n指定用例编号:[ {self.specified_worker_no} ]'
+            f'\n指定请求编号:[ {self.specified_sampler_no or self.offline_no} ]'
         )
         # 加载脚本
         if is_test_collection(self.root_element):
