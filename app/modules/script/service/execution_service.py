@@ -173,12 +173,12 @@ def run_worker(req):
         raise ServiceError('仅支持运行 Worker 元素')
 
     # 获取 collectionNo
-    worker_node = element_children_dao.select_by_child(req.workerNo)
-    if not worker_node:
+    node = element_children_dao.select_by_child(req.workerNo)
+    if not node:
         raise ServiceError('元素节点不存在')
 
     # 临时存储变量
-    collection_no = worker_node.PARENT_NO
+    collection_no = node.PARENT_NO
     worker_name = worker.ELEMENT_NAME
 
     # 定义 loader 函数
@@ -232,35 +232,42 @@ def run_sampler(req):
     # 临时存储变量
     collection_no = node.ROOT_NO
     worker_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_case_no(node.PARENT_NO)
+    sampler_name = sampler.ELEMENT_NAME
 
-    # 递归加载脚本
-    script = ElementLoader(
-        collection_no,
-        offlines=req.offlines,
-        worker_no=worker_no,
-        sampler_no=req.samplerNo
-    ).loads_tree()
-
-    # 添加 socket 组件
-    result_id = new_ulid()
-    add_flask_sio_result_collector(
-        script,
-        socket_id=req.socketId,
-        result_id=result_id,
-        result_name=sampler.ELEMENT_NAME
-    )
-
-    # 添加变量组件
-    add_variable_dataset(
-        script,
-        datasets=req.datasets,
-        offlines=req.offlines,
-        additional=req.variables,
-        use_current=req.useCurrentValue
-    )
+    # 定义 loader 函数
+    def script_loader(app, result_id):
+        with app.app_context():
+            # 递归加载脚本
+            script = ElementLoader(
+                collection_no,
+                offlines=req.offlines,
+                worker_no=worker_no,
+                sampler_no=req.samplerNo
+            ).loads_tree()
+            # 添加 socket 组件
+            add_flask_sio_result_collector(
+                script,
+                socket_id=req.socketId,
+                result_id=result_id,
+                result_name=sampler_name
+            )
+            # 添加变量组件
+            add_variable_dataset(
+                script,
+                datasets=req.datasets,
+                offlines=req.offlines,
+                additional=req.variables,
+                use_current=req.useCurrentValue
+            )
+            return script
 
     # 新建线程执行脚本
-    executor.submit(debug_pymeter, script, req.socketId, result_id)
+    executor.submit(
+        debug_pymeter_by_loader,
+        loader=script_loader,
+        app=get_flask_app(),
+        socket_id=req.socketId
+    )
 
 
 @http_service
