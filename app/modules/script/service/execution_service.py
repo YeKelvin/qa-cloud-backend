@@ -28,6 +28,7 @@ from app.modules.script.enum import ElementType
 from app.modules.script.enum import RunningState
 from app.modules.script.enum import VariableDatasetType
 from app.modules.script.enum import is_test_snippet
+from app.modules.script.enum import is_worker
 from app.modules.script.manager.element_component import add_flask_db_iteration_storage
 from app.modules.script.manager.element_component import add_flask_db_result_storage
 from app.modules.script.manager.element_component import add_flask_sio_result_collector
@@ -164,16 +165,44 @@ def run_collection(req):
 def run_worker(req):
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.workerNo)))
+    # 异步运行脚本
+    run_testcase(
+        worker_no=req.workerNo,
+        socket_id=req.socketId,
+        offlines=req.offlines,
+        datasets=req.datasets,
+        variables=req.variables,
+        use_current_value=req.useCurrentValue
+    )
 
+
+@http_service
+def run_worker_by_sampler(req):
+    # 校验空间权限
+    check_workspace_permission(get_workspace_no(get_root_no(req.samplerNo)))
+    # 获取用例编号
+    worker_no = get_case_no(req.samplerNo)
+    # 异步运行脚本
+    run_testcase(
+        worker_no=worker_no,
+        socket_id=req.socketId,
+        offlines=req.offlines,
+        datasets=req.datasets,
+        variables=req.variables,
+        use_current_value=req.useCurrentValue
+    )
+
+
+def run_testcase(worker_no, socket_id, offlines, datasets, variables, use_current_value):
     # 查询元素
-    worker = test_element_dao.select_by_no(req.workerNo)
+    worker = test_element_dao.select_by_no(worker_no)
     if not worker.ENABLED:
         raise ServiceError('元素已禁用')
     if worker.ELEMENT_TYPE != ElementType.WORKER.value:
         raise ServiceError('仅支持运行 Worker 元素')
 
     # 获取 collectionNo
-    node = element_children_dao.select_by_child(req.workerNo)
+    node = element_children_dao.select_by_child(worker_no)
     if not node:
         raise ServiceError('元素节点不存在')
 
@@ -185,21 +214,21 @@ def run_worker(req):
     def script_loader(app, result_id):
         with app.app_context():
             # 递归加载脚本
-            script = ElementLoader(collection_no, worker_no=req.workerNo, offlines=req.offlines).loads_tree()
+            script = ElementLoader(collection_no, worker_no=worker_no, offlines=offlines).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(
                 script,
-                socket_id=req.socketId,
+                socket_id=socket_id,
                 result_id=result_id,
                 result_name=worker_name
             )
             # 添加变量组件
             add_variable_dataset(
                 script,
-                datasets=req.datasets,
-                offlines=req.offlines,
-                additional=req.variables,
-                use_current=req.useCurrentValue
+                datasets=datasets,
+                offlines=offlines,
+                additional=variables,
+                use_current=use_current_value
             )
             return script
 
@@ -208,7 +237,7 @@ def run_worker(req):
         debug_pymeter_by_loader,
         loader=script_loader,
         app=get_flask_app(),
-        socket_id=req.socketId
+        socket_id=socket_id
     )
 
 
@@ -242,7 +271,8 @@ def run_sampler(req):
                 collection_no,
                 offlines=req.offlines,
                 worker_no=worker_no,
-                sampler_no=req.samplerNo
+                sampler_no=req.samplerNo,
+                aloneness=True
             ).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(
@@ -317,12 +347,19 @@ def run_offline(req):
     if not offline:
         raise ServiceError('离线数据不存在')
 
+    parent = test_element_dao.select_by_no(req.parentNo)
+    worker_no = req.parentNo if is_worker(parent) else get_case_no(req.parentNo)
+
     # 定义 loader 函数
     def script_loader(app, result_id):
         with app.app_context():
             # 递归加载脚本
             script = ElementLoader(
-                req.rootNo, worker_no=req.parentNo, offline_no=req.offlineNo, offlines=req.offlines
+                req.rootNo,
+                worker_no=worker_no,
+                offline_no=req.offlineNo,
+                offlines=req.offlines,
+                aloneness=req.aloneness
             ).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(

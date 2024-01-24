@@ -76,3 +76,21 @@ def get_element_property(element_no):
             continue
 
     return properties
+
+
+def get_element_children_node(parent_no):
+    """根据父级查询所有子代节点和子代类型"""
+    stmt = (
+        select(
+            TTestElement.ELEMENT_TYPE,
+            TElementChildren.ROOT_NO,
+            TElementChildren.PARENT_NO,
+            TElementChildren.ELEMENT_NO,
+            TElementChildren.ELEMENT_SORT
+        )
+        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
+        .where(
+            TElementChildren.PARENT_NO == parent_no
+        )
+    )
+    return db_execute(stmt.order_by(TElementChildren.ELEMENT_SORT)).all()

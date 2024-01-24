@@ -7,7 +7,7 @@ apscheduler==3.10.4
 blinker==1.7.0
 pyjwt[crypto]==2.8.0
 environs==10.3.0
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 munch==4.0.0
 uwsgi
 pymeter @ git+https://gitee.com/kelvinye/pymeter.git@dev

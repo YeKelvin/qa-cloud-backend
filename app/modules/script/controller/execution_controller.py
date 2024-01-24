@@ -42,6 +42,22 @@ def run_worker():
     return service.run_worker(req)
 
 
+@blueprint.post('/element/worker/run-by-sampler')
+@require_login
+@require_permission('RUN_ELEMENT')
+def run_worker_by_sampler():
+    """根据请求编号运行测试用例"""
+    req = JsonParser(
+        Argument('samplerNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('offlines', type=dict, default={}),
+        Argument('socketId', required=True, nullable=False, help='SID不能为空'),
+        Argument('datasets', type=list, default=[]),
+        Argument('variables', type=dict, default={}),
+        Argument('useCurrentValue', type=bool, default=False)
+    ).parse()
+    return service.run_worker_by_sampler(req)
+
+
 @blueprint.post('/element/sampler/run')
 @require_login
 @require_permission('RUN_ELEMENT')
@@ -78,10 +94,11 @@ def run_snippet():
 @require_login
 @require_permission('RUN_ELEMENT')
 def run_offline():
-    """运行片段集合"""
+    """运行离线请求"""
     req = JsonParser(
         Argument('rootNo', required=True, nullable=False, help='根元素编号不能为空'),
         Argument('parentNo', required=True, nullable=False, help='父元素编号不能为空'),
+        Argument('aloneness', default=False),
         Argument('offlineNo', required=True, nullable=False, help='离线编号不能为空'),
         Argument('offlines', type=dict, required=True, nullable=False, help='离线数据不能为空'),
         Argument('socketId', required=True, nullable=False, help='SID不能为空'),

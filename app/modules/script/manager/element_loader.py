@@ -13,7 +13,9 @@ from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
+from app.modules.script.enum import ElementType
 from app.modules.script.enum import has_children
+from app.modules.script.enum import is_sampler
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_test_collection
 from app.modules.script.enum import is_test_snippet
@@ -28,6 +30,7 @@ from app.modules.script.manager.element_component import create_test_collection
 from app.modules.script.manager.element_component import create_test_worker
 from app.modules.script.manager.element_component import create_transaction_http_session_manager
 from app.modules.script.manager.element_component import create_transaction_parameter
+from app.modules.script.manager.element_manager import get_element_children_node
 from app.modules.script.manager.element_manager import get_element_property
 from app.modules.script.manager.element_manager import get_workspace_no
 from app.modules.script.model import TElementComponent
@@ -448,12 +451,14 @@ class ElementLoader:
             checker and not checker(loader=self, element=element, props=properties)
         except CheckError:
             return None
-        # 非片段请求时直接添加子代
-        if not is_snippet_sampler(element):
-            has_children(element) and children.extend(self.loads_children(element_no))
-        # 片段请求则查询片段内容
-        else:
+        # 片段请求加载片段中的请求
+        if is_snippet_sampler(element):
             children.extend(self.loads_snippet_sampler(element.attrs))
+        # 普通请求直接添加子代
+        else:
+            # 独立运行离线请求时，不加载子代
+            if not (is_sampler(element) and self.offline_no and self.aloneness):
+                has_children(element) and children.extend(self.loads_children(element_no))
         # 加载组件
         loader = loaders.get(element.clazz)
         loader and loader(loader=self, element=element, props=properties, children=children, components=components)
@@ -472,22 +477,32 @@ class ElementLoader:
             'attribute': element.attrs
         }
 
-    def loads_children(self, element_no):
+    def loads_children(self, parent_no):
         # 查询子代，并根据序号正序排序
-        nodes = element_children_dao.select_all_by_parent(element_no)
+        nodes = get_element_children_node(parent_no)
         children = []
         # 添加子代
         for node in nodes:
+            # 找到指定的 Sampler 就返回，因为有递归，所以用实例变量判断
             if self.sampler_found:
                 break
-            # 加载子代元素
-            if child := self.loads_element(node.ELEMENT_NO):
-                children.append(child)
+            # 非 Sampler 直接加载子代
+            if node.ELEMENT_TYPE != ElementType.SAMPLER.value:
+                child = self.loads_element(node.ELEMENT_NO)
+                child and children.append(child)
+            # 加载 Sampler 的子代时有特殊逻辑
             else:
-                continue
-            # 找到指定的 Sampler 就返回
-            if node.ELEMENT_NO == self.specified_sampler_no:
-                self.sampler_found = True
+                # 标记已经找到指定的 Sampler
+                if node.ELEMENT_NO == self.specified_sampler_no:
+                    self.sampler_found = True
+                # 完整运行且指定 Sampler 是，加载用例所有子代直至找到它为止
+                if not self.aloneness:
+                    child = self.loads_element(node.ELEMENT_NO)
+                    child and children.append(child)
+                # 独立运行 Sampler 时，仅加载它
+                elif self.sampler_found:
+                    child = self.loads_element(node.ELEMENT_NO)
+                    child and children.append(child)
         return children
 
     def add_element_components(self, element_no, children: list, offlines: list=None):
