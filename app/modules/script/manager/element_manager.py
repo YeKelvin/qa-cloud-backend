@@ -90,6 +90,8 @@ def get_element_children_node(parent_no):
         )
         .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
         .where(
+            TTestElement.DELETED == 0,
+            TElementChildren.DELETED == 0,
             TElementChildren.PARENT_NO == parent_no
         )
     )
