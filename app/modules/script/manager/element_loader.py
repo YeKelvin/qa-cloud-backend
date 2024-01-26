@@ -15,10 +15,12 @@ from app.modules.script.enum import DatabaseType
 from app.modules.script.enum import ElementClass
 from app.modules.script.enum import ElementType
 from app.modules.script.enum import has_children
+from app.modules.script.enum import is_pre_post_worker
 from app.modules.script.enum import is_sampler
 from app.modules.script.enum import is_snippet_sampler
 from app.modules.script.enum import is_test_collection
 from app.modules.script.enum import is_test_snippet
+from app.modules.script.enum import is_test_worker
 from app.modules.script.manager.element_component import add_http_session_manager
 from app.modules.script.manager.element_component import create_argument
 from app.modules.script.manager.element_component import create_http_argument
@@ -47,8 +49,8 @@ def test_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.specified_worker_no and element.number != loader.specified_worker_no:
-        logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
+    if loader.spec_case_no and element.number != loader.spec_case_no:
+        logger.debug(f'元素名称:[ {element.name} ] 非指定的测试用例, 无需加载')
         raise CheckError()
 
 
@@ -56,8 +58,11 @@ def setup_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.specified_worker_no and element.number != loader.specified_worker_no:
-        logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
+    if loader.spec_case and (
+        (is_test_worker(loader.spec_case) and loader.aloneness) or
+        (is_pre_post_worker(loader.spec_case) and loader.spec_case_no and element.number != loader.spec_case_no)
+    ):
+        logger.debug(f'元素名称:[ {element.name} ] 非指定的前置用例, 无需加载')
         raise CheckError()
 
 
@@ -65,8 +70,11 @@ def teardown_worker_checker(**kwargs):
     loader: 'ElementLoader' = kwargs.get('loader')
     element: TTestElement = kwargs.get('element')
     # 加载指定的用例，如果当前元素非指定的用例时返回None
-    if loader.specified_worker_no and element.number != loader.specified_worker_no:
-        logger.debug(f'元素名称:[ {element.name} ] 非指定的用例, 无需加载')
+    if loader.spec_case and (
+        (is_test_worker(loader.spec_case) and loader.aloneness) or
+        (is_pre_post_worker(loader.spec_case) and loader.spec_case_no and element.number != loader.spec_case_no)
+    ):
+        logger.debug(f'元素名称:[ {element.name} ] 非指定的后置用例, 无需加载')
         raise CheckError()
 
 
@@ -285,12 +293,14 @@ class ElementLoader:
         self.workspace_no = get_workspace_no(root_no)
         # 空间元素对象
         self.workspace_element:TTestElement = None
+        # 指定的用例是否前后置用例
+        self.spec_case = test_element_dao.select_by_no(worker_no) if worker_no else None
         # 指定的用例编号
-        self.specified_worker_no = worker_no
+        self.spec_case_no = worker_no
         # 指定的请求编号
-        self.specified_sampler_no = sampler_no
+        self.spec_sampler_no = sampler_no
         # 寻找用例标识
-        self.worker_found = False
+        self.case_found = False
         # 寻找请求标识
         self.sampler_found = False
         # 独立运行
@@ -334,8 +344,8 @@ class ElementLoader:
         logger.debug(
             f'开始加载脚本'
             f'\n是否独立运行:[ {"是" if self.aloneness else "否"} ]'
-            f'\n指定用例编号:[ {self.specified_worker_no} ]'
-            f'\n指定请求编号:[ {self.specified_sampler_no or self.offline_no} ]'
+            f'\n指定用例编号:[ {self.spec_case_no} ]'
+            f'\n指定请求编号:[ {self.spec_sampler_no or self.offline_no} ]'
         )
         # 加载脚本
         if is_test_collection(self.root_element):
@@ -493,7 +503,7 @@ class ElementLoader:
             # 加载 Sampler 的子代时有特殊逻辑
             else:
                 # 标记已经找到指定的 Sampler
-                if node.ELEMENT_NO == self.specified_sampler_no:
+                if node.ELEMENT_NO == self.spec_sampler_no:
                     self.sampler_found = True
                 # 完整运行且指定 Sampler 是，加载用例所有子代直至找到它为止
                 if not self.aloneness:

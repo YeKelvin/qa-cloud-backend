@@ -328,6 +328,18 @@ def is_test_worker(element):
     return element.ELEMENT_CLASS == ElementClass.TEST_WORKER.value
 
 
+def is_setup_worker(element):
+    return element.ELEMENT_CLASS == ElementClass.SETUP_WORKER.value
+
+
+def is_teardown_worker(element):
+    return element.ELEMENT_CLASS == ElementClass.TEARDOWN_WORKER.value
+
+
+def is_pre_post_worker(element):
+    return is_setup_worker(element) or is_teardown_worker(element)
+
+
 def is_http_sampler(element):
     return element.ELEMENT_CLASS == ElementClass.HTTP_SAMPLER.value
 
