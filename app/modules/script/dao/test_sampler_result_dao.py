@@ -24,6 +24,7 @@ def select_all_summary_by_worker(worker_id) -> list[TTestSamplerResult]:
             TTestSamplerResult.RETRYING
         )
         .filter_by(WORKER_ID=worker_id, PARENT_ID=None)
+        .order_by(TTestSamplerResult.START_TIME.asc())
         .all()
     )
 
@@ -33,7 +34,12 @@ def select_all_by_worker(worker_id) -> list[TTestSamplerResult]:
 
 
 def select_all_by_parent(parent_id) -> list[TTestSamplerResult]:
-    return TTestSamplerResult.filter_by(PARENT_ID=parent_id).all()
+    return (
+        TTestSamplerResult
+        .filter_by(PARENT_ID=parent_id)
+        .order_by(TTestSamplerResult.START_TIME.asc())
+        .all()
+    )
 
 
 def count_by_report_and_success(report_no, success) -> int:

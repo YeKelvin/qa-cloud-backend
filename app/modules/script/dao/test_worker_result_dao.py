@@ -10,7 +10,12 @@ def select_first_by_worker(worker_id) -> TTestWorkerResult:
 
 
 def select_all_by_collection(collection_id) -> list[TTestWorkerResult]:
-    return TTestWorkerResult.filter_by(COLLECTION_ID=collection_id).all()
+    return (
+        TTestWorkerResult
+        .filter_by(COLLECTION_ID=collection_id)
+        .order_by(TTestWorkerResult.START_TIME.asc())
+        .all()
+    )
 
 
 def count_by_report_and_success(report_no, success) -> int:
