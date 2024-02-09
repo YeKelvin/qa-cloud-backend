@@ -3,6 +3,7 @@
 # @Time    : 2023-05-16 17:41:28
 # @Author  : Kelvin.Ye
 from sqlalchemy import select
+from sqlalchemy.orm import aliased
 
 from app.database import db_execute
 from app.modules.script.dao import element_children_dao
@@ -13,6 +14,11 @@ from app.modules.script.model import TElementChildren
 from app.modules.script.model import TTestElement
 from app.tools.exceptions import ServiceError
 from app.utils.json_util import from_json
+
+
+TRootElement: TTestElement = aliased(TTestElement)
+TParentElement: TTestElement = aliased(TTestElement)
+TChildElement: TTestElement = aliased(TTestElement)
 
 
 def get_workspace_no(root_no) -> str:
@@ -40,9 +46,11 @@ def get_element_node(element_no):
         select(
             TElementChildren.ROOT_NO,
             TElementChildren.PARENT_NO,
-            TTestElement.ELEMENT_TYPE.label('PARENT_TYPE')
+            TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE')
         )
-        .join(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.PARENT_NO)
+        .outerjoin(TRootElement, TRootElement.ELEMENT_NO == TElementChildren.ROOT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChildren.PARENT_NO)
         .where(TElementChildren.ELEMENT_NO == element_no)
     )
     return db_execute(stmt).first()
@@ -82,15 +90,23 @@ def get_element_children_node(parent_no):
     """根据父级查询所有子代节点和子代类型"""
     stmt = (
         select(
-            TTestElement.ELEMENT_TYPE,
             TElementChildren.ROOT_NO,
             TElementChildren.PARENT_NO,
             TElementChildren.ELEMENT_NO,
-            TElementChildren.ELEMENT_SORT
+            TElementChildren.ELEMENT_SORT,
+            TRootElement.ELEMENT_TYPE.label('ROOT_TYPE'),
+            TRootElement.ELEMENT_CLASS.label('ROOT_CLASS'),
+            TParentElement.ELEMENT_TYPE.label('PARENT_TYPE'),
+            TParentElement.ELEMENT_CLASS.label('PARENT_CLASS'),
+            TChildElement.ELEMENT_TYPE.label('CHILD_TYPE'),
+            TChildElement.ELEMENT_CLASS.label('CHILD_CLASS')
         )
-        .outerjoin(TTestElement, TTestElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
+        .outerjoin(TRootElement, TRootElement.ELEMENT_NO == TElementChildren.ROOT_NO)
+        .outerjoin(TParentElement, TParentElement.ELEMENT_NO == TElementChildren.PARENT_NO)
+        .outerjoin(TChildElement, TChildElement.ELEMENT_NO == TElementChildren.ELEMENT_NO)
         .where(
-            TTestElement.DELETED == 0,
+            TChildElement.DELETED == 0,
+            TParentElement.DELETED == 0,
             TElementChildren.DELETED == 0,
             TElementChildren.PARENT_NO == parent_no
         )

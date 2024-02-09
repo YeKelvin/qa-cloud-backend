@@ -260,7 +260,10 @@ def run_sampler(req):
 
     # 临时存储变量
     collection_no = node.ROOT_NO
-    worker_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_case_no(node.PARENT_NO)
+    if node.ROOT_TYPE == ElementType.SNIPPET.value:
+        worker_no = None
+    else:
+        worker_no = node.PARENT_NO if node.PARENT_TYPE == ElementType.WORKER.value else get_case_no(node.PARENT_NO)
     sampler_name = sampler.ELEMENT_NAME
 
     # 定义 loader 函数
@@ -272,7 +275,7 @@ def run_sampler(req):
                 offlines=req.offlines,
                 worker_no=worker_no,
                 sampler_no=req.samplerNo,
-                aloneness=True
+                aloneness=req.aloneness
             ).loads_tree()
             # 添加 socket 组件
             add_flask_sio_result_collector(

@@ -60,7 +60,10 @@ def setup_worker_checker(**kwargs):
     # 加载指定的用例，如果当前元素非指定的用例时返回None
     if loader.spec_case and (
         (is_test_worker(loader.spec_case) and loader.aloneness) or
-        (is_pre_post_worker(loader.spec_case) and loader.spec_case_no and element.number != loader.spec_case_no)
+        (
+            is_pre_post_worker(loader.spec_case) and
+            loader.aloneness and loader.spec_case_no and element.number != loader.spec_case_no
+        )
     ):
         logger.debug(f'元素名称:[ {element.name} ] 非指定的前置用例, 无需加载')
         raise CheckError()
@@ -72,7 +75,10 @@ def teardown_worker_checker(**kwargs):
     # 加载指定的用例，如果当前元素非指定的用例时返回None
     if loader.spec_case and (
         (is_test_worker(loader.spec_case) and loader.aloneness) or
-        (is_pre_post_worker(loader.spec_case) and loader.spec_case_no and element.number != loader.spec_case_no)
+        (
+            is_pre_post_worker(loader.spec_case) and
+            loader.aloneness and loader.spec_case_no and element.number != loader.spec_case_no
+        )
     ):
         logger.debug(f'元素名称:[ {element.name} ] 非指定的后置用例, 无需加载')
         raise CheckError()
@@ -293,10 +299,12 @@ class ElementLoader:
         self.workspace_no = get_workspace_no(root_no)
         # 空间元素对象
         self.workspace_element:TTestElement = None
-        # 指定的用例是否前后置用例
+        # 指定的用例对象
         self.spec_case = test_element_dao.select_by_no(worker_no) if worker_no else None
         # 指定的用例编号
         self.spec_case_no = worker_no
+        # 指定的请求对象
+        # self.spec_sampler = test_element_dao.select_by_no(sampler_no) if sampler_no else None
         # 指定的请求编号
         self.spec_sampler_no = sampler_no
         # 寻找用例标识
@@ -312,7 +320,7 @@ class ElementLoader:
         check_exists(root, error_msg='根元素不存在')
         return root
 
-    def get_workspace_element(self) -> (TTestElement, list):
+    def get_workspace_element(self) -> TTestElement | list:
         ws, _, compos = self.get_offline_element(self.workspace_no)
         components =[]
         if compos:
@@ -343,7 +351,7 @@ class ElementLoader:
         """根据元素编号加载脚本"""
         logger.debug(
             f'开始加载脚本'
-            f'\n是否独立运行:[ {"是" if self.aloneness else "否"} ]'
+            f'\n是否独立运行:[ {self.aloneness} ]'
             f'\n指定用例编号:[ {self.spec_case_no} ]'
             f'\n指定请求编号:[ {self.spec_sampler_no or self.offline_no} ]'
         )
@@ -401,7 +409,7 @@ class ElementLoader:
         # 添加 HTTP Session 组件
         if self.root_element.attrs.get('use_http_session', False):
             children.append(create_http_session_manager())
-        # 添加子代
+        # 添加子代 # TODO: 需要独立运行
         for node in nodes:
             if child := self.loads_element(node.ELEMENT_NO):
                 children.append(child)
@@ -415,7 +423,7 @@ class ElementLoader:
             ]
         )
 
-    def get_offline_element(self, element_no) -> (TTestElement, dict, list):
+    def get_offline_element(self, element_no) -> TTestElement | dict | list:
         """从离线数据中读取元素信息，包含TTestElement对象，元素属性和元素组件"""
         if offline := self.offlines.get(element_no):
             # 组装元素信息
@@ -440,7 +448,7 @@ class ElementLoader:
         else:
             return None, {}, []
 
-    def loads_element(self, element_no) -> dict:
+    def loads_element(self, element_no, forbid_break = None) -> dict:
         """根据元素编号加载元素数据"""
         # 优先从离线数据中获取元素
         element, properties, components = self.get_offline_element(element_no)
@@ -461,14 +469,14 @@ class ElementLoader:
             checker and not checker(loader=self, element=element, props=properties)
         except CheckError:
             return None
-        # 片段请求加载片段中的请求
+        # 片段请求加载片段内容
         if is_snippet_sampler(element):
             children.extend(self.loads_snippet_sampler(element.attrs))
         # 普通请求直接添加子代
         else:
             # 独立运行离线请求时，不加载子代
             if not (is_sampler(element) and self.offline_no and self.aloneness):
-                has_children(element) and children.extend(self.loads_children(element_no))
+                has_children(element) and children.extend(self.loads_children(element_no, forbid_break))
         # 加载组件
         loader = loaders.get(element.clazz)
         loader and loader(loader=self, element=element, props=properties, children=children, components=components)
@@ -487,32 +495,49 @@ class ElementLoader:
             'attribute': element.attrs
         }
 
-    def loads_children(self, parent_no):
+    def loads_children(self, parent_no, forbid_break = None):
         # 查询子代，并根据序号正序排序
         nodes = get_element_children_node(parent_no)
         children = []
         # 添加子代
         for node in nodes:
             # 找到指定的 Sampler 就返回，因为有递归，所以用实例变量判断
-            if self.sampler_found:
+            # 独立运行时，找到了指定的 Sampler 就 break
+            # 非独立运行，需要遍历所有用例，因为需要运行前后置用例
+            if not forbid_break and self.sampler_found and self.aloneness:
                 break
-            # 非 Sampler 直接加载子代
-            if node.ELEMENT_TYPE != ElementType.SAMPLER.value:
-                child = self.loads_element(node.ELEMENT_NO)
+            # 以下情况直接加载子代：
+            if (
+                # 没有指定 Sampler
+                not self.spec_sampler_no or
+                # 有指定的 Sampler 但类型不是 Sampler
+                node.CHILD_TYPE != ElementType.SAMPLER.value or
+                # 有指定的用例
+                self.spec_case_no and (
+                    # Sampler 在片段内
+                    node.ROOT_TYPE == ElementType.SNIPPET.value or
+                    # 父级不是指定的用例
+                    node.PARENT_TYPE == ElementType.WORKER.value and self.spec_case_no != node.PARENT_NO
+                )
+            ):
+                # 指定了测试用例中的请求且完整运行时，需要完整加载前后置用例的请求
+                if forbid_break is None:
+                    forbid_break = (
+                        # 完整运行用例
+                        self.spec_sampler_no and not self.aloneness and
+                        # 当前子代不是指定用例
+                        self.spec_case_no != node.ELEMENT_NO and node.CHILD_TYPE == ElementType.WORKER.value and
+                        # 当前子代不是前后置用例
+                        node.CHILD_CLASS in [ElementClass.SETUP_WORKER.value, ElementClass.TEARDOWN_WORKER.value]
+                    )
+                child = self.loads_element(node.ELEMENT_NO, forbid_break)
                 child and children.append(child)
-            # 加载 Sampler 的子代时有特殊逻辑
-            else:
-                # 标记已经找到指定的 Sampler
-                if node.ELEMENT_NO == self.spec_sampler_no:
-                    self.sampler_found = True
-                # 完整运行且指定 Sampler 是，加载用例所有子代直至找到它为止
-                if not self.aloneness:
-                    child = self.loads_element(node.ELEMENT_NO)
-                    child and children.append(child)
-                # 独立运行 Sampler 时，仅加载它
-                elif self.sampler_found:
-                    child = self.loads_element(node.ELEMENT_NO)
-                    child and children.append(child)
+                continue
+            # 找到了指定的 Sampler
+            if node.ELEMENT_NO == self.spec_sampler_no:
+                self.sampler_found = True
+                child = self.loads_element(node.ELEMENT_NO, forbid_break = True)
+                child and children.append(child)
         return children
 
     def add_element_components(self, element_no, children: list, offlines: list=None):
@@ -543,12 +568,13 @@ class ElementLoader:
         if not snippet_no:
             raise ServiceError('片段编号不能为空')
         # 加载测试片段
-        transaction = self.loads_element(snippet_no)
+        transaction = self.loads_element(snippet_no, forbid_break=True)
         if not transaction:
-            return
+            return []
         trans_children = transaction.get('children')
         if not trans_children:
-            return
+            logger.debug(f'元素名称:[ {transaction["name"]} ] 片段内容为空')
+            return []
         trans_attrs = transaction.get('attribute', {})
         # 片段形参
         parameters = trans_attrs.get('TestSnippet__parameters', [])

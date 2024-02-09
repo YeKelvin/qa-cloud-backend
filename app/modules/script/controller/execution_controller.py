@@ -65,6 +65,7 @@ def run_sampler():
     """运行取样器"""
     req = JsonParser(
         Argument('samplerNo', required=True, nullable=False, help='元素编号不能为空'),
+        Argument('aloneness', default=True),
         Argument('offlines', type=dict, default={}),
         Argument('socketId', required=True, nullable=False, help='SID不能为空'),
         Argument('datasets', type=list, default=[]),

@@ -367,6 +367,7 @@ def is_python_assertion(element):
 def has_children(element):
     return element.ELEMENT_TYPE in [
         ElementType.COLLECTION.value,
+        ElementType.SNIPPET.value,
         ElementType.CONTROLLER.value,
         ElementType.WORKER.value
     ]

@@ -7,7 +7,7 @@ level = 'DEBUG'
 
 [database]
 type = 'postgresql'
-url = 'postgresql+psycopg2://postgres:postgres@localhost:5433/postgres?client_encoding=utf8&options=-c%20TimeZone%3DAsia%2FShanghai'
+url = 'postgresql+psycopg2://postgres:postgres@localhost:5432/postgres?client_encoding=utf8&options=-c%20TimeZone%3DAsia%2FShanghai'
 
 [jwt]
 issuer = 'dev'
