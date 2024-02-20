@@ -463,7 +463,7 @@ def record_element_changelog(element: TTestElement, new_name: str, new_desc: str
 @http_service
 def remove_element(req):
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    check_workspace_permission(request.headers.get('x-workspace-no'))
     # 删除元素
     return delete_element(req.elementNo)
 
@@ -769,7 +769,7 @@ def duplicate_element(req):
     check_exists(source, error_msg='元素不存在')
 
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    check_workspace_permission(request.headers.get('x-workspace-no'))
 
     # 排除不支持复制的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
@@ -777,24 +777,26 @@ def duplicate_element(req):
 
     # 递归复制元素
     copied_no = copy_element(source)
-    # 下移 source 元素的下方的元素
-    source_node = element_children_dao.select_by_child(source.ELEMENT_NO)
-    (
-        TElementChildren
-        .filter(
-            TElementChildren.PARENT_NO == source_node.PARENT_NO,
-            TElementChildren.ELEMENT_SORT > source_node.ELEMENT_SORT
-        ).update({
-            TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
-        })
-    )
-    # 将 copy 元素插入 source 元素的下方
-    TElementChildren.insert(
-        ROOT_NO=source_node.ROOT_NO,
-        PARENT_NO=source_node.PARENT_NO,
-        ELEMENT_NO=copied_no,
-        ELEMENT_SORT=source_node.ELEMENT_SORT + 1
-    )
+    # 非配置元素才移动
+    if source.ELEMENT_TYPE != ElementType.CONFIG.value:
+        # 下移 source 元素的下方的元素
+        source_node = element_children_dao.select_by_child(source.ELEMENT_NO)
+        (
+            TElementChildren
+            .filter(
+                TElementChildren.PARENT_NO == source_node.PARENT_NO,
+                TElementChildren.ELEMENT_SORT > source_node.ELEMENT_SORT
+            ).update({
+                TElementChildren.ELEMENT_SORT: TElementChildren.ELEMENT_SORT + 1
+            })
+        )
+        # 将 copy 元素插入 source 元素的下方
+        TElementChildren.insert(
+            ROOT_NO=source_node.ROOT_NO,
+            PARENT_NO=source_node.PARENT_NO,
+            ELEMENT_NO=copied_no,
+            ELEMENT_SORT=source_node.ELEMENT_SORT + 1
+        )
     # 记录元素变更日志
     element_copied_signal.send(element_no=copied_no, source_no=source.ELEMENT_NO)
     # 返回元素编号
@@ -940,7 +942,7 @@ def clone_element(source: TTestElement, rename=False, workspace_no=None):
     cloned_no = new_id()
     # 克隆元素
     TTestElement.insert(
-        WORKSPACE_NO=workspace_no,
+        WORKSPACE_NO=workspace_no or source.WORKSPACE_NO,
         ELEMENT_NO=cloned_no,
         ELEMENT_NAME=f'{source.ELEMENT_NAME}的副本' if rename else source.ELEMENT_NAME,
         ELEMENT_DESC=source.ELEMENT_DESC,
@@ -1182,8 +1184,8 @@ def copy_element_to_workspace(req):
 
     # 查询根元素
     element = test_element_dao.select_by_no(req.elementNo)
-    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
-        raise ServiceError('仅支持复制【集合】或【片段】')
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
+        raise ServiceError('仅支持复制 【集合】【片段】【配置】')
 
     # 复制集合到指定的空间
     copied_no = copy_element(element, workspace_no=req.workspaceNo)
@@ -1195,7 +1197,7 @@ def copy_element_to_workspace(req):
 @http_service
 def move_element_to_workspace(req):
     # 校验空间权限
-    source_workspace_no = get_workspace_no(get_root_no(req.elementNo))
+    source_workspace_no = request.headers.get('x-workspace-no')
     target_workspace_no = req.workspaceNo
     check_workspace_permission(source_workspace_no)  # 校验来源空间权限
     check_workspace_permission(target_workspace_no)  # 校验目标空间权限
@@ -1204,8 +1206,8 @@ def move_element_to_workspace(req):
     # 校验空间
     if not element.WORKSPACE_NO:
         raise ServiceError('元素没有绑定空间，不支持移动')
-    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
-        raise ServiceError('仅支持移动【集合】或【片段】')
+    if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
+        raise ServiceError('仅支持移动 【集合】【片段】【配置】')
     # 记录元素变更日志
     element_transferred_signal.send(
         collection_no=req.elementNo,
