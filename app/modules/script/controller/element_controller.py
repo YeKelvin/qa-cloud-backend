@@ -265,12 +265,12 @@ def move_element_to_workspace():
     return service.move_element_to_workspace(req)
 
 
-@blueprint.get('/element/database/engine/all')
+@blueprint.get('/element/config/database/all')
 @require_login
 @require_permission('QUERY_ELEMENT')
-def query_database_engine_all():
+def query_database_config_all():
     """查询全部数据库配置"""
     req = JsonParser(
         Argument('workspaceNo')
     ).parse()
-    return service.query_database_engine_all(req)
+    return service.query_database_config_all(req)

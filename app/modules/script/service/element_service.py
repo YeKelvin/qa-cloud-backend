@@ -1219,7 +1219,7 @@ def move_element_to_workspace(req):
 
 
 @http_service
-def query_database_engine_all(req):
+def query_database_config_all(req):
     conds = QueryCondition(TTestElement)
     conds.equal(TTestElement.WORKSPACE_NO, req.workspaceNo)
     conds.equal(TTestElement.ELEMENT_TYPE, ElementType.CONFIG.value)
@@ -1230,6 +1230,8 @@ def query_database_engine_all(req):
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_ATTRS,
+            TTestElement.CREATED_TIME,
+            TTestElement.UPDATED_TIME
         )
         .filter(*conds)
         .order_by(TTestElement.CREATED_TIME.desc())
@@ -1240,7 +1242,9 @@ def query_database_engine_all(req):
         {
             'databaseNo': item.ELEMENT_NO,
             'databaseName':item.ELEMENT_NAME,
-            'databaseType': item.ELEMENT_ATTRS['DatabaseEngine__database_type']
+            'databaseType': item.ELEMENT_ATTRS['DatabaseEngine__database_type'],
+            'createdTime': item.CREATED_TIME,
+            'updatedTime': item.UPDATED_TIME
         }
         for item in items
     ]
