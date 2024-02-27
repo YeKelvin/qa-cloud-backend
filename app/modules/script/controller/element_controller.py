@@ -274,3 +274,25 @@ def query_database_config_all():
         Argument('workspaceNo')
     ).parse()
     return service.query_database_config_all(req)
+
+
+@blueprint.get('/element/config/httpheader/template/all')
+@require_login
+@require_permission('QUERY_ELEMENT')
+def query_httpheader_template_all():
+    """查询全部HTTP请求头模板"""
+    req = JsonParser(
+        Argument('workspaceNo')
+    ).parse()
+    return service.query_httpheader_template_all(req)
+
+
+@blueprint.get('/element/config/httpheader/all/by-template')
+@require_login
+@require_permission('QUERY_ELEMENT')
+def query_httpheader_all_by_template():
+    """根据列表批量查询请求头"""
+    req = JsonParser(
+        Argument('templates', type=list, required=True, nullable=False, help='模板编号数组不能为空')
+    ).parse()
+    return service.query_httpheader_all_by_template(req)

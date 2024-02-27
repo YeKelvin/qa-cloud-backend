@@ -1248,3 +1248,58 @@ def query_database_config_all(req):
         }
         for item in items
     ]
+
+
+@http_service
+def query_httpheader_template_all(req):
+    conds = QueryCondition(TTestElement)
+    conds.equal(TTestElement.WORKSPACE_NO, req.workspaceNo)
+    conds.equal(TTestElement.ELEMENT_TYPE, ElementType.CONFIG.value)
+    conds.equal(TTestElement.ELEMENT_CLASS, ElementClass.HTTP_HEADER_TEMPLATE.value)
+
+    items = (
+        db_query(
+            TTestElement.ELEMENT_NO,
+            TTestElement.ELEMENT_NAME,
+            TTestElement.CREATED_TIME,
+            TTestElement.UPDATED_TIME
+        )
+        .filter(*conds)
+        .order_by(TTestElement.CREATED_TIME.desc())
+        .all()
+    )
+
+    return [
+        {
+            'templateNo': item.ELEMENT_NO,
+            'templateName':item.ELEMENT_NAME,
+            'createdTime': item.CREATED_TIME,
+            'updatedTime': item.UPDATED_TIME
+        }
+        for item in items
+    ]
+
+
+@http_service
+def query_httpheader_all_by_template(req):
+    result = []
+    for template_no in req.templates:
+        # 查询请求头模板
+        element = test_element_dao.select_by_no(template_no)
+        if not element:
+            continue
+
+        # 获取请求头列表
+        headers = element.attrs.get('HTTPHeaderTemplate__headers')
+
+        result.extend(
+            {
+                'name': header['name'],
+                'desc': header['desc'],
+                'value': header['value'],
+                'enabled': header['enabled']
+            }
+            for header in headers
+        )
+
+    return result

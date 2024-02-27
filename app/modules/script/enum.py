@@ -79,6 +79,8 @@ class ElementClass(Enum):
 
     # HTTP头部配置器
     HTTP_HEADER_MANAGER = 'HTTPHeaderManager'
+    # HTTP头部模板
+    HTTP_HEADER_TEMPLATE = 'HTTPHeaderTemplate'
 
     # 数据集配置器
     VARIABLE_DATASET = 'VariableDataset'

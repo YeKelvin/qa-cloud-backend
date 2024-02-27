@@ -143,28 +143,6 @@ class TVariable(TableModel, BaseColumn):
     UniqueConstraint('DATASET_NO', 'VARIABLE_NAME', 'DELETED', name='unique_dataset_variable')
 
 
-class THttpHeaderTemplate(TableModel, BaseColumn):
-    """请求头模板表"""
-    __tablename__ = 'HTTP_HEADER_TEMPLATE'
-    WORKSPACE_NO = db.Column(db.String(32), index=True, comment='空间编号')
-    TEMPLATE_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='模板编号')
-    TEMPLATE_NAME = db.Column(db.String(128), nullable=False, comment='模板名称')
-    TEMPLATE_DESC = db.Column(db.String(256), comment='模板描述')
-    UniqueConstraint('WORKSPACE_NO', 'TEMPLATE_NAME', 'DELETED', name='unique_workspace_template')
-
-
-class THttpHeader(TableModel, BaseColumn):
-    """HTTP头部表"""
-    __tablename__ = 'HTTP_HEADER'
-    TEMPLATE_NO = db.Column(db.String(32), index=True, nullable=False, comment='模板编号')
-    HEADER_NO = db.Column(db.String(32), index=True, unique=True, nullable=False, comment='请求头编号')
-    HEADER_NAME = db.Column(db.String(256), nullable=False, comment='请求头名称')
-    HEADER_VALUE = db.Column(db.Text(), nullable=False, comment='请求头值')
-    HEADER_DESC = db.Column(db.String(256), comment='请求头描述')
-    ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
-    UniqueConstraint('TEMPLATE_NO', 'HEADER_NAME', 'DELETED', name='unique_template_header')
-
-
 class TElementTag(TableModel, BaseColumn):
     """元素标签表"""
     __tablename__ = 'ELEMENT_TAG'

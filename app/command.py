@@ -254,17 +254,6 @@ def init_permission_item():
     create_permission('SCRIPT', 'VARIABLE', '新增变量', 'CREATE_VARIABLE', 'CREATE')
     create_permission('SCRIPT', 'VARIABLE', '修改变量', 'MODIFY_VARIABLE', 'MODIFY')
     create_permission('SCRIPT', 'VARIABLE', '删除变量', 'REMOVE_VARIABLE', 'REMOVE')
-    # headers
-    create_permission('SCRIPT', 'HTTP_HEADER', '查询HTTP请求头模板', 'QUERY_HTTPHEADER_TEMPLATE', 'QUERY')
-    create_permission('SCRIPT', 'HTTP_HEADER', '新增HTTP请求头模板', 'CREATE_HTTPHEADER_TEMPLATE', 'CREATE')
-    create_permission('SCRIPT', 'HTTP_HEADER', '修改HTTP请求头模板', 'MODIFY_HTTPHEADER_TEMPLATE', 'MODIFY')
-    create_permission('SCRIPT', 'HTTP_HEADER', '删除HTTP请求头模板', 'REMOVE_HTTPHEADER_TEMPLATE', 'REMOVE')
-    create_permission('SCRIPT', 'HTTP_HEADER', '复制HTTP请求头模板', 'COPY_HTTPHEADER_TEMPLATE', 'COPY')
-    create_permission('SCRIPT', 'HTTP_HEADER', '移动HTTP请求头模板', 'MOVE_HTTPHEADER_TEMPLATE', 'MOVE')
-    create_permission('SCRIPT', 'HTTP_HEADER', '查询HTTP请求头', 'QUERY_HTTP_HEADER', 'QUERY')
-    create_permission('SCRIPT', 'HTTP_HEADER', '新增HTTP请求头', 'CREATE_HTTP_HEADER', 'CREATE')
-    create_permission('SCRIPT', 'HTTP_HEADER', '修改HTTP请求头', 'MODIFY_HTTP_HEADER', 'MODIFY')
-    create_permission('SCRIPT', 'HTTP_HEADER', '删除HTTP请求头', 'REMOVE_HTTP_HEADER', 'REMOVE')
     # testplan
     create_permission('SCRIPT', 'TESTPLAN', '查询测试计划', 'QUERY_TESTPLAN', 'QUERY')
     create_permission('SCRIPT', 'TESTPLAN', '新增测试计划', 'CREATE_TESTPLAN', 'CREATE')

@@ -8,7 +8,6 @@ from loguru import logger
 
 from app.database import db_query
 from app.modules.script.dao import element_children_dao
-from app.modules.script.dao import http_header_dao
 from app.modules.script.dao import test_element_dao
 from app.modules.script.enum import DatabaseDriver
 from app.modules.script.enum import DatabaseType
@@ -623,9 +622,12 @@ class ElementLoader:
             # 先查缓存
             cache__headers = cache__header_manager.get(template_no, [])
             if not cache__headers:
-                headers = http_header_dao.select_all_by_template(template_no)
+                template = test_element_dao.select_by_no(template_no)
+                if not template:
+                    continue
+                headers = template.attrs.get('HTTPHeaderTemplate__headers')
                 for header in headers:
-                    cache__headers.append(create_http_header(name=header.HEADER_NAME, value=header.HEADER_VALUE))
+                    cache__headers.append(create_http_header(name=header['name'], value=header['value']))
                 cache__header_manager[template_no] = cache__headers
             properties.extend(cache__headers)
 
