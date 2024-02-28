@@ -52,7 +52,7 @@ def query_tag_all():
 @http_service
 def create_tag(req):
     tag = tag_dao.select_by_name(req.tagName)
-    check_not_exists(tag, error_msg='标签已存在')
+    check_not_exists(tag, error='标签已存在')
 
     TTag.insert(
         WORKSPACE_NO=new_id(),
@@ -64,7 +64,7 @@ def create_tag(req):
 @http_service
 def modify_tag(req):
     tag = tag_dao.select_by_no(req.tagNo)
-    check_exists(tag, error_msg='标签不存在')
+    check_exists(tag, error='标签不存在')
 
     tag.update(
         WORKSPACE_NAME=req.tagName,
@@ -75,6 +75,6 @@ def modify_tag(req):
 @http_service
 def remove_tag(req):
     tag = tag_dao.select_by_no(req.tagNo)
-    check_exists(tag, error_msg='标签不存在')
+    check_exists(tag, error='标签不存在')
 
     tag.delete()

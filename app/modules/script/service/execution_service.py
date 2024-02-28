@@ -123,9 +123,9 @@ def run_collection(req):
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅支持运行 Collecion 元素')
+        raise ServiceError(msg='仅支持运行测试集合')
 
     # 临时存储变量
     collection_name = collection.ELEMENT_NAME
@@ -197,14 +197,14 @@ def run_testcase(worker_no, socket_id, offlines, datasets, variables, use_curren
     # 查询元素
     worker = test_element_dao.select_by_no(worker_no)
     if not worker.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if worker.ELEMENT_TYPE != ElementType.WORKER.value:
-        raise ServiceError('仅支持运行 Worker 元素')
+        raise ServiceError(msg='仅支持运行测试用例')
 
     # 获取 collectionNo
     node = element_children_dao.select_by_child(worker_no)
     if not node:
-        raise ServiceError('元素节点不存在')
+        raise ServiceError(msg='元素节点不存在')
 
     # 临时存储变量
     collection_no = node.PARENT_NO
@@ -249,14 +249,14 @@ def run_sampler(req):
     # 查询元素
     sampler = test_element_dao.select_by_no(req.samplerNo)
     if not sampler.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if sampler.ELEMENT_TYPE != ElementType.SAMPLER.value:
-        raise ServiceError('仅支持运行 Sampler 元素')
+        raise ServiceError(msg='仅支持运行请求')
 
     # 获取 collectionNo 和 workerNo
     node = get_element_node(req.samplerNo)
     if not node:
-        raise ServiceError('元素节点不存在')
+        raise ServiceError(msg='元素节点不存在')
 
     # 临时存储变量
     collection_no = node.ROOT_NO
@@ -311,9 +311,9 @@ def run_snippet(req):
     # 查询元素
     snippet = test_element_dao.select_by_no(req.snippetNo)
     if not snippet.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if not is_test_snippet(snippet):
-        raise ServiceError('仅支持运行 TestSnippet 元素')
+        raise ServiceError(msg='仅支持运行测试片段')
 
     # 递归加载脚本
     script = ElementLoader(req.snippetNo, offlines=req.offlines).loads_tree()
@@ -348,7 +348,7 @@ def run_offline(req):
     # 获取离线数据
     offline = req.offlines.get(req.offlineNo)
     if not offline:
-        raise ServiceError('离线数据不存在')
+        raise ServiceError(msg='离线数据不存在')
 
     parent = test_element_dao.select_by_no(req.parentNo)
     worker_no = req.parentNo if is_worker(parent) else get_case_no(req.parentNo)
@@ -398,7 +398,7 @@ def execute_testplan(req):
 def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(plan_no)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
 
     # 校验空间权限
     if check_workspace:
@@ -407,7 +407,7 @@ def run_testplan(plan_no, datasets, use_current_value, check_workspace=True):
     # 查询是否有正在运行中的执行任务
     running = testplan_execution_dao.select_running_by_plan(plan_no)
     if running:
-        raise ServiceError('测试计划正在运行中，请执行结束后再开始新的执行')
+        raise ServiceError(msg='测试计划正在运行中，请执行结束后再开始新的执行')
 
     # 创建执行编号
     execution_no = new_id()
@@ -808,11 +808,11 @@ def start_testplan_by_error_report(
 def interrupt_testplan(req):
     # 查询执行记录
     execution = testplan_execution_dao.select_by_no(req.executionNo)
-    check_exists(execution, error_msg='执行记录不存在')
+    check_exists(execution, error='执行记录不存在')
 
     # 查询测试计划
     testplan = testplan_dao.select_by_no(execution.PLAN_NO)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)

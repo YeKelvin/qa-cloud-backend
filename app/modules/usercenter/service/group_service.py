@@ -68,7 +68,7 @@ def query_group_all():
 def query_group_info(req):
     # 查询分组
     group = group_dao.select_by_no(req.groupNo)
-    check_exists(group, error_msg='分组不存在')
+    check_exists(group, error='分组不存在')
 
     return {
         'groupNo': group.GROUP_NO,
@@ -82,7 +82,7 @@ def query_group_info(req):
 def create_group(req):
     # 唯一性校验
     if group_dao.select_by_name(req.groupName):
-        raise ServiceError('分组名称已存在')
+        raise ServiceError(msg='分组名称已存在')
 
     # 创建分组
     group_no = new_id()
@@ -103,11 +103,11 @@ def create_group(req):
 def modify_group(req):
     # 查询分组
     group = group_dao.select_by_no(req.groupNo)
-    check_exists(group, error_msg='分组不存在')
+    check_exists(group, error='分组不存在')
 
     # 唯一性校验
     if group.GROUP_NAME != req.groupName and group_dao.select_by_name(req.groupName):
-        raise ServiceError('分组名称已存在')
+        raise ServiceError(msg='分组名称已存在')
 
     # 更新分组信息
     group.update(
@@ -133,7 +133,7 @@ def modify_group(req):
 def modify_group_state(req):
     # 查询分组
     group = group_dao.select_by_no(req.groupNo)
-    check_exists(group, error_msg='分组不存在')
+    check_exists(group, error='分组不存在')
 
     # 更新分组状态
     group.update(STATE=req.state)
@@ -143,7 +143,7 @@ def modify_group_state(req):
 def remove_group(req):
     # 查询分组
     group = group_dao.select_by_no(req.groupNo)
-    check_exists(group, error_msg='分组不存在')
+    check_exists(group, error='分组不存在')
 
     # 删除分组用户
     group_member_dao.delete_all_by_group(req.groupNo)

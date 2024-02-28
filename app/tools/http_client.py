@@ -15,11 +15,11 @@ def _request(method, url, **kwargs) -> httpx.Response:
         res = httpx.request(method, url, **kwargs)
         if not res.is_success:
             logger.info(f'url:[ {method} {url} ] {res.status_code} 请求失败')
-            raise ServiceError('{res.status_code} 第三方请求失败')
+            raise ServiceError(msg='{res.status_code} 第三方请求失败')
         return res
     except httpx.ReadTimeout as e:
         logger.info(f'url:[ {method} {url} ] 请求超时')
-        raise ServiceError('第三方请求超时') from e
+        raise ServiceError(msg='第三方请求超时') from e
 
 
 def post(url, json):

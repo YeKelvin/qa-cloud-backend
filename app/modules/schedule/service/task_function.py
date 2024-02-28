@@ -25,9 +25,9 @@ def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
         # 查询元素
         collection = test_element_dao.select_by_no(collectionNo)
         if not collection.ENABLED:
-            raise ServiceError('元素已禁用')
+            raise ServiceError(msg='元素已禁用')
         if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-            raise ServiceError('仅支持运行 Collecion 元素')
+            raise ServiceError(msg='仅支持运行测试集合')
         # 根据 collectionNo 递归加载脚本
         script = ElementLoader(collectionNo).loads_tree()
         # 添加变量组件
@@ -45,13 +45,13 @@ def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
         # 查询元素
         worker = test_element_dao.select_by_no(workerNo)
         if not worker.ENABLED:
-            raise ServiceError('元素已禁用')
+            raise ServiceError(msg='元素已禁用')
         if worker.ELEMENT_TYPE != ElementType.WORKER.value:
-            raise ServiceError('仅支持运行 Worker 元素')
+            raise ServiceError(msg='仅支持运行测试用例')
         # 获取 collectionNo
         worker_node = element_children_dao.select_by_child(workerNo)
         if not worker_node:
-            raise ServiceError('元素节点不存在')
+            raise ServiceError(msg='元素节点不存在')
         # 根据 collectionNo 递归加载脚本
         collection_no = worker_node.PARENT_NO
         script = ElementLoader(collection_no, worker_no=workerNo).loads_tree()

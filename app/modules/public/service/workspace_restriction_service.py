@@ -31,7 +31,7 @@ def query_workspace_restriction(req):
 def set_workspace_restriction(req):
     # 查询空间，判断空间是否有效
     workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='工作空间不存在')
+    check_exists(workspace, error='工作空间不存在')
 
     # 设置空间限制
     set_workspace_permission(req.workspaceNo, req.permissions)

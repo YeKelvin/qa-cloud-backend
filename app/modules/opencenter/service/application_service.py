@@ -49,7 +49,7 @@ def query_application_list(req):
 def query_application_info(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
-    check_exists(tpa, error_msg='应用不存在')
+    check_exists(tpa, error='应用不存在')
 
     return {
         'appNo': tpa.APP_NO,
@@ -64,9 +64,9 @@ def query_application_info(req):
 def create_application(req):
     # 唯一性校验
     if third_party_application_dao.select_by_name(req.appName):
-        raise ServiceError('应用名称已存在')
+        raise ServiceError(msg='应用名称已存在')
     if third_party_application_dao.select_by_code(req.appCode):
-        raise ServiceError('应用代码已存在')
+        raise ServiceError(msg='应用代码已存在')
 
     # 创建应用
     app_no = new_id()
@@ -86,13 +86,13 @@ def create_application(req):
 def modify_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
-    check_exists(tpa, error_msg='应用不存在')
+    check_exists(tpa, error='应用不存在')
 
     # 唯一性校验
     if tpa.APP_NAME != req.appName and third_party_application_dao.select_by_name(req.appName):
-        raise ServiceError('应用名称已存在')
+        raise ServiceError(msg='应用名称已存在')
     if tpa.APP_CODE != req.appCode and third_party_application_dao.select_by_code(req.appCode):
-        raise ServiceError('应用代码已存在')
+        raise ServiceError(msg='应用代码已存在')
 
     # 更新应用信息
     tpa.update(
@@ -106,7 +106,7 @@ def modify_application(req):
 def modify_application_state(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
-    check_exists(tpa, error_msg='应用不存在')
+    check_exists(tpa, error='应用不存在')
 
     # 更新应用状态
     tpa.update(STATE=req.state)
@@ -116,7 +116,7 @@ def modify_application_state(req):
 def reset_application_secret(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
-    check_exists(tpa, error_msg='应用不存在')
+    check_exists(tpa, error='应用不存在')
 
     # 重置应用密钥
     tpa.update(
@@ -128,7 +128,7 @@ def reset_application_secret(req):
 def remove_application(req):
     # 查询应用
     tpa = third_party_application_dao.select_by_no(req.appNo)
-    check_exists(tpa, error_msg='应用不存在')
+    check_exists(tpa, error='应用不存在')
 
     # 删除应用
     tpa.delete()

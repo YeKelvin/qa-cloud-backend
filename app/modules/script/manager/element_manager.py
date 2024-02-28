@@ -25,9 +25,9 @@ def get_workspace_no(root_no) -> str:
     """获取元素空间编号"""
     root = test_element_dao.get_root_by_number(root_no)
     if not root:
-        raise ServiceError('根元素不存在')
+        raise ServiceError(msg='根元素不存在')
     if not root.WORKSPACE_NO:
-        raise ServiceError('根元素没有绑定空间')
+        raise ServiceError(msg='根元素没有绑定空间')
     return root.WORKSPACE_NO
 
 
@@ -37,7 +37,7 @@ def get_root_no(element_no) -> str:
     if not (node := element_children_dao.select_by_child(element_no)):
         return element_no
     if not node.ROOT_NO:
-        raise ServiceError(f'元素编号:[ {element_no} ] 根元素编号为空')
+        raise ServiceError(msg=f'元素编号:[ {element_no} ] 根元素编号为空')
     return node.ROOT_NO
 
 
@@ -64,7 +64,7 @@ def get_case_no(element_no) -> str:
             else get_case_no(node.PARENT_NO)
         )
     else:
-        raise ServiceError('查找用例编号失败')
+        raise ServiceError(msg='查找用例编号失败')
 
 
 def get_element_property(element_no):

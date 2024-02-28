@@ -45,7 +45,7 @@ def get_workspace_no():
     if workspace_no := request.headers.get('x-workspace-no'):
         return workspace_no
     else:
-        raise ServiceError('获取空间编号失败')
+        raise ServiceError(msg='获取空间编号失败')
 
 
 def is_root_node(element_no):

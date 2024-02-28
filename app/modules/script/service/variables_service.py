@@ -88,11 +88,11 @@ def create_dataset(req):
         DATASET_NAME=req.datasetName,
         DATASET_TYPE=req.datasetType
     )
-    check_not_exists(dataset, error_msg='变量集已存在')
+    check_not_exists(dataset, error='变量集已存在')
 
     # 变量集为ENVIRONMENT或CUSTOM时，工作空间编号不能为空
     if req.datasetType != VariableDatasetType.GLOBAL.value and not req.workspaceNo:
-        raise ServiceError('工作空间编号不能为空')
+        raise ServiceError(msg='空间编号不能为空')
 
     # 新增变量集
     dataset_no = new_id()
@@ -113,7 +113,7 @@ def create_dataset(req):
 def modify_dataset(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -130,7 +130,7 @@ def modify_dataset(req):
 def remove_dataset(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
     # 删除变量集下的所有变量
@@ -143,11 +143,11 @@ def remove_dataset(req):
 def create_variable(req):
     # 查询变量信息
     variable = variable_dao.select_by_dataset_and_name(req.datasetNo, req.variableName)
-    check_not_exists(variable, error_msg='变量集已存在')
+    check_not_exists(variable, error='变量集已存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -171,11 +171,11 @@ def create_variable(req):
 def modify_variable(req):
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
-    check_exists(variable, error_msg='变量不存在')
+    check_exists(variable, error='变量不存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -193,11 +193,11 @@ def modify_variable(req):
 def remove_variable(req):
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
-    check_exists(variable, error_msg='变量不存在')
+    check_exists(variable, error='变量不存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -210,11 +210,11 @@ def remove_variable(req):
 def enable_variable(req):
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
-    check_exists(variable, error_msg='变量不存在')
+    check_exists(variable, error='变量不存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -229,11 +229,11 @@ def enable_variable(req):
 def disable_variable(req):
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
-    check_exists(variable, error_msg='变量不存在')
+    check_exists(variable, error='变量不存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -248,11 +248,11 @@ def disable_variable(req):
 def update_current_value(req):
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
-    check_exists(variable, error_msg='变量不存在')
+    check_exists(variable, error='变量不存在')
 
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -313,7 +313,7 @@ def query_variables(req):
 def create_variables(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -325,7 +325,7 @@ def create_variables(req):
 
         # 查询变量信息
         variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.variableName)
-        check_not_exists(variable, error_msg=f'变量名称:[ {vari.variableName} ] 变量已存在')
+        check_not_exists(variable, error=f'变量名称:[ {vari.variableName} ] 变量已存在')
 
         # 新增变量
         TVariable.insert(
@@ -343,7 +343,7 @@ def create_variables(req):
 def modify_variables(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
     # 遍历更新变量
@@ -355,7 +355,7 @@ def modify_variables(req):
         if 'variableNo' in vari:
             # 查询变量信息
             variable = variable_dao.select_by_no(vari.variableNo)
-            check_exists(variable, error_msg='变量不存在')
+            check_exists(variable, error='变量不存在')
             # 更新变量信息
             variable.update(
                 VARIABLE_NAME=vari.variableName.strip() if vari.variableName else vari.variableName,
@@ -367,7 +367,7 @@ def modify_variables(req):
         else:
             # 查询变量信息
             variable = variable_dao.select_by_dataset_and_name(req.datasetNo, vari.variableName)
-            check_not_exists(variable, error_msg=f'变量名称:[ {vari.variableName} ] 变量已存在')
+            check_not_exists(variable, error=f'变量名称:[ {vari.variableName} ] 变量已存在')
             # 新增变量
             TVariable.insert(
                 DATASET_NO=req.datasetNo,
@@ -384,7 +384,7 @@ def modify_variables(req):
 def remove_variables(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
     # 批量删除变量
@@ -395,7 +395,7 @@ def remove_variables(req):
 def duplicate_dataset(req):
     # 查询变量集
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -431,7 +431,7 @@ def duplicate_dataset(req):
 def copy_dataset_to_workspace(req):
     # 查询变量集
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
 
     # 校验空间权限
     check_workspace_permission(dataset.WORKSPACE_NO)
@@ -469,6 +469,6 @@ def move_dataset_to_workspace(req):
     check_workspace_permission(req.workspaceNo)
     # 查询变量集
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
-    check_exists(dataset, error_msg='变量集不存在')
+    check_exists(dataset, error='变量集不存在')
     # 移动变量集
     dataset.update(WORKSPACE_NO=req.workspaceNo)

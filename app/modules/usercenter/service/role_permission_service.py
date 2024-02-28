@@ -47,7 +47,7 @@ def query_role_permissions(req):
 def set_role_permissions(req):
     # 查询角色
     role = role_dao.select_by_no(req.roleNo)
-    check_exists(role, error_msg='角色不存在')
+    check_exists(role, error='角色不存在')
 
     for permission_no in req.permissions:
         # 查询角色权限

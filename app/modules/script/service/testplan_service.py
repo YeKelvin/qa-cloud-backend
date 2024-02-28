@@ -106,7 +106,7 @@ def query_testplan_all(req):
 def query_testplan(req):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(req.planNo)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
     return {
         'planNo': testplan.PLAN_NO,
         'planName': testplan.PLAN_NAME,
@@ -130,7 +130,7 @@ def create_testplan(req):
     check_workspace_permission(req.workspaceNo)
     # 查询工作空间
     workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='工作空间不存在')
+    check_exists(workspace, error='工作空间不存在')
     # 创建计划编号
     plan_no = new_id()
     # 新增测试计划
@@ -161,7 +161,7 @@ def create_testplan(req):
 def modify_testplan(req):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(req.planNo)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
     # 修改测试计划
@@ -188,7 +188,7 @@ def modify_testplan(req):
 def modify_testplan_state(req):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(req.planNo)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
 
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
@@ -206,7 +206,7 @@ def modify_testplan_state(req):
 def modify_testplan_testphase(req):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(req.planNo)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
     # 校验空间权限
     check_workspace_permission(testplan.WORKSPACE_NO)
     # 更新测试阶段
@@ -217,7 +217,7 @@ def modify_testplan_testphase(req):
 def query_testplan_execution_all(req):
     # 查询测试计划
     testplan = testplan_dao.select_by_no(req.planNo)
-    check_exists(testplan, error_msg='测试计划不存在')
+    check_exists(testplan, error='测试计划不存在')
 
     # 查询所有执行记录
     executions = testplan_execution_dao.select_all_by_plan(req.planNo)
@@ -240,7 +240,7 @@ def query_testplan_execution_all(req):
 def query_testplan_execution_details(req):
     # 查询执行记录
     execution = testplan_execution_dao.select_by_no(req.executionNo)
-    check_exists(execution, error_msg='执行记录不存在')
+    check_exists(execution, error='执行记录不存在')
 
     # 查询测试报告，如果没有勾选保存结果就没有测试报告
     report = test_report_dao.select_by_execution(execution.EXECUTION_NO)

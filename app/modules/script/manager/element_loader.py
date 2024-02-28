@@ -141,7 +141,7 @@ def test_worker_loader(**kwargs):
     if loader.offline_no:
         offline = loader.loads_element(loader.offline_no)
         if not offline:
-            raise ServiceError('加载离线取样器失败')
+            raise ServiceError(msg='加载离线请求失败')
         children.append(offline)
 
 
@@ -159,7 +159,7 @@ def setup_worker_loader(**kwargs):
     if loader.offline_no:
         offline = loader.loads_element(loader.offline_no)
         if not offline:
-            raise ServiceError('加载离线取样器失败')
+            raise ServiceError(msg='加载离线请求失败')
         children.append(offline)
 
 
@@ -177,7 +177,7 @@ def teardown_worker_loader(**kwargs):
     if loader.offline_no:
         offline = loader.loads_element(loader.offline_no)
         if not offline:
-            raise ServiceError('加载离线取样器失败')
+            raise ServiceError(msg='加载离线请求失败')
         children.append(offline)
 
 
@@ -316,7 +316,7 @@ class ElementLoader:
     def get_root_element(self) -> TTestElement:
         root, _, _ = self.get_offline_element(self.root_no)
         root = root or test_element_dao.select_by_no(self.root_no)
-        check_exists(root, error_msg='根元素不存在')
+        check_exists(root, error='根元素不存在')
         return root
 
     def get_workspace_element(self) -> TTestElement | list:
@@ -331,7 +331,7 @@ class ElementLoader:
         if not ws:
             # 读取后端数据
             ws = test_element_dao.select_by_no(self.workspace_no)
-            check_exists(ws, error_msg='空间元素不存在')
+            check_exists(ws, error='空间元素不存在')
             components = (
                 db_query(TElementComponent.ELEMENT_NO, TElementComponent.ELEMENT_SORT)
                 .filter(TElementComponent.DELETED == 0, TElementComponent.PARENT_NO == self.workspace_no)
@@ -360,13 +360,13 @@ class ElementLoader:
         elif is_test_snippet(self.root_element):
             return self.loads_test_snippet()
         else:
-            raise ServiceError('元素非法')
+            raise ServiceError(msg='元素非法')
 
     def loads_test_collection(self):
         # 递归加载元素
         collection = self.loads_element(self.root_no)
         if not collection:
-            raise ServiceError('脚本异常，请联系管理员')
+            raise ServiceError(msg='测试集合加载异常')
         # 添加全局配置
         for configs in self.configurator.values():
             for config in configs.values():
@@ -454,7 +454,7 @@ class ElementLoader:
         if not element:
             # 查询元素
             element = test_element_dao.select_by_no(element_no)
-            check_exists(element, error_msg='元素不存在')
+            check_exists(element, error='元素不存在')
             properties = get_element_property(element_no)
         # 元素为禁用状态时返回None
         if not element.enabled:
@@ -565,7 +565,7 @@ class ElementLoader:
         # 根据片段编号加载片段集合（片段请求在脚本中其实是事务，这里做了一层转换）
         snippet_no = sampler_attrs.get('SnippetSampler__snippet_no', None)
         if not snippet_no:
-            raise ServiceError('片段编号不能为空')
+            raise ServiceError(msg='片段编号不能为空')
         # 加载测试片段
         transaction = self.loads_element(snippet_no, forbid_break=True)
         if not transaction:
@@ -638,7 +638,7 @@ class ElementLoader:
         # 查询数据库引擎
         engine = self.loads_element(engine_no)
         if not engine:
-            raise ServiceError('数据库配置不存在')
+            raise ServiceError(msg='数据库配置不存在')
         # 将引擎变量名称存入取样器属性中
         properties['SQLSampler__engine_name'] = engine['property']['DatabaseEngine__variable_name']
         # 存储全局组件

@@ -76,7 +76,7 @@ def query_workspace_member_all(req):
 def modify_workspace_member(req):
     # 查询元素
     workspace = workspace_dao.select_by_no(req.workspaceNo)
-    check_exists(workspace, error_msg='工作空间不存在')
+    check_exists(workspace, error='工作空间不存在')
 
     # 成员列表添加超级管理用户编号
     members = req.members
@@ -107,4 +107,4 @@ def get_super_admin_userno():
     if result := db_query(TUser.USER_NO).filter(*conds).first():
         return result[0]
     else:
-        raise ServiceError('查询超级管理员用户失败')
+        raise ServiceError(msg='查询超级管理员用户失败')

@@ -69,7 +69,7 @@ def query_notice_robot_all(req):
 def query_notice_robot(req):
     # 查询机器人
     robot = notice_robot_dao.select_by_no(req.robotNo)
-    check_exists(robot, error_msg='机器人不存在')
+    check_exists(robot, error='机器人不存在')
 
     return {
         'workspaceNo': robot.WORKSPACE_NO,
@@ -86,7 +86,7 @@ def query_notice_robot(req):
 def create_notice_robot(req):
     # 空间编号不能为空
     if not req.workspaceNo:
-        raise ServiceError('空间编号不能为空')
+        raise ServiceError(msg='空间编号不能为空')
 
     # 查询机器人
     robot = notice_robot_dao.select_first(
@@ -94,7 +94,7 @@ def create_notice_robot(req):
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=req.robotType
     )
-    check_not_exists(robot, error_msg='机器人已存在')
+    check_not_exists(robot, error='机器人已存在')
 
     # 新增机器人
     robot_no = new_id()
@@ -115,7 +115,7 @@ def create_notice_robot(req):
 def modify_notice_robot(req):
     # 查询机器人
     robot = notice_robot_dao.select_by_no(req.robotNo)
-    check_exists(robot, error_msg='机器人不存在')
+    check_exists(robot, error='机器人不存在')
 
     # 唯一性校验
     if robot.ROBOT_NAME != req.robotName and notice_robot_dao.select_first(
@@ -123,7 +123,7 @@ def modify_notice_robot(req):
         ROBOT_NAME=req.robotName,
         ROBOT_TYPE=robot.ROBOT_TYPE
     ):
-        raise ServiceError('机器人名称已存在')
+        raise ServiceError(msg='机器人名称已存在')
 
     # 更新机器人信息
     robot.update(
@@ -137,7 +137,7 @@ def modify_notice_robot(req):
 def modify_notice_robot_state(req):
     # 查询机器人
     robot = notice_robot_dao.select_by_no(req.robotNo)
-    check_exists(robot, error_msg='机器人不存在')
+    check_exists(robot, error='机器人不存在')
 
     # 更新机器人状态
     robot.update(STATE=req.state)
@@ -147,7 +147,7 @@ def modify_notice_robot_state(req):
 def remove_notice_robot(req):
     # 查询机器人
     robot = notice_robot_dao.select_by_no(req.robotNo)
-    check_exists(robot, error_msg='机器人不存在')
+    check_exists(robot, error='机器人不存在')
 
     # 删除机器人
     robot.delete()

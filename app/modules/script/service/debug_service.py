@@ -17,9 +17,9 @@ def query_collection_json(req):
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
-        raise ServiceError('仅支持 Collecion 元素')
+        raise ServiceError(msg='仅支持测试集合')
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(req.collectionNo)
     # 添加变量组件
@@ -32,13 +32,13 @@ def query_worker_json(req):
     # 查询元素
     worker = test_element_dao.select_by_no(req.workerNo)
     if not worker.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if worker.ELEMENT_TYPE != ElementType.WORKER.value:
-        raise ServiceError('仅支持 Worker 元素')
+        raise ServiceError(msg='仅支持测试用例')
     # 获取 collectionNo
     worker_node = element_children_dao.select_by_child(req.workerNo)
     if not worker_node:
-        raise ServiceError('元素节点不存在')
+        raise ServiceError(msg='元素节点不存在')
     collection_no = worker_node.PARENT_NO
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_tree(collection_no, required_worker=req.workerNo)
@@ -52,9 +52,9 @@ def query_snippet_json(req):
     # 查询元素
     collection = test_element_dao.select_by_no(req.collectionNo)
     if not collection.ENABLED:
-        raise ServiceError('元素已禁用')
+        raise ServiceError(msg='元素已禁用')
     if not is_test_snippet(collection):
-        raise ServiceError('仅支持 TestSnippet 元素')
+        raise ServiceError(msg='仅支持测试片段')
     # 根据 collectionNo 递归加载脚本
     script = element_loader.loads_test_snippet(
         collection.ELEMENT_NO,

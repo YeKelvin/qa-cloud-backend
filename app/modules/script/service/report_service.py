@@ -16,7 +16,7 @@ from app.utils.time_util import microsecond_to_m_s
 def query_report(req):
     # 查询测试报告
     report = test_report_dao.select_by_no(req.reportNo)
-    check_exists(report, error_msg='测试报告不存在')
+    check_exists(report, error='测试报告不存在')
 
     # 查询集合结果
     collection_result_list = test_collection_result_dao.select_all_by_report(report.REPORT_NO)
@@ -73,7 +73,7 @@ def query_report(req):
 @http_service
 def query_collection_result(req):
     result = test_collection_result_dao.select_first_by_collectionid(req.collectionId)
-    check_exists(result, error_msg='集合结果不存在')
+    check_exists(result, error='集合结果不存在')
     return {
         'details': {
             'reportNo': result.REPORT_NO,
@@ -101,7 +101,7 @@ def query_collection_result(req):
 @http_service
 def query_worker_result(req):
     result = test_worker_result_dao.select_first_by_worker(req.workerId)
-    check_exists(result, error_msg='用例结果不存在')
+    check_exists(result, error='用例结果不存在')
     return {
         'workerId': result.WORKER_ID,
         'workerName': result.WORKER_NAME,
@@ -119,7 +119,7 @@ def query_worker_result(req):
 @http_service
 def query_sampler_result(req):
     result = test_sampler_result_dao.select_first_by_sampler(req.samplerId)
-    check_exists(result, error_msg='请求结果不存在')
+    check_exists(result, error='请求结果不存在')
     return {
         'samplerId': result.SAMPLER_ID,
         'samplerName': result.SAMPLER_NAME,

@@ -72,7 +72,7 @@ def query_task_list(req):
 def query_task_info(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     return {
         'jobNo': task.JOB_NO,
@@ -110,7 +110,7 @@ def create_task(req):
             TScheduleJob.JOB_ARGS['workerNo'].as_string() == req.jobArgs['workerNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(task, error_msg='相同内容的任务已存在')
+    check_not_exists(task, error='相同内容的任务已存在')
 
     # 添加作业
     job_no = new_id()
@@ -174,7 +174,7 @@ def create_task(req):
 def modify_task(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -201,7 +201,7 @@ def modify_task(req):
             TScheduleJob.JOB_ARGS['workerNo'].as_string() == req.jobArgs['workerNo'],
             TScheduleJob.STATE != JobState.CLOSED.value
         ).first()
-    check_not_exists(existed_task, error_msg='相同内容的任务已存在')
+    check_not_exists(existed_task, error='相同内容的任务已存在')
 
     # 新增历史记录
     log_no = new_id()
@@ -258,7 +258,7 @@ def modify_task(req):
 def pause_task(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -283,7 +283,7 @@ def pause_task(req):
 def resume_task(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)
@@ -308,7 +308,7 @@ def resume_task(req):
 def remove_task(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)

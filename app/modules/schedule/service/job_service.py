@@ -16,13 +16,13 @@ from app.tools.validator import check_workspace_permission
 def query_job_info(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 查询作业信息
     try:
         job = apscheduler.get_job(req.jobNo)
     except JobLookupError as e:
-        raise ServiceError('查找作业失败，作业不存在或已失效') from e
+        raise ServiceError(msg='查找作业失败，作业不存在或已失效') from e
 
     return {
         'id': job.id,
@@ -46,7 +46,7 @@ def query_job_info(req):
 def run_job(req):
     # 查询定时任务
     task = schedule_job_dao.select_by_no(req.jobNo)
-    check_exists(task, error_msg='任务不存在')
+    check_exists(task, error='任务不存在')
 
     # 校验空间权限
     check_workspace_permission(task.WORKSPACE_NO)

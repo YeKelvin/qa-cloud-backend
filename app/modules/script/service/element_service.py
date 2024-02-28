@@ -185,7 +185,7 @@ def query_element_all_with_children(req):
 def query_element_info(req):
     # 查询元素
     element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
 
     return {
         'enabled': element.ENABLED,
@@ -277,7 +277,7 @@ def create_element(req: TypedElement):
         workspace_no = request.headers.get('x-workspace-no')
         # 校验工作空间
         workspace = workspace_dao.select_by_no(workspace_no)
-        check_exists(workspace, error_msg='工作空间不存在')
+        check_exists(workspace, error='工作空间不存在')
         # 校验空间权限
         check_workspace_permission(workspace_no)
     # 新增元素
@@ -406,7 +406,7 @@ def update_element(
 ):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
     # 更新元素属性
     update_element_property(element_no, element_props)
     # 记录元素变更日志
@@ -472,7 +472,7 @@ def delete_element(element_no):
     """递归删除元素"""
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
     # 删除元素子代（递归）
     delete_element_children(element_no)
     # 删除元素节点并重新排序
@@ -534,7 +534,7 @@ def delete_element_property(element_no):
 def enable_element(req):
     # 查询元素
     element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -547,7 +547,7 @@ def enable_element(req):
 def disable_element(req):
     # 查询元素
     element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
@@ -560,7 +560,7 @@ def disable_element(req):
 def toggle_element_state(req):
     # 查询元素
     element = test_element_dao.select_by_no(req.elementNo)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
     # 校验空间权限
     check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
     # 更新元素状态
@@ -641,11 +641,11 @@ def update_element_property(element_no, element_props: dict):
 def move_element(req):
     # 查询 source 元素节点
     source_node = element_children_dao.select_by_child(req.sourceNo)
-    check_exists(source_node, error_msg='来源元素父级不存在')
+    check_exists(source_node, error='来源元素父级不存在')
 
     # 校验元素序号
     if req.targetIndex < 0:
-        raise ServiceError('目标元素序号不能小于0')
+        raise ServiceError(msg='目标元素序号不能小于0')
 
     # source 父元素编号
     source_parent_no = source_node.PARENT_NO
@@ -747,7 +747,7 @@ def move_element(req):
                 f'元素序号:[ {target_node.ELEMENT_SORT} ] '
                 f'序号连续性错误'
             )
-            raise ServiceError('目标元素父级的子代序号连续性错误')
+            raise ServiceError(msg='目标元素父级的子代序号连续性错误')
 
 
 def update_children_root(parent_no, root_no):
@@ -766,14 +766,14 @@ def update_children_root(parent_no, root_no):
 def duplicate_element(req):
     # 查询元素
     source = test_element_dao.select_by_no(req.elementNo)
-    check_exists(source, error_msg='元素不存在')
+    check_exists(source, error='元素不存在')
 
     # 校验空间权限
     check_workspace_permission(request.headers.get('x-workspace-no'))
 
     # 排除不支持复制的元素
     if source.ELEMENT_TYPE == ElementType.COLLECTION.value:
-        raise ServiceError('暂不支持复制集合')
+        raise ServiceError(msg='暂不支持复制集合')
 
     # 递归复制元素
     copied_no = copy_element(source)
@@ -810,15 +810,15 @@ def paste_element(req):
 
     # 查询 source 元素
     source = test_element_dao.select_by_no(req.sourceNo)
-    check_exists(source, error_msg='来源元素不存在')
+    check_exists(source, error='来源元素不存在')
 
     # 查询 target 元素
     target = test_element_dao.select_by_no(req.targetNo)
-    check_exists(target, error_msg='目标元素不存在')
+    check_exists(target, error='目标元素不存在')
 
     # 排除不支持剪贴的元素
     if source.ELEMENT_TYPE in [ElementType.COLLECTION.value, ElementType.SNIPPET.value]:
-        raise ServiceError('暂不支持剪贴集合')
+        raise ServiceError(msg='暂不支持剪贴集合')
 
     # 检查元素是否允许剪贴
     check_allow_to_paste(source, target)
@@ -828,28 +828,28 @@ def paste_element(req):
     elif req.pasteType == PasteType.CUT.value:
         paste_element_by_cut(source, target)
     else:
-        raise ServiceError('剪贴类型非法')
+        raise ServiceError(msg='剪贴类型非法')
 
 def check_allow_to_paste(source: TTestElement, target: TTestElement):
     # Wroup
     if is_worker(source) and not is_collection(target):
-        raise ServiceError('用例仅支持在 [集合] 下剪贴')
+        raise ServiceError(msg='用例仅支持在【集合】下剪贴')
     # Sampler
     elif is_sampler(source) and (
         is_collection(target) or not (is_snippet(target) or is_worker(target) or is_controller(target))
     ):
-        raise ServiceError('请求仅支持在 [片段|用例|逻辑控制器] 下剪贴')
+        raise ServiceError(msg='请求仅支持在【片段|用例|控制器】下剪贴')
     # Controller
     elif is_controller(source) and (
         is_collection(target) or not (is_snippet(target) or is_worker(target) or is_controller(target))
     ):
-        raise ServiceError('逻辑控制器仅支持在 [片段|用例|逻辑控制器] 下剪贴')
+        raise ServiceError(msg='逻辑控制器仅支持在【片段|用例|控制器】下剪贴')
     # Timer
     elif is_timer(source) and (
         is_collection(target)
         or not (is_snippet(target) or is_worker(target) or is_sampler(target) or is_controller(target))
     ):
-        raise ServiceError('[时间控制器] 仅支持在 [ 片段|用例|逻辑控制器 ] 节点下剪贴')
+        raise ServiceError(msg='【时间控制器】仅支持在【片段|用例|控制器】节点下剪贴')
     else:
         return True
 
@@ -1160,7 +1160,7 @@ def update_component(parent_no: str, component: dict):
 def delete_element_component(element_no):
     # 查询元素
     element = test_element_dao.select_by_no(element_no)
-    check_exists(element, error_msg='元素不存在')
+    check_exists(element, error='元素不存在')
     # 删除元素属性
     delete_element_property(element_no)
     # 删除元素
@@ -1185,7 +1185,7 @@ def copy_element_to_workspace(req):
     # 查询根元素
     element = test_element_dao.select_by_no(req.elementNo)
     if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
-        raise ServiceError('仅支持复制 【集合】【片段】【配置】')
+        raise ServiceError(msg='仅支持复制【集合｜片段｜配置】')
 
     # 复制集合到指定的空间
     copied_no = copy_element(element, workspace_no=req.workspaceNo)
@@ -1205,9 +1205,9 @@ def move_element_to_workspace(req):
     element = test_element_dao.select_by_no(req.elementNo)
     # 校验空间
     if not element.WORKSPACE_NO:
-        raise ServiceError('元素没有绑定空间，不支持移动')
+        raise ServiceError(msg='元素没有绑定空间，不支持移动')
     if element.ELEMENT_TYPE not in [ElementType.COLLECTION.value, ElementType.SNIPPET.value, ElementType.CONFIG.value]:
-        raise ServiceError('仅支持移动 【集合】【片段】【配置】')
+        raise ServiceError(msg='仅支持移动【集合｜片段｜配置】')
     # 记录元素变更日志
     element_transferred_signal.send(
         collection_no=req.elementNo,
