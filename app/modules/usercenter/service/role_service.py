@@ -46,7 +46,7 @@ def query_role_list(req):
         for role in pagination.items if role.ROLE_CODE != 'ADMIN'
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

@@ -90,7 +90,7 @@ def query_element_list(req):
         for item in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

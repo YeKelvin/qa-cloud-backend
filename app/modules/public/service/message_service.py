@@ -43,7 +43,7 @@ def query_notice_robot_list(req):
         for robot in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

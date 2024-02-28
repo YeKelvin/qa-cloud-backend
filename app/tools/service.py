@@ -12,8 +12,8 @@ from app.extension import db
 from app.extension import socketio
 from app.signals import openapi_log_signal
 from app.signals import restapi_log_signal
-from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
+from app.tools.exceptions import ServiceStatus
 from app.tools.request import RequestDTO
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
@@ -44,7 +44,7 @@ def http_service(func):
             try:
                 # 判断request参数解析是否有异常
                 if req.__error__ is not None:
-                    res = ResponseDTO(errorMsg=req.__error__)
+                    res = ResponseDTO(msg=req.__error__)
                 else:
                     # 调用service
                     result = func(*args, **kwargs)
@@ -59,7 +59,7 @@ def http_service(func):
                     wlogger.info(f'uri:[ {uri} ] 数据回滚')
                     db.session.rollback()
                 # 创建失败响应
-                res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
+                res = ResponseDTO(msg=err.message, code=err.code)
             except Exception:
                 # 数据库回滚
                 if transaction:
@@ -67,7 +67,7 @@ def http_service(func):
                     db.session.rollback()
                 wlogger.exception(f'uri:[ {uri} ]')
                 # 创建失败响应
-                res = ResponseDTO(error=ErrorCode.E500000)
+                res = ResponseDTO(msg=ServiceStatus.CODE_500.MSG, code=ServiceStatus.CODE_500.CODE)
             finally:
                 # 包装http响应
                 http_res = http_response(res)
@@ -79,7 +79,7 @@ def http_service(func):
                     uri=request.path,
                     request=req.__attrs__,
                     response=res.__dict__,
-                    success=res.success,
+                    success=(res.code == 200),
                     elapsed=elapsed_time
                 )
                 # 输出http响应日志
@@ -114,7 +114,7 @@ def open_service(func):
             try:
                 # 判断request参数解析是否有异常
                 if req.__error__ is not None:
-                    res = ResponseDTO(errorMsg=req.__error__)
+                    res = ResponseDTO(msg=req.__error__)
                 else:
                     # 调用service
                     result = func(*args, **kwargs)
@@ -129,7 +129,7 @@ def open_service(func):
                     wlogger.info(f'uri:[ {uri} ] 数据回滚')
                     db.session.rollback()
                 # 创建失败响应
-                res = ResponseDTO(errorMsg=err.message, errorCode=err.code)
+                res = ResponseDTO(msg=err.message, code=err.code)
             except Exception:
                 # 数据库回滚
                 if transaction:
@@ -137,7 +137,7 @@ def open_service(func):
                     db.session.rollback()
                 wlogger.exception(f'uri:[ {uri} ]')
                 # 创建失败响应
-                res = ResponseDTO(error=ErrorCode.E500000)
+                res = ResponseDTO(msg=ServiceStatus.CODE_500.MSG, code=ServiceStatus.CODE_500.CODE)
             finally:
                 # 包装http响应
                 http_res = http_response(res)
@@ -149,7 +149,7 @@ def open_service(func):
                     uri=request.path,
                     request=req.__attrs__,
                     response=res.__dict__,
-                    success=res.success,
+                    success=(res.code == 200),
                     elapsed=elapsed_time
                 )
                 # 输出http响应日志

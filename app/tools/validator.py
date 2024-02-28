@@ -14,24 +14,24 @@ from app.modules.usercenter.model import TPermission
 from app.modules.usercenter.model import TRole
 from app.modules.usercenter.model import TUser
 from app.modules.usercenter.model import TUserRole
-from app.tools.exceptions import ErrorCode
 from app.tools.exceptions import ServiceError
+from app.tools.exceptions import ServiceStatus
 from app.utils.sqlalchemy_util import QueryCondition
 
 
-def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
+def check_not_exists(obj: any, error_msg: str = 'validation failed', error: ServiceStatus = None) -> None:
     """检查obj对象是否为空，不为空则抛异常"""
     if obj:
         raise ServiceError(error_msg, error)
 
 
-def check_exists(obj: any, error_msg: str = 'validation failed', error: ErrorCode = None) -> None:
+def check_exists(obj: any, error_msg: str = 'validation failed', error: ServiceStatus = None) -> None:
     """检查obj对象是否不为空，为空则抛异常"""
     if not obj:
         raise ServiceError(error_msg, error)
 
 
-def check_is_in_enum(string: str, enumeration: enum, error_msg: str = 'validation failed', error: ErrorCode = None):
+def check_is_in_enum(string: str, enumeration: enum, error_msg: str = 'validation failed', error: ServiceStatus = None):
     """校验枚举"""
     if string not in enumeration.__members__:
         raise ServiceError(error_msg, error)

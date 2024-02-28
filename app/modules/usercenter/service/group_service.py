@@ -47,7 +47,7 @@ def query_group_list(req):
             'roles': roles
         })
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

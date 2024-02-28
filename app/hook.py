@@ -38,9 +38,9 @@ def cross_domain_access(response):
 
 # app.register_error_handler(404, page_not_found)
 def page_not_found(_):
-    return http_response(errorMsg='Resource not found'), 404
+    return http_response(msg='Resource not found', code=500), 404
 
 
 # app.register_error_handler(Exception, exception_handler)
 def exception_handler(ex):
-    return http_response(errorMsg='服务器开小差')
+    return http_response(msg='服务器开小差', code=500)

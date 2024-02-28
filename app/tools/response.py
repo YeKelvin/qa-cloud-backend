@@ -8,8 +8,8 @@ from enum import Enum
 
 from flask import make_response
 
-from app.tools.enums import HttpStatus
-from app.tools.exceptions import ErrorCode
+from app.tools.enums import HTTPStatus
+from app.tools.exceptions import ServiceStatus
 from app.utils.json_util import to_json
 
 
@@ -18,25 +18,16 @@ class ResponseDTO:
 
     def __init__(
         self,
-        result: any = None,
-        success: bool = True,
-        error: ErrorCode = None,
-        errorCode: str = None,  # noqa
-        errorMsg: str = None  # noqa
+        data: any = None,
+        *,
+        msg: str = None,
+        code: str = ServiceStatus.CODE_200.CODE
     ):
-        self.result = result
-        self.success = success
-        if error is None:
-            self.errorCode = errorCode
-            self.errorMsg = errorMsg
-        else:
-            self.errorCode = error.name
-            self.errorMsg = error.value
-        # 可覆盖枚举的msg
-        if error and errorMsg:
-            self.errorMsg = errorMsg
-        if error or errorCode or errorMsg:
-            self.success = False
+        self.data = data
+        self.code = code
+        self.message = msg
+        if msg and not code:
+            self.code = ServiceStatus.CODE_600.CODE
         self.timestamp = datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')
 
     def __repr__(self):
@@ -46,7 +37,7 @@ class ResponseDTO:
         return str(self.__dict__)
 
 
-def http_response(res: ResponseDTO = None, status: Enum = HttpStatus.CODE_200, **kwargs):
+def http_response(res: ResponseDTO = None, status: Enum = HTTPStatus.CODE_200, **kwargs):
     if not res:
         res = ResponseDTO(**kwargs)
 

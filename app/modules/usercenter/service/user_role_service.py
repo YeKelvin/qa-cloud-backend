@@ -48,7 +48,7 @@ def query_user_role_list(req):
         for item in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

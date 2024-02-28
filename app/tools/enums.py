@@ -25,7 +25,7 @@ class Status(Enum):
 
 
 @unique
-class HttpStatus(Enum):
+class HTTPStatus(Enum):
     # 1xx（临时响应），表示临时响应并需要请求者继续执行操作的状态代码。
     CODE_100 = 100  # 继续
     CODE_101 = 101  # 切换协议

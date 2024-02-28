@@ -84,7 +84,7 @@ def query_element_changelog_list(req):
             'operationType':entity.OPERATION_TYPE
         })
 
-    return {'data': data, 'total': total}
+    return {'list': data, 'total': total}
 
 
 def get_element_name(element_no):

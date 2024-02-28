@@ -50,4 +50,4 @@ def query_login_log_list(req):
         for item in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}

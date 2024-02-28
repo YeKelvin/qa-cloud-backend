@@ -24,7 +24,7 @@ from app.modules.usercenter.model import TUserLoginLog
 from app.modules.usercenter.model import TUserRole
 from app.tools import localvars
 from app.tools.auth import JWTAuth
-from app.tools.exceptions import ErrorCode
+from app.tools.exceptions import ServiceStatus
 from app.tools.response import ResponseDTO
 from app.tools.response import http_response
 
@@ -39,7 +39,7 @@ def require_login(func):
         # 校验access-token
         if 'access-token' not in request.headers:
             # 缺失请求头
-            return failed_response(ErrorCode.E401001, msg='请求头缺失access-token')
+            return failed_response(ServiceStatus.CODE_401, msg='请求头缺失access-token')
         # 获取access-token
         access_toekn = request.headers.get('access-token')
         try:
@@ -50,34 +50,34 @@ def require_login(func):
             # 存储用户编号
             localvars.set('user_no', user_no)
         except jwt.ExpiredSignatureError:
-            return failed_response(ErrorCode.E401001, msg='token已失效')
+            return failed_response(ServiceStatus.CODE_401, msg='token已失效')
         except jwt.InvalidTokenError:
-            return failed_response(ErrorCode.E401001, msg='无效的token')
+            return failed_response(ServiceStatus.CODE_401, msg='无效的token')
         except Exception:
             logger.bind(traceid=g.trace_id).exception()
-            return failed_response(ErrorCode.E500000)
+            return failed_response(ServiceStatus.CODE_500)
 
         # 用户不存在
         user = TUser.filter_by(USER_NO=user_no).first()
         if not user:
             logger.bind(traceid=g.trace_id).info('用户不存在')
-            return failed_response(ErrorCode.E401001)
+            return failed_response(ServiceStatus.CODE_401)
 
         # 用户未登录，请先登录
         if not user.LOGGED_IN:
             logger.bind(traceid=g.trace_id).info('用户未登录')
-            return failed_response(ErrorCode.E401001)
+            return failed_response(ServiceStatus.CODE_401)
 
         # 用户状态异常
         if user.STATE != 'ENABLE':
             logger.bind(traceid=g.trace_id).info('用户状态异常')
-            return failed_response(ErrorCode.E401001)
+            return failed_response(ServiceStatus.CODE_401)
 
         # 用户最后成功登录时间和 token 签发时间不一致，即 token 已失效
         user_login_log = TUserLoginLog.filter_by(USER_NO=user_no).order_by(TUserLoginLog.CREATED_TIME.desc()).first()
         if user_login_log.LOGIN_TIME != datetime.fromtimestamp(issued_at):
             logger.bind(traceid=g.trace_id).info('token已失效')
-            return failed_response(ErrorCode.E401001)
+            return failed_response(ServiceStatus.CODE_401)
 
         localvars.set('operator', user.USER_NAME)
         return func(*args, **kwargs)
@@ -97,7 +97,7 @@ def require_permission(code):
                 logger.bind(traceid=g.trace_id).info(
                     f'method:[ {request.method} ] path:[ {request.path} ] 获取用户编号失败'
                 )
-                return failed_response(ErrorCode.E401002)
+                return failed_response(ServiceStatus.CODE_403)
 
             # 查询用户权限，判断权限是否存在且状态正常
             if exists_user_permission(user_no, code):
@@ -112,7 +112,7 @@ def require_permission(code):
             logger.bind(traceid=g.trace_id).info(
                 f'method:[ {request.method} ] path:[ {request.path} ] 角色无此权限，或状态异常'
             )
-            return failed_response(ErrorCode.E401002)
+            return failed_response(ServiceStatus.CODE_403)
 
         return wrapper
 
@@ -135,12 +135,12 @@ def require_thirdparty_access(func):
         )
         # 应用不存在
         if not tpa:
-            logger.bind(traceid=g.trace_id).info('第三方应用不存在')
-            return failed_response(ErrorCode.E401003)
+            logger.bind(traceid=g.trace_id).info('应用不存在')
+            return failed_response(ServiceStatus.CODE_403)
         # 应用状态异常
         if tpa.STATE != 'ENABLE':
-            logger.bind(traceid=g.trace_id).info('第三方应用状态异常')
-            return failed_response(ErrorCode.E401003)
+            logger.bind(traceid=g.trace_id).info('应用状态异常')
+            return failed_response(ServiceStatus.CODE_405)
         # 存储appno
         localvars.set('thirdparty_app_no', appno)
         return func(*args, **kwargs)
@@ -148,12 +148,12 @@ def require_thirdparty_access(func):
     return wrapper
 
 
-def failed_response(error: ErrorCode, msg=None):
+def failed_response(error: ServiceStatus, msg=None):
     logger.bind(traceid=g.trace_id).info(
         f'uri:[ {request.method} {request.path} ] '
         f'header:[ {dict(request.headers)} ] request:[ {dict(request.values)} ]'
     )
-    res = ResponseDTO(error=error, errorMsg=msg)
+    res = ResponseDTO(msg=msg or error.MSG, code=error.CODE)
     http_res = http_response(res)
     logger.bind(traceid=g.trace_id).info(
         f'uri:[ {request.method} {request.path} ] '

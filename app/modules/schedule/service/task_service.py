@@ -65,7 +65,7 @@ def query_task_list(req):
         for task in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service
@@ -359,7 +359,7 @@ def query_task_history_list(req):
         for item in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 def get_task_operation_content(logrow):

@@ -42,7 +42,7 @@ def query_application_list(req):
         for tpa in pagination.items
     ]
 
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service

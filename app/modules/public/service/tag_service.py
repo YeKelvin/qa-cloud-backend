@@ -33,7 +33,7 @@ def query_tag_list(req):
         }
         for tag in pagination.items
     ]
-    return {'data': data, 'total': pagination.total}
+    return {'list': data, 'total': pagination.total}
 
 
 @http_service
