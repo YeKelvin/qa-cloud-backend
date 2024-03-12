@@ -1,12 +1,12 @@
 flask==3.0.2
 flask-sqlalchemy==3.1.1
 flask-socketio==5.3.6
-flask-migrate==4.0.5
+flask-migrate==4.0.7
 flask-apscheduler==1.13.1
 apscheduler==3.10.4
 blinker==1.7.0
 pyjwt[crypto]==2.8.0
-environs==10.3.0
+environs==11.0.0
 python-dotenv==1.0.1
 munch==4.0.0
 uwsgi
