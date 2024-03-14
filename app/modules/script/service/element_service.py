@@ -552,7 +552,7 @@ def enable_element(req):
 
     # 更新元素状态为启用，移除跳过标记
     element.update(
-        SKIPED=True,
+        SKIPED=False,
         ENABLED=ElementStatus.ENABLE.value
     )
 
@@ -567,7 +567,10 @@ def disable_element(req):
     check_workspace_permission(request.headers.get('x-workspace-no'))
 
     # 更新元素状态为禁用
-    element.update(ENABLED=ElementStatus.DISABLE.value)
+    element.update(
+        SKIPED=False,
+        ENABLED=ElementStatus.DISABLE.value
+    )
 
 
 @http_service
@@ -580,7 +583,10 @@ def skip_element(req):
     check_workspace_permission(request.headers.get('x-workspace-no'))
 
     # 标记元素状态为跳过
-    element.update(SKIPED=True)
+    element.update(
+        SKIPED=True,
+        ENABLED=ElementStatus.ENABLE.value
+    )
 
 
 @http_service
