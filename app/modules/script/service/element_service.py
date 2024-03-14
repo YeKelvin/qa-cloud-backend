@@ -73,6 +73,7 @@ def query_element_list(req):
             TTestElement.ELEMENT_NAME,
             TTestElement.ELEMENT_DESC,
             TTestElement.ELEMENT_TYPE,
+            TTestElement.SKIPED,
             TTestElement.ENABLED
         )
         .filter(*conds)
@@ -82,6 +83,7 @@ def query_element_list(req):
 
     data = [
         {
+            'skiped': item.SKIPED,
             'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
@@ -103,6 +105,7 @@ def query_element_all(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     items = db_query(
+        TTestElement.SKIPED,
         TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
@@ -113,6 +116,7 @@ def query_element_all(req):
 
     return [
         {
+            'skiped': item.SKIPED,
             'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
@@ -133,6 +137,7 @@ def query_element_all_with_children(req):
     conds.equal(TTestElement.ELEMENT_CLASS, req.elementClass)
 
     items = db_query(
+        TTestElement.SKIPED,
         TTestElement.ENABLED,
         TTestElement.ELEMENT_NO,
         TTestElement.ELEMENT_NAME,
@@ -151,6 +156,7 @@ def query_element_all_with_children(req):
         childconds.equal(TTestElement.ELEMENT_TYPE, req.childType)
         childconds.equal(TTestElement.ELEMENT_CLASS, req.childClass)
         children = db_query(
+            TTestElement.SKIPED,
             TTestElement.ENABLED,
             TTestElement.ELEMENT_NO,
             TTestElement.ELEMENT_NAME,
@@ -161,6 +167,7 @@ def query_element_all_with_children(req):
         ).filter(*childconds).order_by(TElementChildren.ELEMENT_SORT).all()
         # 添加元素信息
         result.append({
+            'skiped': item.SKIPED,
             'enabled': item.ENABLED,
             'elementNo': item.ELEMENT_NO,
             'elementName': item.ELEMENT_NAME,
@@ -168,6 +175,7 @@ def query_element_all_with_children(req):
             'elementClass': item.ELEMENT_CLASS,
             'children': [
                 {
+                    'skiped': child.SKIPED,
                     'enabled': child.ENABLED,
                     'elementNo': child.ELEMENT_NO,
                     'elementName': child.ELEMENT_NAME,
@@ -188,6 +196,7 @@ def query_element_info(req):
     check_exists(element, error='元素不存在')
 
     return {
+        'skiped': element.SKIPED,
         'enabled': element.ENABLED,
         'elementNo': element.ELEMENT_NO,
         'elementName': element.ELEMENT_NAME,
@@ -232,6 +241,7 @@ def query_element_tree_by_roots(req):
             'elementName': root.ELEMENT_NAME,
             'elementType': root.ELEMENT_TYPE,
             'elementClass': root.ELEMENT_CLASS,
+            'skiped': root.SKIPED,
             'enabled': root.ENABLED,
             'children': children
         })
@@ -262,6 +272,7 @@ def get_element_children(parent_no, depth):
                 'elementType': element.ELEMENT_TYPE,
                 'elementClass': element.ELEMENT_CLASS,
                 'elementIndex': node.ELEMENT_SORT,
+                'skiped': element.SKIPED,
                 'enabled': element.ENABLED,
                 'children': grandchildren
             })
@@ -537,10 +548,13 @@ def enable_element(req):
     check_exists(element, error='元素不存在')
 
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    check_workspace_permission(request.headers.get('x-workspace-no'))
 
-    # 更新元素状态为启用
-    element.update(ENABLED=ElementStatus.ENABLE.value)
+    # 更新元素状态为启用，移除跳过标记
+    element.update(
+        SKIPED=True,
+        ENABLED=ElementStatus.ENABLE.value
+    )
 
 
 @http_service
@@ -550,10 +564,23 @@ def disable_element(req):
     check_exists(element, error='元素不存在')
 
     # 校验空间权限
-    check_workspace_permission(get_workspace_no(get_root_no(req.elementNo)))
+    check_workspace_permission(request.headers.get('x-workspace-no'))
 
     # 更新元素状态为禁用
     element.update(ENABLED=ElementStatus.DISABLE.value)
+
+
+@http_service
+def skip_element(req):
+    # 查询元素
+    element = test_element_dao.select_by_no(req.elementNo)
+    check_exists(element, error='元素不存在')
+
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
+    # 标记元素状态为跳过
+    element.update(SKIPED=True)
 
 
 @http_service

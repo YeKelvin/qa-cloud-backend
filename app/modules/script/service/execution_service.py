@@ -645,11 +645,11 @@ def start_testplan_by_loop(
 ):
     """循环运行测试计划"""
     # 批量解析脚本并临时存储
-    logger.info(f'执行编号:[ {execution_no} ] 开始批量解析脚本')
+    logger.info(f'执行编号:[ {execution_no} ] 开始批量加载脚本')
     scripts = {}
     for collection_no in collections:
         # 加载脚本
-        collection = ElementLoader(collection_no).loads_tree()
+        collection = ElementLoader(collection_no, exclude_skip=True).loads_tree()
         if not collection:
             logger.warning(
                 f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'
@@ -659,7 +659,7 @@ def start_testplan_by_loop(
         add_variable_dataset(collection, datasets=datasets, use_current=use_current_value)
         # 添加迭代记录器组件
         add_flask_db_iteration_storage(collection, execution_no, collection_no)
-        # 存储解析后的脚本，不需要每次迭代都重新解析一遍
+        # 存储加载后的脚本，不需要每次迭代都重新加载一遍
         scripts[collection_no] = collection
 
     # 批量更新计划项目的运行状态至 RUNNING
@@ -750,7 +750,7 @@ def start_testplan_by_report(
             script.norecord_update(RUNNING_STATE=RunningState.RUNNING.value)
             db.session.commit()  # 这里要实时更新
             # 加载脚本
-            collection = ElementLoader(collection_no).loads_tree()
+            collection = ElementLoader(collection_no, exclude_skip=True).loads_tree()
             if not collection:
                 logger.warning(
                     f'执行编号:[ {execution_no} ] 集合编号:[ {collection_no} ] 脚本为空或脚本已禁用，跳过当前脚本'

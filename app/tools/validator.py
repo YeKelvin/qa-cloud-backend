@@ -75,6 +75,7 @@ def is_restriction_exemption_member(workspace_no, user_no):
 
 
 def check_workspace_permission(source_workspace_no) -> None:
+    """全局空间只有超级管理员可以操作"""
     # 获取用户编号
     user_no = getattr(g, 'user_no', None)
     if user_no is None:

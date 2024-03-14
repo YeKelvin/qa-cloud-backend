@@ -281,7 +281,16 @@ loaders ={
 
 class ElementLoader:
 
-    def __init__(self, root_no, worker_no=None, sampler_no=None, offline_no=None, offlines=None, aloneness=False):
+    def __init__(
+            self,
+            root_no,
+            worker_no=None,
+            sampler_no=None,
+            offline_no=None,
+            offlines=None,
+            aloneness=False,
+            exclude_skip=False
+    ):
         # 数据库缓存
         self.caches = {} # { 'ElementClass': { 'elementNo': {} } }
         # 全局配置器
@@ -312,6 +321,8 @@ class ElementLoader:
         self.sampler_found = False
         # 独立运行
         self.aloneness = aloneness
+        # 排除跳过的请求
+        self.exclude_skip = exclude_skip
 
     def get_root_element(self) -> TTestElement:
         root, _, _ = self.get_offline_element(self.root_no)
@@ -426,7 +437,7 @@ class ElementLoader:
         """从离线数据中读取元素信息，包含TTestElement对象，元素属性和元素组件"""
         if offline := self.offlines.get(element_no):
             # 组装元素信息
-            enabled = True if self.offline_no else offline.get('enabled', test_element_dao.is_enabled(element_no))
+            el_skiped, el_enabled = test_element_dao.get_skiped_and_enabled(element_no)
             element = TTestElement(
                 ELEMENT_NO=element_no,
                 ELEMENT_NAME=offline.get('elementName'),
@@ -434,7 +445,8 @@ class ElementLoader:
                 ELEMENT_TYPE=offline.get('elementType'),
                 ELEMENT_CLASS=offline.get('elementClass'),
                 ELEMENT_ATTRS=offline.get('elementAttrs'),
-                ENABLED=enabled
+                SKIPED=el_skiped,
+                ENABLED=True if self.offline_no else offline.get('enabled', el_enabled)
             )
             # 分类获取组件列表
             components = offline.get('elementCompos', {})
@@ -459,6 +471,9 @@ class ElementLoader:
         # 元素为禁用状态时返回None
         if not element.enabled:
             logger.debug(f'元素名称:[ {element.name} ] 元素已禁用, 无需加载')
+            return None
+        if self.exclude_skip and element.SKIPED:
+            logger.debug(f'元素名称:[ {element.name} ] 元素已跳过, 无需加载')
             return None
         # 元素子代
         children = deque()

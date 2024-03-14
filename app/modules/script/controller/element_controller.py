@@ -181,6 +181,17 @@ def disable_element():
     return service.disable_element(req)
 
 
+@blueprint.put('/element/skip')
+@require_login
+@require_permission('MODIFY_ELEMENT')
+def skip_element():
+    """跳过元素"""
+    req = JsonParser(
+        Argument('elementNo', required=True, nullable=False, help='元素编号不能为空')
+    ).parse()
+    return service.skip_element(req)
+
+
 @blueprint.put('/element/state/toggle')
 @require_login
 @require_permission('MODIFY_ELEMENT')

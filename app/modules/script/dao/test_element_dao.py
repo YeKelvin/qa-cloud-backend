@@ -4,6 +4,7 @@
 # @Author  : Kelvin.Ye
 from sqlalchemy import select
 
+from app.database import db_execute
 from app.database import db_scalars
 from app.modules.script.enum import ElementType
 from app.modules.script.model import TTestElement
@@ -32,3 +33,17 @@ def is_enabled(element_no) -> bool:
             TTestElement.ELEMENT_NO == element_no
         )
     ).first()
+
+
+def get_skiped_and_enabled(element_no) -> tuple[bool, bool]:
+    entity = db_execute(
+        select(
+            TTestElement.SKIPED,
+            TTestElement.ENABLED
+        )
+        .where(
+            TTestElement.exclude_deleted_data(),
+            TTestElement.ELEMENT_NO == element_no
+        )
+    ).first()
+    return entity.SKIPED, entity.ENABLED

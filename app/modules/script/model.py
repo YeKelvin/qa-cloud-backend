@@ -21,6 +21,7 @@ class TTestElement(TableModel, BaseColumn):
     ELEMENT_CLASS = db.Column(db.String(64), nullable=False, comment='元素实现类')
     ELEMENT_ATTRS = db.Column(JSONB, comment='元素属性(与加载过程相关但与运行时无关的属性)')
     ELEMENT_METADATA = db.Column(JSONB, comment='元素的元数据')
+    SKIPED = db.Column(db.Boolean(), nullable=False, default=False, comment='是否跳过')
     ENABLED = db.Column(db.Boolean(), nullable=False, default=True, comment='是否启用')
 
     @property
