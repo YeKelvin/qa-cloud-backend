@@ -15,24 +15,24 @@ from app.modules.script.service.execution_service import execute_testplan
 from app.tools.exceptions import ServiceError
 
 
-def execute_testplan(planNo, datasets, useCurrentValue):  # noqa
+def trigger_testplan_job(plan_no, datasets, use_currvalue):
     with apscheduler.app.app_context():
-        execute_testplan(planNo, datasets, useCurrentValue, check_workspace=False)
+        execute_testplan(plan_no, datasets, use_currvalue, check_workspace=False)
 
 
-def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
+def trigger_collection_job(collection_no, datasets, use_currvalue):
     with apscheduler.app.app_context():
         # 查询元素
-        collection = test_element_dao.select_by_no(collectionNo)
+        collection = test_element_dao.select_by_no(collection_no)
         if not collection.ENABLED:
             raise ServiceError(msg='元素已禁用')
         if collection.ELEMENT_TYPE != ElementType.COLLECTION.value:
             raise ServiceError(msg='仅支持运行测试集合')
         # 根据 collectionNo 递归加载脚本
-        script = ElementLoader(collectionNo).loads_tree()
+        script = ElementLoader(collection_no).loads_tree()
         # 添加变量组件
         if datasets:
-            add_variable_dataset(script, datasets=datasets, use_current=useCurrentValue)
+            add_variable_dataset(script, datasets=datasets, use_current=use_currvalue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)
@@ -40,24 +40,24 @@ def execute_collection(collectionNo, datasets, useCurrentValue):  # noqa
             logger.exception('Exception Occurred')
 
 
-def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
+def trigger_testcase_job(worker_no, datasets, use_currvalue):
     with apscheduler.app.app_context():
         # 查询元素
-        worker = test_element_dao.select_by_no(workerNo)
+        worker = test_element_dao.select_by_no(worker_no)
         if not worker.ENABLED:
             raise ServiceError(msg='元素已禁用')
         if worker.ELEMENT_TYPE != ElementType.WORKER.value:
             raise ServiceError(msg='仅支持运行测试用例')
         # 获取 collectionNo
-        worker_node = element_children_dao.select_by_child(workerNo)
+        worker_node = element_children_dao.select_by_child(worker_no)
         if not worker_node:
             raise ServiceError(msg='元素节点不存在')
         # 根据 collectionNo 递归加载脚本
         collection_no = worker_node.PARENT_NO
-        script = ElementLoader(collection_no, worker_no=workerNo).loads_tree()
+        script = ElementLoader(collection_no, worker_no=worker_no).loads_tree()
         # 添加变量组件
         if datasets:
-            add_variable_dataset(script, datasets=datasets, use_current=useCurrentValue)
+            add_variable_dataset(script, datasets=datasets, use_current=use_currvalue)
         # 运行脚本
         try:
             Runner.start([script], throw_ex=True)
@@ -65,8 +65,8 @@ def execute_worker(workerNo, datasets, useCurrentValue):  # noqa
             logger.exception('Exception Occurred')
 
 
-TASK_FUNC = {
-    'TESTPLAN': execute_testplan,
-    'COLLECTION': execute_collection,
-    'WORKER': execute_worker
+jobfx = {
+    'TESTPLAN': trigger_testplan_job,
+    'TESTCASE': trigger_testcase_job,
+    'COLLECTION': trigger_collection_job
 }

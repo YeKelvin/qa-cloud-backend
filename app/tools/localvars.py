@@ -9,7 +9,7 @@ from flask import g
 from app.tools.identity import new_ulid
 
 
-traceid_var = ContextVar('trace_id')
+traceid_var = ContextVar('trace_id', default=None)
 
 
 def get_trace_id():

@@ -2,6 +2,7 @@
 # @File    : variables_service.py
 # @Time    : 2020/3/13 16:59
 # @Author  : Kelvin.Ye
+from flask import request
 from sqlalchemy import and_
 
 from app.modules.script.dao import variable_dao
@@ -111,12 +112,12 @@ def create_dataset(req):
 
 @http_service
 def modify_dataset(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 更新变量集信息
     dataset.update(
@@ -128,11 +129,11 @@ def modify_dataset(req):
 
 @http_service
 def remove_dataset(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
     # 删除变量集下的所有变量
     variable_dao.delete_all_by_dataset(req.datasetNo)
     # 删除变量集
@@ -141,6 +142,9 @@ def remove_dataset(req):
 
 @http_service
 def create_variable(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_dataset_and_name(req.datasetNo, req.variableName)
     check_not_exists(variable, error='变量集已存在')
@@ -148,9 +152,6 @@ def create_variable(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 新增变量
     variable_no = new_id()
@@ -169,6 +170,9 @@ def create_variable(req):
 
 @http_service
 def modify_variable(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error='变量不存在')
@@ -176,9 +180,6 @@ def modify_variable(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 更新变量信息
     variable.update(
@@ -191,6 +192,9 @@ def modify_variable(req):
 
 @http_service
 def remove_variable(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error='变量不存在')
@@ -198,9 +202,6 @@ def remove_variable(req):
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 删除变量
     variable.delete()
@@ -208,6 +209,9 @@ def remove_variable(req):
 
 @http_service
 def enable_variable(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error='变量不存在')
@@ -216,17 +220,15 @@ def enable_variable(req):
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
     check_exists(dataset, error='变量集不存在')
 
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
-
     # 启用变量
-    variable.update(
-        ENABLED=True
-    )
+    variable.update(ENABLED=True)
 
 
 @http_service
 def disable_variable(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error='变量不存在')
@@ -235,17 +237,15 @@ def disable_variable(req):
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
     check_exists(dataset, error='变量集不存在')
 
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
-
     # 禁用变量
-    variable.update(
-        ENABLED=False
-    )
+    variable.update(ENABLED=False)
 
 
 @http_service
 def update_current_value(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量信息
     variable = variable_dao.select_by_no(req.variableNo)
     check_exists(variable, error='变量不存在')
@@ -254,13 +254,8 @@ def update_current_value(req):
     dataset = variable_dataset_dao.select_by_no(variable.DATASET_NO)
     check_exists(dataset, error='变量集不存在')
 
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
-
     # 更新当前值
-    variable.update(
-        CURRENT_VALUE=req.value.strip() if req.value else req.value
-    )
+    variable.update(CURRENT_VALUE=req.value.strip() if req.value else req.value)
 
 
 @http_service
@@ -311,12 +306,12 @@ def query_variables(req):
 
 @http_service
 def create_variables(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     for vari in req.variableList:
         # 跳过变量名为空的数据
@@ -341,11 +336,11 @@ def create_variables(req):
 
 @http_service
 def modify_variables(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
     # 遍历更新变量
     for vari in req.variableList:
         # 跳过变量名为空的数据
@@ -382,23 +377,23 @@ def modify_variables(req):
 
 @http_service
 def remove_variables(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
     # 查询变量集信息
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
     # 批量删除变量
     variable_dao.delete_in_no(req.variables)
 
 
 @http_service
 def duplicate_dataset(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量集
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 复制变量集
     new_dataset_no = new_id()
@@ -429,12 +424,12 @@ def duplicate_dataset(req):
 
 @http_service
 def copy_dataset_to_workspace(req):
+    # 校验空间权限
+    check_workspace_permission(request.headers.get('x-workspace-no'))
+
     # 查询变量集
     dataset = variable_dataset_dao.select_by_no(req.datasetNo)
     check_exists(dataset, error='变量集不存在')
-
-    # 校验空间权限
-    check_workspace_permission(dataset.WORKSPACE_NO)
 
     # 复制变量集
     new_dataset_no = new_id()

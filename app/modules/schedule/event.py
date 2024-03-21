@@ -8,13 +8,12 @@ from apscheduler.events import JobSubmissionEvent
 from apscheduler.events import SchedulerEvent
 from loguru import logger
 
-from app.extension import apscheduler
 from app.extension import db
-from app.modules.schedule.dao import schedule_job_dao as ScheduleJobDao
+from app.modules.schedule.dao import schedule_job_dao
+from app.modules.schedule.decorator import apscheduler_app_context
+from app.modules.schedule.enum import JobEvents
 from app.modules.schedule.enum import JobState
-from app.modules.schedule.enum import OperationType
-from app.modules.schedule.model import TScheduleJobLog
-from app.tools.identity import new_id
+from app.modules.schedule.model import TScheduleLog
 from app.tools.identity import new_ulid
 from app.tools.localvars import traceid_var
 from app.utils.time_util import datetime_now_by_utc8
@@ -99,45 +98,40 @@ def handle_job_added(event: JobEvent):
 
     A job was added to a job store
     """
-    logger.info(f'event:[ EVENT_JOB_ADDED ] jobId:[ {event.job_id} ] 已添加作业')
+    logger.info(f'event:[ EVENT_JOB_ADDED ] jobId:[ {event.job_id} ] 作业已添加')
 
 
+@apscheduler_app_context
 def handle_job_removed(event: JobEvent):
     """EVENT_JOB_REMOVED
 
     A job was removed from a job store
     """
-    logger.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 已移除作业')
+    logger.info(f'event:[ EVENT_JOB_REMOVED ] jobId:[ {event.job_id} ] 作业已移除')
     # 更新任务状态
-    with apscheduler.app.app_context():
-        try:
-            # 查询任务
-            task = ScheduleJobDao.select_by_no(event.job_id)
-            if not task:
-                return
-            # 如果任务状态仍未关闭，则更新状态为已关闭
-            if task.STATE != JobState.CLOSED.value:
-                logger.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
-                task.update(STATE=JobState.CLOSED.value)
-            # TODO: 优化日志
-            # 记录操作日志
-            # TSystemOperationLog.insert(
-            #     LOG_NO=threadlocal.trace_id,
-            #     OPERATION_SOURCE='APSCHEDULER',
-            #     OPERATION_EVENT='EVENT_JOB_REMOVED'
-            # )
-            # 新增历史记录
-            TScheduleJobLog.insert(
-                JOB_NO=task.JOB_NO,
-                LOG_NO=new_id(),
-                OPERATION_TYPE=OperationType.CLOSE.value,
-                OPERATION_BY='9999',
-                OPERATION_TIME=datetime_now_by_utc8()
-            )
-            # 需要手动提交
-            db.session.commit()
-        except Exception:
-            logger.exception('Exception Occurred')
+    try:
+        # 查询任务
+        job = schedule_job_dao.select_by_no(event.job_id)
+        if not job:
+            return
+        # 如果任务状态仍未关闭，则更新状态为已关闭
+        if job.JOB_STATE != JobState.CLOSED.value:
+            logger.info(f'jobId:[ {event.job_id} ] 更新任务状态为CLOSED')
+            job.update(STATE=JobState.CLOSED.value)
+        # 新增历史记录
+        TScheduleLog.insert(
+            LOG_NO=traceid_var.get() or new_ulid(),
+            JOB_NO=job.JOB_NO,
+            JOB_EVENT=JobEvents.CLOSE.value,
+            OPERATION_BY='9999',
+            OPERATION_TIME=datetime_now_by_utc8()
+        )
+        # 需要手动提交
+        db.session.commit()
+    except Exception:
+        # 数据回滚
+        db.session.rollback()
+        logger.exception('Exception Occurred')
 
 
 def handle_job_modified(event: JobEvent):
@@ -145,41 +139,37 @@ def handle_job_modified(event: JobEvent):
 
     A job was modified from outside the scheduler
     """
-    logger.info(f'event:[ EVENT_JOB_MODIFIED ] jobId:[ {event.job_id} ] 已修改作业')
+    logger.info(f'event:[ EVENT_JOB_MODIFIED ] jobId:[ {event.job_id} ] 作业已修改')
 
 
+@apscheduler_app_context
 def handle_job_submitted(event: JobSubmissionEvent):
     """EVENT_JOB_SUBMITTED
 
     A job was submitted to its executor to be run
     """
     logger.info(f'event:[ EVENT_JOB_SUBMITTED ] jobId:[ {event.job_id} ] 开始执行作业')
-    with apscheduler.app.app_context():
-        try:
-            # 查询任务
-            task = ScheduleJobDao.select_by_no(event.job_id)
-            if not task:
-                return
-            # TODO: 优化日志
-            # 记录操作日志
-            # TSystemOperationLog.insert(
-            #     LOG_NO=threadlocal.trace_id,
-            #     OPERATION_SOURCE='APSCHEDULER',
-            #     OPERATION_EVENT='EVENT_JOB_SUBMITTED'
-            # )
-            # 新增历史记录
-            TScheduleJobLog.insert(
-                JOB_NO=task.JOB_NO,
-                LOG_NO=new_id(),
-                OPERATION_TYPE=OperationType.EXECUTE.value,
-                OPERATION_BY='9999',
-                OPERATION_TIME=datetime_now_by_utc8(),
-                OPERATION_ARGS=task.JOB_ARGS
-            )
-            # 需要手动提交
-            db.session.commit()
-        except Exception:
-            logger.exception('Exception Occurred')
+    try:
+        # 查询任务
+        job = schedule_job_dao.select_by_no(event.job_id)
+        if not job:
+            return
+        # 更新状态
+        job.JOB_STATE != JobState.PENDING.value and job.update(JOB_STATE=JobState.RUNNING.value)
+        # 新增历史记录
+        TScheduleLog.insert(
+            LOG_NO=traceid_var.get() or new_ulid(),
+            JOB_NO=job.JOB_NO,
+            JOB_EVENT=JobEvents.EXECUTE.value,
+            OPERATION_BY='9999',
+            OPERATION_TIME=datetime_now_by_utc8()
+        )
+        # 需要手动提交
+        db.session.commit()
+    except Exception:
+        # 数据回滚
+        db.session.rollback()
+        logger.exception('Exception Occurred')
 
 
 def handle_job_max_instances(event: JobSubmissionEvent):
@@ -220,5 +210,5 @@ def handle_event_all(event):
 
     A catch-all mask that includes every event type
     """
-    # 重置[ 线程/协程 ]的日志号
+    # 设置[ 线程/协程 ]的日志号
     traceid_var.set(new_ulid())

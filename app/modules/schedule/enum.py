@@ -8,8 +8,10 @@ from enum import unique
 
 @unique
 class JobState(Enum):
-    # 正常
-    NORMAL = 'NORMAL'
+    # 待开始
+    PENDING = 'PENDING'
+    # 运行中
+    RUNNING = 'RUNNING'
     # 已暂停
     PAUSED = 'PAUSED'
     # 已关闭
@@ -22,22 +24,20 @@ class JobType(Enum):
     TESTPLAN = 'TESTPLAN'
     # 测试集合
     COLLECTION = 'COLLECTION'
-    # 工作者
-    WORKER = 'WORKER'
+    # 测试用例
+    TESTCASE = 'TESTCASE'
 
 
 @unique
 class TriggerType(Enum):
     # 固定时间
     DATE = 'DATE'
-    # 固定间隔
-    INTERVAL = 'INTERVAL'
     # CRON间隔
     CRON = 'CRON'
 
 
 @unique
-class OperationType(Enum):
+class JobEvents(Enum):
     # 添加作业
     ADD = 'ADD'
     # 修改作业
@@ -50,11 +50,3 @@ class OperationType(Enum):
     RESUME = 'RESUME'
     # 关闭作业
     CLOSE = 'CLOSE'
-
-
-@unique
-class ChangeType(Enum):
-    JOB_TYPE = 'JOB_TYPE'
-    JOB_ARGS = 'JOB_ARGS'
-    TRIGGER_TYPE = 'TRIGGER_TYPE'
-    TRIGGER_ARGS = 'TRIGGER_ARGS'
