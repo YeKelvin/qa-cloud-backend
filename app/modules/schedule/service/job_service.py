@@ -33,6 +33,7 @@ from app.tools.validator import check_exists
 from app.tools.validator import check_not_exists
 from app.tools.validator import check_workspace_permission
 from app.utils.sqlalchemy_util import QueryCondition
+from app.utils.time_util import TIMEFMT
 from app.utils.time_util import datetime_now_by_utc8
 
 
@@ -56,8 +57,12 @@ def query_job_list(req):
         .paginate(page=req.page, per_page=req.pageSize, error_out=False)
     )
 
-    data = [
-        {
+    data = []
+    for job in pagination.items:
+        apjob = None
+        if job.JOB_STATE != JobState.CLOSED.value:
+            apjob = apscheduler.get_job(job.JOB_NO)
+        data.append({
             'jobNo': job.JOB_NO,
             'jobName': job.JOB_NAME,
             'jobDesc': job.JOB_DESC,
@@ -65,10 +70,9 @@ def query_job_list(req):
             'jobArgs': get_job_args(job.JOB_TYPE, job.JOB_ARGS),
             'jobState': job.JOB_STATE,
             'triggerType': job.TRIGGER_TYPE,
-            'createdTime': job.CREATED_TIME
-        }
-        for job in pagination.items
-    ]
+            'createdTime': job.CREATED_TIME.strftime(TIMEFMT),
+            'nextRunTime': apjob.next_run_time.strftime(TIMEFMT) if apjob else None,
+        })
 
     return {'list': data, 'total': pagination.total}
 
@@ -354,7 +358,7 @@ def query_job_log_list(req):
             'jobArgs': get_job_args(item.JOB_TYPE, item.JOB_ARGS),
             'jobEvent': item.JOB_EVENT,
             'operationBy': item.USER_NAME,
-            'operationTime': item.OPERATION_TIME
+            'operationTime': item.OPERATION_TIME.strftime(TIMEFMT)
         }
         for item in pagination.items
     ]

@@ -123,13 +123,13 @@ def init_apscheduler(app: Flask):
     from app.modules.schedule import event
 
     apscheduler.add_listener(event.handle_event_all, EVENT_ALL)
+    apscheduler.add_listener(event.handle_job_error, EVENT_JOB_ERROR)
     apscheduler.add_listener(event.handle_job_added, EVENT_JOB_ADDED)
-    apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
     apscheduler.add_listener(event.handle_job_removed, EVENT_JOB_REMOVED)
+    apscheduler.add_listener(event.handle_job_modified, EVENT_JOB_MODIFIED)
+    apscheduler.add_listener(event.handle_job_executed, EVENT_JOB_EXECUTED)
     apscheduler.add_listener(event.handle_job_submitted, EVENT_JOB_SUBMITTED)
     apscheduler.add_listener(event.handle_job_max_instances, EVENT_JOB_MAX_INSTANCES)
-    apscheduler.add_listener(event.handle_job_executed, EVENT_JOB_EXECUTED)
-    apscheduler.add_listener(event.handle_job_error, EVENT_JOB_ERROR)
     apscheduler.init_app(app)
     apscheduler.start()
 

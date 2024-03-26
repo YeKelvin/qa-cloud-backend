@@ -10,12 +10,16 @@ from enum import unique
 class JobState(Enum):
     # 待开始
     PENDING = 'PENDING'
+    # 等待中
+    WAITING = 'WAITING'
     # 运行中
     RUNNING = 'RUNNING'
     # 已暂停
     PAUSED = 'PAUSED'
     # 已关闭
     CLOSED = 'CLOSED'
+    # 异常
+    ERROR = 'ERROR'
 
 
 @unique

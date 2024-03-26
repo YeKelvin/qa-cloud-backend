@@ -155,7 +155,7 @@ def handle_job_submitted(event: JobSubmissionEvent):
         if not job:
             return
         # 更新状态
-        job.JOB_STATE != JobState.PENDING.value and job.update(JOB_STATE=JobState.RUNNING.value)
+        job.JOB_STATE == JobState.PENDING.value and job.update(JOB_STATE=JobState.RUNNING.value)
         # 新增历史记录
         TScheduleLog.insert(
             LOG_NO=traceid_var.get() or new_ulid(),
