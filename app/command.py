@@ -165,8 +165,7 @@ def init_permission_object():
     TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试计划', OBJECT_CODE='TESTPLAN')
     TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='测试报告', OBJECT_CODE='TESTREPORT')
     # SCHEDULE
-    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时任务', OBJECT_CODE='TASK')
-    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时作业', OBJECT_CODE='JOB')
+    TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='定时任务', OBJECT_CODE='JOB')
     # OPENCENTER
     TPermissionObject.norecord_insert(OBJECT_NO=new_id(), OBJECT_NAME='第三方应用', OBJECT_CODE='THIRD_PARTY_APP')
 
@@ -220,16 +219,13 @@ def init_permission_item():
     create_permission('PUBLIC', 'MESSAGE', '新增机器人', 'CREATE_ROBOT', 'CREATE')
     create_permission('PUBLIC', 'MESSAGE', '修改机器人', 'MODIFY_ROBOT', 'MODIFY')
     create_permission('PUBLIC', 'MESSAGE', '删除机器人', 'REMOVE_ROBOT', 'REMOVE')
-    # task
-    create_permission('SCHEDULER', 'TASK', '查询定时任务', 'QUERY_TASK', 'QUERY')
-    create_permission('SCHEDULER', 'TASK', '新增定时任务', 'CREATE_TASK', 'CREATE')
-    create_permission('SCHEDULER', 'TASK', '修改定时任务', 'MODIFY_TASK', 'MODIFY')
-    create_permission('SCHEDULER', 'TASK', '暂停定时任务', 'PAUSE_TASK', 'PAUSE')
-    create_permission('SCHEDULER', 'TASK', '恢复定时任务', 'RESUME_TASK', 'RESUME')
-    create_permission('SCHEDULER', 'TASK', '关闭定时任务', 'REMOVE_TASK', 'REMOVE')
     # job
-    create_permission('SCHEDULER', 'JOB', '查询定时作业', 'QUERY_JOB', 'QUERY')
-    create_permission('SCHEDULER', 'JOB', '运行定时作业', 'RUN_JOB', 'EXECUTE')
+    create_permission('SCHEDULER', 'JOB', '查询定时任务', 'QUERY_JOB', 'QUERY')
+    create_permission('SCHEDULER', 'JOB', '新增定时任务', 'CREATE_JOB', 'CREATE')
+    create_permission('SCHEDULER', 'JOB', '修改定时任务', 'MODIFY_JOB', 'MODIFY')
+    create_permission('SCHEDULER', 'JOB', '暂停定时任务', 'PAUSE_JOB', 'PAUSE')
+    create_permission('SCHEDULER', 'JOB', '恢复定时任务', 'RESUME_JOB', 'RESUME')
+    create_permission('SCHEDULER', 'JOB', '关闭定时任务', 'REMOVE_JOB', 'REMOVE')
     # element
     create_permission('SCRIPT', 'ELEMENT', '查询元素', 'QUERY_ELEMENT', 'QUERY')
     create_permission('SCRIPT', 'ELEMENT', '新增元素', 'CREATE_ELEMENT', 'CREATE')
